@@ -22,6 +22,7 @@ kotlin {
                 implementation(libs.ktor.serialization.kotlinx.xml)
                 implementation(libs.xmlutil.core.io)
                 implementation(libs.kotlinx.io.okio)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         val commonTest by getting {

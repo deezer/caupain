@@ -19,11 +19,11 @@ import kotlin.jvm.JvmInline
 
 sealed interface Version {
 
-    fun isUpdate(version: GradleDependencyVersion.Exact): Boolean
+    fun isUpdate(version: GradleDependencyVersion.Single): Boolean
 
     @JvmInline
     value class Simple(val value: GradleDependencyVersion) : Version {
-        override fun isUpdate(version: GradleDependencyVersion.Exact): Boolean {
+        override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return value.isUpdate(version)
         }
     }
@@ -36,7 +36,7 @@ sealed interface Version {
         val reject: GradleDependencyVersion? = null,
         val rejectAll: Boolean = false
     ) : Version {
-        override fun isUpdate(version: GradleDependencyVersion.Exact): Boolean {
+        override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return when {
                 rejectAll -> false
                 reject?.contains(version) == true -> false

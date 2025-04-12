@@ -17,7 +17,7 @@ sealed interface GradleDependencyVersion {
 
     val text: String
 
-    sealed interface Single : GradleDependencyVersion {
+    sealed interface Single : GradleDependencyVersion, Comparable<Single> {
         val exactVersion: Exact
     }
 
@@ -27,7 +27,7 @@ sealed interface GradleDependencyVersion {
 
     // Dependency version compared like in https://docs.gradle.org/current/userguide/single_versions.html#version_ordering
     @JvmInline
-    value class Exact(private val version: String) : Single, Comparable<Exact> {
+    value class Exact(private val version: String) : Single {
 
         override val text: String
             get() = version
@@ -37,7 +37,15 @@ sealed interface GradleDependencyVersion {
 
         override fun contains(version: Single): Boolean = this == version
 
-        override fun compareTo(other: Exact): Int {
+        override fun compareTo(other: Single): Int = when (other) {
+            is Exact -> compareTo(other)
+            is Snapshot -> {
+                val compareResult = compareTo(other.exactVersion)
+                if (compareResult == 0) -1 else compareResult
+            }
+        }
+
+        fun compareTo(other: Exact): Int {
             val parts = toParts()
             val otherParts = other.toParts()
             val commonLength = minOf(parts.size, otherParts.size)
@@ -258,6 +266,14 @@ sealed interface GradleDependencyVersion {
     data class Snapshot(override val text: String) : Single {
 
         override val exactVersion = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
+
+        override fun compareTo(other: Single): Int = when (other) {
+            is Snapshot -> exactVersion.compareTo(other.exactVersion)
+            is Exact -> {
+                val compareResult = exactVersion.compareTo(other)
+                if (compareResult == 0) 1 else compareResult
+            }
+        }
 
         override fun contains(version: Single): Boolean = this == version
 

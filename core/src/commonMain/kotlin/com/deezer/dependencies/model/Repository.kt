@@ -9,7 +9,7 @@ data class Repository(
 }
 
 object DefaultRepositories {
-    val google = Repository("https://dl.google.com/dl/android/maven2/")
-    val mavenCentral = Repository("https://repo.maven.apache.org/maven2/")
+    val google = Repository("https://dl.google.com/dl/android/maven2")
+    val mavenCentral = Repository("https://repo.maven.apache.org/maven2")
     val gradlePlugins = Repository("https://plugins.gradle.org/m2")
 }
