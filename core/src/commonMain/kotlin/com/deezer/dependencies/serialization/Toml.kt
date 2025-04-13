@@ -11,7 +11,7 @@ import okio.SYSTEM
 import okio.buffer
 import okio.use
 
-class TomlOkioReader(private val source: BufferedSource) : TomlReader {
+internal class TomlOkioReader(private val source: BufferedSource) : TomlReader {
 
     override fun read(): Int = try {
         source.readUtf8CodePoint()
@@ -20,14 +20,14 @@ class TomlOkioReader(private val source: BufferedSource) : TomlReader {
     }
 }
 
-val DefaultToml: Toml by lazy {
+internal val DefaultToml: Toml by lazy {
     Toml {
         ignoreUnknownKeys = true
         explicitNulls = false
     }
 }
 
-inline fun <reified T> Toml.decodeFromPath(
+internal inline fun <reified T> Toml.decodeFromPath(
     path: Path,
     fileSystem: FileSystem = FileSystem.SYSTEM
 ): T {

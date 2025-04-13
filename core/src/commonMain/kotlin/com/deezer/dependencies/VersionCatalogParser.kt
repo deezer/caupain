@@ -12,13 +12,17 @@ import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
 
-class VersionCatalogParser(
+internal interface VersionCatalogParser {
+    suspend fun parseDependencyInfo(): DependencyInfo
+}
+
+internal class DefaultVersionCatalogParser(
     private val toml: Toml = DefaultToml,
     private val versionCatalogPath: Path,
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-) {
-    suspend fun parseDependencyInfo(): DependencyInfo = withContext(ioDispatcher) {
+) : VersionCatalogParser {
+    override suspend fun parseDependencyInfo(): DependencyInfo = withContext(ioDispatcher) {
         DependencyInfo(
             versionCatalog = parseVersionCatalog(),
             ignoredDependencyKeys = parseIgnoredDependencies()
@@ -58,7 +62,7 @@ class VersionCatalogParser(
     }
 }
 
-data class DependencyInfo(
+internal data class DependencyInfo(
     val versionCatalog: VersionCatalog,
     val ignoredDependencyKeys: Set<String>
 )

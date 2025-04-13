@@ -4,6 +4,8 @@ plugins {
 }
 
 kotlin {
+    explicitApi()
+
     sourceSets {
         macosX64()
         mingwX64()
@@ -23,11 +25,18 @@ kotlin {
                 implementation(libs.xmlutil.core.io)
                 implementation(libs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlin.logging)
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
+            }
+        }
+        getByName("jvmMain") {
+            dependencies {
+                implementation(libs.slf4j.api)
+                implementation(libs.slf4j.simple)
             }
         }
         getByName("jvmTest") {

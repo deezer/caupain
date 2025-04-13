@@ -12,11 +12,11 @@ import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 
 @Serializable
-data class Version(@XmlValue val version: GradleDependencyVersion)
+internal data class Version(@XmlValue val version: GradleDependencyVersion)
 
 @Serializable
 @XmlSerialName("versioning")
-data class Versioning(
+internal data class Versioning(
     @XmlElement(true) val latest: GradleDependencyVersion? = null,
     @XmlElement(true) val release: GradleDependencyVersion? = null,
     @XmlChildrenName("version") val versions: List<Version> = emptyList()
@@ -24,4 +24,4 @@ data class Versioning(
 
 @Serializable
 @XmlSerialName("metadata")
-data class Metadata(val versioning: Versioning)
+internal data class Metadata(val versioning: Versioning)

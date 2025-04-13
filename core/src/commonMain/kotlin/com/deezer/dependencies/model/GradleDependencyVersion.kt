@@ -13,7 +13,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.JvmInline
 
-sealed interface GradleDependencyVersion {
+internal sealed interface GradleDependencyVersion {
 
     val text: String
 
@@ -294,7 +294,7 @@ sealed interface GradleDependencyVersion {
 private val SEPARATORS = charArrayOf('.', '-', '_', '+')
 private const val SNAPSHOT_SUFFIX = "-SNAPSHOT"
 
-fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = when {
+internal fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = when {
     versionText.isBlank() -> Unknown(versionText)
 
     versionText.length > 2
@@ -309,7 +309,7 @@ fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = when
     else -> Exact(versionText)
 }
 
-class GradleDependencyVersionSerializer : KSerializer<GradleDependencyVersion> {
+internal class GradleDependencyVersionSerializer : KSerializer<GradleDependencyVersion> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("GradleDependencyVersion", PrimitiveKind.STRING)

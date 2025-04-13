@@ -1,15 +1,15 @@
 package com.deezer.dependencies.model
 
-data class Repository(
+public data class Repository(
     val url: String,
     val user: String?,
     val password: String?
 ) {
-    constructor(url: String) : this(url, null, null)
+    public constructor(url: String) : this(url, null, null)
 }
 
-object DefaultRepositories {
-    val google = Repository("https://dl.google.com/dl/android/maven2")
-    val mavenCentral = Repository("https://repo.maven.apache.org/maven2")
-    val gradlePlugins = Repository("https://plugins.gradle.org/m2")
+public object DefaultRepositories {
+    public val google: Repository = Repository("https://dl.google.com/dl/android/maven2")
+    public val mavenCentral: Repository = Repository("https://repo.maven.apache.org/maven2")
+    public val gradlePlugins: Repository = Repository("https://plugins.gradle.org/m2")
 }

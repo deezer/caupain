@@ -17,11 +17,13 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
 import net.peanuuutz.tomlkt.asTomlDecoder
 
-sealed interface Dependency {
+internal sealed interface Dependency {
 
     val group: String?
 
     val name: String?
+
+    val moduleId: String
 
     val version: Version?
 
@@ -34,6 +36,10 @@ sealed interface Dependency {
         override val version: Version? = null,
         override val versionRef: String? = null
     ) : Dependency {
+
+        override val moduleId: String
+            get() = "$group:$name"
+
         private constructor(
             moduleParts: List<String>,
             version: Version?,
@@ -77,6 +83,9 @@ sealed interface Dependency {
 
         override val name: String = "$id.gradle.plugin"
 
+        override val moduleId: String
+            get() = id
+
         private constructor(pluginParts: List<String>) : this(
             id = pluginParts[0],
             version = pluginParts
@@ -88,7 +97,7 @@ sealed interface Dependency {
     }
 }
 
-fun Dependency.getVersion(versionReferences: Map<String, Version>): Version? {
+internal fun Dependency.getVersion(versionReferences: Map<String, Version>): Version? {
     return version ?: versionRef?.let { versionReferences[it] }
 }
 
@@ -123,7 +132,7 @@ private data class RichLibrary(
     }
 }
 
-object LibrarySerializer : KSerializer<Library> {
+internal object LibrarySerializer : KSerializer<Library> {
 
     private val richSerializer = RichLibrary.serializer()
 
@@ -170,7 +179,7 @@ private data class RichPlugin(
     )
 }
 
-object PluginSerializer : KSerializer<Plugin> {
+internal object PluginSerializer : KSerializer<Plugin> {
 
     private val richSerializer = RichPlugin.serializer()
 

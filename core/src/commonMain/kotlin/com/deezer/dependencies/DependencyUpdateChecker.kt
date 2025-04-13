@@ -1,6 +1,6 @@
 package com.deezer.dependencies
 
-import com.deezer.dependencies.model.DefaultRepositories
+import com.deezer.dependencies.model.Configuration
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
 import com.deezer.dependencies.model.Repository
@@ -31,46 +31,44 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
-import net.peanuuutz.tomlkt.Toml
-import nl.adaptivity.xmlutil.serialization.XML
 import okio.FileSystem
-import okio.Path
 import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-// TODO : configuration
-class DependencyUpdateChecker(
-    private val xml: XML = DefaultXml,
-    toml: Toml = DefaultToml,
-    private val httpClient: HttpClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            xml(xml)
-        }
-    },
-    versionCatalogPath: Path,
+// TODO : add logging
+public class DependencyUpdateChecker internal constructor(
+    private val configuration: Configuration,
+    private val httpClient: HttpClient,
     fileSystem: FileSystem = FileSystem.SYSTEM,
-    private val repositories: List<Repository> = listOf(
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
-    private val pluginRepositories: List<Repository> = listOf(
-        DefaultRepositories.gradlePlugins,
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-) {
-    private val versionCatalogParser = VersionCatalogParser(
-        toml = toml,
-        versionCatalogPath = versionCatalogPath,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val versionCatalogParser: VersionCatalogParser = DefaultVersionCatalogParser(
+        toml = DefaultToml,
+        versionCatalogPath = configuration.versionCatalogPath,
         fileSystem = fileSystem,
         ioDispatcher = ioDispatcher
     )
+) {
+    public constructor(configuration: Configuration) : this(
+        configuration = configuration,
+        httpClient = HttpClient(CIO) {
+            install(ContentNegotiation) {
+                xml(DefaultXml)
+            }
+        },
+        fileSystem = FileSystem.SYSTEM,
+        ioDispatcher = Dispatchers.IO,
+        versionCatalogParser = DefaultVersionCatalogParser(
+            toml = DefaultToml,
+            versionCatalogPath = configuration.versionCatalogPath,
+            fileSystem = FileSystem.SYSTEM,
+            ioDispatcher = Dispatchers.IO
+        )
+    )
 
-    suspend fun checkForUpdates(): List<UpdateInfo> {
+    public suspend fun checkForUpdates(): List<UpdateInfo> {
         val (versionCatalog, ignoredDependencyKeys) = versionCatalogParser.parseDependencyInfo()
-        val updatedVersions = mutableMapOf<Dependency, VersionResult>()
+        val updatedVersions = mutableListOf<DependencyUpdateResult>()
         for ((key, dep) in versionCatalog.dependencies) {
             if (key in ignoredDependencyKeys) continue
             val updatedVersion = findUpdatedVersion(
@@ -78,19 +76,20 @@ class DependencyUpdateChecker(
                 versionReferences = versionCatalog.versions
             )
             if (updatedVersion != null) {
-                updatedVersions[dep] = updatedVersion
+                updatedVersions.add(
+                    DependencyUpdateResult(
+                        dependencyKey = key,
+                        dependency = dep,
+                        repository = updatedVersion.repository,
+                        updatedVersion = updatedVersion.updatedVersion
+                    )
+                )
             }
         }
         return updatedVersions
             .asIterable()
             .asFlow()
-            .map { (dependency, versionResult) ->
-                computeUpdateInfo(
-                    dependency = dependency,
-                    repository = versionResult.repository,
-                    updatedVersion = versionResult.updatedVersion
-                )
-            }
+            .map { computeUpdateInfo(it) }
             .toList()
     }
 
@@ -113,8 +112,8 @@ class DependencyUpdateChecker(
         versionReferences: Map<String, Version>
     ): VersionResult? {
         val repositories = when (dependency) {
-            is Dependency.Library -> repositories
-            is Dependency.Plugin -> pluginRepositories
+            is Dependency.Library -> configuration.repositories
+            is Dependency.Plugin -> configuration.pluginRepositories
         }
         return repositories
             .asFlow()
@@ -153,17 +152,14 @@ class DependencyUpdateChecker(
             .maxOrNull()
     }
 
-    private suspend fun computeUpdateInfo(
-        dependency: Dependency,
-        repository: Repository,
-        updatedVersion: GradleDependencyVersion.Single
-    ): UpdateInfo {
-        val mavenInfo = getMavenInfo(dependency, repository, updatedVersion)
+    private suspend fun computeUpdateInfo(result: DependencyUpdateResult): UpdateInfo {
+        val mavenInfo = getMavenInfo(result.dependency, result.repository, result.updatedVersion)
         return UpdateInfo(
-            dependency = dependency,
+            dependency = result.dependencyKey,
+            dependencyId = result.dependency.moduleId,
             name = mavenInfo?.name,
             url = mavenInfo?.url,
-            updatedVersion = updatedVersion
+            updatedVersion = result.updatedVersion.toString()
         )
     }
 
@@ -207,4 +203,11 @@ class DependencyUpdateChecker(
             return updatedVersion.compareTo(other.updatedVersion)
         }
     }
+
+    private data class DependencyUpdateResult(
+        val dependencyKey: String,
+        val dependency: Dependency,
+        val repository: Repository,
+        val updatedVersion: GradleDependencyVersion.Single,
+    )
 }

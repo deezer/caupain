@@ -17,7 +17,7 @@ import net.peanuuutz.tomlkt.TomlTable
 import net.peanuuutz.tomlkt.asTomlDecoder
 import kotlin.jvm.JvmInline
 
-sealed interface Version {
+internal sealed interface Version {
 
     fun isUpdate(version: GradleDependencyVersion.Single): Boolean
 
@@ -54,7 +54,7 @@ sealed interface Version {
 }
 
 @OptIn(InternalSerializationApi::class)
-class VersionSerializer : KSerializer<Version> {
+internal class VersionSerializer : KSerializer<Version> {
 
     private val richSerializer = Version.Rich.serializer()
 

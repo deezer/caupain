@@ -3,7 +3,7 @@ package com.deezer.dependencies.serialization
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML
 
-val DefaultXml = XML {
+internal val DefaultXml = XML {
     defaultPolicy {
         ignoreUnknownChildren()
     }

@@ -7,7 +7,7 @@ import nl.adaptivity.xmlutil.serialization.XmlSerialName
 
 @Serializable
 @XmlSerialName("project")
-data class MavenInfo(
+internal data class MavenInfo(
     @XmlElement(true) val name: String? = null,
     @XmlElement(true) val url: String? = null,
     @XmlChildrenName("dependency") val dependencies: List<Dependency> = emptyList(),
@@ -15,7 +15,7 @@ data class MavenInfo(
 
 @Serializable
 @XmlSerialName("dependency")
-data class Dependency(
+internal data class Dependency(
     @XmlElement(true) val groupId: String,
     @XmlElement(true) val artifactId: String,
     @XmlElement(true) val version: String,

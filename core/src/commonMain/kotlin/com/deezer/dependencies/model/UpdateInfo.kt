@@ -1,8 +1,9 @@
 package com.deezer.dependencies.model
 
-data class UpdateInfo(
-    val dependency: Dependency,
+public data class UpdateInfo(
+    val dependency: String,
+    val dependencyId: String,
     val name: String? = null,
     val url: String? = null,
-    val updatedVersion: GradleDependencyVersion.Single
+    val updatedVersion: String
 )
