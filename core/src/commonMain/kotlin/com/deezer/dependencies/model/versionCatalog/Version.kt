@@ -46,12 +46,11 @@ public sealed interface Version {
         val rejectAll: Boolean = false
     ) : Direct {
         val probableSelectedVersion: GradleDependencyVersion.Single?
-            get() = if (rejectAll) {
-                null
-            } else {
-                prefer as? GradleDependencyVersion.Single
-                    ?: strictly as? GradleDependencyVersion.Single
-                    ?: require as? GradleDependencyVersion.Single
+            get() = when {
+                rejectAll -> null
+                strictly is GradleDependencyVersion.Single -> strictly
+                require is GradleDependencyVersion.Single -> require
+                else -> prefer as? GradleDependencyVersion.Single
             }
 
         override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
