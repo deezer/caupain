@@ -17,6 +17,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
+import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
@@ -39,14 +40,8 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 public class DependencyUpdateChecker internal constructor(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
-    fileSystem: FileSystem = FileSystem.SYSTEM,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val versionCatalogParser: VersionCatalogParser = DefaultVersionCatalogParser(
-        toml = DefaultToml,
-        versionCatalogPath = configuration.versionCatalogPath,
-        fileSystem = fileSystem,
-        ioDispatcher = ioDispatcher
-    )
+    private val ioDispatcher: CoroutineDispatcher,
+    private val versionCatalogParser: VersionCatalogParser
 ) {
     public constructor(configuration: Configuration) : this(
         configuration = configuration,
@@ -55,7 +50,6 @@ public class DependencyUpdateChecker internal constructor(
                 xml(DefaultXml)
             }
         },
-        fileSystem = FileSystem.SYSTEM,
         ioDispatcher = Dispatchers.IO,
         versionCatalogParser = DefaultVersionCatalogParser(
             toml = DefaultToml,
@@ -100,7 +94,7 @@ public class DependencyUpdateChecker internal constructor(
         url(urlBuilder)
         if (repository.user != null && repository.password != null) {
             header(
-                "Authorization",
+                HttpHeaders.Authorization,
                 "Basic ${Base64.encode("${repository.user}:${repository.password}".encodeToByteArray())}"
             )
         }
@@ -156,6 +150,10 @@ public class DependencyUpdateChecker internal constructor(
         return UpdateInfo(
             dependency = result.dependencyKey,
             dependencyId = result.dependency.moduleId,
+            type = when (result.dependency) {
+                is Dependency.Library -> UpdateInfo.Type.LIBRARY
+                is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
+            },
             name = mavenInfo?.name,
             url = mavenInfo?.url,
             updatedVersion = result.updatedVersion.toString()
