@@ -33,11 +33,14 @@ internal object AndroidXVersionLevelPolicy : Policy {
         currentVersion: Version.Direct,
         updatedVersion: GradleDependencyVersion.Single
     ): Boolean {
-        val currentVersionLevel = ((currentVersion as? Version.Simple)
-            ?.value as? GradleDependencyVersion.Single)
-            ?.let(VersionLevel::of)
-            ?: return true // If the version level is complex, we'll skip this check and select the version
-        return currentVersionLevel <= VersionLevel.of(updatedVersion)
+        val resolvedCurrentVersion = when (currentVersion) {
+            is Version.Simple -> currentVersion.value as? GradleDependencyVersion.Single
+            is Version.Rich -> currentVersion.probableSelectedVersion
+        }
+        val currentVersionLevel = resolvedCurrentVersion?.let(VersionLevel::of)
+        // If no version level can be found we'll select the update
+        return currentVersionLevel == null ||
+                currentVersionLevel <= VersionLevel.of(updatedVersion)
     }
 
     private enum class VersionLevel(private val regex: Regex? = null) :
