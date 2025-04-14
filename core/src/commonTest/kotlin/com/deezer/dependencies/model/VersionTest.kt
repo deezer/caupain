@@ -4,7 +4,6 @@ import com.deezer.dependencies.model.versionCatalog.Version
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.test.fail
 
 class VersionTest {
 

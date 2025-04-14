@@ -1,12 +1,12 @@
 package com.deezer.dependencies.model.maven
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
-import nl.adaptivity.xmlutil.serialization.XmlSerialName
 
 @Serializable
-@XmlSerialName("project")
+@SerialName("project")
 internal data class MavenInfo(
     @XmlElement(true) val name: String? = null,
     @XmlElement(true) val url: String? = null,
@@ -14,7 +14,7 @@ internal data class MavenInfo(
 )
 
 @Serializable
-@XmlSerialName("dependency")
+@SerialName("dependency")
 internal data class Dependency(
     @XmlElement(true) val groupId: String,
     @XmlElement(true) val artifactId: String,
