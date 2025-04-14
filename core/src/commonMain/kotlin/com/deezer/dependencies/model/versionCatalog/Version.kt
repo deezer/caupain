@@ -29,8 +29,7 @@ internal sealed interface Version {
         fun isUpdate(version: GradleDependencyVersion.Single): Boolean
     }
 
-    @JvmInline
-    value class Simple(val value: GradleDependencyVersion) : Direct {
+    data class Simple(val value: GradleDependencyVersion) : Direct {
         override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return value.isUpdate(version)
         }

@@ -5,6 +5,7 @@ import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
+import com.deezer.dependencies.model.isExcluded
 import com.deezer.dependencies.model.maven.MavenInfo
 import com.deezer.dependencies.model.maven.Metadata
 import com.deezer.dependencies.model.versionCatalog.Version
@@ -63,7 +64,7 @@ public class DependencyUpdateChecker internal constructor(
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         for ((key, dep) in versionCatalog.dependencies) {
-            if (key in configuration.excludedDependencies) continue
+            if (configuration.isExcluded(key, dep)) continue
             val updatedVersion = findUpdatedVersion(
                 dependency = dep,
                 versionReferences = versionCatalog.versions

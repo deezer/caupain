@@ -3,6 +3,7 @@ package com.deezer.dependencies
 import com.deezer.dependencies.model.Configuration
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
+import com.deezer.dependencies.model.LibraryExclusion
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
 import com.deezer.dependencies.model.maven.MavenInfo
@@ -56,7 +57,8 @@ class DependencyUpdateCheckerTest {
             configuration = Configuration(
                 repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
                 pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
-                excludedDependencies = setOf("groovy-json")
+                excludedKeys = setOf("groovy-json"),
+                excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons"))
             ),
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {

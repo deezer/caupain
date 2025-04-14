@@ -14,5 +14,29 @@ public data class Configuration(
         DefaultRepositories.google,
     ),
     val versionCatalogPath: Path = "gradle/libs.versions.toml".toPath(),
-    val excludedDependencies: Set<String> = emptySet()
+    val excludedKeys: Set<String> = emptySet(),
+    val excludedLibraries: List<LibraryExclusion> = emptyList(),
+    val excludedPlugins: List<PluginExclusion> = emptyList()
 )
+
+public data class LibraryExclusion(
+    val group: String,
+    val name: String? = null,
+)
+
+public data class PluginExclusion(val id: String)
+
+internal fun Configuration.isExcluded(dependencyKey: String, dependency: Dependency): Boolean {
+    if (dependencyKey in excludedKeys) return true
+    return when (dependency) {
+        is Dependency.Library -> excludedLibraries.any { excluded ->
+            if (excluded.name == null) {
+                dependency.group == excluded.group
+            } else {
+                dependency.group == excluded.group && dependency.name == excluded.name
+            }
+        }
+
+        is Dependency.Plugin -> excludedPlugins.any { it.id == dependency.id }
+    }
+}

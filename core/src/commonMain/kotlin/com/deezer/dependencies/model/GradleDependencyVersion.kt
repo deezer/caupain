@@ -112,8 +112,7 @@ internal sealed interface GradleDependencyVersion {
                 }
             }
 
-            @JvmInline
-            value class Alphabetical(val value: String) : Part {
+            data class Alphabetical(val value: String) : Part {
                 override fun compareTo(other: Part): Int {
                     return when (other) {
                         is Numeric -> -1
