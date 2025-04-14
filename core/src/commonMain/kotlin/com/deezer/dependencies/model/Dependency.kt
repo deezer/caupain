@@ -27,14 +27,11 @@ internal sealed interface Dependency {
 
     val version: Version?
 
-    val versionRef: String?
-
     @Serializable(LibrarySerializer::class)
     data class Library(
         override val group: String? = null,
         override val name: String? = null,
         override val version: Version? = null,
-        override val versionRef: String? = null
     ) : Dependency {
 
         override val moduleId: String
@@ -42,23 +39,19 @@ internal sealed interface Dependency {
 
         private constructor(
             moduleParts: List<String>,
-            version: Version?,
-            versionRef: String?
+            version: Version? = null,
         ) : this(
             group = moduleParts.getOrNull(0),
             name = moduleParts.getOrNull(1),
             version = version,
-            versionRef = versionRef
         )
 
         constructor(
             module: String?,
-            version: Version?,
-            versionRef: String?
+            version: Version? = null,
         ) : this(
             moduleParts = module?.split(':').orEmpty(),
             version = version,
-            versionRef = versionRef
         )
 
         private constructor(libraryParts: List<String>) : this(
@@ -76,7 +69,6 @@ internal sealed interface Dependency {
     data class Plugin(
         val id: String,
         override val version: Version? = null,
-        override val versionRef: String? = null
     ) : Dependency {
         override val group: String
             get() = id
@@ -97,37 +89,29 @@ internal sealed interface Dependency {
     }
 }
 
-internal fun Dependency.getVersion(versionReferences: Map<String, Version>): Version? {
-    return version ?: versionRef?.let { versionReferences[it] }
-}
-
 @Serializable
 private data class RichLibrary(
     val group: String? = null,
     val name: String? = null,
     val module: String? = null,
     val version: Version? = null,
-    val versionRef: String? = null
 ) {
     constructor(library: Library) : this(
         group = library.group,
         name = library.name,
         version = library.version,
-        versionRef = library.versionRef
     )
 
     fun toLibrary(): Library = if (module == null) {
         Library(
-            module = module,
-            version = version,
-            versionRef = versionRef
-        )
-    } else {
-        Library(
             group = group,
             name = name,
             version = version,
-            versionRef = versionRef
+        )
+    } else {
+        Library(
+            module = module,
+            version = version,
         )
     }
 }
@@ -164,18 +148,15 @@ internal object LibrarySerializer : KSerializer<Library> {
 private data class RichPlugin(
     val id: String,
     val version: Version? = null,
-    val versionRef: String? = null
 ) {
     constructor(plugin: Plugin) : this(
         id = plugin.id,
         version = plugin.version,
-        versionRef = plugin.versionRef
     )
 
     fun toPlugin(): Plugin = Plugin(
         id = id,
         version = version,
-        versionRef = versionRef
     )
 }
 

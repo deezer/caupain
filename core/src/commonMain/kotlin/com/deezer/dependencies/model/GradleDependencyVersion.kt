@@ -6,6 +6,7 @@ import com.deezer.dependencies.model.GradleDependencyVersion.Range
 import com.deezer.dependencies.model.GradleDependencyVersion.Snapshot
 import com.deezer.dependencies.model.GradleDependencyVersion.Unknown
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -13,6 +14,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.JvmInline
 
+@Serializable(GradleDependencyVersionSerializer::class)
 internal sealed interface GradleDependencyVersion {
 
     val text: String
@@ -26,14 +28,15 @@ internal sealed interface GradleDependencyVersion {
     fun isUpdate(version: Single): Boolean
 
     // Dependency version compared like in https://docs.gradle.org/current/userguide/single_versions.html#version_ordering
-    @JvmInline
-    value class Exact(private val version: String) : Single {
+    data class Exact(private val version: String) : Single {
 
         override val text: String
             get() = version
 
         override val exactVersion: Exact
             get() = this
+
+        private var parts: List<Part>? = null
 
         override fun contains(version: Single): Boolean = this == version
 
@@ -46,7 +49,7 @@ internal sealed interface GradleDependencyVersion {
         }
 
         fun compareTo(other: Exact): Int {
-            val parts = toParts()
+            val parts = this.parts ?: toParts().also { this.parts = it }
             val otherParts = other.toParts()
             val commonLength = minOf(parts.size, otherParts.size)
             for (i in 0 until commonLength) {
@@ -162,25 +165,31 @@ internal sealed interface GradleDependencyVersion {
 
     data class Range(override val text: String) : GradleDependencyVersion {
 
-        private val lowerBound: Exact?
-        private val upperBound: Exact?
-        private val isLowerBoundExclusive: Boolean
-        private val isUpperBoundExclusive: Boolean
+        val lowerBound: Bound?
+        val upperBound: Bound?
 
         init {
             require(text.length > 2 && text.first() in LOWER_BOUND_MARKERS && text.last() in UPPER_BOUND_MARKERS) {
                 "Wrong format for range $text"
             }
-            isLowerBoundExclusive = text.first() in EXCLUSIVE_LOWER_BOUND_MARKERS
-            isUpperBoundExclusive = text.last() in EXCLUSIVE_UPPER_BOUND_MARKERS
+            val isLowerBoundExclusive = text.first() in EXCLUSIVE_LOWER_BOUND_MARKERS
+            val isUpperBoundExclusive = text.last() in EXCLUSIVE_UPPER_BOUND_MARKERS
             val parts = text
                 .substring(1, text.lastIndex)
                 .split(',')
                 .map { it.trim() }
             val lowerBoundText = parts.getOrNull(0)
-            lowerBound = if (lowerBoundText.isNullOrBlank()) null else Exact(lowerBoundText)
+            lowerBound = if (lowerBoundText.isNullOrBlank()) {
+                null
+            } else {
+                Bound(GradleDependencyVersion(lowerBoundText) as Single, isLowerBoundExclusive)
+            }
             val upperBoundText = parts.getOrNull(1)
-            upperBound = if (upperBoundText.isNullOrBlank()) null else Exact(upperBoundText)
+            upperBound = if (upperBoundText.isNullOrBlank()) {
+                null
+            } else {
+                Bound(GradleDependencyVersion(upperBoundText) as Single, isUpperBoundExclusive)
+            }
         }
 
         override fun contains(version: Single): Boolean {
@@ -188,35 +197,37 @@ internal sealed interface GradleDependencyVersion {
             return when {
                 lowerBound == null && upperBound == null -> false
 
-                lowerBound != null && exactVersion < lowerBound -> false
+                lowerBound != null && exactVersion < lowerBound.value -> false
 
-                upperBound != null && exactVersion > upperBound -> false
+                upperBound != null && exactVersion > upperBound.value -> false
 
-                exactVersion == lowerBound -> !isLowerBoundExclusive
+                exactVersion == lowerBound?.value -> !lowerBound.isExclusive
 
-                exactVersion == upperBound -> !isUpperBoundExclusive
+                exactVersion == upperBound?.value -> !upperBound.isExclusive
 
-                lowerBound == null && upperBound != null -> if (isUpperBoundExclusive) {
-                    exactVersion < upperBound
+                lowerBound == null && upperBound != null -> if (upperBound.isExclusive) {
+                    exactVersion < upperBound.value
                 } else {
-                    exactVersion <= upperBound
+                    exactVersion <= upperBound.value
                 }
 
-                upperBound == null && lowerBound != null -> if (isLowerBoundExclusive) {
-                    exactVersion > lowerBound
+                upperBound == null && lowerBound != null -> if (lowerBound.isExclusive) {
+                    exactVersion > lowerBound.value
                 } else {
-                    exactVersion >= lowerBound
+                    exactVersion >= lowerBound.value
                 }
 
                 upperBound != null && lowerBound != null -> when {
-                    isLowerBoundExclusive && isUpperBoundExclusive ->
-                        exactVersion > lowerBound && exactVersion < upperBound
+                    lowerBound.isExclusive && upperBound.isExclusive ->
+                        exactVersion > lowerBound.value && exactVersion < upperBound.value
 
-                    isLowerBoundExclusive -> exactVersion > lowerBound && exactVersion <= upperBound
+                    lowerBound.isExclusive ->
+                        exactVersion > lowerBound.value && exactVersion <= upperBound.value
 
-                    isUpperBoundExclusive -> exactVersion >= lowerBound && exactVersion < upperBound
+                    upperBound.isExclusive ->
+                        exactVersion >= lowerBound.value && exactVersion < upperBound.value
 
-                    else -> exactVersion >= lowerBound && exactVersion <= upperBound
+                    else -> exactVersion >= lowerBound.value && exactVersion <= upperBound.value
                 }
 
                 else -> false
@@ -224,10 +235,12 @@ internal sealed interface GradleDependencyVersion {
         }
 
         override fun isUpdate(version: Single): Boolean {
-            return !contains(version) && upperBound?.isUpdate(version) == true
+            return !contains(version) && upperBound?.value?.isUpdate(version) == true
         }
 
         override fun toString(): String = text
+
+        data class Bound(val value: Single, val isExclusive: Boolean)
 
         companion object {
             val LOWER_BOUND_MARKERS = charArrayOf('[', '(', ']')
@@ -241,7 +254,7 @@ internal sealed interface GradleDependencyVersion {
 
         private val regex: Regex
 
-        private val version: Exact
+        val baseVersion: Exact
 
         init {
             require(text.lastOrNull() == '+' && text.indexOfAny(SEPARATORS) >= 0) {
@@ -249,7 +262,7 @@ internal sealed interface GradleDependencyVersion {
             }
             regex = Regex("${Regex.escape(text.substring(0, text.lastIndex))}.*")
             val lastSeparatorIndex = text.lastIndexOfAny(SEPARATORS)
-            version = Exact(text.substring(0, lastSeparatorIndex))
+            baseVersion = Exact(text.substring(0, lastSeparatorIndex))
         }
 
         override fun contains(version: Single): Boolean {
@@ -257,10 +270,23 @@ internal sealed interface GradleDependencyVersion {
         }
 
         override fun isUpdate(version: Single): Boolean {
-            return !contains(version) && this.version.isUpdate(version)
+            return !contains(version) && this.baseVersion.isUpdate(version)
         }
 
         override fun toString(): String = text
+    }
+
+    data class Latest(override val text: String) : GradleDependencyVersion {
+        override fun contains(version: Single): Boolean = false
+
+        override fun isUpdate(version: Single): Boolean = false
+
+        companion object {
+            val VALUES = setOf(
+                "latest.integration",
+                "latest.release",
+            )
+        }
     }
 
     data class Snapshot(override val text: String) : Single {
@@ -298,11 +324,14 @@ internal fun GradleDependencyVersion(versionText: String): GradleDependencyVersi
     versionText.isBlank() -> Unknown(versionText)
 
     versionText.length > 2
-        && versionText.first() in Range.LOWER_BOUND_MARKERS
-        && versionText.last() in Range.UPPER_BOUND_MARKERS -> Range(versionText)
+            && versionText.first() in Range.LOWER_BOUND_MARKERS
+            && versionText.last() in Range.UPPER_BOUND_MARKERS -> Range(versionText)
 
     versionText.last() == '+' && versionText.indexOfAny(SEPARATORS) >= 0 ->
         Prefix(versionText)
+
+    versionText in GradleDependencyVersion.Latest.VALUES ->
+        GradleDependencyVersion.Latest(versionText)
 
     versionText.endsWith(SNAPSHOT_SUFFIX) -> Snapshot(versionText)
 

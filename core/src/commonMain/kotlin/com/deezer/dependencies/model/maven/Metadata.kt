@@ -1,11 +1,7 @@
-@file:UseSerializers(GradleDependencyVersionSerializer::class)
-
 package com.deezer.dependencies.model.maven
 
 import com.deezer.dependencies.model.GradleDependencyVersion
-import com.deezer.dependencies.model.GradleDependencyVersionSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName

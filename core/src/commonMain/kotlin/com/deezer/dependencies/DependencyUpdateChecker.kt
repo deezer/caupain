@@ -5,7 +5,6 @@ import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
-import com.deezer.dependencies.model.getVersion
 import com.deezer.dependencies.model.maven.MavenInfo
 import com.deezer.dependencies.model.maven.Metadata
 import com.deezer.dependencies.model.versionCatalog.Version
@@ -67,10 +66,10 @@ public class DependencyUpdateChecker internal constructor(
     )
 
     public suspend fun checkForUpdates(): List<UpdateInfo> {
-        val (versionCatalog, ignoredDependencyKeys) = versionCatalogParser.parseDependencyInfo()
+        val versionCatalog = versionCatalogParser.parseDependencyInfo()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         for ((key, dep) in versionCatalog.dependencies) {
-            if (key in ignoredDependencyKeys) continue
+            if (key in configuration.excludedDependencies) continue
             val updatedVersion = findUpdatedVersion(
                 dependency = dep,
                 versionReferences = versionCatalog.versions
@@ -109,7 +108,7 @@ public class DependencyUpdateChecker internal constructor(
 
     private suspend fun findUpdatedVersion(
         dependency: Dependency,
-        versionReferences: Map<String, Version>
+        versionReferences: Map<String, Version.Direct>
     ): VersionResult? {
         val repositories = when (dependency) {
             is Dependency.Library -> configuration.repositories
@@ -129,10 +128,10 @@ public class DependencyUpdateChecker internal constructor(
 
     private suspend fun findUpdatedVersion(
         dependency: Dependency,
-        versionReferences: Map<String, Version>,
+        versionReferences: Map<String, Version.Direct>,
         repository: Repository
     ): GradleDependencyVersion.Single? {
-        val version = dependency.getVersion(versionReferences) ?: return null
+        val version = dependency.version?.resolve(versionReferences) ?: return null
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
         val versioning = withContext(ioDispatcher) {

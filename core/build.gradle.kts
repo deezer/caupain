@@ -8,6 +8,7 @@ kotlin {
 
     sourceSets {
         macosX64()
+        macosArm64()
         mingwX64()
         linuxX64()
         jvm()
@@ -17,7 +18,6 @@ kotlin {
                 implementation(libs.kotlinx.serialization.xml)
                 implementation(libs.kotlinx.serialization.toml)
                 implementation(libs.okio)
-                implementation(libs.okio.fake.filesystem)
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.cio)
                 implementation(libs.ktor.client.content.negociation)
@@ -31,6 +31,9 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.okio.fake.filesystem)
+                implementation(libs.ktor.client.mock)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
         getByName("jvmMain") {

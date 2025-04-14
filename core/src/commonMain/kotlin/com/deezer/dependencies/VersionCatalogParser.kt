@@ -13,7 +13,7 @@ import okio.Path
 import okio.SYSTEM
 
 internal interface VersionCatalogParser {
-    suspend fun parseDependencyInfo(): DependencyInfo
+    suspend fun parseDependencyInfo(): VersionCatalog
 }
 
 internal class DefaultVersionCatalogParser(
@@ -22,47 +22,10 @@ internal class DefaultVersionCatalogParser(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : VersionCatalogParser {
-    override suspend fun parseDependencyInfo(): DependencyInfo = withContext(ioDispatcher) {
-        DependencyInfo(
-            versionCatalog = parseVersionCatalog(),
-            ignoredDependencyKeys = parseIgnoredDependencies()
-        )
-    }
-
-    private fun parseVersionCatalog(): VersionCatalog {
-        return toml.decodeFromPath(
+    override suspend fun parseDependencyInfo(): VersionCatalog = withContext(ioDispatcher) {
+        toml.decodeFromPath(
             path = versionCatalogPath,
             fileSystem = fileSystem
         )
     }
-
-    private fun parseIgnoredDependencies(): Set<String> {
-        val ignoredDependencies = mutableSetOf<String>()
-        fileSystem.read(versionCatalogPath) {
-            var line = readUtf8Line()
-            var didFoundIgnore = false
-            while (line != null) {
-                if (line.startsWith(IGNORE_COMMENT)) {
-                    didFoundIgnore = true
-                } else if (didFoundIgnore) {
-                    didFoundIgnore = false
-                    val lineParts = line.split('=')
-                    if (lineParts.size == 2) {
-                        ignoredDependencies.add(lineParts[0].trim())
-                    }
-                }
-                line = readUtf8Line()
-            }
-        }
-        return ignoredDependencies
-    }
-
-    companion object {
-        private const val IGNORE_COMMENT = "#ignoreDependencyUpdate"
-    }
 }
-
-internal data class DependencyInfo(
-    val versionCatalog: VersionCatalog,
-    val ignoredDependencyKeys: Set<String>
-)
