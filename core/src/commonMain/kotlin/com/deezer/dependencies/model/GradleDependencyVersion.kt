@@ -235,7 +235,11 @@ internal sealed interface GradleDependencyVersion {
         }
 
         override fun isUpdate(version: Single): Boolean {
-            return !contains(version) && upperBound?.value?.isUpdate(version) == true
+            return when {
+                contains(version) -> false
+                version == upperBound?.value -> upperBound.isExclusive
+                else -> upperBound?.value?.isUpdate(version) == true
+            }
         }
 
         override fun toString(): String = text

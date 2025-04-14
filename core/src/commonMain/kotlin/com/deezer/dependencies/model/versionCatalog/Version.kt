@@ -51,7 +51,11 @@ internal sealed interface Version {
             return when {
                 rejectAll -> false
                 reject?.contains(version) == true -> false
-                strictly != null -> strictly.isUpdate(version)
+                strictly != null -> if (strictly !is GradleDependencyVersion.Single && prefer != null) {
+                    prefer.isUpdate(version)
+                } else {
+                    strictly.isUpdate(version)
+                }
                 require != null -> when {
                     prefer == null -> require.isUpdate(version)
                     prefer.isUpdate(version) -> true
