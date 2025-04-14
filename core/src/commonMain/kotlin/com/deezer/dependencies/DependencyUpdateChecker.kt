@@ -1,8 +1,10 @@
 package com.deezer.dependencies
 
+import com.deezer.dependencies.model.ALL_POLICIES
 import com.deezer.dependencies.model.Configuration
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
+import com.deezer.dependencies.model.Policy
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
 import com.deezer.dependencies.model.isExcluded
@@ -42,7 +44,8 @@ public class DependencyUpdateChecker internal constructor(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
     private val ioDispatcher: CoroutineDispatcher,
-    private val versionCatalogParser: VersionCatalogParser
+    private val versionCatalogParser: VersionCatalogParser,
+    private val policies: Map<String, Policy>,
 ) {
     public constructor(configuration: Configuration) : this(
         configuration = configuration,
@@ -57,8 +60,11 @@ public class DependencyUpdateChecker internal constructor(
             versionCatalogPath = configuration.versionCatalogPath,
             fileSystem = FileSystem.SYSTEM,
             ioDispatcher = Dispatchers.IO
-        )
+        ),
+        policies = ALL_POLICIES
     )
+
+    private val policy = configuration.policy?.let(policies::get)
 
     public suspend fun checkForUpdates(): List<UpdateInfo> {
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
@@ -143,6 +149,7 @@ public class DependencyUpdateChecker internal constructor(
             .filterNotNull()
             .filterIsInstance<GradleDependencyVersion.Single>()
             .filter { version.isUpdate(it) }
+            .filter { policy == null || policy.select(version, it) }
             .maxOrNull()
     }
 

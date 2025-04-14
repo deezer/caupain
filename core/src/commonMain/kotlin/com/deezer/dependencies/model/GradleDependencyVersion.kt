@@ -15,20 +15,20 @@ import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.JvmInline
 
 @Serializable(GradleDependencyVersionSerializer::class)
-internal sealed interface GradleDependencyVersion {
+public sealed interface GradleDependencyVersion {
 
-    val text: String
+    public val text: String
 
-    sealed interface Single : GradleDependencyVersion, Comparable<Single> {
-        val exactVersion: Exact
+    public sealed interface Single : GradleDependencyVersion, Comparable<Single> {
+        public val exactVersion: Exact
     }
 
-    operator fun contains(version: Single): Boolean
+    public operator fun contains(version: Single): Boolean
 
-    fun isUpdate(version: Single): Boolean
+    public fun isUpdate(version: Single): Boolean
 
     // Dependency version compared like in https://docs.gradle.org/current/userguide/single_versions.html#version_ordering
-    data class Exact(private val version: String) : Single {
+    public data class Exact(private val version: String) : Single {
 
         override val text: String
             get() = version
@@ -48,7 +48,7 @@ internal sealed interface GradleDependencyVersion {
             }
         }
 
-        fun compareTo(other: Exact): Int {
+        public fun compareTo(other: Exact): Int {
             val parts = this.parts ?: toParts().also { this.parts = it }
             val otherParts = other.toParts()
             val commonLength = minOf(parts.size, otherParts.size)
@@ -98,7 +98,7 @@ internal sealed interface GradleDependencyVersion {
             }
             .toList()
 
-        override fun toString() = version
+        override fun toString(): String = version
 
         private sealed interface Part : Comparable<Part> {
 
@@ -162,7 +162,7 @@ internal sealed interface GradleDependencyVersion {
         }
     }
 
-    data class Range(override val text: String) : GradleDependencyVersion {
+    public data class Range(override val text: String) : GradleDependencyVersion {
 
         val lowerBound: Bound?
         val upperBound: Bound?
@@ -243,9 +243,9 @@ internal sealed interface GradleDependencyVersion {
 
         override fun toString(): String = text
 
-        data class Bound(val value: Single, val isExclusive: Boolean)
+        public data class Bound(val value: Single, val isExclusive: Boolean)
 
-        companion object {
+        internal companion object {
             val LOWER_BOUND_MARKERS = charArrayOf('[', '(', ']')
             val UPPER_BOUND_MARKERS = charArrayOf(']', ')', '[')
             private val EXCLUSIVE_UPPER_BOUND_MARKERS = charArrayOf(')', '[')
@@ -253,7 +253,7 @@ internal sealed interface GradleDependencyVersion {
         }
     }
 
-    data class Prefix(override val text: String) : GradleDependencyVersion {
+    public data class Prefix(override val text: String) : GradleDependencyVersion {
 
         private val regex: Regex
 
@@ -279,12 +279,12 @@ internal sealed interface GradleDependencyVersion {
         override fun toString(): String = text
     }
 
-    data class Latest(override val text: String) : GradleDependencyVersion {
+    public data class Latest(override val text: String) : GradleDependencyVersion {
         override fun contains(version: Single): Boolean = false
 
         override fun isUpdate(version: Single): Boolean = false
 
-        companion object {
+        internal companion object {
             val VALUES = setOf(
                 "latest.integration",
                 "latest.release",
@@ -292,9 +292,9 @@ internal sealed interface GradleDependencyVersion {
         }
     }
 
-    data class Snapshot(override val text: String) : Single {
+    public data class Snapshot(override val text: String) : Single {
 
-        override val exactVersion = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
+        override val exactVersion: Exact = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
 
         override fun compareTo(other: Single): Int = when (other) {
             is Snapshot -> exactVersion.compareTo(other.exactVersion)
@@ -311,7 +311,7 @@ internal sealed interface GradleDependencyVersion {
         override fun toString(): String = text
     }
 
-    data class Unknown(override val text: String) : GradleDependencyVersion {
+    public data class Unknown(override val text: String) : GradleDependencyVersion {
         override fun contains(version: Single): Boolean = false
 
         override fun isUpdate(version: Single): Boolean = false

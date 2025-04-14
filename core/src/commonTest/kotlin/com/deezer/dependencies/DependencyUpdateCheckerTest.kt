@@ -66,7 +66,8 @@ class DependencyUpdateCheckerTest {
                 }
             },
             ioDispatcher = testDispatcher,
-            versionCatalogParser = FixedVersionCatalogParser
+            versionCatalogParser = FixedVersionCatalogParser,
+            policies = emptyMap()
         )
     }
 

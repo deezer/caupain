@@ -16,7 +16,8 @@ public data class Configuration(
     val versionCatalogPath: Path = "gradle/libs.versions.toml".toPath(),
     val excludedKeys: Set<String> = emptySet(),
     val excludedLibraries: List<LibraryExclusion> = emptyList(),
-    val excludedPlugins: List<PluginExclusion> = emptyList()
+    val excludedPlugins: List<PluginExclusion> = emptyList(),
+    val policy: String? = null
 )
 
 public data class LibraryExclusion(

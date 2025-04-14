@@ -11,12 +11,11 @@ import kotlinx.serialization.encoding.Encoder
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
 import net.peanuuutz.tomlkt.asTomlDecoder
-import kotlin.jvm.JvmInline
 
 @Serializable(VersionSerializer::class)
-internal sealed interface Version {
+public sealed interface Version {
 
-    fun resolve(versionReferences: Map<String, Direct>): Direct? {
+    public fun resolve(versionReferences: Map<String, Direct>): Direct? {
         return when (this) {
             is Simple -> this
             is Reference -> versionReferences[ref]
@@ -25,21 +24,21 @@ internal sealed interface Version {
     }
 
     @Serializable(DirectVersionSerializer::class)
-    sealed interface Direct : Version {
-        fun isUpdate(version: GradleDependencyVersion.Single): Boolean
+    public sealed interface Direct : Version {
+        public fun isUpdate(version: GradleDependencyVersion.Single): Boolean
     }
 
-    data class Simple(val value: GradleDependencyVersion) : Direct {
+    public data class Simple(val value: GradleDependencyVersion) : Direct {
         override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return value.isUpdate(version)
         }
     }
 
     @Serializable
-    data class Reference(val ref: String) : Version
+    public data class Reference(val ref: String) : Version
 
     @Serializable
-    data class Rich(
+    public data class Rich(
         val require: GradleDependencyVersion? = null,
         val strictly: GradleDependencyVersion? = null,
         val prefer: GradleDependencyVersion? = null,
@@ -55,6 +54,7 @@ internal sealed interface Version {
                 } else {
                     strictly.isUpdate(version)
                 }
+
                 require != null -> when {
                     prefer == null -> require.isUpdate(version)
                     prefer.isUpdate(version) -> true
