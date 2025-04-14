@@ -18,6 +18,52 @@ internal expect object PolicyLoader {
 }
 
 internal val ALL_POLICIES = buildMap {
-    // TODO: add default policies
+    putPolicy(AndroidXVersionLevelPolicy)
     PolicyLoader.loadPolicies().associateByTo(this) { it.name }
+}
+
+private fun MutableMap<String, Policy>.putPolicy(policy: Policy) {
+    put(policy.name, policy)
+}
+
+internal object AndroidXVersionLevelPolicy : Policy {
+    override val name = "androidx-version-level"
+
+    override fun select(
+        currentVersion: Version.Direct,
+        updatedVersion: GradleDependencyVersion.Single
+    ): Boolean {
+        val currentVersionLevel = ((currentVersion as? Version.Simple)
+            ?.value as? GradleDependencyVersion.Single)
+            ?.let(VersionLevel::of)
+            ?: return true // If the version level is complex, we'll skip this check and select the version
+        return currentVersionLevel <= VersionLevel.of(updatedVersion)
+    }
+
+    private enum class VersionLevel(private val regex: Regex? = null) :
+        Comparable<VersionLevel> {
+        STABLE("^[0-9,.v-]+(-r)?$".toRegex()) {
+            override fun matches(version: String): Boolean {
+                return STABLE_KEYWORDS.any { keyword ->
+                    version.uppercase().contains(keyword)
+                }
+                        || super.matches(version)
+            }
+        },
+        RELEASE_CANDIDATE("^.*-rc[0-9]+?$".toRegex()),
+        BETA("^.*-beta[0-9]+?$".toRegex()),
+        ALPHA("^.*-alpha[0-9]+?$".toRegex()),
+        OTHER {
+            override fun matches(version: String) = true
+        };
+
+        protected open fun matches(version: String) = regex?.matches(version) == true
+
+        companion object {
+            private val STABLE_KEYWORDS = arrayOf("RELEASE", "FINAL", "GA")
+
+            fun of(version: GradleDependencyVersion.Single) =
+                entries.first { it.matches(version.exactVersion.text) }
+        }
+    }
 }
