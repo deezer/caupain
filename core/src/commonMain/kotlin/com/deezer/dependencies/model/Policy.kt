@@ -1,3 +1,5 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package com.deezer.dependencies.model
 
 import com.deezer.dependencies.model.versionCatalog.Version
@@ -11,9 +13,11 @@ public interface Policy {
     ): Boolean
 }
 
-internal val ALL_POLICIES = buildMap {
-    // TODO: add default policies
-    loadExternalPolicies().associateByTo(this) { it.name }
+internal expect object PolicyLoader {
+    fun loadPolicies(): Iterable<Policy>
 }
 
-internal expect fun loadExternalPolicies(): Iterable<Policy>
+internal val ALL_POLICIES = buildMap {
+    // TODO: add default policies
+    PolicyLoader.loadPolicies().associateByTo(this) { it.name }
+}
