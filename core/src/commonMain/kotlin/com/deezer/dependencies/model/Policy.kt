@@ -42,7 +42,7 @@ internal object AndroidXVersionLevelPolicy : Policy {
         val currentVersionLevel = resolvedCurrentVersion?.let(VersionLevel::of)
         // If no version level can be found we'll select the update
         return currentVersionLevel == null ||
-                currentVersionLevel <= VersionLevel.of(updatedVersion)
+                currentVersionLevel >= VersionLevel.of(updatedVersion)
     }
 
     private enum class VersionLevel(private val regex: Regex? = null) :
