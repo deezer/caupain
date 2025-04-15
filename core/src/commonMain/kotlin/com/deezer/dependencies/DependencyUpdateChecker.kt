@@ -45,7 +45,6 @@ import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-// TODO : handle errors
 public class DependencyUpdateChecker internal constructor(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
