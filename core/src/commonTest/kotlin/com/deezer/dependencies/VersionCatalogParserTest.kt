@@ -10,6 +10,7 @@ import kotlinx.coroutines.test.runTest
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import org.intellij.lang.annotations.Language
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -79,13 +80,13 @@ class VersionCatalogParserTest {
     }
 }
 
+@Language("TOML")
 private const val TEST_VERSION_CATALOG = """
 [versions]
 groovy = "3.0.5-alpha-1"
 checkstyle = "8.37"
 
 [libraries]
-#ignoreDependencyUpdate because reason
 groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 groovy-json = { module = "org.codehaus.groovy:groovy-json", version.ref = "groovy" }
 groovy-nio = { module = "org.codehaus.groovy:groovy-nio", version.ref = "groovy" }

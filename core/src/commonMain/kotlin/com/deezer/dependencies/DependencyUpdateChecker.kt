@@ -1,9 +1,11 @@
 package com.deezer.dependencies
 
+import com.deezer.dependencies.DependencyUpdateChecker.ProgressListener
 import com.deezer.dependencies.model.ALL_POLICIES
 import com.deezer.dependencies.model.Configuration
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
+import com.deezer.dependencies.model.Logger
 import com.deezer.dependencies.model.Policy
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
@@ -17,6 +19,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
@@ -32,26 +36,40 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.withContext
 import okio.FileSystem
 import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-// TODO : add logging
+// TODO : handle errors
 public class DependencyUpdateChecker internal constructor(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
+    private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
     private val policies: Map<String, Policy>,
+    private val logger: Logger,
+    private val progressListener: ProgressListener,
 ) {
-    public constructor(configuration: Configuration) : this(
+    public constructor(
+        configuration: Configuration,
+        logger: Logger = Logger.EMPTY,
+        progressListener: ProgressListener = ProgressListener.EMPTY,
+    ) : this(
         configuration = configuration,
+        fileSystem = FileSystem.SYSTEM,
         httpClient = HttpClient(CIO) {
             install(ContentNegotiation) {
                 xml(DefaultXml)
+            }
+            install(Logging) {
+                this.logger = logger
+                level = LogLevel.ALL
             }
         },
         ioDispatcher = Dispatchers.IO,
@@ -61,35 +79,58 @@ public class DependencyUpdateChecker internal constructor(
             fileSystem = FileSystem.SYSTEM,
             ioDispatcher = Dispatchers.IO
         ),
-        policies = ALL_POLICIES
+        policies = ALL_POLICIES,
+        logger = logger,
+        progressListener = progressListener
     )
 
     private val policy = configuration.policy?.let(policies::get)
 
     public suspend fun checkForUpdates(): List<UpdateInfo> {
+        logger.info("Parsing version catalog")
+        logger.debug("Version catalog path is ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
+        progressListener.onProgress(Progress.Indeterminate)
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
-        for ((key, dep) in versionCatalog.dependencies) {
-            if (configuration.isExcluded(key, dep)) continue
-            val updatedVersion = findUpdatedVersion(
-                dependency = dep,
-                versionReferences = versionCatalog.versions
-            )
-            if (updatedVersion != null) {
-                updatedVersions.add(
-                    DependencyUpdateResult(
-                        dependencyKey = key,
+        val nbDependencies = versionCatalog.dependencies.size
+        progressListener.onProgress(Progress.Determinate(0))
+        versionCatalog
+            .dependencies
+            .asSequence()
+            .forEachIndexed { index, (key, dep) ->
+                if (!configuration.isExcluded(key, dep)) {
+                    logger.debug("Finding updated version for ${dep.moduleId}")
+                    val updatedVersion = findUpdatedVersion(
                         dependency = dep,
-                        repository = updatedVersion.repository,
-                        updatedVersion = updatedVersion.updatedVersion
+                        versionReferences = versionCatalog.versions
                     )
-                )
+                    if (updatedVersion != null) {
+                        logger.debug("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
+                        updatedVersions.add(
+                            DependencyUpdateResult(
+                                dependencyKey = key,
+                                dependency = dep,
+                                repository = updatedVersion.repository,
+                                updatedVersion = updatedVersion.updatedVersion
+                            )
+                        )
+                    }
+                }
+                val percentage = ((index + 1) * 100) / (nbDependencies * 2)
+                progressListener.onProgress(Progress.Determinate(percentage))
             }
-        }
+        val nbUpdatedVersions = updatedVersions.size
         return updatedVersions
             .asIterable()
             .asFlow()
+            .onEach { logger.debug("Finding Maven info for ${it.dependency.moduleId}") }
             .map { computeUpdateInfo(it) }
+            .withIndex()
+            .onEach { (index, _) ->
+                val percentage = (((index + 1) * 100) / (nbUpdatedVersions / 2)) + 50
+                progressListener.onProgress(Progress.Determinate(percentage))
+            }
+            .map { it.value }
             .toList()
     }
 
@@ -187,6 +228,7 @@ public class DependencyUpdateChecker internal constructor(
             val realVersion =
                 GradleDependencyVersion(realDependency.version) as? GradleDependencyVersion.Single
                     ?: return mavenInfo
+            logger.debug("Resolving plugin dependency ${dependency.id} to ${realDependency.groupId}:${realDependency.artifactId}:$realVersion")
             getMavenInfo(
                 dependency = Dependency.Library(
                     group = realDependency.groupId,
@@ -215,4 +257,18 @@ public class DependencyUpdateChecker internal constructor(
         val repository: Repository,
         val updatedVersion: GradleDependencyVersion.Single,
     )
+
+    public sealed interface Progress {
+        public data object Indeterminate : Progress
+
+        public data class Determinate(val percentage: Int) : Progress
+    }
+
+    public fun interface ProgressListener {
+        public fun onProgress(progress: Progress)
+
+        public companion object {
+            public val EMPTY: ProgressListener = ProgressListener { }
+        }
+    }
 }

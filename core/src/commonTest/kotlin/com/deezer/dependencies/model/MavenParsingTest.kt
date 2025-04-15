@@ -7,6 +7,7 @@ import com.deezer.dependencies.model.maven.Version
 import com.deezer.dependencies.model.maven.Versioning
 import com.deezer.dependencies.serialization.DefaultXml
 import kotlinx.serialization.decodeFromString
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -48,6 +49,7 @@ class MavenParsingTest {
     }
 }
 
+@Language("XML")
 private const val METADATA = """
 <metadata modelVersion="1.1.0">
     <groupId>android.arch.core</groupId>
@@ -64,6 +66,7 @@ private const val METADATA = """
 </metadata>
 """
 
+@Language("XML")
 private const val INFO = """
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

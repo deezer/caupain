@@ -17,9 +17,11 @@ internal expect object PolicyLoader {
     fun loadPolicies(): Iterable<Policy>
 }
 
-internal val ALL_POLICIES = buildMap {
-    putPolicy(AndroidXVersionLevelPolicy)
-    PolicyLoader.loadPolicies().associateByTo(this) { it.name }
+internal val ALL_POLICIES by lazy {
+    buildMap {
+        putPolicy(AndroidXVersionLevelPolicy)
+        PolicyLoader.loadPolicies().associateByTo(this) { it.name }
+    }
 }
 
 private fun MutableMap<String, Policy>.putPolicy(policy: Policy) {

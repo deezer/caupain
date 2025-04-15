@@ -4,6 +4,7 @@ import com.deezer.dependencies.model.Configuration
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
 import com.deezer.dependencies.model.LibraryExclusion
+import com.deezer.dependencies.model.Logger
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
 import com.deezer.dependencies.model.maven.MavenInfo
@@ -31,6 +32,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
+import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -43,23 +45,29 @@ class DependencyUpdateCheckerTest {
 
     private lateinit var engine: MockEngine
 
+    private val fileSystem = FakeFileSystem()
+
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var checker: DependencyUpdateChecker
 
     @BeforeTest
     fun setup() {
+        val configuration = Configuration(
+            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
+            excludedKeys = setOf("groovy-json"),
+            excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons"))
+        )
+        fileSystem.createDirectories(configuration.versionCatalogPath.parent!!)
+        fileSystem.write(configuration.versionCatalogPath) {}
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
         }
         checker = DependencyUpdateChecker(
-            configuration = Configuration(
-                repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
-                pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
-                excludedKeys = setOf("groovy-json"),
-                excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons"))
-            ),
+            configuration = configuration,
+            fileSystem = fileSystem,
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {
                     xml(DefaultXml)
@@ -67,7 +75,9 @@ class DependencyUpdateCheckerTest {
             },
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
-            policies = emptyMap()
+            policies = emptyMap(),
+            logger = Logger.EMPTY,
+            progressListener = DependencyUpdateChecker.ProgressListener.EMPTY
         )
     }
 
