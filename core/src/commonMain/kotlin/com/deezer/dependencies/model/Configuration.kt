@@ -1,5 +1,6 @@
 package com.deezer.dependencies.model
 
+import com.deezer.dependencies.Serializable
 import okio.Path
 import okio.Path.Companion.toPath
 
@@ -19,12 +20,12 @@ public data class Configuration(
     val excludedPlugins: List<PluginExclusion> = emptyList(),
     val policy: String? = null,
     val policyPluginDir: Path? = null,
-)
+) : Serializable
 
 public data class LibraryExclusion(
     val group: String,
     val name: String? = null,
-)
+) : Serializable
 
 public data class PluginExclusion(val id: String)
 

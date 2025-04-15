@@ -1,10 +1,12 @@
 package com.deezer.dependencies.model
 
+import com.deezer.dependencies.Serializable
+
 public data class Repository(
     val url: String,
     val user: String?,
     val password: String?
-) {
+) : Serializable {
     public constructor(url: String) : this(url, null, null)
 }
 
