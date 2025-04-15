@@ -27,6 +27,7 @@ kotlin {
                 implementation(libs.xmlutil.core.io)
                 implementation(libs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.html)
             }
         }
         val commonTest by getting {

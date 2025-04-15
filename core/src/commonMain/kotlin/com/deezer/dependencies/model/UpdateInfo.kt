@@ -6,9 +6,10 @@ public data class UpdateInfo(
     val dependencyId: String,
     val name: String? = null,
     val url: String? = null,
+    val currentVersion: String,
     val updatedVersion: String
 ) {
-    public enum class Type {
-        LIBRARY, PLUGIN
+    public enum class Type(public val title: String) {
+        PLUGIN("Plugins"), LIBRARY("Libraries")
     }
 }
