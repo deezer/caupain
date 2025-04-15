@@ -37,12 +37,12 @@ kotlin {
                 compileOnly(libs.jetbrains.annotations)
             }
         }
-        getByName("jvmMain") {
+        val jvmMain by getting {
             dependencies {
                 implementation(libs.slf4j.nop)
             }
         }
-        getByName("jvmTest") {
+        val jvmTest by getting {
             dependencies {
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit)
