@@ -1,3 +1,9 @@
+import com.deezer.dependencies.cli.DependencyUpdateCheckerCli
+import com.github.ajalt.clikt.command.main
+import kotlinx.coroutines.runBlocking
+
 fun main(args: Array<String>) {
-    // TODO : call the CLI with args
+    runBlocking {
+        DependencyUpdateCheckerCli().main(args)
+    }
 }

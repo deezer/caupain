@@ -46,7 +46,25 @@ import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-public class DependencyUpdateChecker internal constructor(
+public interface DependencyUpdateChecker {
+    public suspend fun checkForUpdates(): List<UpdateInfo>
+
+    public sealed interface Progress {
+        public data object Indeterminate : Progress
+
+        public data class Determinate(val percentage: Int) : Progress
+    }
+
+    public fun interface ProgressListener {
+        public fun onProgress(progress: Progress)
+
+        public companion object {
+            public val EMPTY: ProgressListener = ProgressListener { }
+        }
+    }
+}
+
+public class DefaultDependencyUpdateChecker internal constructor(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
     private val fileSystem: FileSystem,
@@ -54,14 +72,15 @@ public class DependencyUpdateChecker internal constructor(
     private val versionCatalogParser: VersionCatalogParser,
     private val logger: Logger,
     private val progressListener: ProgressListener,
-) {
+) : DependencyUpdateChecker {
     public constructor(
         configuration: Configuration,
         logger: Logger = Logger.EMPTY,
         progressListener: ProgressListener = ProgressListener.EMPTY,
+        fileSystem: FileSystem = FileSystem.SYSTEM,
     ) : this(
         configuration = configuration,
-        fileSystem = FileSystem.SYSTEM,
+        fileSystem = fileSystem,
         httpClient = HttpClient(CIO) {
             install(ContentNegotiation) {
                 xml(DefaultXml)
@@ -75,7 +94,7 @@ public class DependencyUpdateChecker internal constructor(
         versionCatalogParser = DefaultVersionCatalogParser(
             toml = DefaultToml,
             versionCatalogPath = configuration.versionCatalogPath,
-            fileSystem = FileSystem.SYSTEM,
+            fileSystem = fileSystem,
             ioDispatcher = Dispatchers.IO
         ),
         logger = logger,
@@ -100,14 +119,14 @@ public class DependencyUpdateChecker internal constructor(
 
     private val policy by lazy { configuration.policy?.let(policies::get) }
 
-    public suspend fun checkForUpdates(): List<UpdateInfo> {
+    public override suspend fun checkForUpdates(): List<UpdateInfo> {
         logger.info("Parsing version catalog")
         logger.debug("Version catalog path is ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
-        progressListener.onProgress(Progress.Indeterminate)
+        progressListener.onProgress(DependencyUpdateChecker.Progress.Indeterminate)
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val nbDependencies = versionCatalog.dependencies.size
-        progressListener.onProgress(Progress.Determinate(0))
+        progressListener.onProgress(DependencyUpdateChecker.Progress.Determinate(0))
         versionCatalog
             .dependencies
             .asSequence()
@@ -131,7 +150,7 @@ public class DependencyUpdateChecker internal constructor(
                     }
                 }
                 val percentage = ((index + 1) * 100) / (nbDependencies * 2)
-                progressListener.onProgress(Progress.Determinate(percentage))
+                progressListener.onProgress(DependencyUpdateChecker.Progress.Determinate(percentage))
             }
         val nbUpdatedVersions = updatedVersions.size
         return updatedVersions
@@ -142,7 +161,7 @@ public class DependencyUpdateChecker internal constructor(
             .withIndex()
             .onEach { (index, _) ->
                 val percentage = (((index + 1) * 100) / (nbUpdatedVersions / 2)) + 50
-                progressListener.onProgress(Progress.Determinate(percentage))
+                progressListener.onProgress(DependencyUpdateChecker.Progress.Determinate(percentage))
             }
             .map { it.value }
             .toList()
@@ -271,18 +290,4 @@ public class DependencyUpdateChecker internal constructor(
         val repository: Repository,
         val updatedVersion: GradleDependencyVersion.Single,
     )
-
-    public sealed interface Progress {
-        public data object Indeterminate : Progress
-
-        public data class Determinate(val percentage: Int) : Progress
-    }
-
-    public fun interface ProgressListener {
-        public fun onProgress(progress: Progress)
-
-        public companion object {
-            public val EMPTY: ProgressListener = ProgressListener { }
-        }
-    }
 }

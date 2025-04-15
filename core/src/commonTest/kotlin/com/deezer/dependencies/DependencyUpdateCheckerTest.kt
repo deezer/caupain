@@ -65,7 +65,7 @@ class DependencyUpdateCheckerTest {
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
         }
-        checker = DependencyUpdateChecker(
+        checker = DefaultDependencyUpdateChecker(
             configuration = configuration,
             fileSystem = fileSystem,
             httpClient = HttpClient(engine) {

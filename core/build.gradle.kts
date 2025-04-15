@@ -5,6 +5,7 @@ plugins {
 
 kotlin {
     explicitApi()
+    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 
     sourceSets {
         macosX64()

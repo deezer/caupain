@@ -36,6 +36,7 @@ kotlin {
                 implementation(libs.mordant)
                 implementation(libs.mordant.coroutines)
                 implementation(libs.kotlinx.coroutines.core)
+                implementation(projects.core)
             }
         }
         val commonTest by getting {
