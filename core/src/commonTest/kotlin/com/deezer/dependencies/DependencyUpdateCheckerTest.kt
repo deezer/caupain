@@ -75,7 +75,6 @@ class DependencyUpdateCheckerTest {
             },
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
-            policies = emptyMap(),
             logger = Logger.EMPTY,
             progressListener = DependencyUpdateChecker.ProgressListener.EMPTY
         )

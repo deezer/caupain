@@ -3,6 +3,7 @@
 package com.deezer.dependencies.model
 
 import com.deezer.dependencies.model.versionCatalog.Version
+import okio.Path
 
 public interface Policy {
     public val name: String
@@ -14,17 +15,16 @@ public interface Policy {
 }
 
 internal expect object PolicyLoader {
-    fun loadPolicies(): Iterable<Policy>
+    fun loadPolicies(paths: Iterable<Path>): Iterable<Policy>
 }
 
-internal val ALL_POLICIES by lazy {
+internal val DEFAULT_POLICIES by lazy {
     buildMap {
         putPolicy(AndroidXVersionLevelPolicy)
-        PolicyLoader.loadPolicies().associateByTo(this) { it.name }
     }
 }
 
-private fun MutableMap<String, Policy>.putPolicy(policy: Policy) {
+internal fun MutableMap<String, Policy>.putPolicy(policy: Policy) {
     put(policy.name, policy)
 }
 

@@ -17,7 +17,8 @@ public data class Configuration(
     val excludedKeys: Set<String> = emptySet(),
     val excludedLibraries: List<LibraryExclusion> = emptyList(),
     val excludedPlugins: List<PluginExclusion> = emptyList(),
-    val policy: String? = null
+    val policy: String? = null,
+    val policyPluginDir: Path? = null,
 )
 
 public data class LibraryExclusion(

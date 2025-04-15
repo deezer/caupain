@@ -1,12 +1,13 @@
 package com.deezer.dependencies
 
 import com.deezer.dependencies.DependencyUpdateChecker.ProgressListener
-import com.deezer.dependencies.model.ALL_POLICIES
+import com.deezer.dependencies.internal.extension
 import com.deezer.dependencies.model.Configuration
+import com.deezer.dependencies.model.DEFAULT_POLICIES
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
 import com.deezer.dependencies.model.Logger
-import com.deezer.dependencies.model.Policy
+import com.deezer.dependencies.model.PolicyLoader
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
 import com.deezer.dependencies.model.isExcluded
@@ -51,7 +52,6 @@ public class DependencyUpdateChecker internal constructor(
     private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
-    private val policies: Map<String, Policy>,
     private val logger: Logger,
     private val progressListener: ProgressListener,
 ) {
@@ -78,12 +78,27 @@ public class DependencyUpdateChecker internal constructor(
             fileSystem = FileSystem.SYSTEM,
             ioDispatcher = Dispatchers.IO
         ),
-        policies = ALL_POLICIES,
         logger = logger,
         progressListener = progressListener
     )
 
-    private val policy = configuration.policy?.let(policies::get)
+    private val policies by lazy {
+        buildMap {
+            putAll(DEFAULT_POLICIES)
+            configuration
+                .policyPluginDir
+                ?.takeIf { fileSystem.exists(it) }
+                ?.let { fileSystem.list(it) }
+                .orEmpty()
+                .asSequence()
+                .filter { it.extension == "jar" }
+                .asIterable()
+                .let { PolicyLoader.loadPolicies(it) }
+                .associateByTo(this) { it.name }
+        }
+    }
+
+    private val policy by lazy { configuration.policy?.let(policies::get) }
 
     public suspend fun checkForUpdates(): List<UpdateInfo> {
         logger.info("Parsing version catalog")
@@ -189,7 +204,7 @@ public class DependencyUpdateChecker internal constructor(
             .filterNotNull()
             .filterIsInstance<GradleDependencyVersion.Single>()
             .filter { version.isUpdate(it) }
-            .filter { policy == null || policy.select(version, it) }
+            .filterNot { policy?.select(version, it) == false }
             .maxOrNull()
     }
 
