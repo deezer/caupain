@@ -40,14 +40,14 @@ class DependencyUpdateCheckerCli(
             logger = logger
         )
     }
-) : SuspendingCliktCommand() {
+) : SuspendingCliktCommand(name = "dependency-update-checker") {
 
     private val versionCatalogPath by
     option("-i", "--version-catalog", help = "Version catalog path")
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
         .default("gradle/libs.versions.toml".toPath())
 
-    private val excluded by option(help = "Excluded keys").multiple()
+    private val excluded by option("-e", "--excluded", help = "Excluded keys").multiple()
 
     private val configurationFile by option("-c", "--config", help = "Configuration file")
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
@@ -60,7 +60,7 @@ class DependencyUpdateCheckerCli(
 
     private val policy by option("-p", "--policy", help = "Update policy")
 
-    private val outputType by option("-t", "--output-type", "Output type (console, html)")
+    private val outputType by option("-t", "--output-type", help = "Output type")
         .groupChoice(
             "console" to OutputConfig.Console(CliktConsolePrinter()),
             "html" to OutputConfig.Html(fileSystem, ioDispatcher)
@@ -153,6 +153,10 @@ sealed class OutputConfig(
             .path(mustExist = false, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
             .default("build/reports/dependencies-update.html".toPath())
 
-        override fun toFormatter(): Formatter = HtmlFormatter(fileSystem, outputPath, ioDispatcher)
+        override fun toFormatter(): Formatter {
+            // Create the output directory if it doesn't exist
+            outputPath.parent?.let { fileSystem.createDirectories(it) }
+            return HtmlFormatter(fileSystem, outputPath, ioDispatcher)
+        }
     }
 }

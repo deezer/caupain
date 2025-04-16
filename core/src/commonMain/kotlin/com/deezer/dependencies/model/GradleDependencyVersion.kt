@@ -323,22 +323,26 @@ public sealed interface GradleDependencyVersion {
 private val SEPARATORS = charArrayOf('.', '-', '_', '+')
 private const val SNAPSHOT_SUFFIX = "-SNAPSHOT"
 
-internal fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = when {
-    versionText.isBlank() -> Unknown(versionText)
+internal fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = try {
+    when {
+        versionText.isBlank() -> Unknown(versionText)
 
-    versionText.length > 2
-            && versionText.first() in Range.LOWER_BOUND_MARKERS
-            && versionText.last() in Range.UPPER_BOUND_MARKERS -> Range(versionText)
+        versionText.length > 2
+                && versionText.first() in Range.LOWER_BOUND_MARKERS
+                && versionText.last() in Range.UPPER_BOUND_MARKERS -> Range(versionText)
 
-    versionText.last() == '+' && versionText.indexOfAny(SEPARATORS) >= 0 ->
-        Prefix(versionText)
+        versionText.last() == '+' && versionText.indexOfAny(SEPARATORS) >= 0 ->
+            Prefix(versionText)
 
-    versionText in GradleDependencyVersion.Latest.VALUES ->
-        GradleDependencyVersion.Latest(versionText)
+        versionText in GradleDependencyVersion.Latest.VALUES ->
+            GradleDependencyVersion.Latest(versionText)
 
-    versionText.endsWith(SNAPSHOT_SUFFIX) -> Snapshot(versionText)
+        versionText.endsWith(SNAPSHOT_SUFFIX) -> Snapshot(versionText)
 
-    else -> Exact(versionText)
+        else -> Exact(versionText)
+    }
+} catch (e: IllegalArgumentException) {
+    Unknown(versionText)
 }
 
 internal class GradleDependencyVersionSerializer : KSerializer<GradleDependencyVersion> {

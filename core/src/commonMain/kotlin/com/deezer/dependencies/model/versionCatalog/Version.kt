@@ -32,6 +32,8 @@ public sealed interface Version {
         override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return value.isUpdate(version)
         }
+
+        override fun toString(): String = value.toString()
     }
 
     @Serializable
@@ -72,6 +74,34 @@ public sealed interface Version {
 
                 prefer != null -> prefer.isUpdate(version)
                 else -> false
+            }
+        }
+
+        override fun toString(): String = sequenceOf(
+            Constraint.Version("require", require),
+            Constraint.Version("strictly", strictly),
+            Constraint.Version("prefer", prefer),
+            Constraint.Version("reject", reject),
+            Constraint.RejectAll(rejectAll)
+        ).mapNotNull { it.printValue }.joinToString(
+            prefix = "{ ",
+            postfix = " }",
+            separator = ", "
+        )
+
+        private sealed interface Constraint {
+
+            val printValue: String?
+
+            data class Version(
+                private val name: String,
+                private val version: GradleDependencyVersion?
+            ) : Constraint {
+                override val printValue: String? = version?.let { "$name = $it" }
+            }
+
+            data class RejectAll(private val rejectAll: Boolean) : Constraint {
+                override val printValue: String? = if (rejectAll) "rejectAll = true" else null
             }
         }
     }

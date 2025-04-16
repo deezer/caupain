@@ -18,13 +18,13 @@ import com.deezer.dependencies.serialization.DefaultToml
 import com.deezer.dependencies.serialization.DefaultXml
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.appendPathSegments
@@ -81,13 +81,14 @@ public class DefaultDependencyUpdateChecker internal constructor(
     ) : this(
         configuration = configuration,
         fileSystem = fileSystem,
-        httpClient = HttpClient(CIO) {
+        httpClient = HttpClient {
             install(ContentNegotiation) {
-                xml(DefaultXml)
+                xml(DefaultXml, ContentType.Text.Xml)
+                xml(DefaultXml, ContentType.Application.Xml)
             }
             install(Logging) {
                 this.logger = logger
-                level = LogLevel.ALL
+                level = LogLevel.HEADERS
             }
         },
         ioDispatcher = Dispatchers.IO,
@@ -133,6 +134,10 @@ public class DefaultDependencyUpdateChecker internal constructor(
             .forEachIndexed { index, (key, dep) ->
                 if (!configuration.isExcluded(key, dep)) {
                     logger.debug("Finding updated version for ${dep.moduleId}")
+                    val currentVersion = dep
+                        .version
+                        ?.resolve(versionCatalog.versions)
+                        ?: return@forEachIndexed
                     val updatedVersion = findUpdatedVersion(
                         dependency = dep,
                         versionReferences = versionCatalog.versions
@@ -144,6 +149,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
                                 dependencyKey = key,
                                 dependency = dep,
                                 repository = updatedVersion.repository,
+                                currentVersion = currentVersion,
                                 updatedVersion = updatedVersion.updatedVersion
                             )
                         )
@@ -238,6 +244,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
             },
             name = mavenInfo?.name,
             url = mavenInfo?.url,
+            currentVersion = result.currentVersion.toString(),
             updatedVersion = result.updatedVersion.toString()
         )
     }
@@ -258,9 +265,11 @@ public class DefaultDependencyUpdateChecker internal constructor(
         // If this is a plugin, we need to find the real maven info by following the dependency
         return if (dependency is Dependency.Plugin && mavenInfo != null) {
             val realDependency = mavenInfo.dependencies.singleOrNull() ?: return mavenInfo
-            val realVersion =
-                GradleDependencyVersion(realDependency.version) as? GradleDependencyVersion.Single
-                    ?: return mavenInfo
+            val realVersion = realDependency
+                .version
+                ?.let { GradleDependencyVersion(it) }
+                ?.takeUnless { it is GradleDependencyVersion.Unknown } as? GradleDependencyVersion.Single
+                ?: return mavenInfo
             logger.debug("Resolving plugin dependency ${dependency.id} to ${realDependency.groupId}:${realDependency.artifactId}:$realVersion")
             getMavenInfo(
                 dependency = Dependency.Library(
@@ -288,6 +297,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
         val dependencyKey: String,
         val dependency: Dependency,
         val repository: Repository,
+        val currentVersion: Version.Direct,
         val updatedVersion: GradleDependencyVersion.Single,
     )
 }

@@ -11,7 +11,12 @@ plugins {
 val mainApplicationClass = "com.deezer.dependencies.cli.JvmMainKt"
 
 fun KotlinNativeTargetWithHostTests.configureTarget() =
-    binaries { executable { entryPoint = "main" } }
+    binaries {
+        executable {
+            entryPoint = "main"
+            baseName = "dependency-update-checker"
+        }
+    }
 
 kotlin {
     sourceSets {

@@ -20,7 +20,6 @@ kotlin {
                 implementation(libs.kotlinx.serialization.toml)
                 implementation(libs.okio)
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.cio)
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.content.negociation)
                 implementation(libs.ktor.serialization.kotlinx.xml)
@@ -42,12 +41,28 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.slf4j.nop)
+                implementation(libs.ktor.client.okhttp)
             }
         }
         val jvmTest by getting {
             dependencies {
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit)
+            }
+        }
+        val macosMain by creating {
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
+        }
+        val mingwMain by creating {
+            dependencies {
+                implementation(libs.ktor.client.winhttp)
+            }
+        }
+        val linuxMain by creating {
+            dependencies {
+                implementation(libs.ktor.client.curl)
             }
         }
     }

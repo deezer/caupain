@@ -18,5 +18,5 @@ internal data class MavenInfo(
 internal data class Dependency(
     @XmlElement(true) val groupId: String,
     @XmlElement(true) val artifactId: String,
-    @XmlElement(true) val version: String,
+    @XmlElement(true) val version: String? = null,
 )
