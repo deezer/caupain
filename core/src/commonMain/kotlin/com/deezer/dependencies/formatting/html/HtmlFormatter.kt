@@ -1,8 +1,12 @@
 package com.deezer.dependencies.formatting.html
 
-import com.deezer.dependencies.internal.asAppendable
 import com.deezer.dependencies.formatting.Formatter
+import com.deezer.dependencies.internal.asAppendable
 import com.deezer.dependencies.model.UpdateInfo
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.body
@@ -18,41 +22,51 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.tr
 import kotlinx.html.unsafe
-import okio.BufferedSink
+import okio.FileSystem
+import okio.Path
 
 public class HtmlFormatter(
-    private val sink: BufferedSink
+    private val fileSystem: FileSystem,
+    private val path: Path,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : Formatter {
-    override fun format(updates: List<UpdateInfo>) {
-        sink
-            .asAppendable()
-            .appendHTML()
-            .html {
-                head {
-                    style {
-                        unsafe {
-                            raw(STYLE)
+    override suspend fun format(updates: List<UpdateInfo>) {
+        withContext(ioDispatcher) {
+            fileSystem.write(path) {
+                this
+                    .asAppendable()
+                    .appendHTML()
+                    .html {
+                        head {
+                            style {
+                                unsafe {
+                                    raw(STYLE)
+                                }
+                            }
+                        }
+                        body {
+                            if (updates.isEmpty()) {
+                                h1 { +"No updates available." }
+                            } else {
+                                val updatesByType =
+                                    mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
+                                for (update in updates) {
+                                    val type = update.type
+                                    val list = updatesByType[type]
+                                        ?: mutableListOf<UpdateInfo>().also {
+                                            updatesByType[type] = it
+                                        }
+                                    list.add(update)
+                                }
+                                h1 { +"Dependency updates" }
+                                for ((type, currentUpdates) in updatesByType) {
+                                    appendDependencyUpdates(type, currentUpdates)
+                                }
+                            }
                         }
                     }
-                }
-                body {
-                    if (updates.isEmpty()) {
-                        h1 { +"No updates available." }
-                    } else {
-                        val updatesByType = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
-                        for (update in updates) {
-                            val type = update.type
-                            val list = updatesByType[type]
-                                ?: mutableListOf<UpdateInfo>().also { updatesByType[type] = it }
-                            list.add(update)
-                        }
-                        h1 { +"Dependency updates" }
-                        for ((type, currentUpdates) in updatesByType) {
-                            appendDependencyUpdates(type, currentUpdates)
-                        }
-                    }
-                }
             }
+        }
     }
 
     private fun FlowContent.appendDependencyUpdates(

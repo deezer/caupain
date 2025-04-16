@@ -6,7 +6,7 @@ import com.deezer.dependencies.model.UpdateInfo
 public class ConsoleFormatter(
     private val consolePrinter: ConsolePrinter
 ) : Formatter {
-    override fun format(updates: List<UpdateInfo>) {
+    override suspend fun format(updates: List<UpdateInfo>) {
         if (updates.isEmpty()) {
             consolePrinter.print("No updates available.")
         } else {

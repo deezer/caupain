@@ -3,21 +3,41 @@ package com.deezer.dependencies.cli
 import com.deezer.dependencies.DefaultDependencyUpdateChecker
 import com.deezer.dependencies.DependencyUpdateChecker
 import com.deezer.dependencies.cli.internal.path
+import com.deezer.dependencies.cli.serialization.DefaultToml
+import com.deezer.dependencies.cli.serialization.decodeFromPath
+import com.deezer.dependencies.formatting.Formatter
+import com.deezer.dependencies.formatting.console.ConsoleFormatter
+import com.deezer.dependencies.formatting.console.ConsolePrinter
+import com.deezer.dependencies.formatting.html.HtmlFormatter
 import com.deezer.dependencies.model.Configuration
+import com.deezer.dependencies.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.defaultByName
+import com.github.ajalt.clikt.parameters.groups.groupChoice
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
+import net.peanuuutz.tomlkt.Toml
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.SYSTEM
+import com.deezer.dependencies.cli.model.Configuration as ParsedConfiguration
 
 class DependencyUpdateCheckerCli(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
-    private val createUpdateChecker: (Configuration, FileSystem) -> DependencyUpdateChecker = { config, fs ->
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val toml: Toml = DefaultToml,
+    private val createUpdateChecker: (Configuration, FileSystem, Logger) -> DependencyUpdateChecker = { config, fs, logger ->
         DefaultDependencyUpdateChecker(
             configuration = config,
-            fileSystem = fs
+            fileSystem = fs,
+            logger = logger
         )
     }
 ) : SuspendingCliktCommand() {
@@ -32,27 +52,107 @@ class DependencyUpdateCheckerCli(
     private val configurationFile by option("-c", "--config", help = "Configuration file")
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
-    private val policyPluginDir by option("--policy-plugin-dir", help = "Custom policies plugin dir")
+    private val policyPluginDir by option(
+        "--policy-plugin-dir",
+        help = "Custom policies plugin dir"
+    )
         .path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
     private val policy by option("-p", "--policy", help = "Update policy")
 
-    private val updateChecker by lazy {
-        createUpdateChecker(
-            Configuration(
-                versionCatalogPath = versionCatalogPath,
-                excludedKeys = excluded.toSet(),
-                policy = policy,
-                policyPluginDir = policyPluginDir
-            ),
-            fileSystem
+    private val outputType by option("-t", "--output-type", "Output type (console, html)")
+        .groupChoice(
+            "console" to OutputConfig.Console(CliktConsolePrinter()),
+            "html" to OutputConfig.Html(fileSystem, ioDispatcher)
         )
+        .defaultByName("html")
+
+    private val verbose by option("-v", "--verbose", help = "Enable verbose output").flag()
+
+    // TODO : use progress
+    override suspend fun run() {
+        outputType
+            .toFormatter()
+            .format(
+                createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger())
+                    .checkForUpdates()
+            )
     }
 
-    // TODO : parse config file
-    // TODO : use progress and listener
-    // TODO : output
-    override suspend fun run() {
-        updateChecker.checkForUpdates()
+    private suspend fun createConfiguration(): Configuration {
+        val baseConfiguration = Configuration(
+            versionCatalogPath = versionCatalogPath,
+            excludedKeys = excluded.toSet(),
+            policyPluginDir = policyPluginDir,
+            policy = policy
+        )
+        val fileConfiguration = readConfiguration()
+        return fileConfiguration?.toConfiguration(baseConfiguration) ?: baseConfiguration
+    }
+
+    private suspend fun readConfiguration(): ParsedConfiguration? = withContext(ioDispatcher) {
+        configurationFile?.let { path ->
+            toml.decodeFromPath(path, fileSystem)
+        }
+    }
+
+    private inner class CliktConsolePrinter : ConsolePrinter {
+        override fun print(message: String) {
+            echo(message, err = false)
+        }
+
+        override fun printError(message: String) {
+            echo(message, err = true)
+        }
+    }
+
+    private inner class ClicktLogger : Logger {
+        override fun debug(message: String) {
+            if (verbose) echo(message, err = false)
+        }
+
+        override fun info(message: String) {
+            echo(message, err = false)
+        }
+
+        private fun echoError(message: String, throwable: Throwable?) {
+            val errorMessage = buildString {
+                append(message)
+                if (throwable != null) {
+                    append(": ${throwable.message}")
+                }
+            }
+            echo(errorMessage, err = true)
+        }
+
+        override fun warn(message: String, throwable: Throwable?) {
+            echoError(message, throwable)
+        }
+
+        override fun error(message: String, throwable: Throwable?) {
+            echoError(message, throwable)
+        }
+    }
+}
+
+sealed class OutputConfig(
+    help: String? = null
+) : OptionGroup(null, help) {
+    abstract fun toFormatter(): Formatter
+
+    class Console(private val consolePrinter: ConsolePrinter) :
+        OutputConfig("Show results in console") {
+        override fun toFormatter(): Formatter = ConsoleFormatter(consolePrinter)
+    }
+
+    class Html(
+        private val fileSystem: FileSystem,
+        private val ioDispatcher: CoroutineDispatcher
+    ) : OutputConfig("Generate HTML report") {
+        private val outputPath by option("-o", "--output", help = "HTML output path")
+            .path(mustExist = false, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+            .default("build/reports/dependencies-update.html".toPath())
+
+        override fun toFormatter(): Formatter = HtmlFormatter(fileSystem, outputPath, ioDispatcher)
     }
 }
