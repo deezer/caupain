@@ -90,11 +90,13 @@ class DependencyUpdateCheckerCli(
 
     private val verbose by option("-v", "--verbose", help = "Enable verbose output").flag()
 
+    private val quiet by option("-q", "--quiet", help = "Suppress all output").flag()
+
     override suspend fun run() {
         var progressJob: Job? = null
         var collectProgressJob: Job? = null
 
-        val updateChecker = if (verbose) {
+        val updateChecker = if (verbose || quiet) {
             createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger())
         } else {
             val terminalProgress = progressBarContextLayout {
@@ -166,24 +168,25 @@ class DependencyUpdateCheckerCli(
 
     private inner class CliktConsolePrinter : ConsolePrinter {
         override fun print(message: String) {
-            echo(message, err = false)
+            if (!quiet) echo(message, err = false)
         }
 
         override fun printError(message: String) {
-            echo(message, err = true)
+            if (!quiet) echo(message, err = true)
         }
     }
 
     private inner class ClicktLogger : Logger {
         override fun debug(message: String) {
-            if (verbose) echo(message, err = false)
+            if (verbose && !quiet) echo(message, err = false)
         }
 
         override fun info(message: String) {
-            echo(message, err = false)
+            if (!quiet) echo(message, err = false)
         }
 
         private fun echoError(message: String, throwable: Throwable?) {
+            if (quiet) return
             val errorMessage = buildString {
                 append(message)
                 if (throwable != null) {
