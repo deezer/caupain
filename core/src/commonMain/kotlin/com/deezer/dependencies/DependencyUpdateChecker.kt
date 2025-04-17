@@ -10,6 +10,7 @@ import com.deezer.dependencies.model.DEFAULT_POLICIES
 import com.deezer.dependencies.model.Dependency
 import com.deezer.dependencies.model.GradleDependencyVersion
 import com.deezer.dependencies.model.Logger
+import com.deezer.dependencies.model.Policy
 import com.deezer.dependencies.model.PolicyLoader
 import com.deezer.dependencies.model.Repository
 import com.deezer.dependencies.model.UpdateInfo
@@ -92,11 +93,13 @@ public class DefaultDependencyUpdateChecker internal constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
     private val logger: Logger,
+    policies: Map<String, Policy>?,
 ) : DependencyUpdateChecker {
     public constructor(
         configuration: Configuration,
         logger: Logger = Logger.EMPTY,
         fileSystem: FileSystem = FileSystem.SYSTEM,
+        policies: Map<String, Policy>? = null
     ) : this(
         configuration = configuration,
         fileSystem = fileSystem,
@@ -123,10 +126,11 @@ public class DefaultDependencyUpdateChecker internal constructor(
             ioDispatcher = Dispatchers.IO
         ),
         logger = logger,
+        policies = policies
     )
 
     private val policies by lazy {
-        buildMap {
+        policies ?: buildMap {
             putAll(DEFAULT_POLICIES)
             configuration
                 .policyPluginDir
@@ -141,7 +145,9 @@ public class DefaultDependencyUpdateChecker internal constructor(
         }
     }
 
-    private val policy by lazy { configuration.policy?.let(policies::get) }
+    private val policy by lazy {
+        configuration.policy?.let { this.policies[it] }
+    }
 
     private val progressFlow = MutableStateFlow<DependencyUpdateChecker.Progress?>(null)
 

@@ -234,7 +234,11 @@ sealed class OutputConfig(
         override fun toFormatter(): Formatter {
             // Create the output directory if it doesn't exist
             outputPath.parent?.let { fileSystem.createDirectories(it) }
-            return HtmlFormatter(fileSystem, outputPath, ioDispatcher)
+            return HtmlFormatter(
+                fileSystem = fileSystem,
+                path = outputPath,
+                ioDispatcher = ioDispatcher
+            )
         }
     }
 }

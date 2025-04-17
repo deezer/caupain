@@ -24,10 +24,11 @@ import kotlinx.html.tr
 import kotlinx.html.unsafe
 import okio.FileSystem
 import okio.Path
+import okio.SYSTEM
 
 public class HtmlFormatter(
-    private val fileSystem: FileSystem,
     private val path: Path,
+    private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : Formatter {
     override suspend fun format(updates: Map<UpdateInfo.Type, List<UpdateInfo>>) {
