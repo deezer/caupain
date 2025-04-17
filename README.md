@@ -1,5 +1,5 @@
 TODO:
-[ ] More UT
-[ ] Gradle plugin
-[ ] Decent README
-[ ] Github actions
+- More UT
+- Gradle plugin
+- Decent README
+- Github actions
