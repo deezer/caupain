@@ -30,7 +30,7 @@ public class HtmlFormatter(
     private val path: Path,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : Formatter {
-    override suspend fun format(updates: List<UpdateInfo>) {
+    override suspend fun format(updates: Map<UpdateInfo.Type, List<UpdateInfo>>) {
         withContext(ioDispatcher) {
             fileSystem.write(path) {
                 this
@@ -45,21 +45,11 @@ public class HtmlFormatter(
                             }
                         }
                         body {
-                            if (updates.isEmpty()) {
+                            if (updates.isEmpty() || updates.values.all { it.isEmpty() }) {
                                 h1 { +"No updates available." }
                             } else {
-                                val updatesByType =
-                                    mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
-                                for (update in updates) {
-                                    val type = update.type
-                                    val list = updatesByType[type]
-                                        ?: mutableListOf<UpdateInfo>().also {
-                                            updatesByType[type] = it
-                                        }
-                                    list.add(update)
-                                }
                                 h1 { +"Dependency updates" }
-                                for ((type, currentUpdates) in updatesByType) {
+                                for ((type, currentUpdates) in updates) {
                                     appendDependencyUpdates(type, currentUpdates)
                                 }
                             }

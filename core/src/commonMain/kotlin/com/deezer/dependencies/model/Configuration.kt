@@ -20,6 +20,7 @@ public data class Configuration(
     val excludedPlugins: List<PluginExclusion> = emptyList(),
     val policy: String? = null,
     val policyPluginDir: Path? = null,
+    val cacheDir: Path? = null,
 ) : Serializable
 
 public data class LibraryExclusion(

@@ -1,6 +1,9 @@
 package com.deezer.dependencies
 
-import com.deezer.dependencies.DependencyUpdateChecker.ProgressListener
+import com.deezer.dependencies.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
+import com.deezer.dependencies.DependencyUpdateChecker.Companion.GATHERING_INFO_TASK
+import com.deezer.dependencies.DependencyUpdateChecker.Companion.PARSING_TASK
+import com.deezer.dependencies.internal.FileStorage
 import com.deezer.dependencies.internal.extension
 import com.deezer.dependencies.model.Configuration
 import com.deezer.dependencies.model.DEFAULT_POLICIES
@@ -18,6 +21,7 @@ import com.deezer.dependencies.serialization.DefaultToml
 import com.deezer.dependencies.serialization.DefaultXml
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
@@ -33,34 +37,51 @@ import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.withIndex
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okio.FileSystem
+import okio.Path
 import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 public interface DependencyUpdateChecker {
-    public suspend fun checkForUpdates(): List<UpdateInfo>
+    public val progress: Flow<Progress?>
+
+    public suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>>
 
     public sealed interface Progress {
-        public data object Indeterminate : Progress
+        public val taskName: String
 
-        public data class Determinate(val percentage: Int) : Progress
+        public data class Indeterminate(override val taskName: String) : Progress
+
+        public data class Determinate(
+            override val taskName: String,
+            val percentage: Int,
+        ) : Progress
     }
 
-    public fun interface ProgressListener {
-        public fun onProgress(progress: Progress)
-
-        public companion object {
-            public val EMPTY: ProgressListener = ProgressListener { }
-        }
+    public companion object {
+        internal const val PARSING_TASK = "Parsing version catalog"
+        internal const val FINDING_UPDATES_TASK = "Finding updates"
+        internal const val GATHERING_INFO_TASK = "Gathering update info"
+        public val MAX_TASK_NAME_LENGTH: Int =
+            listOf(PARSING_TASK, FINDING_UPDATES_TASK, GATHERING_INFO_TASK).maxOf { it.length }
     }
 }
 
@@ -71,24 +92,27 @@ public class DefaultDependencyUpdateChecker internal constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
     private val logger: Logger,
-    private val progressListener: ProgressListener,
 ) : DependencyUpdateChecker {
     public constructor(
         configuration: Configuration,
         logger: Logger = Logger.EMPTY,
-        progressListener: ProgressListener = ProgressListener.EMPTY,
         fileSystem: FileSystem = FileSystem.SYSTEM,
     ) : this(
         configuration = configuration,
         fileSystem = fileSystem,
         httpClient = HttpClient {
             install(ContentNegotiation) {
-                xml(DefaultXml, ContentType.Text.Xml)
-                xml(DefaultXml, ContentType.Application.Xml)
+                xml(DefaultXml, ContentType.Any)
             }
             install(Logging) {
                 this.logger = logger
                 level = LogLevel.HEADERS
+            }
+            install(HttpCache) {
+                if (configuration.cacheDir != null) {
+                    fileSystem.createDirectories(configuration.cacheDir)
+                    publicStorage(FileStorage(fileSystem, configuration.cacheDir))
+                }
             }
         },
         ioDispatcher = Dispatchers.IO,
@@ -99,7 +123,6 @@ public class DefaultDependencyUpdateChecker internal constructor(
             ioDispatcher = Dispatchers.IO
         ),
         logger = logger,
-        progressListener = progressListener
     )
 
     private val policies by lazy {
@@ -120,57 +143,106 @@ public class DefaultDependencyUpdateChecker internal constructor(
 
     private val policy by lazy { configuration.policy?.let(policies::get) }
 
-    public override suspend fun checkForUpdates(): List<UpdateInfo> {
-        logger.info("Parsing version catalog")
+    private val progressFlow = MutableStateFlow<DependencyUpdateChecker.Progress?>(null)
+
+    override val progress: Flow<DependencyUpdateChecker.Progress?>
+        get() = progressFlow.asStateFlow()
+
+    public override suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>> {
+        if (!fileSystem.exists(configuration.versionCatalogPath)) {
+            throw NoVersionCatalogException(configuration.versionCatalogPath)
+        }
         logger.debug("Version catalog path is ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
-        progressListener.onProgress(DependencyUpdateChecker.Progress.Indeterminate)
+        progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
+        val updatedVersionsMutex = Mutex()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val nbDependencies = versionCatalog.dependencies.size
-        progressListener.onProgress(DependencyUpdateChecker.Progress.Determinate(0))
-        versionCatalog
-            .dependencies
-            .asSequence()
-            .forEachIndexed { index, (key, dep) ->
-                if (!configuration.isExcluded(key, dep)) {
-                    logger.debug("Finding updated version for ${dep.moduleId}")
-                    val currentVersion = dep
-                        .version
-                        ?.resolve(versionCatalog.versions)
-                        ?: return@forEachIndexed
-                    val updatedVersion = findUpdatedVersion(
-                        dependency = dep,
-                        versionReferences = versionCatalog.versions
-                    )
-                    if (updatedVersion != null) {
-                        logger.debug("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
-                        updatedVersions.add(
-                            DependencyUpdateResult(
-                                dependencyKey = key,
+        progressFlow.value =
+            DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
+        coroutineScope {
+            versionCatalog
+                .dependencies
+                .asSequence()
+                .mapIndexed { index, (key, dep) ->
+                    async {
+                        if (!configuration.isExcluded(key, dep)) {
+                            logger.debug("Finding updated version for ${dep.moduleId}")
+                            val currentVersion = dep
+                                .version
+                                ?.resolve(versionCatalog.versions)
+                                ?: return@async
+                            val updatedVersion = findUpdatedVersion(
                                 dependency = dep,
-                                repository = updatedVersion.repository,
-                                currentVersion = currentVersion,
-                                updatedVersion = updatedVersion.updatedVersion
+                                versionReferences = versionCatalog.versions
                             )
+                            if (updatedVersion != null) {
+                                logger.debug("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
+                                updatedVersionsMutex.withLock {
+                                    updatedVersions.add(
+                                        DependencyUpdateResult(
+                                            dependencyKey = key,
+                                            dependency = dep,
+                                            repository = updatedVersion.repository,
+                                            currentVersion = currentVersion,
+                                            updatedVersion = updatedVersion.updatedVersion
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                        val percentage = ((index + 1) * 100) / (nbDependencies * 2)
+                        progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                            taskName = FINDING_UPDATES_TASK,
+                            percentage = percentage
                         )
                     }
                 }
-                val percentage = ((index + 1) * 100) / (nbDependencies * 2)
-                progressListener.onProgress(DependencyUpdateChecker.Progress.Determinate(percentage))
-            }
+                .toList()
+                .awaitAll()
+        }
         val nbUpdatedVersions = updatedVersions.size
-        return updatedVersions
-            .asIterable()
-            .asFlow()
-            .onEach { logger.debug("Finding Maven info for ${it.dependency.moduleId}") }
-            .map { computeUpdateInfo(it) }
-            .withIndex()
-            .onEach { (index, _) ->
-                val percentage = (((index + 1) * 100) / (nbUpdatedVersions / 2)) + 50
-                progressListener.onProgress(DependencyUpdateChecker.Progress.Determinate(percentage))
+        if (nbUpdatedVersions == 0) {
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                taskName = GATHERING_INFO_TASK,
+                percentage = 100
+            )
+        }
+        val updateInfosMutex = Mutex()
+        val updatesInfos = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
+        coroutineScope {
+            updatedVersions
+                .asSequence()
+                .withIndex()
+                .map { (index, result) ->
+                    async {
+                        logger.debug("Finding Maven info for ${result.dependency.moduleId}")
+                        val (type, updateInfo) = computeUpdateInfo(result)
+                        updateInfosMutex.withLock {
+                            val infosForType = updatesInfos[type]
+                                ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
+                            infosForType.add(updateInfo)
+                        }
+                        val percentage = (((index + 1) * 100) / (nbUpdatedVersions * 2)) + 50
+                        progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                            taskName = GATHERING_INFO_TASK,
+                            percentage = percentage
+                        )
+                    }
+                }
+                .toList()
+                .awaitAll()
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                taskName = GATHERING_INFO_TASK,
+                percentage = 100
+            )
+        }
+        // Sort
+        return buildMap {
+            for (type in UpdateInfo.Type.entries) {
+                put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
             }
-            .map { it.value }
-            .toList()
+        }
     }
 
     @OptIn(ExperimentalEncodingApi::class)
@@ -233,15 +305,15 @@ public class DefaultDependencyUpdateChecker internal constructor(
             .maxOrNull()
     }
 
-    private suspend fun computeUpdateInfo(result: DependencyUpdateResult): UpdateInfo {
+    private suspend fun computeUpdateInfo(result: DependencyUpdateResult): Pair<UpdateInfo.Type, UpdateInfo> {
         val mavenInfo = getMavenInfo(result.dependency, result.repository, result.updatedVersion)
-        return UpdateInfo(
+        val type = when (result.dependency) {
+            is Dependency.Library -> UpdateInfo.Type.LIBRARY
+            is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
+        }
+        return type to UpdateInfo(
             dependency = result.dependencyKey,
             dependencyId = result.dependency.moduleId,
-            type = when (result.dependency) {
-                is Dependency.Library -> UpdateInfo.Type.LIBRARY
-                is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
-            },
             name = mavenInfo?.name,
             url = mavenInfo?.url,
             currentVersion = result.currentVersion.toString(),
@@ -301,3 +373,5 @@ public class DefaultDependencyUpdateChecker internal constructor(
         val updatedVersion: GradleDependencyVersion.Single,
     )
 }
+
+public class NoVersionCatalogException(path: Path) : Exception("No version catalog found at $path")

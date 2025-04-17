@@ -18,15 +18,16 @@ kotlin {
             dependencies {
                 implementation(libs.kotlinx.serialization.xml)
                 implementation(libs.kotlinx.serialization.toml)
-                implementation(libs.okio)
+                api(libs.okio)
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.logging)
+                api(libs.ktor.client.logging)
                 implementation(libs.ktor.client.content.negociation)
                 implementation(libs.ktor.serialization.kotlinx.xml)
                 implementation(libs.xmlutil.core.io)
                 implementation(libs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.html)
+                implementation(libs.stately.concurrent.collections)
             }
         }
         val commonTest by getting {

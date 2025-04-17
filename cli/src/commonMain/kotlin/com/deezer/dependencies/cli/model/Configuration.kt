@@ -29,6 +29,7 @@ data class Configuration(
     val excludedPlugins: List<PluginExclusion>? = null,
     val policy: String? = null,
     val policyPluginDir: Path? = null,
+    val cacheDir: Path? = null,
 ) {
     fun toConfiguration(baseConfiguration: Configuration): Configuration {
         return Configuration(
@@ -40,6 +41,7 @@ data class Configuration(
             excludedPlugins = excludedPlugins ?: baseConfiguration.excludedPlugins,
             policy = policy ?: baseConfiguration.policy,
             policyPluginDir = policyPluginDir ?: baseConfiguration.policyPluginDir,
+            cacheDir = cacheDir ?: baseConfiguration.cacheDir
         )
     }
 }

@@ -8,8 +8,6 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
 }
 
-val mainApplicationClass = "com.deezer.dependencies.cli.JvmMainKt"
-
 fun KotlinNativeTargetWithHostTests.configureTarget() =
     binaries {
         executable {
@@ -28,7 +26,8 @@ kotlin {
         jvm {
             binaries {
                 executable {
-                    mainClass = mainApplicationClass
+                    mainClass = "com.deezer.dependencies.cli.JvmMainKt"
+                    applicationName = "dependency-update-checker"
                 }
             }
         }
@@ -36,7 +35,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(libs.kotlinx.serialization.toml)
-                implementation(libs.okio)
                 implementation(libs.clikt)
                 implementation(libs.mordant)
                 implementation(libs.mordant.coroutines)
@@ -53,4 +51,8 @@ kotlin {
             }
         }
     }
+}
+
+tasks.named<JavaExec>("runJvm") {
+    workingDir = rootProject.projectDir
 }
