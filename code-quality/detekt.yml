@@ -1,0 +1,104 @@
+comments:
+  DeprecatedBlockTag:
+    active: true
+
+complexity:
+  ReplaceSafeCallChainWithRun:
+    active: true
+  StringLiteralDuplication:
+    active: true
+
+coroutines:
+  SuspendFunSwallowedCancellation:
+    active: true
+  SuspendFunWithCoroutineScopeReceiver:
+    active: true
+
+exceptions:
+  NotImplementedDeclaration:
+    active: true
+
+naming:
+  InvalidPackageDeclaration:
+    active: true
+    excludes: [ '**/*.gradle.kts' ]
+  MatchingDeclarationName:
+    active: false
+  MemberNameEqualsClassName:
+    active: false
+  LambdaParameterNaming:
+    active: true
+
+performance:
+  CouldBeSequence:
+    active: true
+  UnnecessaryPartOfBinaryExpression:
+    active: true
+
+potential-bugs:
+  DontDowncastCollectionTypes:
+    active: true
+  ImplicitUnitReturnType:
+    active: true
+  UnconditionalJumpStatementInLoop:
+    active: true
+
+style:
+  ForbiddenComment:
+    active: false
+  MagicNumber:
+    active: false
+  MultilineLambdaItParameter:
+    active: true
+  MaxLineLength:
+    active: false
+  NewLineAtEndOfFile:
+    active: false
+  NullableBooleanCheck:
+    active: true
+  OptionalUnit:
+    active: true
+  PreferToOverPairSyntax:
+    active: true
+  RedundantExplicitType:
+    active: true
+  RedundantHigherOrderMapUsage:
+    active: true
+  ReturnCount:
+    active: false
+  SpacingBetweenPackageAndImports:
+    active: true
+  ThrowsCount:
+    active: false
+  UnusedImports:
+    active: true
+  UseIfInsteadOfWhen:
+    active: true
+  UseCheckNotNull:
+    active: true
+  UseCheckOrError:
+    active: true
+  UseRequire:
+    active: true
+  UseRequireNotNull:
+    active: true
+  UnderscoresInNumericLiterals:
+    active: false
+  UnnecessaryAnnotationUseSiteTarget:
+    active: true
+  UnnecessaryBackticks:
+    active: true
+  UnnecessaryInnerClass:
+    active: true
+  UnnecessaryLet:
+    active: true
+  UnnecessaryParentheses:
+    active: true
+  UntilInsteadOfRangeTo:
+    active: true
+  UseEmptyCounterpart:
+    active: true
+  UseIfEmptyOrIfBlank:
+    active: true
+  WildcardImport:
+    active: false

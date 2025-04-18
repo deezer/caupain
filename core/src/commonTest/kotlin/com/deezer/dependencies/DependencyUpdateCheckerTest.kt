@@ -76,7 +76,7 @@ class DependencyUpdateCheckerTest {
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            progressListener = DependencyUpdateChecker.ProgressListener.EMPTY
+            policies = emptyMap()
         )
     }
 
@@ -111,22 +111,26 @@ class DependencyUpdateCheckerTest {
     @Test
     fun testUpdate() = runTest(testDispatcher) {
         assertEquals(
-            expected = listOf(
-                UpdateInfo(
-                    dependency = "groovy-core",
-                    dependencyId = "org.codehaus.groovy:groovy",
-                    type = UpdateInfo.Type.LIBRARY,
-                    name = "Groovy core",
-                    url = "https://groovy-lang.org/",
-                    updatedVersion = "3.0.6"
+            expected = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo(
+                        dependency = "groovy-core",
+                        dependencyId = "org.codehaus.groovy:groovy",
+                        name = "Groovy core",
+                        url = "https://groovy-lang.org/",
+                        currentVersion = "3.0.5-alpha-1",
+                        updatedVersion = "3.0.6"
+                    )
                 ),
-                UpdateInfo(
-                    dependency = "versions",
-                    dependencyId = "com.github.ben-manes.versions",
-                    type = UpdateInfo.Type.PLUGIN,
-                    name = "Resolved plugin",
-                    url = "http://www.example.com/resolved",
-                    updatedVersion = "1.0.0"
+                UpdateInfo.Type.PLUGIN to listOf(
+                    UpdateInfo(
+                        dependency = "versions",
+                        dependencyId = "com.github.ben-manes.versions",
+                        name = "Resolved plugin",
+                        url = "http://www.example.com/resolved",
+                        currentVersion = "0.45.0-SNAPSHOT",
+                        updatedVersion = "1.0.0"
+                    )
                 )
             ),
             actual = checker.checkForUpdates()

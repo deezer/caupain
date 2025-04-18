@@ -2,7 +2,6 @@ package com.deezer.dependencies.model.versionCatalog
 
 import com.deezer.dependencies.model.Dependency
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 
 @Serializable
 internal data class VersionCatalog(

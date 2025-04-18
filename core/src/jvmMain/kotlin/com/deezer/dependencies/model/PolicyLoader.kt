@@ -1,7 +1,6 @@
 package com.deezer.dependencies.model
 
 import okio.Path
-import java.io.File
 import java.net.URLClassLoader
 import java.util.ServiceLoader
 
@@ -15,7 +14,6 @@ internal actual object PolicyLoader {
                 .toTypedArray(),
             javaClass.classLoader
         )
-        val a = File("toto").extension
         return ServiceLoader.load(Policy::class.java, childClassLoader)
     }
 }

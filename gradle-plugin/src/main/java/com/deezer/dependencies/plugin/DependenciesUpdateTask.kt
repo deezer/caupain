@@ -79,6 +79,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         }
     }
 
+    @Suppress("unused")
     fun selectIf(policy: Policy) {
         this.policy = policy
     }

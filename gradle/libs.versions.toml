@@ -43,3 +43,5 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.27.0"
+dokka = "org.jetbrains.dokka:2.0.0"
+detekt = "io.gitlab.arturbosch.detekt:1.23.8"

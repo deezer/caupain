@@ -37,7 +37,6 @@ import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.atomicfu.atomic
-import kotlinx.atomicfu.update
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -49,12 +48,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -86,11 +80,16 @@ public interface DependencyUpdateChecker {
         internal const val GATHERING_INFO_TASK = "Gathering update info"
         internal const val DONE = "done"
         public val MAX_TASK_NAME_LENGTH: Int =
-            listOf(PARSING_TASK, FINDING_UPDATES_TASK, GATHERING_INFO_TASK, DONE).maxOf { it.length }
+            listOf(
+                PARSING_TASK,
+                FINDING_UPDATES_TASK,
+                GATHERING_INFO_TASK,
+                DONE
+            ).maxOf { it.length }
     }
 }
 
-public class DefaultDependencyUpdateChecker internal constructor(
+public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") internal constructor(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
     private val fileSystem: FileSystem,
@@ -153,11 +152,14 @@ public class DefaultDependencyUpdateChecker internal constructor(
         configuration.policy?.let { this.policies[it] }
     }
 
+    private var completed by atomic(0)
+
     private val progressFlow = MutableStateFlow<DependencyUpdateChecker.Progress?>(null)
 
     override val progress: Flow<DependencyUpdateChecker.Progress?>
         get() = progressFlow.asStateFlow()
 
+    @Suppress("LongMethod")
     public override suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>> {
         if (!fileSystem.exists(configuration.versionCatalogPath)) {
             throw NoVersionCatalogException(configuration.versionCatalogPath)
@@ -168,14 +170,14 @@ public class DefaultDependencyUpdateChecker internal constructor(
         val updatedVersionsMutex = Mutex()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val nbDependencies = versionCatalog.dependencies.size
-        var completed by atomic(0)
+        completed = 0
         progressFlow.value =
             DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
         coroutineScope {
             versionCatalog
                 .dependencies
                 .asSequence()
-                .mapIndexed { index, (key, dep) ->
+                .map { (key, dep) ->
                     async {
                         if (!configuration.isExcluded(key, dep)) {
                             logger.debug("Finding updated version for ${dep.moduleId}")
@@ -202,7 +204,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
                                 }
                             }
                         }
-                        val percentage = (++completed * 50) / nbDependencies
+                        val percentage = ++completed * 50 / nbDependencies
                         progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                             taskName = FINDING_UPDATES_TASK,
                             percentage = percentage
@@ -218,9 +220,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
         val updatesInfos = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
         coroutineScope {
             updatedVersions
-                .asSequence()
-                .withIndex()
-                .map { (index, result) ->
+                .map { result ->
                     async {
                         logger.debug("Finding Maven info for ${result.dependency.moduleId}")
                         val (type, updateInfo) = computeUpdateInfo(result)
@@ -229,14 +229,13 @@ public class DefaultDependencyUpdateChecker internal constructor(
                                 ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
                             infosForType.add(updateInfo)
                         }
-                        val percentage = ((++completed * 50) / nbUpdatedVersions) + 50
+                        val percentage = ++completed * 50 / nbUpdatedVersions + 50
                         progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                             taskName = GATHERING_INFO_TASK,
                             percentage = percentage
                         )
                     }
                 }
-                .toList()
                 .awaitAll()
             progressFlow.value = DependencyUpdateChecker.Progress.Determinate(DONE, 100)
         }

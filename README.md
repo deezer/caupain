@@ -3,3 +3,4 @@ TODO:
 - Gradle plugin
 - Decent README
 - Github actions
+- Documentation

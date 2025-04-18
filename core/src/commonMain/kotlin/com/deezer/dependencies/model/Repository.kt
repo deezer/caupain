@@ -8,6 +8,10 @@ public data class Repository(
     val password: String?
 ) : Serializable {
     public constructor(url: String) : this(url, null, null)
+
+    public companion object {
+        private const val serialVersionUID = 1L
+    }
 }
 
 public object DefaultRepositories {

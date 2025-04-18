@@ -191,6 +191,7 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
+        @Suppress("CyclomaticComplexMethod")
         override fun contains(version: Single): Boolean {
             val exactVersion = version.exactVersion
             return when {
@@ -341,7 +342,7 @@ internal fun GradleDependencyVersion(versionText: String): GradleDependencyVersi
 
         else -> Exact(versionText)
     }
-} catch (e: IllegalArgumentException) {
+} catch (ignored: IllegalArgumentException) {
     Unknown(versionText)
 }
 

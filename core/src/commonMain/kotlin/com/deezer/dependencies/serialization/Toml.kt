@@ -15,7 +15,7 @@ internal class TomlOkioReader(private val source: BufferedSource) : TomlReader {
 
     override fun read(): Int = try {
         source.readUtf8CodePoint()
-    } catch (e: EOFException) {
+    } catch (ignored: EOFException) {
         -1
     }
 }

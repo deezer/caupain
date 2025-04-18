@@ -71,10 +71,12 @@ private class FileCacheStorage(
         fileSystem.createDirectories(directory)
     }
 
-    override suspend fun store(url: Url, data: CachedResponseData): Unit = withContext(dispatcher) {
-        val urlHex = key(url)
-        val caches = readCache(urlHex).filterNot { it.varyKeys == data.varyKeys } + data
-        writeCache(urlHex, caches)
+    override suspend fun store(url: Url, data: CachedResponseData) {
+        withContext(dispatcher) {
+            val urlHex = key(url)
+            val caches = readCache(urlHex).filterNot { it.varyKeys == data.varyKeys } + data
+            writeCache(urlHex, caches)
+        }
     }
 
     override suspend fun findAll(url: Url): Set<CachedResponseData> {
@@ -101,8 +103,8 @@ private class FileCacheStorage(
                         for (cache in caches) writeCache(cache)
                     }
                 }
-            } catch (cause: Exception) {
-                LOGGER.trace("Exception during saving a cache to a file: ${cause.stackTraceToString()}")
+            } catch (ignored: Exception) {
+                LOGGER.trace("Exception during saving a cache to a file: ${ignored.stackTraceToString()}")
             }
         }
     }
@@ -118,13 +120,13 @@ private class FileCacheStorage(
                     fileSystem.read(file) {
                         val requestsCount = readInt()
                         val caches = mutableSetOf<CachedResponseData>()
-                        for (i in 0 until requestsCount) caches.add(readCache())
+                        repeat(requestsCount) { caches.add(readCache()) }
                         readByteString()
                         caches
                     }
                 }
-            } catch (cause: Exception) {
-                LOGGER.trace("Exception during cache lookup in a file: ${cause.stackTraceToString()}")
+            } catch (ignored: Exception) {
+                LOGGER.trace("Exception during cache lookup in a file: ${ignored.stackTraceToString()}")
                 return emptySet()
             }
         }
@@ -162,7 +164,7 @@ private class FileCacheStorage(
             val version = HttpProtocolVersion.parse(readUtf8Line()!!)
             val headersCount = readInt()
             val headers = HeadersBuilder()
-            for (j in 0 until headersCount) {
+            repeat(headersCount) {
                 val key = readUtf8Line()!!
                 val value = readUtf8Line()!!
                 headers.append(key, value)
@@ -172,7 +174,7 @@ private class FileCacheStorage(
             val expirationTime = GMTDate(readLong())
             val varyKeysCount = readInt()
             val varyKeys = buildMap {
-                for (j in 0 until varyKeysCount) {
+                repeat(varyKeysCount) {
                     val key = readUtf8Line()!!
                     val value = readUtf8Line()!!
                     put(key, value)

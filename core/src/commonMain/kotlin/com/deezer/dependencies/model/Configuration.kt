@@ -21,12 +21,20 @@ public data class Configuration(
     val policy: String? = null,
     val policyPluginDir: Path? = null,
     val cacheDir: Path? = null,
-) : Serializable
+) : Serializable {
+    public companion object {
+        private const val serialVersionUID = 1L
+    }
+}
 
 public data class LibraryExclusion(
     val group: String,
     val name: String? = null,
-) : Serializable
+) : Serializable {
+    public companion object {
+        private const val serialVersionUID = 1L
+    }
+}
 
 public data class PluginExclusion(val id: String)
 
