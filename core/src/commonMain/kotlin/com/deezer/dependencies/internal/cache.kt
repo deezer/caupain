@@ -30,6 +30,7 @@ public fun FileStorage(
 
 private val LOGGER = KtorSimpleLogger("io.ktor.client.plugins.HttpCache")
 
+// This is adapted from the JVM file in ktor
 private class CachingCacheStorage(
     private val delegate: CacheStorage
 ) : CacheStorage {

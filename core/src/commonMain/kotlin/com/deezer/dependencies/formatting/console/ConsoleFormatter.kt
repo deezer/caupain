@@ -8,11 +8,11 @@ public class ConsoleFormatter(
 ) : Formatter {
     override suspend fun format(updates: Map<UpdateInfo.Type, List<UpdateInfo>>) {
         if (updates.isEmpty() || updates.values.all { it.isEmpty() }) {
-            consolePrinter.print("No updates available.")
+            consolePrinter.print(NO_UPDATES)
         } else {
-            consolePrinter.print("Updates are available")
-            printUpdates("Library updates:", updates[UpdateInfo.Type.LIBRARY].orEmpty())
-            printUpdates("Plugin updates:", updates[UpdateInfo.Type.PLUGIN].orEmpty())
+            consolePrinter.print(UPDATES_TITLE)
+            printUpdates(LIBRARY_TITLE, updates[UpdateInfo.Type.LIBRARY].orEmpty())
+            printUpdates(UPDATES_TITLE, updates[UpdateInfo.Type.PLUGIN].orEmpty())
         }
     }
 
@@ -21,9 +21,16 @@ public class ConsoleFormatter(
             consolePrinter.print(title)
             for (update in updates) {
                 consolePrinter.print(
-                    "${update.dependencyId}: ${update.currentVersion} -> ${update.updatedVersion}"
+                    "- ${update.dependencyId}: ${update.currentVersion} -> ${update.updatedVersion}"
                 )
             }
         }
+    }
+
+    internal companion object {
+        const val NO_UPDATES = "No updates available."
+        const val UPDATES_TITLE = "Updates are available"
+        const val LIBRARY_TITLE = "Library updates:"
+        const val PLUGIN_TITLE = "Plugin updates:"
     }
 }

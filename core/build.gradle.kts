@@ -31,6 +31,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.html)
                 implementation(libs.stately.concurrent.collections)
+                compileOnly(libs.jetbrains.annotations)
             }
         }
         val commonTest by getting {
@@ -39,7 +40,6 @@ kotlin {
                 implementation(libs.okio.fake.filesystem)
                 implementation(libs.ktor.client.mock)
                 implementation(libs.kotlinx.coroutines.test)
-                compileOnly(libs.jetbrains.annotations)
             }
         }
         val jvmMain by getting {

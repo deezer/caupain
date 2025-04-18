@@ -45,7 +45,7 @@ class DependencyUpdateCheckerTest {
 
     private lateinit var engine: MockEngine
 
-    private val fileSystem = FakeFileSystem()
+    private lateinit var fileSystem: FakeFileSystem
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
@@ -53,6 +53,7 @@ class DependencyUpdateCheckerTest {
 
     @BeforeTest
     fun setup() {
+        fileSystem = FakeFileSystem()
         val configuration = Configuration(
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
@@ -106,6 +107,8 @@ class DependencyUpdateCheckerTest {
     @AfterTest
     fun teardown() {
         engine.close()
+        fileSystem.checkNoOpenFiles()
+        fileSystem.close()
     }
 
     @Test
