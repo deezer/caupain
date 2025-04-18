@@ -37,6 +37,10 @@ public object AndroidXVersionLevelPolicy : Policy {
             is Version.Simple -> currentVersion.value as? GradleDependencyVersion.Single
             is Version.Rich -> currentVersion.probableSelectedVersion
         }
+        if (updatedVersion is GradleDependencyVersion.Snapshot) {
+            // We don't want to select snapshot versions if current is not snapshot
+            return resolvedCurrentVersion is GradleDependencyVersion.Snapshot
+        }
         val currentVersionLevel = resolvedCurrentVersion?.let(VersionLevel::of)
         // If no version level can be found we'll select the update
         return currentVersionLevel == null ||

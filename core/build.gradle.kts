@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinx.serialization)
     `maven-publish`
+    alias(libs.plugins.kotlinx.atomicfu)
 }
 
 kotlin {

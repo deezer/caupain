@@ -23,6 +23,8 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressAnimator
+import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
 import com.github.ajalt.mordant.widgets.progress.marquee
 import com.github.ajalt.mordant.widgets.progress.percentage
@@ -95,11 +97,12 @@ class DependencyUpdateCheckerCli(
     override suspend fun run() {
         var progressJob: Job? = null
         var collectProgressJob: Job? = null
+        var terminalProgress: CoroutineProgressTaskAnimator<String>? = null
 
         val updateChecker = if (verbose || quiet) {
             createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger())
         } else {
-            val terminalProgress = progressBarContextLayout {
+            terminalProgress = progressBarContextLayout {
                 marquee(DependencyUpdateChecker.MAX_TASK_NAME_LENGTH) { context }
                 percentage()
                 progressBar(width = 50)
@@ -144,6 +147,10 @@ class DependencyUpdateCheckerCli(
         val formatter = outputType.toFormatter()
         if (verbose) echo("Formatting results to ${outputType.outputName}")
         formatter.format(updates)
+        terminalProgress?.update {
+            context = "Done"
+            completed = 100
+        }
         collectProgressJob?.cancel()
         progressJob?.cancel()
         throw ProgramResult(0)

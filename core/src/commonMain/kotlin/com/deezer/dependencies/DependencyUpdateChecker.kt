@@ -1,5 +1,6 @@
 package com.deezer.dependencies
 
+import com.deezer.dependencies.DependencyUpdateChecker.Companion.DONE
 import com.deezer.dependencies.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
 import com.deezer.dependencies.DependencyUpdateChecker.Companion.GATHERING_INFO_TASK
 import com.deezer.dependencies.DependencyUpdateChecker.Companion.PARSING_TASK
@@ -35,6 +36,8 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.xml.xml
+import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.update
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -81,8 +84,9 @@ public interface DependencyUpdateChecker {
         internal const val PARSING_TASK = "Parsing version catalog"
         internal const val FINDING_UPDATES_TASK = "Finding updates"
         internal const val GATHERING_INFO_TASK = "Gathering update info"
+        internal const val DONE = "done"
         public val MAX_TASK_NAME_LENGTH: Int =
-            listOf(PARSING_TASK, FINDING_UPDATES_TASK, GATHERING_INFO_TASK).maxOf { it.length }
+            listOf(PARSING_TASK, FINDING_UPDATES_TASK, GATHERING_INFO_TASK, DONE).maxOf { it.length }
     }
 }
 
@@ -164,6 +168,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
         val updatedVersionsMutex = Mutex()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val nbDependencies = versionCatalog.dependencies.size
+        var completed by atomic(0)
         progressFlow.value =
             DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
         coroutineScope {
@@ -197,7 +202,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
                                 }
                             }
                         }
-                        val percentage = ((index + 1) * 100) / (nbDependencies * 2)
+                        val percentage = (++completed * 50) / nbDependencies
                         progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                             taskName = FINDING_UPDATES_TASK,
                             percentage = percentage
@@ -208,12 +213,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
                 .awaitAll()
         }
         val nbUpdatedVersions = updatedVersions.size
-        if (nbUpdatedVersions == 0) {
-            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
-                taskName = GATHERING_INFO_TASK,
-                percentage = 100
-            )
-        }
+        completed = 0
         val updateInfosMutex = Mutex()
         val updatesInfos = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
         coroutineScope {
@@ -229,7 +229,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
                                 ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
                             infosForType.add(updateInfo)
                         }
-                        val percentage = (((index + 1) * 100) / (nbUpdatedVersions * 2)) + 50
+                        val percentage = ((++completed * 50) / nbUpdatedVersions) + 50
                         progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                             taskName = GATHERING_INFO_TASK,
                             percentage = percentage
@@ -238,10 +238,7 @@ public class DefaultDependencyUpdateChecker internal constructor(
                 }
                 .toList()
                 .awaitAll()
-            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
-                taskName = GATHERING_INFO_TASK,
-                percentage = 100
-            )
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(DONE, 100)
         }
         // Sort
         return buildMap {
