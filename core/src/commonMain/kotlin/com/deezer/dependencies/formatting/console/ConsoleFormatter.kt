@@ -12,7 +12,7 @@ public class ConsoleFormatter(
         } else {
             consolePrinter.print(UPDATES_TITLE)
             printUpdates(LIBRARY_TITLE, updates[UpdateInfo.Type.LIBRARY].orEmpty())
-            printUpdates(UPDATES_TITLE, updates[UpdateInfo.Type.PLUGIN].orEmpty())
+            printUpdates(PLUGIN_TITLE, updates[UpdateInfo.Type.PLUGIN].orEmpty())
         }
     }
 
