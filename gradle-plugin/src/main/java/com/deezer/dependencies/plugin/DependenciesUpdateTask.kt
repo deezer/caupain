@@ -54,6 +54,10 @@ open class DependenciesUpdateTask : DefaultTask() {
 
     private var policy: Policy? = null
 
+    init {
+        outputs.upToDateWhen { false }
+    }
+
     @TaskAction
     fun checkUpdates() {
         val policy = this.policy?.let { SinglePolicy(it) }

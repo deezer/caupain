@@ -26,8 +26,8 @@ internal fun MutableMap<String, Policy>.putPolicy(policy: Policy) {
     put(policy.name, policy)
 }
 
-internal object AndroidXVersionLevelPolicy : Policy {
-    override val name = "androidx-version-level"
+public object AndroidXVersionLevelPolicy : Policy {
+    override val name: String = "androidx-version-level"
 
     override fun select(
         currentVersion: Version.Direct,
