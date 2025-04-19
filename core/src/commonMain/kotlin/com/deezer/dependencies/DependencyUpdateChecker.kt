@@ -58,16 +58,41 @@ import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
+/**
+ * Given a version catalog, this interrogates Maven repositories (specified via [Configuration]), and
+ * computes the updated versions for each dependency.
+ */
 public interface DependencyUpdateChecker {
+
+    /**
+     * Progress flow
+     */
     public val progress: Flow<Progress?>
 
+    /**
+     * Check for updates in the version catalog.
+     *
+     * @return A map of update types to a list of update information.
+     */
     public suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>>
 
+    /**
+     * Progress interface to represent the progress of the update check.
+     */
     public sealed interface Progress {
+        /**
+         * The name of the current task.
+         */
         public val taskName: String
 
+        /**
+         * Intederminate progress, used when the task length is not known.
+         */
         public data class Indeterminate(override val taskName: String) : Progress
 
+        /**
+         * Determinate progress, used when the task length is known.
+         */
         public data class Determinate(
             override val taskName: String,
             val percentage: Int,
@@ -79,6 +104,10 @@ public interface DependencyUpdateChecker {
         internal const val FINDING_UPDATES_TASK = "Finding updates"
         internal const val GATHERING_INFO_TASK = "Gathering update info"
         internal const val DONE = "done"
+
+        /**
+         * The maximum length of the task name, used to format the progress output.
+         */
         public val MAX_TASK_NAME_LENGTH: Int =
             listOf(
                 PARSING_TASK,
@@ -89,7 +118,46 @@ public interface DependencyUpdateChecker {
     }
 }
 
-public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") internal constructor(
+/**
+ * Creates a new [DependencyUpdateChecker] instance with the specified parameters.
+ */
+public fun DependencyUpdateChecker(
+    configuration: Configuration,
+    logger: Logger = Logger.EMPTY,
+    fileSystem: FileSystem = FileSystem.SYSTEM,
+    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    policies: Map<String, Policy>? = null
+): DependencyUpdateChecker = DefaultDependencyUpdateChecker(
+    configuration = configuration,
+    fileSystem = fileSystem,
+    httpClient = HttpClient {
+        install(ContentNegotiation) {
+            xml(DefaultXml, ContentType.Any)
+        }
+        install(Logging) {
+            this.logger = logger
+            level = LogLevel.HEADERS
+        }
+        install(HttpCache) {
+            configuration.cacheDir?.let { cacheDir ->
+                fileSystem.createDirectories(cacheDir)
+                publicStorage(FileStorage(fileSystem, cacheDir))
+            }
+        }
+    },
+    ioDispatcher = ioDispatcher,
+    versionCatalogParser = DefaultVersionCatalogParser(
+        toml = DefaultToml,
+        versionCatalogPath = configuration.versionCatalogPath,
+        fileSystem = fileSystem,
+        ioDispatcher = Dispatchers.IO
+    ),
+    logger = logger,
+    policies = policies
+)
+
+@Suppress("LongParameterList")
+internal class DefaultDependencyUpdateChecker(
     private val configuration: Configuration,
     private val httpClient: HttpClient,
     private val fileSystem: FileSystem,
@@ -98,46 +166,12 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
     private val logger: Logger,
     policies: Map<String, Policy>?,
 ) : DependencyUpdateChecker {
-    public constructor(
-        configuration: Configuration,
-        logger: Logger = Logger.EMPTY,
-        fileSystem: FileSystem = FileSystem.SYSTEM,
-        ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-        policies: Map<String, Policy>? = null
-    ) : this(
-        configuration = configuration,
-        fileSystem = fileSystem,
-        httpClient = HttpClient {
-            install(ContentNegotiation) {
-                xml(DefaultXml, ContentType.Any)
-            }
-            install(Logging) {
-                this.logger = logger
-                level = LogLevel.HEADERS
-            }
-            install(HttpCache) {
-                configuration.cacheDir?.let { cacheDir ->
-                    fileSystem.createDirectories(cacheDir)
-                    publicStorage(FileStorage(fileSystem, cacheDir))
-                }
-            }
-        },
-        ioDispatcher = ioDispatcher,
-        versionCatalogParser = DefaultVersionCatalogParser(
-            toml = DefaultToml,
-            versionCatalogPath = configuration.versionCatalogPath,
-            fileSystem = fileSystem,
-            ioDispatcher = Dispatchers.IO
-        ),
-        logger = logger,
-        policies = policies
-    )
 
     private val policies by lazy {
         policies ?: buildMap {
             putAll(DEFAULT_POLICIES)
             configuration
-                .policyPluginDir
+                .policyPluginsDir
                 ?.takeIf { fileSystem.exists(it) }
                 ?.let { fileSystem.list(it) }
                 .orEmpty()
@@ -264,7 +298,7 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
 
     private suspend fun findUpdatedVersion(
         dependency: Dependency,
-        versionReferences: Map<String, Version.Direct>
+        versionReferences: Map<String, Version.Resolved>
     ): VersionResult? {
         val repositories = when (dependency) {
             is Dependency.Library -> configuration.repositories
@@ -284,7 +318,7 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
 
     private suspend fun findUpdatedVersion(
         dependency: Dependency,
-        versionReferences: Map<String, Version.Direct>,
+        versionReferences: Map<String, Version.Resolved>,
         repository: Repository
     ): GradleDependencyVersion.Single? {
         val version = dependency.version?.resolve(versionReferences) ?: return null
@@ -372,9 +406,14 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
         val dependencyKey: String,
         val dependency: Dependency,
         val repository: Repository,
-        val currentVersion: Version.Direct,
+        val currentVersion: Version.Resolved,
         val updatedVersion: GradleDependencyVersion.Single,
     )
 }
 
+/**
+ * Exception thrown when no version catalog is not found at the specified path.
+ *
+ * @param path The path to the version catalog.
+ */
 public class NoVersionCatalogException(path: Path) : Exception("No version catalog found at $path")

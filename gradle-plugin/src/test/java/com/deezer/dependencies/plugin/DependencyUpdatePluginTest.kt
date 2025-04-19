@@ -38,7 +38,6 @@ class DependencyUpdatePluginTest {
         )
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                println("Path : ${request.path}")
                 val body = when (request.path) {
                     "/maven/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
                     "/maven/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM

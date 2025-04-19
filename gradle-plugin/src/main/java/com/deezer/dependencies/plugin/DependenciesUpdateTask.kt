@@ -1,6 +1,6 @@
 package com.deezer.dependencies.plugin
 
-import com.deezer.dependencies.DefaultDependencyUpdateChecker
+import com.deezer.dependencies.DependencyUpdateChecker
 import com.deezer.dependencies.formatting.console.ConsoleFormatter
 import com.deezer.dependencies.formatting.console.ConsolePrinter
 import com.deezer.dependencies.formatting.html.HtmlFormatter
@@ -24,38 +24,76 @@ import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 import java.util.UUID
 
+/**
+ * Dependencies Update task.
+ */
 open class DependenciesUpdateTask : DefaultTask() {
 
+    /**
+     * The list of repositories to check for updates. Default uses the repositories defined in the
+     * `dependencyResolutionManagement` block of settings file.
+     */
     @get:Input
     val repositories = project.objects.listProperty<Repository>()
 
+    /**
+     * The list of plugin repositories to check for updates. Default uses the repositories defined in the
+     * `pluginManagement` block of settings file.
+     */
     @get:Input
     val pluginRepositories = project.objects.listProperty<Repository>()
 
+    /**
+     * @see DependenciesUpdateExtension.versionCatalogFile
+     */
     @get:InputFile
     val versionCatalogFile = project.objects.fileProperty()
 
+    /**
+     * @see DependenciesUpdateExtension.excludedKeys
+     */
     @get:Input
     val excludedKeys = project.objects.setProperty<String>()
 
+    /**
+     * @see DependenciesUpdateExtension.excludedLibraries
+     */
     @get:Input
     val excludedLibraries = project.objects.listProperty<LibraryExclusion>()
 
+    /**
+     * @see DependenciesUpdateExtension.excludedPluginIds
+     */
     @get:Input
     val excludedPluginIds = project.objects.setProperty<String>()
 
+    /**
+     * @see DependenciesUpdateExtension.outputFile
+     */
     @OutputFile
     val outputFile = project.objects.fileProperty()
 
+    /**
+     * @see DependenciesUpdateExtension.outputToConsole
+     */
     @get:Input
     val outputToConsole = project.objects.property<Boolean>()
 
+    /**
+     * @see DependenciesUpdateExtension.outputToFile
+     */
     @get:Input
     val outputToFile = project.objects.property<Boolean>()
 
+    /**
+     * @see DependenciesUpdateExtension.useCache
+     */
     @get:Input
     val useCache = project.objects.property<Boolean>()
 
+    /**
+     * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
+     */
     @get:Internal
     val cacheDir = project
         .objects
@@ -76,7 +114,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             if (outputToConsole.get()) add(ConsoleFormatter(ConsolePrinterAdapter(logger)))
             if (outputToFile.get()) add(HtmlFormatter(outputFile.get().asFile.toOkioPath()))
         }
-        val checker = DefaultDependencyUpdateChecker(
+        val checker = DependencyUpdateChecker(
             configuration = configuration,
             logger = LoggerAdapter(logger),
             policies = policy?.let { mapOf(it.name to it) }
@@ -89,11 +127,21 @@ open class DependenciesUpdateTask : DefaultTask() {
         }
     }
 
+    /**
+     * Sets the update policy to use for the task.
+     */
     @Suppress("unused")
     fun selectIf(policy: Policy) {
         this.policy = policy
     }
 
+    /**
+     * Adds a repository to check for updates.
+     *
+     * @param url The URL of the repository.
+     * @param user The username for authentication (optional).
+     * @param password The password for authentication (optional).
+     */
     fun repository(
         url: String,
         user: String? = null,
@@ -151,7 +199,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         override val name: String = UUID.randomUUID().toString()
 
         override fun select(
-            currentVersion: Version.Direct,
+            currentVersion: Version.Resolved,
             updatedVersion: GradleDependencyVersion.Single
         ): Boolean {
             return policy.select(VersionUpdateInfo(currentVersion, updatedVersion))

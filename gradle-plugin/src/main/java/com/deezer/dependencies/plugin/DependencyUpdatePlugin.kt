@@ -8,6 +8,9 @@ import org.gradle.api.initialization.Settings
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 
+/**
+ * Plugin to check for dependency updates.
+ */
 @Suppress("UnstableApiUsage")
 open class DependencyUpdatePlugin : Plugin<Settings> {
 

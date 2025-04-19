@@ -2,14 +2,39 @@ package com.deezer.dependencies.model
 
 import io.ktor.client.plugins.logging.Logger as KtorLogger
 
+/**
+ * Logger interface for logging messages at different levels.
+ */
 public interface Logger : KtorLogger {
 
+    /**
+     * Logs a debug message.
+     *
+     * @param message The message to log.
+     */
     public fun debug(message: String)
 
+    /**
+     * Logs an info message.
+     *
+     * @param message The message to log.
+     */
     public fun info(message: String)
 
+    /**
+     * Logs a warning message.
+     *
+     * @param message The message to log.
+     * @param throwable An optional throwable to log.
+     */
     public fun warn(message: String, throwable: Throwable? = null)
 
+    /**
+     * Logs an error message.
+     *
+     * @param message The message to log.
+     * @param throwable An optional throwable to log.
+     */
     public fun error(message: String, throwable: Throwable? = null)
 
     override fun log(message: String) {
@@ -17,6 +42,9 @@ public interface Logger : KtorLogger {
     }
 
     public companion object {
+        /**
+         * A logger that does nothing. This is useful for disabling logging.
+         */
         public val EMPTY: Logger = object : Logger {
             override fun debug(message: String) {
                 // Nothing to do

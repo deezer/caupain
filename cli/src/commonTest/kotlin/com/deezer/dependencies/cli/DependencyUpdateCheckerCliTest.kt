@@ -114,7 +114,7 @@ class DependencyUpdateCheckerCliTest {
             versionCatalogPath = versionCatalogPath,
             excludedKeys = setOf("excluded"),
             policy = "custom",
-            policyPluginDir = policyPluginDir,
+            policyPluginsDir = policyPluginDir,
             cacheDir = cacheDir
         )
         val mergedConfiguration = mock<Configuration>()

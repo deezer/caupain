@@ -97,6 +97,7 @@ class DependencyUpdateCheckerTest {
             GROOVY_CORE_METADATA_URL -> scope.respondElement(GROOVY_CORE_METADATA)
             GROOVY_CORE_INFO_URL -> scope.respondElement(GROOVY_CORE_INFO)
             GROOVY_NIO_METADATA_URL -> scope.respondElement(GROOVY_NIO_METADATA)
+            GROOVY_NIO_INFO_URL -> scope.respondElement(GROOVY_NIO_INFO)
             VERSIONS_METADATA_URL -> scope.respondElement(VERSIONS_METADATA)
             VERSIONS_INFO_URL -> scope.respondElement(VERSIONS_INFO)
             RESOLVED_VERSIONS_INFO_URL -> scope.respondElement(RESOLVED_VERSIONS_INFO)
@@ -123,6 +124,14 @@ class DependencyUpdateCheckerTest {
                         url = "https://groovy-lang.org/",
                         currentVersion = "3.0.5-alpha-1",
                         updatedVersion = "3.0.6"
+                    ),
+                    UpdateInfo(
+                        dependency = "groovy-nio",
+                        dependencyId = "org.codehaus.groovy:groovy-nio",
+                        name = "Groovy NIO",
+                        url = "https://groovy-lang.org/",
+                        currentVersion = "3.0.5-alpha-1",
+                        updatedVersion = "3.0.5"
                     )
                 ),
                 UpdateInfo.Type.PLUGIN to listOf(
@@ -221,6 +230,15 @@ private val GROOVY_NIO_METADATA = metadata(
 private val GROOVY_NIO_METADATA_URL = URLBuilder()
     .takeFrom(BASE_URL)
     .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "maven-metadata.xml")
+    .build()
+
+private val GROOVY_NIO_INFO = info(
+    name = "Groovy NIO",
+    url = "https://groovy-lang.org/"
+)
+private val GROOVY_NIO_INFO_URL = URLBuilder()
+    .takeFrom(BASE_URL)
+    .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "3.0.5", "groovy-nio-3.0.5.pom")
     .build()
 
 private val VERSIONS_METADATA = metadata(

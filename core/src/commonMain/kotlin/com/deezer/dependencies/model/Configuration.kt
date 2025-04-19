@@ -4,6 +4,19 @@ import com.deezer.dependencies.Serializable
 import okio.Path
 import okio.Path.Companion.toPath
 
+/**
+ * Configuration is a data class that holds the configuration for the dependency update process.
+ *
+ * @property repositories A list of repositories to search for dependencies.
+ * @property pluginRepositories A list of repositories to search for plugin updates.
+ * @property versionCatalogPath The path to the version catalog file.
+ * @property excludedKeys A set of keys to exclude from the update process.
+ * @property excludedLibraries A list of libraries to exclude from the update process.
+ * @property excludedPlugins A list of plugins to exclude from the update process.
+ * @property policy The policy to use for the update process.
+ * @property policyPluginsDir The directory for the policy plugins.
+ * @property cacheDir The directory for the HTTP cache.
+ */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
     public val pluginRepositories: List<Repository>
@@ -12,14 +25,27 @@ public interface Configuration : Serializable {
     public val excludedLibraries: List<LibraryExclusion>
     public val excludedPlugins: List<PluginExclusion>
     public val policy: String?
-    public val policyPluginDir: Path?
+    public val policyPluginsDir: Path?
     public val cacheDir: Path?
 
-    public companion object {
+    private companion object {
         private const val serialVersionUID = 1L
     }
 }
 
+/**
+ * Creates a new Configuration instance with the specified parameters.
+ *
+ * @param repositories A list of repositories to search for dependencies.
+ * @param pluginRepositories A list of repositories to search for plugin updates.
+ * @param versionCatalogPath The path to the version catalog file.
+ * @param excludedKeys A set of keys to exclude from the update process.
+ * @param excludedLibraries A list of libraries to exclude from the update process.
+ * @param excludedPlugins A list of plugins to exclude from the update process.
+ * @param policy The policy to use for the update process.
+ * @param policyPluginsDir The directory for the policy plugins.
+ * @param cacheDir The directory for the HTTP cache.
+ */
 @Suppress("LongParameterList")
 public fun Configuration(
     repositories: List<Repository> = listOf(
@@ -36,7 +62,7 @@ public fun Configuration(
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
     policy: String? = null,
-    policyPluginDir: Path? = null,
+    policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
@@ -46,7 +72,7 @@ public fun Configuration(
     excludedLibraries = excludedLibraries,
     excludedPlugins = excludedPlugins,
     policy = policy,
-    policyPluginDir = policyPluginDir,
+    policyPluginsDir = policyPluginsDir,
     cacheDir = cacheDir
 )
 
@@ -65,20 +91,28 @@ internal data class ConfigurationImpl(
     override val excludedLibraries: List<LibraryExclusion> = emptyList(),
     override val excludedPlugins: List<PluginExclusion> = emptyList(),
     override val policy: String? = null,
-    override val policyPluginDir: Path? = null,
+    override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
 ) : Configuration
 
+/**
+ * Library exclusion info
+ *
+ * @property group The group of the library to exclude.
+ * @property name The name of the library to exclude. If null, all libraries in the group are excluded.
+ */
 public data class LibraryExclusion(
-
     val group: String,
     val name: String? = null,
 ) : Serializable {
-    public companion object {
+    private companion object {
         private const val serialVersionUID = 1L
     }
 }
 
+/**
+ * Wrapper for plugin id exclusion.
+ */
 public data class PluginExclusion(val id: String)
 
 internal fun Configuration.isExcluded(dependencyKey: String, dependency: Dependency): Boolean {

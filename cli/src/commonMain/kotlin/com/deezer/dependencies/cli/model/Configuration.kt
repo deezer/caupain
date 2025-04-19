@@ -59,7 +59,7 @@ private data class ConfigurationImpl(
             excludedLibraries = excludedLibraries ?: baseConfiguration.excludedLibraries,
             excludedPlugins = excludedPlugins ?: baseConfiguration.excludedPlugins,
             policy = policy ?: baseConfiguration.policy,
-            policyPluginDir = policyPluginDir ?: baseConfiguration.policyPluginDir,
+            policyPluginsDir = policyPluginDir ?: baseConfiguration.policyPluginsDir,
             cacheDir = cacheDir ?: baseConfiguration.cacheDir
         )
     }

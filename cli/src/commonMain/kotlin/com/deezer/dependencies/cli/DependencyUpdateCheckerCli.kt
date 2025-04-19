@@ -1,6 +1,5 @@
 package com.deezer.dependencies.cli
 
-import com.deezer.dependencies.DefaultDependencyUpdateChecker
 import com.deezer.dependencies.DependencyUpdateChecker
 import com.deezer.dependencies.NoVersionCatalogException
 import com.deezer.dependencies.cli.internal.path
@@ -56,7 +55,7 @@ class DependencyUpdateCheckerCli(
         DefaultToml.decodeFromPath(path, fs)
     },
     private val createUpdateChecker: (Configuration, FileSystem, Logger) -> DependencyUpdateChecker = { config, fs, logger ->
-        DefaultDependencyUpdateChecker(
+        DependencyUpdateChecker(
             configuration = config,
             fileSystem = fs,
             logger = logger
@@ -171,7 +170,7 @@ class DependencyUpdateCheckerCli(
         val baseConfiguration = Configuration(
             versionCatalogPath = versionCatalogPath,
             excludedKeys = excluded.toSet(),
-            policyPluginDir = policyPluginDir,
+            policyPluginsDir = policyPluginDir,
             policy = policy,
             cacheDir = cacheDir
         )

@@ -22,7 +22,7 @@ import okio.FileSystem
 import okio.Path
 
 @Suppress("FunctionName")
-public fun FileStorage(
+internal fun FileStorage(
     fileSystem: FileSystem,
     directory: Path,
     dispatcher: CoroutineDispatcher = Dispatchers.IO

@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinx.serialization)
@@ -69,5 +71,11 @@ kotlin {
                 implementation(libs.ktor.client.curl)
             }
         }
+    }
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+        documentedVisibilities(VisibilityModifier.Public)
     }
 }

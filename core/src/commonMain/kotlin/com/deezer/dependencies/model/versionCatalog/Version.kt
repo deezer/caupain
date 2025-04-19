@@ -12,10 +12,20 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
 import net.peanuuutz.tomlkt.asTomlDecoder
 
+/**
+ * Represents a version in the version catalog. See the [Gradle documentation](https://docs.gradle.org/current/userguide/dependency_versions.html)
+ * for more information.
+ */
 @Serializable(VersionSerializer::class)
 public sealed interface Version {
 
-    public fun resolve(versionReferences: Map<String, Direct>): Direct? {
+    /**
+     * Resolves the version based on the provided version references.
+     *
+     * @param versionReferences A map of version references to their corresponding [Resolved] versions.
+     * @return The resolved [Resolved] version, or null if not found.
+     */
+    public fun resolve(versionReferences: Map<String, Resolved>): Resolved? {
         return when (this) {
             is Simple -> this
             is Reference -> versionReferences[ref]
@@ -23,12 +33,18 @@ public sealed interface Version {
         }
     }
 
+    /**
+     * Interface for resolved versions.
+     */
     @Serializable(DirectVersionSerializer::class)
-    public sealed interface Direct : Version {
+    public sealed interface Resolved : Version {
         public fun isUpdate(version: GradleDependencyVersion.Single): Boolean
     }
 
-    public data class Simple(val value: GradleDependencyVersion) : Direct {
+    /**
+     * Represents a simple version.
+     */
+    public data class Simple(val value: GradleDependencyVersion) : Resolved {
         override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return value.isUpdate(version)
         }
@@ -36,9 +52,17 @@ public sealed interface Version {
         override fun toString(): String = value.toString()
     }
 
+    /**
+     * Represents a version reference.
+     *
+     * @param ref The reference key
+     */
     @Serializable
     public data class Reference(val ref: String) : Version
 
+    /**
+     * Represents a rich version with various constraints.
+     */
     @Serializable
     public data class Rich(
         val require: GradleDependencyVersion? = null,
@@ -46,7 +70,7 @@ public sealed interface Version {
         val prefer: GradleDependencyVersion? = null,
         val reject: GradleDependencyVersion? = null,
         val rejectAll: Boolean = false
-    ) : Direct {
+    ) : Resolved {
         val probableSelectedVersion: GradleDependencyVersion.Single?
             get() = if (rejectAll) {
                 null
@@ -151,7 +175,7 @@ internal class VersionSerializer : KSerializer<Version> {
 }
 
 @OptIn(InternalSerializationApi::class)
-internal class DirectVersionSerializer : KSerializer<Version.Direct> {
+internal class DirectVersionSerializer : KSerializer<Version.Resolved> {
 
     private val richSerializer = Version.Rich.serializer()
 
@@ -160,14 +184,14 @@ internal class DirectVersionSerializer : KSerializer<Version.Direct> {
         kind = SerialKind.CONTEXTUAL
     )
 
-    override fun serialize(encoder: Encoder, value: Version.Direct) {
+    override fun serialize(encoder: Encoder, value: Version.Resolved) {
         when (value) {
             is Version.Simple -> encoder.encodeString(value.value.text)
             is Version.Rich -> encoder.encodeSerializableValue(richSerializer, value)
         }
     }
 
-    override fun deserialize(decoder: Decoder): Version.Direct {
+    override fun deserialize(decoder: Decoder): Version.Resolved {
         val tomlDecoder = decoder.asTomlDecoder()
         return when (val tomlElement = tomlDecoder.decodeTomlElement()) {
             is TomlLiteral -> Version.Simple(GradleDependencyVersion(tomlElement.content))

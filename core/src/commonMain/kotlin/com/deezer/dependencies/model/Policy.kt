@@ -3,11 +3,20 @@ package com.deezer.dependencies.model
 import com.deezer.dependencies.model.versionCatalog.Version
 import okio.Path
 
+/**
+ * Policy for selecting if a version can be used as an update for a dependency.
+ */
 public interface Policy {
+    /**
+     * The name of the policy.
+     */
     public val name: String
 
+    /**
+     * Selects if the updated version can be used as an update for the current version.
+     */
     public fun select(
-        currentVersion: Version.Direct,
+        currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Single
     ): Boolean
 }
@@ -26,11 +35,16 @@ internal fun MutableMap<String, Policy>.putPolicy(policy: Policy) {
     put(policy.name, policy)
 }
 
+/**
+ * This a default implementation for policy, based on the version levels used in AndroidX. Basically,
+ * this version accept an update if the update's version level (alpha/beta/rc/stable) is greater than
+ * or equal to the current version level.
+ */
 public object AndroidXVersionLevelPolicy : Policy {
     override val name: String = "androidx-version-level"
 
     override fun select(
-        currentVersion: Version.Direct,
+        currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Single
     ): Boolean {
         val resolvedCurrentVersion = when (currentVersion) {

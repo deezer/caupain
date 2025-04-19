@@ -26,6 +26,13 @@ import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
 
+/**
+ * HtmlFormatter is a [Formatter] that formats the output as HTML.
+ *
+ * @param path The path to the HTML file to write.
+ * @param fileSystem The file system to use for writing the file. Default uses the native file system.
+ * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default is [Dispatchers.IO].
+ */
 public class HtmlFormatter(
     private val path: Path,
     private val fileSystem: FileSystem = FileSystem.SYSTEM,

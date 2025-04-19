@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 
 class VersionTest {
 
-    private fun Version.Direct.checkUpdate(
+    private fun Version.Resolved.checkUpdate(
         newVersion: String,
         shouldUpdate: Boolean
     ) {

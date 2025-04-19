@@ -3,6 +3,9 @@ package com.deezer.dependencies.formatting.console
 import com.deezer.dependencies.formatting.Formatter
 import com.deezer.dependencies.model.UpdateInfo
 
+/**
+ * ConsoleFormatter is a [Formatter] that formats the output for the console.
+ */
 public class ConsoleFormatter(
     private val consolePrinter: ConsolePrinter
 ) : Formatter {

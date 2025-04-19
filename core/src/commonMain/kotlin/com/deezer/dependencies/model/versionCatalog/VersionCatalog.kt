@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class VersionCatalog(
-    val versions: Map<String, Version.Direct> = emptyMap(),
+    val versions: Map<String, Version.Resolved> = emptyMap(),
     val libraries: Map<String, Dependency.Library> = emptyMap(),
     val plugins: Map<String, Dependency.Plugin> = emptyMap()
 ) {

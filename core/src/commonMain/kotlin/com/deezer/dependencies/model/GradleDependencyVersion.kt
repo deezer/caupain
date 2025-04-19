@@ -14,20 +14,38 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.JvmInline
 
+/**
+ * Gradle version. See the [Gradle documentation](https://docs.gradle.org/current/userguide/dependency_versions.html#sec:single-version-declarations)
+ * for more information.
+ */
 @Serializable(GradleDependencyVersionSerializer::class)
 public sealed interface GradleDependencyVersion {
 
+    /**
+     * The text representation of the version.
+     */
     public val text: String
 
+    /**
+     * Interface for versions representing a single version.
+     */
     public sealed interface Single : GradleDependencyVersion, Comparable<Single> {
         public val exactVersion: Exact
     }
 
+    /**
+     * Checks if the given version is contained within this version.
+     */
     public operator fun contains(version: Single): Boolean
 
+    /**
+     * Checks if the given version is an update compared to this version.
+     */
     public fun isUpdate(version: Single): Boolean
 
-    // Dependency version compared like in https://docs.gradle.org/current/userguide/single_versions.html#version_ordering
+    /**
+     * Exact version
+     */
     public data class Exact(private val version: String) : Single {
 
         override val text: String
@@ -40,6 +58,7 @@ public sealed interface GradleDependencyVersion {
 
         override fun contains(version: Single): Boolean = this == version
 
+        // Dependency version compared like in https://docs.gradle.org/current/userguide/single_versions.html#version_ordering
         override fun compareTo(other: Single): Int = when (other) {
             is Exact -> compareTo(other)
             is Snapshot -> {
@@ -162,10 +181,13 @@ public sealed interface GradleDependencyVersion {
         }
     }
 
+    /**
+     * Version range
+     */
     public data class Range(override val text: String) : GradleDependencyVersion {
 
-        val lowerBound: Bound?
-        val upperBound: Bound?
+        internal val lowerBound: Bound?
+        internal val upperBound: Bound?
 
         init {
             require(text.length > 2 && text.first() in LOWER_BOUND_MARKERS && text.last() in UPPER_BOUND_MARKERS) {
@@ -244,7 +266,7 @@ public sealed interface GradleDependencyVersion {
 
         override fun toString(): String = text
 
-        public data class Bound(val value: Single, val isExclusive: Boolean)
+        internal data class Bound(val value: Single, val isExclusive: Boolean)
 
         internal companion object {
             val LOWER_BOUND_MARKERS = charArrayOf('[', '(', ']')
@@ -254,6 +276,9 @@ public sealed interface GradleDependencyVersion {
         }
     }
 
+    /**
+     * Version with prefix
+     */
     public data class Prefix(override val text: String) : GradleDependencyVersion {
 
         private val regex: Regex
@@ -280,6 +305,9 @@ public sealed interface GradleDependencyVersion {
         override fun toString(): String = text
     }
 
+    /**
+     * Latest version
+     */
     public data class Latest(override val text: String) : GradleDependencyVersion {
         override fun contains(version: Single): Boolean = false
 
@@ -293,6 +321,9 @@ public sealed interface GradleDependencyVersion {
         }
     }
 
+    /**
+     * Snapshot version
+     */
     public data class Snapshot(override val text: String) : Single {
 
         override val exactVersion: Exact = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
@@ -312,6 +343,9 @@ public sealed interface GradleDependencyVersion {
         override fun toString(): String = text
     }
 
+    /**
+     * Unknown version
+     */
     public data class Unknown(override val text: String) : GradleDependencyVersion {
         override fun contains(version: Single): Boolean = false
 
