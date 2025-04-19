@@ -84,6 +84,14 @@ open class DependenciesUpdateTask : DefaultTask() {
         this.policy = policy
     }
 
+    fun repository(
+        url: String,
+        user: String? = null,
+        password: String? = null
+    ) {
+        repositories.add(Repository(url, user, password))
+    }
+
     private fun createConfiguration(policyId: String?): Configuration = Configuration(
         repositories = repositories.get(),
         pluginRepositories = pluginRepositories.get(),
@@ -96,7 +104,7 @@ open class DependenciesUpdateTask : DefaultTask() {
 
     private class ConsolePrinterAdapter(private val logger: Logger) : ConsolePrinter {
         override fun print(message: String) {
-            logger.info(message)
+            logger.lifecycle(message)
         }
 
         override fun printError(message: String) {

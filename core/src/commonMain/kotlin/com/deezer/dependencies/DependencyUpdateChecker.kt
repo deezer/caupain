@@ -102,6 +102,7 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
         configuration: Configuration,
         logger: Logger = Logger.EMPTY,
         fileSystem: FileSystem = FileSystem.SYSTEM,
+        ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
         policies: Map<String, Policy>? = null
     ) : this(
         configuration = configuration,
@@ -121,7 +122,7 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
                 }
             }
         },
-        ioDispatcher = Dispatchers.IO,
+        ioDispatcher = ioDispatcher,
         versionCatalogParser = DefaultVersionCatalogParser(
             toml = DefaultToml,
             versionCatalogPath = configuration.versionCatalogPath,
@@ -299,7 +300,7 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
                 ?.versioning
         } ?: return null
         return sequenceOf(versioning.release, versioning.latest)
-            .plus(versioning.versions)
+            .plus(versioning.versions.asSequence().map { it.version })
             .filterNotNull()
             .filterIsInstance<GradleDependencyVersion.Single>()
             .filter { version.isUpdate(it) }

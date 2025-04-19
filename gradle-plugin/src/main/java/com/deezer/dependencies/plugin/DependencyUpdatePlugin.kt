@@ -17,7 +17,7 @@ open class DependencyUpdatePlugin : Plugin<Settings> {
             rootProject.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
                 group = "verification"
                 description = "Check for dependency updates"
-                versionCatalogFile.set(
+                versionCatalogFile.convention(
                     ext
                         .versionCatalogFile
                         .convention(
@@ -26,10 +26,10 @@ open class DependencyUpdatePlugin : Plugin<Settings> {
                                 .projectDirectory
                                 .file("gradle/libs.versions.toml"))
                 )
-                excludedKeys.set(ext.excludedKeys)
-                excludedLibraries.set(ext.excludedLibraries)
-                excludedPluginIds.set(ext.excludedPluginIds)
-                outputFile.set(
+                excludedKeys.convention(ext.excludedKeys)
+                excludedLibraries.convention(ext.excludedLibraries)
+                excludedPluginIds.convention(ext.excludedPluginIds)
+                outputFile.convention(
                     ext
                         .outputFile
                         .convention(
@@ -38,10 +38,10 @@ open class DependencyUpdatePlugin : Plugin<Settings> {
                                 .buildDirectory.file("reports/dependency-updates.html")
                         )
                 )
-                outputToConsole.set(ext.outputToConsole)
-                outputToFile.set(ext.outputToFile)
-                this.repositories.set(target.dependencyResolutionManagement.repositories.toRepositories())
-                this.pluginRepositories.set(target.pluginManagement.repositories.toRepositories())
+                outputToConsole.convention(ext.outputToConsole)
+                outputToFile.convention(ext.outputToFile)
+                this.repositories.convention(target.dependencyResolutionManagement.repositories.toRepositories())
+                this.pluginRepositories.convention(target.pluginManagement.repositories.toRepositories())
             }
         }
     }
