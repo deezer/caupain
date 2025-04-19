@@ -116,9 +116,9 @@ public class DefaultDependencyUpdateChecker @Suppress("LongParameterList") inter
                 level = LogLevel.HEADERS
             }
             install(HttpCache) {
-                if (configuration.cacheDir != null) {
-                    fileSystem.createDirectories(configuration.cacheDir)
-                    publicStorage(FileStorage(fileSystem, configuration.cacheDir))
+                configuration.cacheDir?.let { cacheDir ->
+                    fileSystem.createDirectories(cacheDir)
+                    publicStorage(FileStorage(fileSystem, cacheDir))
                 }
             }
         },

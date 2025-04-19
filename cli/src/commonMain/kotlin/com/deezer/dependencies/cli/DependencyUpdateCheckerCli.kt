@@ -17,8 +17,11 @@ import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.defaultByName
 import com.github.ajalt.clikt.parameters.groups.groupChoice
+import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -39,8 +42,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.peanuuutz.tomlkt.Toml
 import okio.FileSystem
+import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import com.deezer.dependencies.cli.model.Configuration as ParsedConfiguration
@@ -49,7 +52,9 @@ class DependencyUpdateCheckerCli(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val toml: Toml = DefaultToml,
+    private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
+        DefaultToml.decodeFromPath(path, fs)
+    },
     private val createUpdateChecker: (Configuration, FileSystem, Logger) -> DependencyUpdateChecker = { config, fs, logger ->
         DefaultDependencyUpdateChecker(
             configuration = config,
@@ -89,16 +94,21 @@ class DependencyUpdateCheckerCli(
     private val cacheDir by option(help = "Cache directory")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
 
-    private val verbose by option("-v", "--verbose", help = "Enable verbose output").flag()
-
-    private val quiet by option("-q", "--quiet", help = "Suppress all output").flag()
+    private val logLevel by mutuallyExclusiveOptions(
+        option("-q", "--quiet", help = "Suppress all output")
+            .flag()
+            .convert { LogLevel.QUIET },
+        option("-v", "--verbose", help = "Verbose output")
+            .flag()
+            .convert { LogLevel.VERBOSE }
+    ).default(LogLevel.INFO)
 
     override suspend fun run() {
         var progressJob: Job? = null
         var collectProgressJob: Job? = null
         var terminalProgress: CoroutineProgressTaskAnimator<String>? = null
 
-        val updateChecker = if (verbose || quiet) {
+        val updateChecker = if (logLevel == LogLevel.INFO) {
             createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger())
         } else {
             terminalProgress = progressBarContextLayout {
@@ -144,7 +154,9 @@ class DependencyUpdateCheckerCli(
             throw Abort()
         }
         val formatter = outputType.toFormatter()
-        if (verbose) echo("Formatting results to ${outputType.outputName}")
+        if (logLevel == LogLevel.VERBOSE) {
+            echo("Formatting results to ${outputType.outputName}")
+        }
         formatter.format(updates)
         terminalProgress?.update {
             context = "Done"
@@ -163,36 +175,35 @@ class DependencyUpdateCheckerCli(
             policy = policy,
             cacheDir = cacheDir
         )
-        return readConfiguration()?.toConfiguration(baseConfiguration) ?: baseConfiguration
-    }
-
-    private suspend fun readConfiguration(): ParsedConfiguration? = withContext(ioDispatcher) {
-        configurationFile?.let { path ->
-            toml.decodeFromPath(path, fileSystem)
+        return withContext(ioDispatcher) {
+            configurationFile
+                ?.let { path -> parseConfiguration(fileSystem, path) }
+                ?.toConfiguration(baseConfiguration)
+                ?: baseConfiguration
         }
     }
 
     private inner class CliktConsolePrinter : ConsolePrinter {
         override fun print(message: String) {
-            if (!quiet) echo(message, err = false)
+            if (logLevel > LogLevel.QUIET) echo(message, err = false)
         }
 
         override fun printError(message: String) {
-            if (!quiet) echo(message, err = true)
+            if (logLevel > LogLevel.QUIET) echo(message, err = true)
         }
     }
 
     private inner class ClicktLogger : Logger {
         override fun debug(message: String) {
-            if (verbose && !quiet) echo(message, err = false)
+            if (logLevel >= LogLevel.VERBOSE) echo(message, err = false)
         }
 
         override fun info(message: String) {
-            if (!quiet) echo(message, err = false)
+            if (logLevel > LogLevel.QUIET) echo(message, err = false)
         }
 
         private fun echoError(message: String, throwable: Throwable?) {
-            if (quiet) return
+            if (logLevel <= LogLevel.QUIET) return
             val errorMessage = buildString {
                 append(message)
                 if (throwable != null) {
@@ -209,6 +220,10 @@ class DependencyUpdateCheckerCli(
         override fun error(message: String, throwable: Throwable?) {
             echoError(message, throwable)
         }
+    }
+
+    private enum class LogLevel {
+        QUIET, INFO, VERBOSE
     }
 }
 

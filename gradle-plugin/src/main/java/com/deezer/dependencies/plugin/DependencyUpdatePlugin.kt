@@ -42,6 +42,7 @@ open class DependencyUpdatePlugin : Plugin<Settings> {
                 outputToFile.convention(ext.outputToFile)
                 this.repositories.convention(target.dependencyResolutionManagement.repositories.toRepositories())
                 this.pluginRepositories.convention(target.pluginManagement.repositories.toRepositories())
+                useCache.convention(ext.useCache)
             }
         }
     }

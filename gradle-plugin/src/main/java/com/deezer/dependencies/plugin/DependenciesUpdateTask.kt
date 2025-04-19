@@ -16,6 +16,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
@@ -51,6 +52,15 @@ open class DependenciesUpdateTask : DefaultTask() {
 
     @get:Input
     val outputToFile = project.objects.property<Boolean>()
+
+    @get:Input
+    val useCache = project.objects.property<Boolean>()
+
+    @get:Internal
+    val cacheDir = project
+        .objects
+        .directoryProperty()
+        .convention(project.layout.buildDirectory.dir("cache/dependency-updates"))
 
     private var policy: Policy? = null
 
@@ -99,7 +109,12 @@ open class DependenciesUpdateTask : DefaultTask() {
         excludedKeys = excludedKeys.get(),
         excludedLibraries = excludedLibraries.get(),
         excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
-        policy = policyId
+        policy = policyId,
+        cacheDir = if (useCache.get()) {
+            cacheDir.asFile.get().toOkioPath()
+        } else {
+            null
+        }
     )
 
     private class ConsolePrinterAdapter(private val logger: Logger) : ConsolePrinter {

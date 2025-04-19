@@ -22,6 +22,8 @@ open class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactor
 
     val outputToFile = objects.property<Boolean>().convention(true)
 
+    val useCache = objects.property<Boolean>().convention(true)
+
     @Suppress("unused")
     fun excludeLibrary(group: String, name: String? = null) {
         excludedLibraries.add(LibraryExclusion(group, name))
