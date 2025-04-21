@@ -10,7 +10,7 @@ jobs:
   test:
     strategy:
       matrix:
-        arch: [macos-latest, macos-13, ubuntu-latest, windows-latest]
+        os: [macos-latest, macos-13, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
