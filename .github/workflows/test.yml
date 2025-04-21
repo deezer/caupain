@@ -1,4 +1,4 @@
-name: Tests
+name: test
 
 on:
   push:
@@ -14,7 +14,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-      checks: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -45,8 +44,18 @@ jobs:
       - name: Test Windows
         run: ./gradlew :cli:mingwX64Test :core:mingwX64Test
         if: matrix.os == 'windows-latest'
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v5
-        if: success() || failure()
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          report_paths: '*/build/test-results/**/TEST-*.xml'
+          name: junit-test-results-${{ matrix.os }}
+          path: '*/build/test-results/**/TEST-*.xml'
+  merge-reports:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: junit-test-results
+          delete-merged: true
