@@ -23,7 +23,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-update-checker
+          name: dependency-update-checker-macos-arm
           path: cli/build/bin/macosArm64/releaseExecutable/dependency-update-checker.kexe
 
   build-macos-intel:
@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-update-checker
+          name: dependency-update-checker-macos-intel
           path: cli/build/bin/macosX64/releaseExecutable/dependency-update-checker.kexe
 
   build-other:
@@ -63,11 +63,11 @@ jobs:
       - name: Install CURL dev headers
         run: sudo apt-get install libcurl4-gnutls-dev
       - name: Build
-        run: ./gradlew :cli:mingwX64Binaries :cli:linuxX64Binaries ./gradlew :cli:jvmDistZip
+        run: ./gradlew :cli:mingwX64Binaries :cli:linuxX64Binaries :cli:jvmDistZip
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-update-checker
+          name: dependency-update-checker-other
           path: |
             cli/build/bin/mingxX64/releaseExecutable/dependency-update-checker.exe
             cli/build/bin/linuxX64/releaseExecutable/dependency-update-checker.kexe
