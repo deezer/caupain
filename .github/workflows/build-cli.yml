@@ -18,6 +18,12 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Konan cache
+        id: konan-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan/dependencies
+          key: macos-arm-konan
       - name: Build
         run: ./gradlew :cli:macosArm64Binaries
       - name: Upload artifact
@@ -39,6 +45,12 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Konan cache
+        id: konan-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan/dependencies
+          key: macos-arm-konan
       - name: Build
         run: ./gradlew :cli:macosX64Binaries
       - name: Upload artifact
@@ -62,6 +74,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Install CURL dev headers
         run: sudo apt-get install libcurl4-gnutls-dev
+      - name: Konan cache
+        id: konan-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan/dependencies
+          key: macos-arm-konan
       - name: Build
         run: ./gradlew :cli:mingwX64Binaries :cli:linuxX64Binaries :cli:jvmDistZip
       - name: Upload artifact
