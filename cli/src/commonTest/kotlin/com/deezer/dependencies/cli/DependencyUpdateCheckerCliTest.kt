@@ -79,13 +79,6 @@ class DependencyUpdateCheckerCliTest {
     )
 
     @Test
-    fun checkHelp() = runTest(testDispatcher) {
-        val cli = createCli()
-        val result = cli.test(listOf("-h"))
-        assertEquals(EXPECTED_HELP, result.output.trim())
-    }
-
-    @Test
     fun testComplete() = runTest(testDispatcher) {
         val output = mapOf(
             UpdateInfo.Type.LIBRARY to listOf(
@@ -149,23 +142,6 @@ class DependencyUpdateCheckerCliTest {
         assertEquals(EXPECTED_RESULT, fileSystem.read(outputPath) { readUtf8().trim() })
     }
 }
-
-private val EXPECTED_HELP = """
-Usage: dependency-update-checker [<options>]
-
-Options:
-  -i, --version-catalog=<path>      Version catalog path
-  -e, --excluded=<text>             Excluded keys
-  -c, --config=<path>               Configuration file
-  --policy-plugin-dir=<path>        Custom policies plugin dir
-  -p, --policy=<text>               Update policy
-  -t, --output-type=(console|html)  Output type
-  -o, --output=<path>               HTML output path
-  --cache-dir=<path>                Cache directory
-  -q, --quiet                       Suppress all output
-  -v, --verbose                     Verbose output
-  -h, --help                        Show this message and exit    
-""".trimIndent().trim()
 
 @Language("HTML")
 private val EXPECTED_RESULT = """

@@ -25,7 +25,6 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
 import com.github.ajalt.mordant.widgets.progress.marquee
 import com.github.ajalt.mordant.widgets.progress.percentage
@@ -36,8 +35,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,7 +48,7 @@ import com.deezer.dependencies.cli.model.Configuration as ParsedConfiguration
 
 class DependencyUpdateCheckerCli(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
-    defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
@@ -62,8 +61,6 @@ class DependencyUpdateCheckerCli(
         )
     }
 ) : SuspendingCliktCommand(name = "dependency-update-checker") {
-
-    private val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
     private val versionCatalogPath by
     option("-i", "--version-catalog", help = "Version catalog path")
@@ -85,10 +82,10 @@ class DependencyUpdateCheckerCli(
 
     private val outputType by option("-t", "--output-type", help = "Output type")
         .groupChoice(
-            "console" to OutputConfig.Console(CliktConsolePrinter()),
-            "html" to OutputConfig.Html(fileSystem, ioDispatcher)
+            CONSOLE_TYPE to OutputConfig.Console(CliktConsolePrinter()),
+            HTML_TYPE to OutputConfig.Html(fileSystem, ioDispatcher)
         )
-        .defaultByName("html")
+        .defaultByName(CONSOLE_TYPE)
 
     private val cacheDir by option(help = "Cache directory")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
@@ -99,51 +96,58 @@ class DependencyUpdateCheckerCli(
             .convert { LogLevel.QUIET },
         option("-v", "--verbose", help = "Verbose output")
             .flag()
-            .convert { LogLevel.VERBOSE }
-    ).default(LogLevel.INFO)
+            .convert { LogLevel.VERBOSE },
+        option("-d", "--debug", help = "Debug output")
+            .flag()
+            .convert { LogLevel.DEBUG }
+    ).default(LogLevel.DEFAULT)
+
+    private val debugHttpCalls by option(
+        "--debug-http-calls",
+        help = "Enable debugging for HTTP calls"
+    ).flag(default = false)
 
     override suspend fun run() {
-        var progressJob: Job? = null
-        var collectProgressJob: Job? = null
-        var terminalProgress: CoroutineProgressTaskAnimator<String>? = null
+        val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
-        val updateChecker = if (logLevel == LogLevel.INFO) {
-            createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger())
+        val updateChecker = createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger())
+        val progress = if (logLevel > LogLevel.DEFAULT) {
+            null
         } else {
-            terminalProgress = progressBarContextLayout {
+            val terminalProgress = progressBarContextLayout {
                 marquee(DependencyUpdateChecker.MAX_TASK_NAME_LENGTH) { context }
                 percentage()
                 progressBar(width = 50)
                 timeElapsed()
             }.animateInCoroutine(terminal, context = "Starting")
 
-            progressJob = backgroundScope.launch {
+            backgroundScope.launch {
                 terminalProgress.execute()
             }
 
-            createUpdateChecker(createConfiguration(), fileSystem, ClicktLogger()).also { checker ->
-                collectProgressJob = backgroundScope.launch {
-                    checker
-                        .progress
-                        .filterNotNull()
-                        .collect { progress ->
-                            terminalProgress.update {
-                                context = progress.taskName
-                                when (progress) {
-                                    is DependencyUpdateChecker.Progress.Indeterminate -> {
-                                        total = null
-                                        completed = 0
-                                    }
+            backgroundScope.launch {
+                updateChecker
+                    .progress
+                    .filterNotNull()
+                    .collect { progress ->
+                        terminalProgress.update {
+                            context = progress.taskName
+                            when (progress) {
+                                is DependencyUpdateChecker.Progress.Indeterminate -> {
+                                    total = null
+                                    completed = 0
+                                }
 
-                                    is DependencyUpdateChecker.Progress.Determinate -> {
-                                        total = 100
-                                        completed = progress.percentage.toLong()
-                                    }
+                                is DependencyUpdateChecker.Progress.Determinate -> {
+                                    total = 100
+                                    completed = progress.percentage.toLong()
                                 }
                             }
                         }
-                }
+                    }
             }
+
+            terminalProgress
         }
 
         val updates = try {
@@ -153,16 +157,12 @@ class DependencyUpdateCheckerCli(
             throw Abort()
         }
         val formatter = outputType.toFormatter()
-        if (logLevel == LogLevel.VERBOSE) {
-            echo("Formatting results to ${outputType.outputName}")
-        }
         formatter.format(updates)
-        terminalProgress?.update {
-            context = "Done"
-            completed = 100
+        progress?.clear()
+        backgroundScope.cancel()
+        if (logLevel >= LogLevel.DEFAULT && outputType is OutputConfig.Html) {
+            echo("HTML report generated at ${outputType.outputName}")
         }
-        collectProgressJob?.cancel()
-        progressJob?.cancel()
         throw ProgramResult(0)
     }
 
@@ -172,7 +172,8 @@ class DependencyUpdateCheckerCli(
             excludedKeys = excluded.toSet(),
             policyPluginsDir = policyPluginDir,
             policy = policy,
-            cacheDir = cacheDir
+            cacheDir = cacheDir,
+            debugHttpCalls = debugHttpCalls,
         )
         return withContext(ioDispatcher) {
             configurationFile
@@ -194,19 +195,30 @@ class DependencyUpdateCheckerCli(
 
     private inner class ClicktLogger : Logger {
         override fun debug(message: String) {
-            if (logLevel >= LogLevel.VERBOSE) echo(message, err = false)
+            if (logLevel >= LogLevel.DEBUG) echo(message, err = false)
         }
 
         override fun info(message: String) {
-            if (logLevel > LogLevel.QUIET) echo(message, err = false)
+            if (logLevel >= LogLevel.VERBOSE) echo(message, err = false)
+        }
+
+        override fun lifecycle(message: String) {
+            if (logLevel >= LogLevel.DEFAULT) echo(message, err = false)
         }
 
         private fun echoError(message: String, throwable: Throwable?) {
             if (logLevel <= LogLevel.QUIET) return
             val errorMessage = buildString {
                 append(message)
-                if (throwable != null) {
-                    append(": ${throwable.message}")
+                when {
+                    throwable == null -> Unit
+
+                    logLevel >= LogLevel.DEBUG -> {
+                        appendLine()
+                        append(throwable.stackTraceToString())
+                    }
+
+                    else -> append(": ${throwable.message}")
                 }
             }
             echo(errorMessage, err = true)
@@ -222,7 +234,12 @@ class DependencyUpdateCheckerCli(
     }
 
     private enum class LogLevel {
-        QUIET, INFO, VERBOSE
+        QUIET, DEFAULT, VERBOSE, DEBUG
+    }
+
+    companion object {
+        private const val CONSOLE_TYPE = "console"
+        private const val HTML_TYPE = "html"
     }
 }
 

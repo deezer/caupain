@@ -22,6 +22,13 @@ public interface Logger : KtorLogger {
     public fun info(message: String)
 
     /**
+     * Logs a lifecycle message.
+     *
+     * @param message The message to log.
+     */
+    public fun lifecycle(message: String)
+
+    /**
      * Logs a warning message.
      *
      * @param message The message to log.
@@ -51,6 +58,10 @@ public interface Logger : KtorLogger {
             }
 
             override fun info(message: String) {
+                // Nothing to do
+            }
+
+            override fun lifecycle(message: String) {
                 // Nothing to do
             }
 

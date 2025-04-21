@@ -16,6 +16,7 @@ import okio.Path.Companion.toPath
  * @property policy The policy to use for the update process.
  * @property policyPluginsDir The directory for the policy plugins.
  * @property cacheDir The directory for the HTTP cache.
+ * @property debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -27,6 +28,7 @@ public interface Configuration : Serializable {
     public val policy: String?
     public val policyPluginsDir: Path?
     public val cacheDir: Path?
+    public val debugHttpCalls: Boolean
 
     private companion object {
         private const val serialVersionUID = 1L
@@ -45,6 +47,7 @@ public interface Configuration : Serializable {
  * @param policy The policy to use for the update process.
  * @param policyPluginsDir The directory for the policy plugins.
  * @param cacheDir The directory for the HTTP cache.
+ * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  */
 @Suppress("LongParameterList")
 public fun Configuration(
@@ -64,6 +67,7 @@ public fun Configuration(
     policy: String? = null,
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
+    debugHttpCalls: Boolean = false,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -73,7 +77,8 @@ public fun Configuration(
     excludedPlugins = excludedPlugins,
     policy = policy,
     policyPluginsDir = policyPluginsDir,
-    cacheDir = cacheDir
+    cacheDir = cacheDir,
+    debugHttpCalls = debugHttpCalls
 )
 
 internal data class ConfigurationImpl(
@@ -93,6 +98,7 @@ internal data class ConfigurationImpl(
     override val policy: String? = null,
     override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
+    override val debugHttpCalls: Boolean = false
 ) : Configuration
 
 /**

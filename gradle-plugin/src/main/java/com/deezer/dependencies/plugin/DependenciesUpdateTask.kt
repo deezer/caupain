@@ -162,7 +162,8 @@ open class DependenciesUpdateTask : DefaultTask() {
             cacheDir.asFile.get().toOkioPath()
         } else {
             null
-        }
+        },
+        debugHttpCalls = true
     )
 
     private class ConsolePrinterAdapter(private val logger: Logger) : ConsolePrinter {
@@ -181,6 +182,10 @@ open class DependenciesUpdateTask : DefaultTask() {
         }
 
         override fun info(message: String) {
+            logger.info(message)
+        }
+
+        override fun lifecycle(message: String) {
             logger.lifecycle(message)
         }
 

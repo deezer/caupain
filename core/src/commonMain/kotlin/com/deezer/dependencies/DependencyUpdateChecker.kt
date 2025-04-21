@@ -27,6 +27,7 @@ import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.LoggingFormat
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
@@ -136,7 +137,8 @@ public fun DependencyUpdateChecker(
         }
         install(Logging) {
             this.logger = logger
-            level = LogLevel.HEADERS
+            level = if (configuration.debugHttpCalls) LogLevel.ALL else LogLevel.INFO
+            sanitizeHeader { it == HttpHeaders.Authorization }
         }
         install(HttpCache) {
             configuration.cacheDir?.let { cacheDir ->
@@ -195,11 +197,11 @@ internal class DefaultDependencyUpdateChecker(
         get() = progressFlow.asStateFlow()
 
     @Suppress("LongMethod")
-    public override suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>> {
+    override suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>> {
         if (!fileSystem.exists(configuration.versionCatalogPath)) {
             throw NoVersionCatalogException(configuration.versionCatalogPath)
         }
-        logger.debug("Version catalog path is ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
+        logger.info("Parsing version catalog path from ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
         val updatedVersionsMutex = Mutex()
@@ -215,7 +217,7 @@ internal class DefaultDependencyUpdateChecker(
                 .map { (key, dep) ->
                     async {
                         if (!configuration.isExcluded(key, dep)) {
-                            logger.debug("Finding updated version for ${dep.moduleId}")
+                            logger.info("Finding updated version for ${dep.moduleId}")
                             val currentVersion = dep
                                 .version
                                 ?.resolve(versionCatalog.versions)
@@ -225,7 +227,7 @@ internal class DefaultDependencyUpdateChecker(
                                 versionReferences = versionCatalog.versions
                             )
                             if (updatedVersion != null) {
-                                logger.debug("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
+                                logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
                                 updatedVersionsMutex.withLock {
                                     updatedVersions.add(
                                         DependencyUpdateResult(
@@ -257,7 +259,7 @@ internal class DefaultDependencyUpdateChecker(
             updatedVersions
                 .map { result ->
                     async {
-                        logger.debug("Finding Maven info for ${result.dependency.moduleId}")
+                        logger.info("Finding Maven info for ${result.dependency.moduleId}")
                         val (type, updateInfo) = computeUpdateInfo(result)
                         updateInfosMutex.withLock {
                             val infosForType = updatesInfos[type]
