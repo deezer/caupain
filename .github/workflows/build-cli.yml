@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.konan/dependencies
-          key: macos-arm-konan
+          key: macos-intel-konan
       - name: Build
         run: ./gradlew :cli:macosX64Binaries
       - name: Upload artifact
@@ -79,7 +79,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.konan/dependencies
-          key: macos-arm-konan
+          key: other-konan
       - name: Build
         run: ./gradlew :cli:mingwX64Binaries :cli:linuxX64Binaries :cli:jvmDistZip
       - name: Upload artifact
