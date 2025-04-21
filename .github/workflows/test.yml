@@ -1,0 +1,51 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+      branches: [ "main" ]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        arch: [macos-latest, macos-13, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Install CURL dev headers
+        run: sudo apt-get install libcurl4-gnutls-dev
+        if: matrix.os == 'ubuntu-latest'
+      - name: Konan cache
+        id: konan-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan/dependencies
+          key: ${{ runner.os }}-{{ runner.arch }}-konan-2.1.20
+      - name: Test MacOS ARM64
+        run: ./gradlew :core:macosArm64Test :cli:macosArm64Test
+        if: matrix.os == 'macos-latest'
+      - name: Test MacOS Intel
+        run: ./gradlew :core:macosX64Test :cli:macosX64Test
+        if: matrix.os == 'macos-13'
+      - name: Test Linux and JVM
+        run: ./gradlew :cli:linuxX64Test :core:linuxX64Test :core:jvmTest :gradle-plugin:test
+        if: matrix.os == 'ubuntu-latest'
+      - name: Test Windows
+        run: ./gradlew :cli:mingwX64Test :core:mingwX64Test
+        if: matrix.os == 'windows-latest'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure()
+        with:
+          report_paths: '*/build/test-results/**/TEST-*.xml'
