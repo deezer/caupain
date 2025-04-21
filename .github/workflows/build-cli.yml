@@ -87,6 +87,13 @@ jobs:
         with:
           name: dependency-update-checker-other
           path: |
-            cli/build/bin/mingxX64/releaseExecutable/dependency-update-checker.exe
+            cli/build/bin/mingwX64/releaseExecutable/dependency-update-checker.exe
             cli/build/bin/linuxX64/releaseExecutable/dependency-update-checker.kexe
-            distributions/dependency-update-checker-jvm.zip
+            cli/distributions/dependency-update-checker-jvm.zip
+
+  merge-artifacts:
+    runs-on: ubuntu-latest
+    needs: [build-macos-arm, build-macos-intel, build-other]
+    steps:
+      - name: Merge artifacts
+        uses: actions/upload-artifact/merge@v4
