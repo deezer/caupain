@@ -9,6 +9,7 @@ kotlinx-io = "0.7.0"
 mordant = "3.0.2"
 jetbrains-kotlin-jvm = "2.1.20"
 okhttp = "5.0.0-alpha.14"
+detekt = "1.23.8"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -40,6 +41,7 @@ kotlinx-html = "org.jetbrains.kotlinx:kotlinx-html:0.12.0"
 stately-concurrent-collections = "co.touchlab:stately-concurrent-collections:2.1.0"
 mockwebserver = { module = "com.squareup.okhttp3:mockwebserver3", version.ref = "okhttp" }
 mockwebserver-junit = { module = "com.squareup.okhttp3:mockwebserver3-junit4", version.ref = "okhttp" }
+detekt-libraries = { module = "io.gitlab.arturbosch.detekt:detekt-rules-libraries", version.ref = "detekt" }
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -47,5 +49,5 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.27.0"
 dokka = "org.jetbrains.dokka:2.0.0"
-detekt = "io.gitlab.arturbosch.detekt:1.23.8"
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 mokkery = "dev.mokkery:2.7.2"

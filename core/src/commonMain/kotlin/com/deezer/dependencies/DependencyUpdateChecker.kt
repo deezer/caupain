@@ -27,7 +27,6 @@ import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.logging.LoggingFormat
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url

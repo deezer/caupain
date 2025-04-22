@@ -44,9 +44,22 @@ public sealed interface Version {
     /**
      * Represents a simple version.
      */
-    public data class Simple(val value: GradleDependencyVersion) : Resolved {
+    public class Simple(public val value: GradleDependencyVersion) : Resolved {
         override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
             return value.isUpdate(version)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Simple
+
+            return value == other.value
+        }
+
+        override fun hashCode(): Int {
+            return value.hashCode()
         }
 
         override fun toString(): String = value.toString()
@@ -58,20 +71,37 @@ public sealed interface Version {
      * @param ref The reference key
      */
     @Serializable
-    public data class Reference(val ref: String) : Version
+    public class Reference(public val ref: String) : Version {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Reference
+
+            return ref == other.ref
+        }
+
+        override fun hashCode(): Int {
+            return ref.hashCode()
+        }
+
+        override fun toString(): String {
+            return "Reference(ref='$ref')"
+        }
+    }
 
     /**
      * Represents a rich version with various constraints.
      */
     @Serializable
-    public data class Rich(
-        val require: GradleDependencyVersion? = null,
-        val strictly: GradleDependencyVersion? = null,
-        val prefer: GradleDependencyVersion? = null,
-        val reject: GradleDependencyVersion? = null,
-        val rejectAll: Boolean = false
+    public class Rich(
+        public val require: GradleDependencyVersion? = null,
+        public val strictly: GradleDependencyVersion? = null,
+        public val prefer: GradleDependencyVersion? = null,
+        public val reject: GradleDependencyVersion? = null,
+        public val rejectAll: Boolean = false
     ) : Resolved {
-        val probableSelectedVersion: GradleDependencyVersion.Single?
+        internal val probableSelectedVersion: GradleDependencyVersion.Single?
             get() = if (rejectAll) {
                 null
             } else {
@@ -112,6 +142,30 @@ public sealed interface Version {
             postfix = " }",
             separator = ", "
         )
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Rich
+
+            if (rejectAll != other.rejectAll) return false
+            if (require != other.require) return false
+            if (strictly != other.strictly) return false
+            if (prefer != other.prefer) return false
+            if (reject != other.reject) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = rejectAll.hashCode()
+            result = 31 * result + (require?.hashCode() ?: 0)
+            result = 31 * result + (strictly?.hashCode() ?: 0)
+            result = 31 * result + (prefer?.hashCode() ?: 0)
+            result = 31 * result + (reject?.hashCode() ?: 0)
+            return result
+        }
 
         private sealed interface Constraint {
 

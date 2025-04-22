@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GradleDependencyVersionTest {
@@ -126,6 +127,11 @@ class GradleDependencyVersionTest {
         assertTrue(GradleDependencyVersion.Exact("1.3") in prefix)
         assertTrue(GradleDependencyVersion.Exact("1.3.5") in prefix)
         assertFalse(GradleDependencyVersion.Exact("1.4.1") in prefix)
+        assertEquals(
+            expected = GradleDependencyVersion.Exact("1.3"),
+            actual = (GradleDependencyVersion("1.3.+") as GradleDependencyVersion.Prefix).baseVersion
+        )
+        assertNull((GradleDependencyVersion("+") as GradleDependencyVersion.Prefix).baseVersion)
     }
 
     @Test

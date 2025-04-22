@@ -30,6 +30,9 @@ public sealed interface GradleDependencyVersion {
      * Interface for versions representing a single version.
      */
     public sealed interface Single : GradleDependencyVersion, Comparable<Single> {
+        /**
+         * The corresponding exact version of the dependency.
+         */
         public val exactVersion: Exact
     }
 
@@ -46,7 +49,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Exact version
      */
-    public data class Exact(private val version: String) : Single {
+    public class Exact(private val version: String) : Single {
 
         override val text: String
             get() = version
@@ -54,11 +57,12 @@ public sealed interface GradleDependencyVersion {
         override val exactVersion: Exact
             get() = this
 
-        private var parts: List<Part>? = null
+        // We only use this for comparison, so we don't need to load it eagerly
+        private val parts by lazy { toParts() }
 
         override fun contains(version: Single): Boolean = this == version
 
-        // Dependency version compared like in https://docs.gradle.org/current/userguide/single_versions.html#version_ordering
+        // Dependency version compared like in https://docs.gradle.org/current/userguide/dependency_versions.html#sec:version-ordering
         override fun compareTo(other: Single): Int = when (other) {
             is Exact -> compareTo(other)
             is Snapshot -> {
@@ -67,9 +71,11 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
+        /**
+         * Compares this version with another [Exact] version.
+         */
         public fun compareTo(other: Exact): Int {
-            val parts = this.parts ?: toParts().also { this.parts = it }
-            val otherParts = other.toParts()
+            val otherParts = other.parts
             val commonLength = minOf(parts.size, otherParts.size)
             for (i in 0 until commonLength) {
                 val partComparison = parts[i].compareTo(otherParts[i])
@@ -116,6 +122,19 @@ public sealed interface GradleDependencyVersion {
                 }
             }
             .toList()
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Exact
+
+            return version == other.version
+        }
+
+        override fun hashCode(): Int {
+            return version.hashCode()
+        }
 
         override fun toString(): String = version
 
@@ -184,10 +203,17 @@ public sealed interface GradleDependencyVersion {
     /**
      * Version range
      */
-    public data class Range(override val text: String) : GradleDependencyVersion {
+    public class Range(override val text: String) : GradleDependencyVersion {
 
-        internal val lowerBound: Bound?
-        internal val upperBound: Bound?
+        /**
+         * Range lower bound
+         */
+        public val lowerBound: Bound?
+
+        /**
+         * Range upper bound
+         */
+        public val upperBound: Bound?
 
         init {
             require(text.length > 2 && text.first() in LOWER_BOUND_MARKERS && text.last() in UPPER_BOUND_MARKERS) {
@@ -264,9 +290,50 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Range
+
+            return text == other.text
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
+        }
+
         override fun toString(): String = text
 
-        internal data class Bound(val value: Single, val isExclusive: Boolean)
+        /**
+         * Range bound descriptions
+         *
+         * @property value bound value
+         * @property isExclusive true if the bound is exclusive
+         */
+        public class Bound(public val value: Single, public val isExclusive: Boolean) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other == null || this::class != other::class) return false
+
+                other as Bound
+
+                if (isExclusive != other.isExclusive) return false
+                if (value != other.value) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = isExclusive.hashCode()
+                result = 31 * result + value.hashCode()
+                return result
+            }
+
+            override fun toString(): String {
+                return "Bound(value=$value, isExclusive=$isExclusive)"
+            }
+        }
 
         internal companion object {
             val LOWER_BOUND_MARKERS = charArrayOf('[', '(', ']')
@@ -279,27 +346,50 @@ public sealed interface GradleDependencyVersion {
     /**
      * Version with prefix
      */
-    public data class Prefix(override val text: String) : GradleDependencyVersion {
+    public class Prefix(override val text: String) : GradleDependencyVersion {
 
-        private val regex: Regex
+        private val regex: Regex?
 
-        val baseVersion: Exact
+        internal val baseVersion: Exact?
 
         init {
-            require(text.lastOrNull() == '+' && text.indexOfAny(SEPARATORS) >= 0) {
+            require(text.isNotEmpty() && text.last() == '+') {
                 "Wrong format for prefix $text"
             }
-            regex = Regex("${Regex.escape(text.substring(0, text.lastIndex))}.*")
-            val lastSeparatorIndex = text.lastIndexOfAny(SEPARATORS)
-            baseVersion = Exact(text.substring(0, lastSeparatorIndex))
+            val prefixText = text.substring(0, text.lastIndex)
+            regex = if (prefixText.isEmpty()) {
+                // If the text is just a '+', we match all versions
+                null
+            } else {
+                Regex("${Regex.escape(prefixText)}.*")
+            }
+            val exactText = when {
+                prefixText.isEmpty() -> null
+                prefixText.last() in SEPARATORS -> prefixText.substring(0, prefixText.lastIndex)
+                else -> prefixText
+            }
+            baseVersion = exactText?.let(::Exact)
         }
 
         override fun contains(version: Single): Boolean {
-            return regex.matches(version.text)
+            return regex == null || regex.matches(version.text)
         }
 
         override fun isUpdate(version: Single): Boolean {
-            return !contains(version) && this.baseVersion.isUpdate(version)
+            return baseVersion != null && !contains(version) && baseVersion.isUpdate(version)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Prefix
+
+            return text == other.text
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
         }
 
         override fun toString(): String = text
@@ -308,10 +398,25 @@ public sealed interface GradleDependencyVersion {
     /**
      * Latest version
      */
-    public data class Latest(override val text: String) : GradleDependencyVersion {
+    public class Latest(override val text: String) : GradleDependencyVersion {
         override fun contains(version: Single): Boolean = false
 
         override fun isUpdate(version: Single): Boolean = false
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Latest
+
+            return text == other.text
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
+        }
+
+        override fun toString(): String = text
 
         internal companion object {
             val VALUES = setOf(
@@ -324,7 +429,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Snapshot version
      */
-    public data class Snapshot(override val text: String) : Single {
+    public class Snapshot(override val text: String) : Single {
 
         override val exactVersion: Exact = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
 
@@ -341,40 +446,72 @@ public sealed interface GradleDependencyVersion {
         override fun isUpdate(version: Single): Boolean = version.exactVersion > exactVersion
 
         override fun toString(): String = text
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Snapshot
+
+            return text == other.text
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
+        }
     }
 
     /**
      * Unknown version
      */
-    public data class Unknown(override val text: String) : GradleDependencyVersion {
+    public class Unknown(override val text: String) : GradleDependencyVersion {
         override fun contains(version: Single): Boolean = false
 
         override fun isUpdate(version: Single): Boolean = false
 
         override fun toString(): String = "Unknown"
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Unknown
+
+            return text == other.text
+        }
+
+        override fun hashCode(): Int {
+            return text.hashCode()
+        }
     }
 }
 
 private val SEPARATORS = charArrayOf('.', '-', '_', '+')
 private const val SNAPSHOT_SUFFIX = "-SNAPSHOT"
 
-internal fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = try {
+/**
+ * Creates a [GradleDependencyVersion] from the given version text.
+ *
+ * @param versionText The version text to parse.
+ * @return The corresponding [GradleDependencyVersion].
+ */
+public fun GradleDependencyVersion(versionText: String): GradleDependencyVersion = try {
+    val trimmedText = versionText.trim()
     when {
-        versionText.isBlank() -> Unknown(versionText)
+        trimmedText.isEmpty() -> Unknown(versionText)
 
-        versionText.length > 2
-                && versionText.first() in Range.LOWER_BOUND_MARKERS
-                && versionText.last() in Range.UPPER_BOUND_MARKERS -> Range(versionText)
+        trimmedText.length > 2
+                && trimmedText.first() in Range.LOWER_BOUND_MARKERS
+                && trimmedText.last() in Range.UPPER_BOUND_MARKERS -> Range(trimmedText)
 
-        versionText.last() == '+' && versionText.indexOfAny(SEPARATORS) >= 0 ->
-            Prefix(versionText)
+        trimmedText.last() == '+' -> Prefix(trimmedText)
 
-        versionText in GradleDependencyVersion.Latest.VALUES ->
-            GradleDependencyVersion.Latest(versionText)
+        trimmedText in GradleDependencyVersion.Latest.VALUES ->
+            GradleDependencyVersion.Latest(trimmedText)
 
-        versionText.endsWith(SNAPSHOT_SUFFIX) -> Snapshot(versionText)
+        trimmedText.endsWith(SNAPSHOT_SUFFIX) -> Snapshot(trimmedText)
 
-        else -> Exact(versionText)
+        else -> Exact(trimmedText)
     }
 } catch (ignored: IllegalArgumentException) {
     Unknown(versionText)

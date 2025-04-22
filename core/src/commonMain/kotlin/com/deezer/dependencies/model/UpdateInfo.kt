@@ -10,14 +10,44 @@ package com.deezer.dependencies.model
  * @property currentVersion The current version of the dependency.
  * @property updatedVersion The updated version of the dependency.
  */
-public data class UpdateInfo(
-    val dependency: String,
-    val dependencyId: String,
-    val name: String? = null,
-    val url: String? = null,
-    val currentVersion: String,
-    val updatedVersion: String
+public class UpdateInfo(
+    public val dependency: String,
+    public val dependencyId: String,
+    public val name: String? = null,
+    public val url: String? = null,
+    public val currentVersion: String,
+    public val updatedVersion: String
 ) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as UpdateInfo
+
+        if (dependency != other.dependency) return false
+        if (dependencyId != other.dependencyId) return false
+        if (name != other.name) return false
+        if (url != other.url) return false
+        if (currentVersion != other.currentVersion) return false
+        if (updatedVersion != other.updatedVersion) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = dependency.hashCode()
+        result = 31 * result + dependencyId.hashCode()
+        result = 31 * result + (name?.hashCode() ?: 0)
+        result = 31 * result + (url?.hashCode() ?: 0)
+        result = 31 * result + currentVersion.hashCode()
+        result = 31 * result + updatedVersion.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "UpdateInfo(dependency='$dependency', dependencyId='$dependencyId', name=$name, url=$url, currentVersion='$currentVersion', updatedVersion='$updatedVersion')"
+    }
+
     public enum class Type(public val title: String) {
         LIBRARY("Libraries"), PLUGIN("Plugins")
     }

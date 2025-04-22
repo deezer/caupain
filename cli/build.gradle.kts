@@ -33,7 +33,7 @@ kotlin {
             }
         }
 
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 implementation(libs.kotlinx.serialization.toml)
                 implementation(libs.clikt)
@@ -43,7 +43,7 @@ kotlin {
                 implementation(projects.core)
             }
         }
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.okio.fake.filesystem)

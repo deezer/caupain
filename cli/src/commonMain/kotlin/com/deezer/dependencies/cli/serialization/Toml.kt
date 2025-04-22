@@ -8,8 +8,6 @@ import okio.EOFException
 import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
-import okio.buffer
-import okio.use
 
 internal class TomlOkioReader(private val source: BufferedSource) : TomlReader {
 
@@ -31,8 +29,5 @@ internal inline fun <reified T> Toml.decodeFromPath(
     path: Path,
     fileSystem: FileSystem = FileSystem.SYSTEM
 ): T {
-    return fileSystem
-        .source(path)
-        .buffer()
-        .use { decodeFromReader(TomlOkioReader(it)) }
+    return fileSystem.read(path) { decodeFromReader(TomlOkioReader(this)) }
 }

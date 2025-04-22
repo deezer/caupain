@@ -8,6 +8,10 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
+dependencies {
+    "detektPlugins"(libs.detekt.libraries)
+}
+
 kotlin {
     explicitApi()
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -19,7 +23,7 @@ kotlin {
         linuxX64()
         jvm()
 
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 implementation(libs.kotlinx.serialization.xml)
                 implementation(libs.kotlinx.serialization.toml)
@@ -35,7 +39,7 @@ kotlin {
                 implementation(libs.stately.concurrent.collections)
             }
         }
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.okio.fake.filesystem)
@@ -44,29 +48,29 @@ kotlin {
                 compileOnly(libs.jetbrains.annotations)
             }
         }
-        val jvmMain by getting {
+        getByName("jvmMain") {
             dependencies {
                 implementation(libs.slf4j.nop)
                 implementation(libs.ktor.client.okhttp)
             }
         }
-        val jvmTest by getting {
+        getByName("jvmTest") {
             dependencies {
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit)
             }
         }
-        val macosMain by creating {
+        create("macosMain") {
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
         }
-        val mingwMain by creating {
+        create("mingwMain") {
             dependencies {
                 implementation(libs.ktor.client.winhttp)
             }
         }
-        val linuxMain by creating {
+        create("linuxMain") {
             dependencies {
                 implementation(libs.ktor.client.curl)
             }
