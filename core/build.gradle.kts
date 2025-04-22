@@ -1,3 +1,4 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
 plugins {
@@ -82,4 +83,13 @@ dokka {
     dokkaSourceSets.configureEach {
         documentedVisibilities(VisibilityModifier.Public)
     }
+}
+
+val detektAll = tasks.register("detektAll") {
+    group = "verification"
+    description = "Run detekt analysis for all targets"
+    dependsOn(tasks.withType<Detekt>())
+}
+tasks.named("check") {
+    dependsOn(detektAll)
 }

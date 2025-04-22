@@ -1,0 +1,6 @@
+repositories = [ "mavenCentral" ]
+pluginRepositories = [ "mavenCentral", "gradlePluginPortal" ]
+policy = "androidx-version-level"
+cacheDir = "build/cache/caupain"
+outputType = "html"
+outputPath = "build/reports/dependency-updates.html"

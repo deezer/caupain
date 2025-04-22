@@ -1,4 +1,5 @@
-import com.deezer.caupain.cli.DependencyUpdateCheckerCli
+package com.deezer.caupain.cli
+
 import com.github.ajalt.clikt.command.main
 import kotlinx.coroutines.runBlocking
 

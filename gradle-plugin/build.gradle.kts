@@ -18,8 +18,8 @@ dependencies {
 gradlePlugin {
     plugins {
         create("dependencies") {
-            id = "com.deezer.dependencies.update"
-            implementationClass = "com.deezer.dependencies.plugin.DependencyUpdatePlugin"
+            id = "com.deezer.caupain"
+            implementationClass = "com.deezer.caupain.plugin.DependencyUpdatePlugin"
         }
     }
 }

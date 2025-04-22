@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
 
@@ -13,7 +14,7 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
     binaries {
         executable {
             entryPoint = "main"
-            baseName = "dependency-update-checker"
+            baseName = "caupain"
         }
     }
 
@@ -27,8 +28,8 @@ kotlin {
         jvm {
             binaries {
                 executable {
-                    mainClass = "com.deezer.dependencies.cli.JvmMainKt"
-                    applicationName = "dependency-update-checker"
+                    mainClass = "com.deezer.caupain.cli.JvmMainKt"
+                    applicationName = "caupain"
                 }
             }
         }
@@ -56,4 +57,12 @@ kotlin {
 
 tasks.named<JavaExec>("runJvm") {
     workingDir = rootProject.projectDir
+}
+val detektAll = tasks.register("detektAll") {
+    group = "verification"
+    description = "Run detekt analysis for all targets"
+    dependsOn(tasks.withType<Detekt>())
+}
+tasks.named("check") {
+    dependsOn(detektAll)
 }
