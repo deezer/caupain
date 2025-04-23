@@ -59,6 +59,7 @@ class DependencyUpdateCheckerCliTest {
         parsedConfiguration = mock {
             every { gradleWrapperPropertiesPath } returns propertiesPath
             every { outputType } returns null
+            every { outputPath } returns null
         }
     }
 

@@ -131,9 +131,7 @@ class DependencyUpdateCheckerCli(
                 fileSystem,
                 ClicktLogger()
             )
-        val progress = if (logLevel > LogLevel.DEFAULT) {
-            null
-        } else {
+        val progress = if (logLevel == LogLevel.DEFAULT) {
             val terminalProgress = progressBarContextLayout {
                 marquee(DependencyUpdateChecker.MAX_TASK_NAME_LENGTH) { context }
                 percentage()
@@ -168,6 +166,8 @@ class DependencyUpdateCheckerCli(
             }
 
             terminalProgress
+        } else {
+            null
         }
 
         val updates = try {
