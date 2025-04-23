@@ -30,6 +30,7 @@ public abstract class FileFormatter(
         get() = fileSystem.canonicalize(path).toString()
 
     override suspend fun format(updates: DependenciesUpdateResult) {
+        path.parent?.let(fileSystem::createDirectories)
         withContext(ioDispatcher) {
             fileSystem.write(path) {
                 writeUpdates(updates)
