@@ -44,7 +44,7 @@ interface Configuration {
     fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration
 
     enum class OutputType {
-        CONSOLE, HTML
+        CONSOLE, HTML, MARKDOWN
     }
 }
 

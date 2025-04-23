@@ -12,22 +12,21 @@ import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
+import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.terminal
-import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.default
-import com.github.ajalt.clikt.parameters.groups.defaultByName
-import com.github.ajalt.clikt.parameters.groups.groupChoice
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
 import com.github.ajalt.mordant.widgets.progress.marquee
 import com.github.ajalt.mordant.widgets.progress.percentage
@@ -91,11 +90,15 @@ class DependencyUpdateCheckerCli(
     private val policy by option("-p", "--policy", help = "Update policy")
 
     private val outputType by option("-t", "--output-type", help = "Output type")
-        .groupChoice(
-            CONSOLE_TYPE to OutputConfig.Console(CliktConsolePrinter()),
-            HTML_TYPE to OutputConfig.Html(fileSystem, ioDispatcher)
+        .choice(
+            CONSOLE_TYPE to ParsedConfiguration.OutputType.CONSOLE,
+            HTML_TYPE to ParsedConfiguration.OutputType.HTML,
+            MARKDOWN_TYPE to ParsedConfiguration.OutputType.MARKDOWN
         )
-        .defaultByName(CONSOLE_TYPE)
+        .default(ParsedConfiguration.OutputType.CONSOLE)
+
+    private val outputPath by option("-o", "--output", help = "Report output path")
+        .path(mustExist = false, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
     private val cacheDir by option(help = "Cache directory")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
@@ -218,18 +221,24 @@ class DependencyUpdateCheckerCli(
     }
 
     private fun outputFormatter(configuration: ParsedConfiguration?): Formatter {
-        return when (configuration?.outputType) {
+        return when (configuration?.outputType ?: outputType) {
             ParsedConfiguration.OutputType.CONSOLE -> ConsoleFormatter(CliktConsolePrinter())
 
             ParsedConfiguration.OutputType.HTML -> HtmlFormatter(
                 fileSystem = fileSystem,
                 ioDispatcher = ioDispatcher,
-                path = configuration.outputPath
-                    ?: (outputType as? OutputConfig.Html)?.outputPath
-                    ?: OutputConfig.Html.DEFAULT_PATH
+                path = configuration?.outputPath
+                    ?: outputPath
+                    ?: "build/reports/dependencies-update.html".toPath()
             )
 
-            else -> outputType.toFormatter()
+            ParsedConfiguration.OutputType.MARKDOWN -> MarkdownFormatter(
+                fileSystem = fileSystem,
+                ioDispatcher = ioDispatcher,
+                path = configuration?.outputPath
+                    ?: outputPath
+                    ?: "build/reports/dependencies-update.md".toPath()
+            )
         }
     }
 
@@ -290,40 +299,8 @@ class DependencyUpdateCheckerCli(
     companion object {
         private const val CONSOLE_TYPE = "console"
         private const val HTML_TYPE = "html"
-        private val GRADLE_URL_REGEX = Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
-    }
-}
-
-sealed class OutputConfig(
-    help: String? = null
-) : OptionGroup(null, help) {
-    abstract fun toFormatter(): Formatter
-
-    class Console(private val consolePrinter: ConsolePrinter) : OutputConfig("Show results in console") {
-
-        override fun toFormatter(): Formatter = ConsoleFormatter(consolePrinter)
-    }
-
-    class Html(
-        private val fileSystem: FileSystem,
-        private val ioDispatcher: CoroutineDispatcher
-    ) : OutputConfig("Generate HTML report") {
-        val outputPath by option("-o", "--output", help = "HTML output path")
-            .path(mustExist = false, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
-            .default(DEFAULT_PATH)
-
-        override fun toFormatter(): Formatter {
-            // Create the output directory if it doesn't exist
-            outputPath.parent?.let { fileSystem.createDirectories(it) }
-            return HtmlFormatter(
-                fileSystem = fileSystem,
-                path = outputPath,
-                ioDispatcher = ioDispatcher
-            )
-        }
-
-        companion object {
-            val DEFAULT_PATH = "build/reports/dependencies-update.html".toPath()
-        }
+        private const val MARKDOWN_TYPE = "markdown"
+        private val GRADLE_URL_REGEX =
+            Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
     }
 }

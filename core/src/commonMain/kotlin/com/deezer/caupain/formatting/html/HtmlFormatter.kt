@@ -9,7 +9,6 @@ import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
 import kotlinx.html.FlowContent
 import kotlinx.html.a
 import kotlinx.html.body
@@ -25,6 +24,7 @@ import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.tr
 import kotlinx.html.unsafe
+import okio.BufferedSink
 import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
@@ -37,42 +37,35 @@ import okio.SYSTEM
  * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default is [Dispatchers.IO].
  */
 public class HtmlFormatter(
-    private val path: Path,
-    private val fileSystem: FileSystem = FileSystem.SYSTEM,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : FileFormatter {
+    path: Path,
+    fileSystem: FileSystem = FileSystem.SYSTEM,
+    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) : FileFormatter(path, fileSystem, ioDispatcher) {
 
-    override val outputPath: String
-        get() = fileSystem.canonicalize(path).toString()
-
-    override suspend fun format(updates: DependenciesUpdateResult) {
-        withContext(ioDispatcher) {
-            fileSystem.write(path) {
-                this
-                    .asAppendable()
-                    .appendHTML()
-                    .html {
-                        head {
-                            style {
-                                unsafe {
-                                    raw(STYLE)
-                                }
-                            }
-                        }
-                        body {
-                            if (updates.isEmpty()) {
-                                h1 { +"No updates available." }
-                            } else {
-                                h1 { +"Dependency updates" }
-                                appendGradleUpdate(updates.gradleUpdateInfo)
-                                for ((type, currentUpdates) in updates.updateInfos) {
-                                    appendDependencyUpdates(type, currentUpdates)
-                                }
-                            }
+    override suspend fun BufferedSink.writeUpdates(updates: DependenciesUpdateResult) {
+        this
+            .asAppendable()
+            .appendHTML()
+            .html {
+                head {
+                    style {
+                        unsafe {
+                            raw(STYLE)
                         }
                     }
+                }
+                body {
+                    if (updates.isEmpty()) {
+                        h1 { +"No updates available." }
+                    } else {
+                        h1 { +"Dependency updates" }
+                        appendGradleUpdate(updates.gradleUpdateInfo)
+                        for ((type, currentUpdates) in updates.updateInfos) {
+                            appendDependencyUpdates(type, currentUpdates)
+                        }
+                    }
+                }
             }
-        }
     }
 
     private fun FlowContent.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
