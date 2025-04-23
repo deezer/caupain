@@ -15,6 +15,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: check-results
+          github-token: ${{ secrets.ACTIONS_PAT }}
+          repository: bishiboosh/caupain
           run-id: ${{ github.event.workflow_run.id }}
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
