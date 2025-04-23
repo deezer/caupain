@@ -23,8 +23,3 @@ jobs:
         with:
           commit: ${{github.event.workflow_run.head_sha}}
           report_paths: '**/TEST-*.xml'
-      - name: Publish Detekt reports
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: '**/*.sarif'
-          sha: ${{github.event.workflow_run.head_sha}}
