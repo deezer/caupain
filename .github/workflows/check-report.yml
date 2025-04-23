@@ -1,7 +1,7 @@
 name: test-report
 on:
   workflow_run:
-    workflows: [ test ]
+    workflows: [ check ]
     types: [ completed ]
 
 permissions:
@@ -14,10 +14,15 @@ jobs:
       - name: Download Test Report
         uses: actions/download-artifact@v4
         with:
-          name: junit-test-results
+          name: check-results
           run_id: ${{ github.event.workflow_run.id }}
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
         with:
           commit: ${{github.event.workflow_run.head_sha}}
           report_paths: 'TEST-*.xml'
+      - name: Publish Detekt reports
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: '*.sarif'
+          sha: ${{github.event.workflow_run.head_sha}}

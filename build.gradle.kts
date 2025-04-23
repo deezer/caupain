@@ -1,3 +1,4 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 
 plugins {
@@ -15,6 +16,9 @@ subprojects {
 
     extensions.configure<DetektExtension> {
         config.setFrom(rootProject.file("code-quality/detekt.yml"))
+    }
+    tasks.withType<Detekt> {
+        reports.sarif.required.set(true)
     }
 }
 
