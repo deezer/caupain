@@ -20,6 +20,20 @@ subprojects {
     tasks.withType<Detekt> {
         reports.sarif.required.set(true)
     }
+    val detektAll = tasks.register("detektAll") {
+        group = "verification"
+        description = "Run detekt analysis for all targets"
+        dependsOn(
+            tasks
+                .withType<Detekt>()
+                .matching { !it.name.contains("test", ignoreCase = true) }
+        )
+    }
+    afterEvaluate {
+        tasks.named("check") {
+            dependsOn(detektAll)
+        }
+    }
 }
 
 tasks.register("checkUpdates") {

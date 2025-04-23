@@ -60,11 +60,3 @@ kotlin {
 tasks.named<JavaExec>("runJvm") {
     workingDir = rootProject.projectDir
 }
-val detektAll = tasks.register("detektAll") {
-    group = "verification"
-    description = "Run detekt analysis for all targets"
-    dependsOn(tasks.withType<Detekt>())
-}
-tasks.named("check") {
-    dependsOn(detektAll)
-}

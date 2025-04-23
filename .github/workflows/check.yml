@@ -24,7 +24,7 @@ jobs:
             - os: windows-latest
               TEST_TASK: mingwX64Test
             - os: ubuntu-latest
-              TEST_TASK: check
+              TEST_TASK: linuxX64Test jvmTest test detektAll
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
