@@ -6,10 +6,12 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultXml
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -43,9 +45,11 @@ class DependencyUpdateCheckerEngineTest {
             policies = emptyMap(),
             httpClient = HttpClient {
                 install(ContentNegotiation) {
+                    json(DefaultJson)
                     xml(DefaultXml, ContentType.Any)
                 }
-            }
+            },
+            currentGradleVersion = null
         )
     }
 

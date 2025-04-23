@@ -33,11 +33,13 @@ kotlin {
                 api(libs.ktor.client.logging)
                 implementation(libs.ktor.client.content.negociation)
                 implementation(libs.ktor.serialization.kotlinx.xml)
+                implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.xmlutil.core.io)
                 implementation(libs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.html)
                 implementation(libs.stately.concurrent.collections)
+                implementation(libs.semver)
             }
         }
         getByName("commonTest") {

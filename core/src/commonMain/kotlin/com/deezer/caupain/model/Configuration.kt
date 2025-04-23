@@ -17,6 +17,7 @@ import okio.Path.Companion.toPath
  * @property policyPluginsDir The directory for the policy plugins.
  * @property cacheDir The directory for the HTTP cache.
  * @property debugHttpCalls Whether or not to enable debug logging for HTTP calls.
+ * @property gradleCurrentVersionUrl The URL to check for the current version of Gradle.
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -29,9 +30,11 @@ public interface Configuration : Serializable {
     public val policyPluginsDir: Path?
     public val cacheDir: Path?
     public val debugHttpCalls: Boolean
+    public val gradleCurrentVersionUrl: String
 
-    private companion object {
+    public companion object {
         private const val serialVersionUID = 1L
+        public const val DEFAULT_GRADLE_VERSION_URL: String = "https://services.gradle.org/versions/current"
     }
 }
 
@@ -48,6 +51,7 @@ public interface Configuration : Serializable {
  * @param policyPluginsDir The directory for the policy plugins.
  * @param cacheDir The directory for the HTTP cache.
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
+ * @param gradleCurrentVersionUrl The URL to check for the current version of Gradle.
  */
 @Suppress("LongParameterList")
 public fun Configuration(
@@ -68,6 +72,7 @@ public fun Configuration(
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
     debugHttpCalls: Boolean = false,
+    gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -78,7 +83,8 @@ public fun Configuration(
     policy = policy,
     policyPluginsDir = policyPluginsDir,
     cacheDir = cacheDir,
-    debugHttpCalls = debugHttpCalls
+    debugHttpCalls = debugHttpCalls,
+    gradleCurrentVersionUrl = gradleCurrentVersionUrl
 )
 
 internal data class ConfigurationImpl(
@@ -98,7 +104,8 @@ internal data class ConfigurationImpl(
     override val policy: String? = null,
     override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
-    override val debugHttpCalls: Boolean = false
+    override val debugHttpCalls: Boolean = false,
+    override val gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL
 ) : Configuration
 
 /**

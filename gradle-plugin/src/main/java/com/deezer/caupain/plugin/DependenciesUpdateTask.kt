@@ -22,6 +22,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
+import org.gradle.util.GradleVersion
 import java.util.UUID
 
 /**
@@ -100,6 +101,12 @@ open class DependenciesUpdateTask : DefaultTask() {
         .directoryProperty()
         .convention(project.layout.buildDirectory.dir("cache/dependency-updates"))
 
+    @get:Input
+    val gradleCurrentVersionUrl = project
+        .objects
+        .property<String>()
+        .convention(Configuration.DEFAULT_GRADLE_VERSION_URL)
+
     private var policy: Policy? = null
 
     init {
@@ -119,7 +126,8 @@ open class DependenciesUpdateTask : DefaultTask() {
         val checker = DependencyUpdateChecker(
             configuration = configuration,
             logger = LoggerAdapter(logger),
-            policies = policy?.let { mapOf(it.name to it) }
+            policies = policy?.let { mapOf(it.name to it) },
+            currentGradleVersion = GradleVersion.current().version,
         )
         runBlocking {
             val updates = checker.checkForUpdates()
@@ -165,7 +173,8 @@ open class DependenciesUpdateTask : DefaultTask() {
         } else {
             null
         },
-        debugHttpCalls = true
+        debugHttpCalls = true,
+        gradleCurrentVersionUrl = gradleCurrentVersionUrl.get()
     )
 
     private class ConsolePrinterAdapter(private val logger: Logger) : ConsolePrinter {

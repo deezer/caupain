@@ -3,6 +3,8 @@ package com.deezer.caupain.formatting.html
 import com.deezer.caupain.formatting.FileFormatter
 import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.internal.asAppendable
+import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +45,7 @@ public class HtmlFormatter(
     override val outputPath: String
         get() = fileSystem.canonicalize(path).toString()
 
-    override suspend fun format(updates: Map<UpdateInfo.Type, List<UpdateInfo>>) {
+    override suspend fun format(updates: DependenciesUpdateResult) {
         withContext(ioDispatcher) {
             fileSystem.write(path) {
                 this
@@ -58,17 +60,29 @@ public class HtmlFormatter(
                             }
                         }
                         body {
-                            if (updates.isEmpty() || updates.values.all { it.isEmpty() }) {
+                            if (updates.isEmpty()) {
                                 h1 { +"No updates available." }
                             } else {
                                 h1 { +"Dependency updates" }
-                                for ((type, currentUpdates) in updates) {
+                                appendGradleUpdate(updates.gradleUpdateInfo)
+                                for ((type, currentUpdates) in updates.updateInfos) {
                                     appendDependencyUpdates(type, currentUpdates)
                                 }
                             }
                         }
                     }
             }
+        }
+    }
+
+    private fun FlowContent.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
+        if (updateInfo == null) return
+        h2 { +"Gradle" }
+        p {
+            +"Gradle current version is ${updateInfo.currentVersion} whereas last version is ${updateInfo.updatedVersion}."
+            +" See "
+            a(href = updateInfo.url) { +"release note" }
+            +"."
         }
     }
 

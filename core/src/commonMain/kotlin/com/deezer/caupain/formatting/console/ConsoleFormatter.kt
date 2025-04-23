@@ -1,6 +1,8 @@
 package com.deezer.caupain.formatting.console
 
 import com.deezer.caupain.formatting.Formatter
+import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 
 /**
@@ -9,13 +11,20 @@ import com.deezer.caupain.model.UpdateInfo
 public class ConsoleFormatter(
     private val consolePrinter: ConsolePrinter
 ) : Formatter {
-    override suspend fun format(updates: Map<UpdateInfo.Type, List<UpdateInfo>>) {
-        if (updates.isEmpty() || updates.values.all { it.isEmpty() }) {
+    override suspend fun format(updates: DependenciesUpdateResult) {
+        if (updates.isEmpty()) {
             consolePrinter.print(NO_UPDATES)
         } else {
             consolePrinter.print(UPDATES_TITLE)
-            printUpdates(LIBRARY_TITLE, updates[UpdateInfo.Type.LIBRARY].orEmpty())
-            printUpdates(PLUGIN_TITLE, updates[UpdateInfo.Type.PLUGIN].orEmpty())
+            printGradleUpdate(updates.gradleUpdateInfo)
+            printUpdates(LIBRARY_TITLE, updates.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
+            printUpdates(PLUGIN_TITLE, updates.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
+        }
+    }
+
+    private fun printGradleUpdate(updateInfo: GradleUpdateInfo?) {
+        if (updateInfo != null) {
+            consolePrinter.print("Gradle: ${updateInfo.currentVersion} -> ${updateInfo.updatedVersion}")
         }
     }
 

@@ -19,6 +19,8 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
     }
 
 kotlin {
+    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+
     sourceSets {
         macosX64 { configureTarget() }
         macosArm64 { configureTarget() }

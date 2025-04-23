@@ -2,6 +2,8 @@ package com.deezer.caupain.cli
 
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.model.Configuration
+import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.github.ajalt.clikt.command.test
 import dev.mokkery.answering.returns
@@ -52,7 +54,12 @@ class DependencyUpdateCheckerCliTest {
         checker = mock {
             every { progress } returns mockProgressFlow
         }
-        parsedConfiguration = mock()
+        val propertiesPath = "gradle-wrapper.properties".toPath()
+        fileSystem.write(propertiesPath) { writeUtf8(GRADLE_WRAPPER_PROPERTIES) }
+        parsedConfiguration = mock {
+            every { gradleWrapperPropertiesPath } returns propertiesPath
+            every { outputType } returns null
+        }
     }
 
     @AfterTest
@@ -72,7 +79,8 @@ class DependencyUpdateCheckerCliTest {
             assertEquals(configurationPath, path)
             parsedConfiguration
         },
-        createUpdateChecker = { config, _, _ ->
+        createUpdateChecker = { config, gradleVersion, _, _ ->
+            assertEquals("8.11", gradleVersion)
             checkConfiguration(config)
             checker
         },
@@ -80,26 +88,32 @@ class DependencyUpdateCheckerCliTest {
 
     @Test
     fun testComplete() = runTest(testDispatcher) {
-        val output = mapOf(
-            UpdateInfo.Type.LIBRARY to listOf(
-                UpdateInfo(
-                    dependency = "groovy-core",
-                    dependencyId = "org.codehaus.groovy:groovy",
-                    name = "Groovy core",
-                    url = "https://groovy-lang.org/",
-                    currentVersion = "3.0.5-alpha-1",
-                    updatedVersion = "3.0.6"
+        val output = DependenciesUpdateResult(
+            updateInfos = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo(
+                        dependency = "groovy-core",
+                        dependencyId = "org.codehaus.groovy:groovy",
+                        name = "Groovy core",
+                        url = "https://groovy-lang.org/",
+                        currentVersion = "3.0.5-alpha-1",
+                        updatedVersion = "3.0.6"
+                    )
+                ),
+                UpdateInfo.Type.PLUGIN to listOf(
+                    UpdateInfo(
+                        dependency = "versions",
+                        dependencyId = "com.github.ben-manes.versions",
+                        name = "Resolved plugin",
+                        url = "http://www.example.com/resolved",
+                        currentVersion = "0.45.0-SNAPSHOT",
+                        updatedVersion = "1.0.0"
+                    )
                 )
             ),
-            UpdateInfo.Type.PLUGIN to listOf(
-                UpdateInfo(
-                    dependency = "versions",
-                    dependencyId = "com.github.ben-manes.versions",
-                    name = "Resolved plugin",
-                    url = "http://www.example.com/resolved",
-                    currentVersion = "0.45.0-SNAPSHOT",
-                    updatedVersion = "1.0.0"
-                )
+            gradleUpdateInfo = GradleUpdateInfo(
+                currentVersion = "8.11",
+                updatedVersion = "8.13"
             )
         )
         everySuspend { checker.checkForUpdates() } returns output
@@ -171,6 +185,8 @@ private val EXPECTED_RESULT = """
   </head>
   <body>
     <h1>Dependency updates</h1>
+    <h2>Gradle</h2>
+    <p>Gradle current version is 8.11 whereas last version is 8.13. See <a href="https://docs.gradle.org/8.13/release-notes.html">release note</a>.</p>
     <h2>Libraries</h2>
     <p>
       <table>
@@ -212,3 +228,14 @@ private val EXPECTED_RESULT = """
   </body>
 </html>    
 """.trimIndent().trim()
+
+@Language("properties")
+private val GRADLE_WRAPPER_PROPERTIES = """
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.11-bin.zip
+networkTimeout=10000
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+""".trimIndent()

@@ -34,7 +34,10 @@ class DependencyUpdatePluginTest {
         unzipProject()
         // Add repository in build file
         File(tempFolder.root, "build.gradle.kts").writeText(
-            createBuildFile(mockWebserverRule.server.url("maven").toString())
+            createBuildFile(
+                repositoryUrl = mockWebserverRule.server.url("maven").toString(),
+                gradleUrl = mockWebserverRule.server.url("gradle").toString()
+            )
         )
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -44,6 +47,11 @@ class DependencyUpdatePluginTest {
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
                     "/maven/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
+                    "/gradle" -> return MockResponse(
+                        code = 200,
+                        body = GRADLE_VERSION,
+                        headers = Headers.headersOf("Content-Type", "application/json")
+                    )
                     else -> null
                 }
                 return if (body == null) {
@@ -80,7 +88,10 @@ class DependencyUpdatePluginTest {
     }
 
     @Language("kotlin")
-    private fun createBuildFile(url: String) = """
+    private fun createBuildFile(
+        repositoryUrl: String,
+        gradleUrl: String
+    ) = """
     import com.deezer.caupain.model.AndroidXVersionLevelPolicy
     import com.deezer.caupain.plugin.DependenciesUpdateTask
     import com.deezer.caupain.plugin.Policy
@@ -94,8 +105,9 @@ class DependencyUpdatePluginTest {
 
     tasks.withType<DependenciesUpdateTask> {
         selectIf(Policy.from(AndroidXVersionLevelPolicy))
-        repositories.set(listOf(Repository("$url")))
-        pluginRepositories.set(listOf(Repository("$url")))
+        repositories.set(listOf(Repository("$repositoryUrl")))
+        pluginRepositories.set(listOf(Repository("$repositoryUrl")))
+        gradleCurrentVersionUrl.set("$gradleUrl")
     }    
     """.trimIndent()
 
@@ -795,6 +807,25 @@ private val ANDROID_KOTLIN_PLUGIN_REAL_POM = """
 </project>    
 """.trimIndent()
 
+@Language("JSON")
+private val GRADLE_VERSION = """
+{
+  "version" : "99.0.0",
+  "buildTime" : "20250225092214+0000",
+  "current" : true,
+  "snapshot" : false,
+  "nightly" : false,
+  "releaseNightly" : false,
+  "activeRc" : false,
+  "rcFor" : "",
+  "milestoneFor" : "",
+  "broken" : false,
+  "downloadUrl" : "https://services.gradle.org/distributions/gradle-8.13-bin.zip",
+  "checksumUrl" : "https://services.gradle.org/distributions/gradle-8.13-bin.zip.sha256",
+  "wrapperChecksumUrl" : "https://services.gradle.org/distributions/gradle-8.13-wrapper.jar.sha256"
+}    
+""".trimIndent()
+
 @Language("HTML")
 private val EXPECTED_HTML_RESULT = """
 <html>
@@ -823,6 +854,8 @@ private val EXPECTED_HTML_RESULT = """
   </head>
   <body>
     <h1>Dependency updates</h1>
+    <h2>Gradle</h2>
+    <p>Gradle current version is 8.13 whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
     <h2>Libraries</h2>
     <p>
       <table>
@@ -867,6 +900,7 @@ private val EXPECTED_HTML_RESULT = """
 
 private val EXPECTED_CONSOLE_RESULT = """
 Updates are available
+Gradle: 8.13 -> 99.0.0
 Library updates:
 - androidx.core:core-ktx: 1.16.0 -> 1.17.0
 Plugin updates:

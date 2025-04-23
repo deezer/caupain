@@ -2,6 +2,8 @@ package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
+import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -25,7 +27,7 @@ class ConsoleFormatterTest {
 
     @Test
     fun testEmpty() = runTest {
-        val updates = emptyMap<UpdateInfo.Type, List<UpdateInfo>>()
+        val updates = DependenciesUpdateResult(null, emptyMap())
         formatter.format(updates)
         advanceUntilIdle()
         assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
@@ -34,12 +36,15 @@ class ConsoleFormatterTest {
 
     @Test
     fun testFormat() = runTest {
-        val updates = mapOf(
-            UpdateInfo.Type.LIBRARY to listOf(
-                UpdateInfo("library", "com.deezer:library", null, null, "1.0.0", "2.0.0")
-            ),
-            UpdateInfo.Type.PLUGIN to listOf(
-                UpdateInfo("plugin", "com.deezer:plugin", null, null, "1.0.0", "2.0.0")
+        val updates = DependenciesUpdateResult(
+            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
+            updateInfos = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo("library", "com.deezer:library", null, null, "1.0.0", "2.0.0")
+                ),
+                UpdateInfo.Type.PLUGIN to listOf(
+                    UpdateInfo("plugin", "com.deezer:plugin", null, null, "1.0.0", "2.0.0")
+                )
             )
         )
         formatter.format(updates)
@@ -47,6 +52,7 @@ class ConsoleFormatterTest {
         assertEquals(
             listOf(
                 ConsoleFormatter.UPDATES_TITLE,
+                "Gradle: 1.0 -> 1.1",
                 ConsoleFormatter.LIBRARY_TITLE,
                 "- com.deezer:library: 1.0.0 -> 2.0.0",
                 ConsoleFormatter.PLUGIN_TITLE,

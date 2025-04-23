@@ -1,6 +1,8 @@
 package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.html.HtmlFormatter
+import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -41,19 +43,22 @@ class HtmlFormatterTest {
 
     @Test
     fun testEmpty() = runTest(testDispatcher) {
-        val updates = emptyMap<UpdateInfo.Type, List<UpdateInfo>>()
+        val updates = DependenciesUpdateResult(null, emptyMap())
         formatter.format(updates)
         assertResult(EMPTY_RESULT)
     }
 
     @Test
     fun testFormat() = runTest(testDispatcher) {
-        val updates = mapOf(
-            UpdateInfo.Type.LIBRARY to listOf(
-                UpdateInfo("library", "com.deezer:library", null, null, "1.0.0", "2.0.0")
-            ),
-            UpdateInfo.Type.PLUGIN to listOf(
-                UpdateInfo("plugin", "com.deezer:plugin", null, null, "1.0.0", "2.0.0")
+        val updates = DependenciesUpdateResult(
+            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
+            updateInfos = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo("library", "com.deezer:library", null, null, "1.0.0", "2.0.0")
+                ),
+                UpdateInfo.Type.PLUGIN to listOf(
+                    UpdateInfo("plugin", "com.deezer:plugin", null, null, "1.0.0", "2.0.0")
+                )
             )
         )
         formatter.format(updates)
@@ -127,6 +132,8 @@ private const val FULL_RESULT = """
   </head>
   <body>
     <h1>Dependency updates</h1>
+    <h2>Gradle</h2>
+    <p>Gradle current version is 1.0 whereas last version is 1.1. See <a href="https://docs.gradle.org/1.1/release-notes.html">release note</a>.</p>
     <h2>Libraries</h2>
     <p>
       <table>

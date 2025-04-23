@@ -1,8 +1,11 @@
 package com.deezer.caupain
 
 import com.deezer.caupain.model.Configuration
+import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.GradleVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
@@ -12,6 +15,7 @@ import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultXml
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -20,6 +24,7 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLBuilder
@@ -27,6 +32,7 @@ import io.ktor.http.Url
 import io.ktor.http.appendPathSegments
 import io.ktor.http.headersOf
 import io.ktor.http.takeFrom
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -71,13 +77,15 @@ class DependencyUpdateCheckerTest {
             fileSystem = fileSystem,
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {
-                    xml(DefaultXml)
+                    json(DefaultJson)
+                    xml(DefaultXml, ContentType.Any)
                 }
             },
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            policies = emptyMap()
+            policies = emptyMap(),
+            currentGradleVersion = "8.11"
         )
     }
 
@@ -95,12 +103,24 @@ class DependencyUpdateCheckerTest {
         }
         return when (url) {
             GROOVY_CORE_METADATA_URL -> scope.respondElement(GROOVY_CORE_METADATA)
+
             GROOVY_CORE_INFO_URL -> scope.respondElement(GROOVY_CORE_INFO)
+
             GROOVY_NIO_METADATA_URL -> scope.respondElement(GROOVY_NIO_METADATA)
+
             GROOVY_NIO_INFO_URL -> scope.respondElement(GROOVY_NIO_INFO)
+
             VERSIONS_METADATA_URL -> scope.respondElement(VERSIONS_METADATA)
+
             VERSIONS_INFO_URL -> scope.respondElement(VERSIONS_INFO)
+
             RESOLVED_VERSIONS_INFO_URL -> scope.respondElement(RESOLVED_VERSIONS_INFO)
+
+            GRADLE_VERSION_URL -> scope.respond(
+                content = DefaultJson.encodeToString(GradleVersion("8.13")),
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+
             else -> null
         }
     }
@@ -115,33 +135,39 @@ class DependencyUpdateCheckerTest {
     @Test
     fun testUpdate() = runTest(testDispatcher) {
         assertEquals(
-            expected = mapOf(
-                UpdateInfo.Type.LIBRARY to listOf(
-                    UpdateInfo(
-                        dependency = "groovy-core",
-                        dependencyId = "org.codehaus.groovy:groovy",
-                        name = "Groovy core",
-                        url = "https://groovy-lang.org/",
-                        currentVersion = "3.0.5-alpha-1",
-                        updatedVersion = "3.0.6"
-                    ),
-                    UpdateInfo(
-                        dependency = "groovy-nio",
-                        dependencyId = "org.codehaus.groovy:groovy-nio",
-                        name = "Groovy NIO",
-                        url = "https://groovy-lang.org/",
-                        currentVersion = "3.0.5-alpha-1",
-                        updatedVersion = "3.0.5"
-                    )
+            expected = DependenciesUpdateResult(
+                gradleUpdateInfo = GradleUpdateInfo(
+                    currentVersion = "8.11",
+                    updatedVersion = "8.13",
                 ),
-                UpdateInfo.Type.PLUGIN to listOf(
-                    UpdateInfo(
-                        dependency = "versions",
-                        dependencyId = "com.github.ben-manes.versions",
-                        name = "Resolved plugin",
-                        url = "http://www.example.com/resolved",
-                        currentVersion = "0.45.0-SNAPSHOT",
-                        updatedVersion = "1.0.0"
+                updateInfos = mapOf(
+                    UpdateInfo.Type.LIBRARY to listOf(
+                        UpdateInfo(
+                            dependency = "groovy-core",
+                            dependencyId = "org.codehaus.groovy:groovy",
+                            name = "Groovy core",
+                            url = "https://groovy-lang.org/",
+                            currentVersion = "3.0.5-alpha-1",
+                            updatedVersion = "3.0.6"
+                        ),
+                        UpdateInfo(
+                            dependency = "groovy-nio",
+                            dependencyId = "org.codehaus.groovy:groovy-nio",
+                            name = "Groovy NIO",
+                            url = "https://groovy-lang.org/",
+                            currentVersion = "3.0.5-alpha-1",
+                            updatedVersion = "3.0.5"
+                        )
+                    ),
+                    UpdateInfo.Type.PLUGIN to listOf(
+                        UpdateInfo(
+                            dependency = "versions",
+                            dependencyId = "com.github.ben-manes.versions",
+                            name = "Resolved plugin",
+                            url = "http://www.example.com/resolved",
+                            currentVersion = "0.45.0-SNAPSHOT",
+                            updatedVersion = "1.0.0"
+                        )
                     )
                 )
             ),
@@ -287,6 +313,8 @@ private val RESOLVED_VERSIONS_INFO_URL = URLBuilder()
         "plugin-1.0.pom"
     )
     .build()
+
+private val GRADLE_VERSION_URL = Url(Configuration.DEFAULT_GRADLE_VERSION_URL)
 
 private val VERSION_CATALOG = VersionCatalog(
     versions = mapOf(

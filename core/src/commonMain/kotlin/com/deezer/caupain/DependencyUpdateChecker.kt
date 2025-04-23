@@ -8,8 +8,11 @@ import com.deezer.caupain.internal.FileStorage
 import com.deezer.caupain.internal.extension
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DEFAULT_POLICIES
+import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.GradleVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.PolicyLoader
@@ -19,8 +22,10 @@ import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.DefaultXml
+import io.github.z4kn4fein.semver.VersionFormatException
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.cache.HttpCache
@@ -35,6 +40,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineDispatcher
@@ -57,6 +63,7 @@ import okio.Path
 import okio.SYSTEM
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import io.github.z4kn4fein.semver.Version as SemanticVersion
 
 /**
  * Given a version catalog, this interrogates Maven repositories (specified via [Configuration]), and
@@ -72,9 +79,10 @@ public interface DependencyUpdateChecker {
     /**
      * Check for updates in the version catalog.
      *
-     * @return A map of update types to a list of update information.
+     * @return the result of the update check, containing the updated versions for each dependency
+     * and updated version for Gradle.
      */
-    public suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>>
+    public suspend fun checkForUpdates(): DependenciesUpdateResult
 
     /**
      * Progress interface to represent the progress of the update check.
@@ -121,17 +129,21 @@ public interface DependencyUpdateChecker {
 /**
  * Creates a new [DependencyUpdateChecker] instance with the specified parameters.
  */
+@Suppress("LongParameterList")
 public fun DependencyUpdateChecker(
     configuration: Configuration,
+    currentGradleVersion: String?,
     logger: Logger = Logger.EMPTY,
     fileSystem: FileSystem = FileSystem.SYSTEM,
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     policies: Map<String, Policy>? = null
 ): DependencyUpdateChecker = DefaultDependencyUpdateChecker(
     configuration = configuration,
+    currentGradleVersion = currentGradleVersion,
     fileSystem = fileSystem,
     httpClient = HttpClient {
         install(ContentNegotiation) {
+            json(DefaultJson)
             xml(DefaultXml, ContentType.Any)
         }
         install(Logging) {
@@ -160,6 +172,7 @@ public fun DependencyUpdateChecker(
 @Suppress("LongParameterList")
 internal class DefaultDependencyUpdateChecker(
     private val configuration: Configuration,
+    private val currentGradleVersion: String?,
     private val httpClient: HttpClient,
     private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher,
@@ -196,16 +209,18 @@ internal class DefaultDependencyUpdateChecker(
         get() = progressFlow.asStateFlow()
 
     @Suppress("LongMethod")
-    override suspend fun checkForUpdates(): Map<UpdateInfo.Type, List<UpdateInfo>> {
+    override suspend fun checkForUpdates(): DependenciesUpdateResult {
         if (!fileSystem.exists(configuration.versionCatalogPath)) {
             throw NoVersionCatalogException(configuration.versionCatalogPath)
         }
         logger.info("Parsing version catalog path from ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
         val versionCatalog = versionCatalogParser.parseDependencyInfo()
+        val checkGradleUpdate = currentGradleVersion != null
         val updatedVersionsMutex = Mutex()
+        var updatedGradleVersion: String? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
-        val nbDependencies = versionCatalog.dependencies.size
+        val nbDependencies = versionCatalog.dependencies.size + if (checkGradleUpdate) 1 else 0
         completed = 0
         progressFlow.value =
             DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
@@ -247,6 +262,22 @@ internal class DefaultDependencyUpdateChecker(
                         )
                     }
                 }
+                .plus(
+                    async {
+                        if (currentGradleVersion != null) {
+                            logger.info("Finding updated Gradle version")
+                            updatedGradleVersion = findGradleUpdatedVersion(currentGradleVersion)
+                            if (updatedGradleVersion != null) {
+                                logger.debug("Found updated Gradle version $updatedGradleVersion")
+                            }
+                            val percentage = ++completed * 50 / nbDependencies
+                            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                                taskName = FINDING_UPDATES_TASK,
+                                percentage = percentage
+                            )
+                        }
+                    }
+                )
                 .toList()
                 .awaitAll()
         }
@@ -275,12 +306,22 @@ internal class DefaultDependencyUpdateChecker(
                 .awaitAll()
             progressFlow.value = DependencyUpdateChecker.Progress.Determinate(DONE, 100)
         }
-        // Sort
-        return buildMap {
-            for (type in UpdateInfo.Type.entries) {
-                put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
+        // Sort and return
+        return DependenciesUpdateResult(
+            gradleUpdateInfo = if (updatedGradleVersion != null && currentGradleVersion != null) {
+                GradleUpdateInfo(
+                    currentVersion = currentGradleVersion,
+                    updatedVersion = updatedGradleVersion!!
+                )
+            } else {
+                null
+            },
+            updateInfos = buildMap {
+                for (type in UpdateInfo.Type.entries) {
+                    put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
+                }
             }
-        }
+        )
     }
 
     @OptIn(ExperimentalEncodingApi::class)
@@ -294,6 +335,29 @@ internal class DefaultDependencyUpdateChecker(
                 HttpHeaders.Authorization,
                 "Basic ${Base64.encode("${repository.user}:${repository.password}".encodeToByteArray())}"
             )
+        }
+    }
+
+    private suspend fun findGradleUpdatedVersion(
+        currentGradleVersion: String
+    ): String? {
+        try {
+            val currentVersion = SemanticVersion.parse(currentGradleVersion, strict = false)
+            val updatedVersionString = withContext(ioDispatcher) {
+                httpClient
+                    .get(configuration.gradleCurrentVersionUrl)
+                    .takeIf { it.status.isSuccess() }
+                    ?.body<GradleVersion>()
+                    ?.version
+            }
+            val updatedVersion = updatedVersionString?.let { SemanticVersion.parse(it, strict = false) }
+            return if (updatedVersion == null || updatedVersion <= currentVersion) {
+                null
+            } else {
+                updatedVersionString
+            }
+        } catch (ignored: VersionFormatException) {
+            return null
         }
     }
 

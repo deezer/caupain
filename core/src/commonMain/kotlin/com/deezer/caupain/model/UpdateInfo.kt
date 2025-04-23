@@ -52,3 +52,38 @@ public class UpdateInfo(
         LIBRARY("Libraries"), PLUGIN("Plugins")
     }
 }
+
+/**
+ * Holds information about a Gradle update.
+ *
+ * @property url The URL of the dependency.
+ * @property currentVersion The current Gradle version.
+ * @property updatedVersion The updated Gradle version
+ */
+public class GradleUpdateInfo(
+    public val currentVersion: String,
+    public val updatedVersion: String
+) {
+    public val url: String = "https://docs.gradle.org/$updatedVersion/release-notes.html"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as GradleUpdateInfo
+
+        if (currentVersion != other.currentVersion) return false
+        if (updatedVersion != other.updatedVersion) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = currentVersion.hashCode()
+        result = 31 * result + updatedVersion.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "GradleUpdateInfo(currentVersion='$currentVersion', updatedVersion='$updatedVersion')"
+    }
+}

@@ -3,8 +3,10 @@ package com.deezer.caupain.cli
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.NoVersionCatalogException
 import com.deezer.caupain.cli.internal.path
+import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.serialization.DefaultToml
 import com.deezer.caupain.cli.serialization.decodeFromPath
+import com.deezer.caupain.cli.serialization.decodeFromProperties
 import com.deezer.caupain.formatting.FileFormatter
 import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.console.ConsoleFormatter
@@ -54,9 +56,10 @@ class DependencyUpdateCheckerCli(
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
     },
-    private val createUpdateChecker: (Configuration, FileSystem, Logger) -> DependencyUpdateChecker = { config, fs, logger ->
+    private val createUpdateChecker: (Configuration, String?, FileSystem, Logger) -> DependencyUpdateChecker = { config, gradleVersion, fs, logger ->
         DependencyUpdateChecker(
             configuration = config,
+            currentGradleVersion = gradleVersion,
             fileSystem = fs,
             logger = logger
         )
@@ -67,6 +70,11 @@ class DependencyUpdateCheckerCli(
     option("-i", "--version-catalog", help = "Version catalog path")
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
         .default("gradle/libs.versions.toml".toPath())
+
+    private val gradleWrapperPropertiesPath by
+    option("--gradle-wrapper-properties", help = "Gradle wrapper properties path")
+        .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+        .default("gradle/wrapper/gradle-wrapper.properties".toPath())
 
     private val excluded by option("-e", "--excluded", help = "Excluded keys").multiple()
 
@@ -114,7 +122,12 @@ class DependencyUpdateCheckerCli(
 
         val configuration = loadConfiguration()
         val updateChecker =
-            createUpdateChecker(createConfiguration(configuration), fileSystem, ClicktLogger())
+            createUpdateChecker(
+                createConfiguration(configuration),
+                loadGradleVersion(configuration),
+                fileSystem,
+                ClicktLogger()
+            )
         val progress = if (logLevel > LogLevel.DEFAULT) {
             null
         } else {
@@ -180,6 +193,20 @@ class DependencyUpdateCheckerCli(
             debugHttpCalls = debugHttpCalls,
         )
         return parsedConfiguration?.toConfiguration(baseConfiguration) ?: baseConfiguration
+    }
+
+    private suspend fun loadGradleVersion(parsedConfiguration: ParsedConfiguration?): String? {
+        return withContext(ioDispatcher) {
+            val gradleWrapperPropertiesPath = (parsedConfiguration?.gradleWrapperPropertiesPath
+                ?: gradleWrapperPropertiesPath)
+                .takeIf { fileSystem.exists(it) }
+                ?: return@withContext null
+            val distributionUrl = decodeFromProperties<GradleWrapperProperties>(
+                fileSystem = fileSystem,
+                path = gradleWrapperPropertiesPath
+            ).distributionUrl ?: return@withContext null
+            GRADLE_URL_REGEX.find(distributionUrl)?.groupValues?.getOrNull(1)
+        }
     }
 
     private suspend fun loadConfiguration(): ParsedConfiguration? {
@@ -263,6 +290,7 @@ class DependencyUpdateCheckerCli(
     companion object {
         private const val CONSOLE_TYPE = "console"
         private const val HTML_TYPE = "html"
+        private val GRADLE_URL_REGEX = Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
     }
 }
 
