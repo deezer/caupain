@@ -19,6 +19,8 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          add-job-summary: 'never'
       - name: Check updates
         run: ./gradlew checkUpdates
       - name: Update summary
