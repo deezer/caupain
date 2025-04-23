@@ -1,4 +1,4 @@
-name: test-report
+name: check-report
 on:
   workflow_run:
     workflows: [ check ]
