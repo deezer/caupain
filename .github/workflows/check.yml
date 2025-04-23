@@ -32,8 +32,18 @@ jobs:
         with:
           path: ~/.konan/dependencies
           key: ${{ runner.os }}-${{ runner.arch }}-konan-2.1.20
-      - name: Check
+      - name: Test MacOS ARM64
+        run: ./gradlew :core:macosArm64Test :cli:macosArm64Test
+        if: matrix.os == 'macos-latest'
+      - name: Test MacOS Intel
+        run: ./gradlew :core:macosX64Test :cli:macosX64Test
+        if: matrix.os == 'macos-13'
+      - name: Test Windows
+        run: ./gradlew :cli:mingwX64Test :core:mingwX64Test
+        if: matrix.os == 'windows-latest'
+      - name: Test Linux and JVM and check code
         run: ./gradlew check
+        if: matrix.os == 'ubuntu-latest'
       - name: Upload reports
         uses: actions/upload-artifact@v4
         if: always()
