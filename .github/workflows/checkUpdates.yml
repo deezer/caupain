@@ -3,6 +3,7 @@ name: test
 on:
   schedule:
     - cron: '0 0 * * 0' # Every Sunday at midnight
+  workflow_dispatch:
 
 jobs:
   checkUpdates:
