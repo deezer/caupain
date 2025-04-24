@@ -7,7 +7,7 @@ import org.gradle.api.HasImplicitReceiver
 
 data class VersionUpdateInfo(
     val currentVersion: Version.Resolved,
-    val updatedVersion: GradleDependencyVersion.Single
+    val updatedVersion: GradleDependencyVersion.Static
 )
 
 /**

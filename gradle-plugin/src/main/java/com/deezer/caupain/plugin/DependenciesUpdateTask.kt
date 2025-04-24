@@ -9,7 +9,6 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toOkioPath
@@ -92,6 +91,12 @@ open class DependenciesUpdateTask : DefaultTask() {
      */
     @get:Input
     val useCache = project.objects.property<Boolean>()
+
+    /**
+     * @see DependenciesUpdateExtension.onlyCheckStaticVersions
+     */
+    @get:Input
+    val onlyCheckStaticVersions = project.objects.property<Boolean>()
 
     /**
      * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
@@ -188,7 +193,8 @@ open class DependenciesUpdateTask : DefaultTask() {
             null
         },
         debugHttpCalls = true,
-        gradleCurrentVersionUrl = gradleCurrentVersionUrl.get()
+        gradleCurrentVersionUrl = gradleCurrentVersionUrl.get(),
+        onlyCheckStaticVersions = onlyCheckStaticVersions.get()
     )
 
     private class ConsolePrinterAdapter(private val logger: Logger) : ConsolePrinter {
@@ -230,7 +236,7 @@ open class DependenciesUpdateTask : DefaultTask() {
 
         override fun select(
             currentVersion: Version.Resolved,
-            updatedVersion: GradleDependencyVersion.Single
+            updatedVersion: GradleDependencyVersion.Static
         ): Boolean {
             return policy.select(VersionUpdateInfo(currentVersion, updatedVersion))
         }

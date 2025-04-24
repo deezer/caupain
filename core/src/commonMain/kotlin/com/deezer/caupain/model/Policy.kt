@@ -17,7 +17,7 @@ public interface Policy {
      */
     public fun select(
         currentVersion: Version.Resolved,
-        updatedVersion: GradleDependencyVersion.Single
+        updatedVersion: GradleDependencyVersion.Static
     ): Boolean
 }
 
@@ -45,10 +45,10 @@ public object AndroidXVersionLevelPolicy : Policy {
 
     override fun select(
         currentVersion: Version.Resolved,
-        updatedVersion: GradleDependencyVersion.Single
+        updatedVersion: GradleDependencyVersion.Static
     ): Boolean {
         val resolvedCurrentVersion = when (currentVersion) {
-            is Version.Simple -> currentVersion.value as? GradleDependencyVersion.Single
+            is Version.Simple -> currentVersion.value as? GradleDependencyVersion.Static
             is Version.Rich -> currentVersion.probableSelectedVersion
         }
         if (updatedVersion is GradleDependencyVersion.Snapshot) {
@@ -83,7 +83,7 @@ public object AndroidXVersionLevelPolicy : Policy {
         companion object {
             private val STABLE_KEYWORDS = arrayOf("RELEASE", "FINAL", "GA")
 
-            fun of(version: GradleDependencyVersion.Single) =
+            fun of(version: GradleDependencyVersion.Static) =
                 entries.first { it.matches(version.exactVersion.text) }
         }
     }

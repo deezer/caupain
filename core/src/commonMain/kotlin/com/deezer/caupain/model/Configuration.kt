@@ -18,6 +18,7 @@ import okio.Path.Companion.toPath
  * @property cacheDir The directory for the HTTP cache.
  * @property debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @property gradleCurrentVersionUrl The URL to check for the current version of Gradle.
+ * @property onlyCheckStaticVersions Whether to only check updates for direct versions or all versions.
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -31,6 +32,7 @@ public interface Configuration : Serializable {
     public val cacheDir: Path?
     public val debugHttpCalls: Boolean
     public val gradleCurrentVersionUrl: String
+    public val onlyCheckStaticVersions: Boolean
 
     public companion object {
         private const val serialVersionUID = 1L
@@ -52,6 +54,7 @@ public interface Configuration : Serializable {
  * @param cacheDir The directory for the HTTP cache.
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @param gradleCurrentVersionUrl The URL to check for the current version of Gradle.
+ * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  */
 @Suppress("LongParameterList")
 public fun Configuration(
@@ -72,7 +75,8 @@ public fun Configuration(
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
     debugHttpCalls: Boolean = false,
-    gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL
+    gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
+    onlyCheckStaticVersions: Boolean = true,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -84,7 +88,8 @@ public fun Configuration(
     policyPluginsDir = policyPluginsDir,
     cacheDir = cacheDir,
     debugHttpCalls = debugHttpCalls,
-    gradleCurrentVersionUrl = gradleCurrentVersionUrl
+    gradleCurrentVersionUrl = gradleCurrentVersionUrl,
+    onlyCheckStaticVersions = onlyCheckStaticVersions
 )
 
 internal data class ConfigurationImpl(
@@ -105,7 +110,8 @@ internal data class ConfigurationImpl(
     override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
     override val debugHttpCalls: Boolean = false,
-    override val gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL
+    override val gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
+    override val onlyCheckStaticVersions: Boolean = true,
 ) : Configuration
 
 /**

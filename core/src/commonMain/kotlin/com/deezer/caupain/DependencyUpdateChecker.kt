@@ -208,7 +208,7 @@ internal class DefaultDependencyUpdateChecker(
     override val progress: Flow<DependencyUpdateChecker.Progress?>
         get() = progressFlow.asStateFlow()
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CyclomaticComplexMethod") // This cannot be easily simplified because of the async blocks
     override suspend fun checkForUpdates(): DependenciesUpdateResult {
         if (!fileSystem.exists(configuration.versionCatalogPath)) {
             throw NoVersionCatalogException(configuration.versionCatalogPath)
@@ -232,10 +232,10 @@ internal class DefaultDependencyUpdateChecker(
                     async {
                         if (!configuration.isExcluded(key, dep)) {
                             logger.info("Finding updated version for ${dep.moduleId}")
-                            val currentVersion = dep
-                                .version
-                                ?.resolve(versionCatalog.versions)
-                                ?: return@async
+                            val currentVersion = dep.version?.resolve(versionCatalog.versions)
+                            if (currentVersion == null || configuration.onlyCheckStaticVersions && !currentVersion.isStatic) {
+                                return@async
+                            }
                             val updatedVersion = findUpdatedVersion(
                                 dependency = dep,
                                 versionReferences = versionCatalog.versions
@@ -385,7 +385,7 @@ internal class DefaultDependencyUpdateChecker(
         dependency: Dependency,
         versionReferences: Map<String, Version.Resolved>,
         repository: Repository
-    ): GradleDependencyVersion.Single? {
+    ): GradleDependencyVersion.Static? {
         val version = dependency.version?.resolve(versionReferences) ?: return null
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
@@ -401,7 +401,7 @@ internal class DefaultDependencyUpdateChecker(
         return sequenceOf(versioning.release, versioning.latest)
             .plus(versioning.versions.asSequence().map { it.version })
             .filterNotNull()
-            .filterIsInstance<GradleDependencyVersion.Single>()
+            .filterIsInstance<GradleDependencyVersion.Static>()
             .filter { version.isUpdate(it) }
             .filterNot { policy?.select(version, it) == false }
             .maxOrNull()
@@ -426,7 +426,7 @@ internal class DefaultDependencyUpdateChecker(
     private suspend fun getMavenInfo(
         dependency: Dependency,
         repository: Repository,
-        updatedVersion: GradleDependencyVersion.Single
+        updatedVersion: GradleDependencyVersion.Static
     ): MavenInfo? {
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
@@ -442,7 +442,7 @@ internal class DefaultDependencyUpdateChecker(
             val realVersion = realDependency
                 .version
                 ?.let { GradleDependencyVersion(it) }
-                ?.takeUnless { it is GradleDependencyVersion.Unknown } as? GradleDependencyVersion.Single
+                ?.takeUnless { it is GradleDependencyVersion.Unknown } as? GradleDependencyVersion.Static
                 ?: return mavenInfo
             logger.debug("Resolving plugin dependency ${dependency.id} to ${realDependency.groupId}:${realDependency.artifactId}:$realVersion")
             getMavenInfo(
@@ -459,7 +459,7 @@ internal class DefaultDependencyUpdateChecker(
     }
 
     private data class VersionResult(
-        val updatedVersion: GradleDependencyVersion.Single,
+        val updatedVersion: GradleDependencyVersion.Static,
         val repository: Repository
     ) : Comparable<VersionResult> {
         override fun compareTo(other: VersionResult): Int {
@@ -472,7 +472,7 @@ internal class DefaultDependencyUpdateChecker(
         val dependency: Dependency,
         val repository: Repository,
         val currentVersion: Version.Resolved,
-        val updatedVersion: GradleDependencyVersion.Single,
+        val updatedVersion: GradleDependencyVersion.Static,
     )
 }
 

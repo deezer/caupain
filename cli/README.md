@@ -73,7 +73,8 @@ excludedPlugins = [
 ]
 # Policy name to use. See the documentation section about policies for more information
 policy = "androidx-version-level"
-# Policy plugin directory. This is the directory where the custom policies are located. Only applies to JVM, see the documentation section about policies for more information
+# Policy plugin directory. This is the directory where the custom policies are located. 
+# Only applies to JVM, see the documentation section about policies for more information
 policyPluginDir = "path/to/policy/plugin/dir"
 # Cache directory. This is the directory where the HTTP cache is stored, if specified.
 cacheDir = "path/to/cache/dir"
@@ -81,8 +82,15 @@ cacheDir = "path/to/cache/dir"
 outputType = "html"
 # Output path, for HTML and Markdown output types. Default is build/reports/dependencies-update.(html|md)
 outputPath = "path/to/output/file.html"
-# Path to the Gradle wrapper properties file. This is used to check for an update in the Gradle wrapper. Default is "gradle/wrapper/gradle-wrapper.properties".
+# Path to the Gradle wrapper properties file. This is used to check for an update in the Gradle wrapper. 
+# Default is "gradle/wrapper/gradle-wrapper.properties".
 gradleWrapperPropertiesPath = "/path/to/properties/file"
+# By default, Caupain only checks updates for static versions in the version catalog (versions like 1.0.0 or 1.0.0-SNAPSHOT).
+# The rationale behind this is that dynamic versions or rich versions indicate that the version range is
+# already specified, and that an update isn't needed. If this value is passed to false, Caupain will try
+# to find the latest version for all dependencies, even if they are dynamic or rich versions.
+# Default is true.
+onlyCheckStaticVersions = false
 ```
 
 ### Policies

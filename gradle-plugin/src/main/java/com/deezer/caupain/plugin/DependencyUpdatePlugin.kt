@@ -51,6 +51,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             this.repositories.convention(settings.dependencyResolutionManagement.repositories.toRepositories())
             this.pluginRepositories.convention(settings.pluginManagement.repositories.toRepositories())
             useCache.convention(ext.useCache)
+            onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
         }
     }
 

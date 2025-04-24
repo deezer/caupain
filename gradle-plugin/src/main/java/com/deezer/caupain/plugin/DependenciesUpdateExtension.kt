@@ -52,6 +52,12 @@ open class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactor
     val useCache = objects.property<Boolean>().convention(true)
 
     /**
+     * Whether to check updates only for static versions (e.g., 1.0.0 or 1.0.0-SNAPSHOT) and not for
+     * dynamic versions (e.g., 1.+). Default is true.
+     */
+    val onlyCheckStaticVersions = objects.property<Boolean>().convention(true)
+
+    /**
      * Excludes keys from the update check.
      */
     fun excludeKeys(vararg keys: String) {

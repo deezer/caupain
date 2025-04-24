@@ -11,7 +11,7 @@ class PrefixTest {
         expected: Boolean
     ) {
         val version = GradleDependencyVersion.Prefix(prefixVersion)
-        val toCheck = GradleDependencyVersion(versionToCheck) as GradleDependencyVersion.Single
+        val toCheck = GradleDependencyVersion(versionToCheck) as GradleDependencyVersion.Static
         assertEquals(expected, version.contains(toCheck))
     }
 
@@ -21,7 +21,7 @@ class PrefixTest {
         expected: Boolean
     ) {
         val version = GradleDependencyVersion.Prefix(prefixVersion)
-        val toCheck = GradleDependencyVersion(versionToCheck) as GradleDependencyVersion.Single
+        val toCheck = GradleDependencyVersion(versionToCheck) as GradleDependencyVersion.Static
         assertEquals(expected, version.isUpdate(toCheck))
     }
 

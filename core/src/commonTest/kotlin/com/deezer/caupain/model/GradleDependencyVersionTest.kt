@@ -58,7 +58,7 @@ class GradleDependencyVersionTest {
         fun String?.toBound(isExclusive: Boolean): GradleDependencyVersion.Range.Bound? {
             return this?.let { value ->
                 GradleDependencyVersion.Range.Bound(
-                    value = GradleDependencyVersion(value) as GradleDependencyVersion.Single,
+                    value = GradleDependencyVersion(value) as GradleDependencyVersion.Static,
                     isExclusive = isExclusive
                 )
             }

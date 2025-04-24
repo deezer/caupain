@@ -15,7 +15,7 @@ class PolicyTest {
             expected = expected,
             actual = select(
                 currentVersion = Version.Simple(GradleDependencyVersion(currentVersion)),
-                updatedVersion = GradleDependencyVersion(updatedVersion) as GradleDependencyVersion.Single
+                updatedVersion = GradleDependencyVersion(updatedVersion) as GradleDependencyVersion.Static
             )
         )
     }

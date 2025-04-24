@@ -38,14 +38,24 @@ public sealed interface Version {
      */
     @Serializable(DirectVersionSerializer::class)
     public sealed interface Resolved : Version {
-        public fun isUpdate(version: GradleDependencyVersion.Single): Boolean
+
+        /**
+         * Whether or not this represents a static version (either a version like `1.0.0` or a snapshot version).
+         */
+        public val isStatic: Boolean
+
+        public fun isUpdate(version: GradleDependencyVersion.Static): Boolean
     }
 
     /**
      * Represents a simple version.
      */
     public class Simple(public val value: GradleDependencyVersion) : Resolved {
-        override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
+
+        override val isStatic: Boolean
+            get() = value.isStatic
+
+        override fun isUpdate(version: GradleDependencyVersion.Static): Boolean {
             return value.isUpdate(version)
         }
 
@@ -101,20 +111,27 @@ public sealed interface Version {
         public val reject: GradleDependencyVersion? = null,
         public val rejectAll: Boolean = false
     ) : Resolved {
-        internal val probableSelectedVersion: GradleDependencyVersion.Single?
+
+        override val isStatic: Boolean
+            get() = false
+
+        /**
+         * Returns the most probable selected fixed version based on the constraints.
+         */
+        public val probableSelectedVersion: GradleDependencyVersion.Static?
             get() = if (rejectAll) {
                 null
             } else {
-                strictly as? GradleDependencyVersion.Single
-                    ?: require as? GradleDependencyVersion.Single
-                    ?: prefer as? GradleDependencyVersion.Single
+                strictly as? GradleDependencyVersion.Static
+                    ?: require as? GradleDependencyVersion.Static
+                    ?: prefer as? GradleDependencyVersion.Static
             }
 
-        override fun isUpdate(version: GradleDependencyVersion.Single): Boolean {
+        override fun isUpdate(version: GradleDependencyVersion.Static): Boolean {
             return when {
                 rejectAll -> false
                 reject?.contains(version) == true -> false
-                strictly != null -> if (strictly !is GradleDependencyVersion.Single && prefer != null) {
+                strictly != null -> if (strictly !is GradleDependencyVersion.Static && prefer != null) {
                     prefer.isUpdate(version)
                 } else {
                     strictly.isUpdate(version)

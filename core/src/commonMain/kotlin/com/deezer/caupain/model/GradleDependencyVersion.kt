@@ -22,14 +22,23 @@ import kotlin.jvm.JvmInline
 public sealed interface GradleDependencyVersion {
 
     /**
+     * Whether or not this represents a static version (either a version like `1.0.0` or a snapshot version).
+     */
+    public val isStatic: Boolean
+
+    /**
      * The text representation of the version.
      */
     public val text: String
 
     /**
-     * Interface for versions representing a single version.
+     * Interface for versions representing a static version.
      */
-    public sealed interface Single : GradleDependencyVersion, Comparable<Single> {
+    public sealed interface Static : GradleDependencyVersion, Comparable<Static> {
+
+        override val isStatic: Boolean
+            get() = true
+
         /**
          * The corresponding exact version of the dependency.
          */
@@ -39,17 +48,17 @@ public sealed interface GradleDependencyVersion {
     /**
      * Checks if the given version is contained within this version.
      */
-    public operator fun contains(version: Single): Boolean
+    public operator fun contains(version: Static): Boolean
 
     /**
      * Checks if the given version is an update compared to this version.
      */
-    public fun isUpdate(version: Single): Boolean
+    public fun isUpdate(version: Static): Boolean
 
     /**
      * Exact version
      */
-    public class Exact(private val version: String) : Single {
+    public class Exact(private val version: String) : Static {
 
         override val text: String
             get() = version
@@ -60,10 +69,10 @@ public sealed interface GradleDependencyVersion {
         // We only use this for comparison, so we don't need to load it eagerly
         private val parts by lazy { toParts() }
 
-        override fun contains(version: Single): Boolean = this == version
+        override fun contains(version: Static): Boolean = this == version
 
         // Dependency version compared like in https://docs.gradle.org/current/userguide/dependency_versions.html#sec:version-ordering
-        override fun compareTo(other: Single): Int = when (other) {
+        override fun compareTo(other: Static): Int = when (other) {
             is Exact -> compareTo(other)
             is Snapshot -> {
                 val compareResult = compareTo(other.exactVersion)
@@ -96,7 +105,7 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
-        override fun isUpdate(version: Single): Boolean = when (version) {
+        override fun isUpdate(version: Static): Boolean = when (version) {
             is Snapshot -> version.exactVersion >= this
             is Exact -> version > this
         }
@@ -205,6 +214,9 @@ public sealed interface GradleDependencyVersion {
      */
     public class Range(override val text: String) : GradleDependencyVersion {
 
+        override val isStatic: Boolean
+            get() = false
+
         /**
          * Range lower bound
          */
@@ -229,18 +241,18 @@ public sealed interface GradleDependencyVersion {
             lowerBound = if (lowerBoundText.isNullOrBlank()) {
                 null
             } else {
-                Bound(GradleDependencyVersion(lowerBoundText) as Single, isLowerBoundExclusive)
+                Bound(GradleDependencyVersion(lowerBoundText) as Static, isLowerBoundExclusive)
             }
             val upperBoundText = parts.getOrNull(1)
             upperBound = if (upperBoundText.isNullOrBlank()) {
                 null
             } else {
-                Bound(GradleDependencyVersion(upperBoundText) as Single, isUpperBoundExclusive)
+                Bound(GradleDependencyVersion(upperBoundText) as Static, isUpperBoundExclusive)
             }
         }
 
         @Suppress("CyclomaticComplexMethod")
-        override fun contains(version: Single): Boolean {
+        override fun contains(version: Static): Boolean {
             val exactVersion = version.exactVersion
             return when {
                 lowerBound == null && upperBound == null -> false
@@ -282,7 +294,7 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
-        override fun isUpdate(version: Single): Boolean {
+        override fun isUpdate(version: Static): Boolean {
             return when {
                 contains(version) -> false
                 version == upperBound?.value -> upperBound.isExclusive
@@ -311,7 +323,7 @@ public sealed interface GradleDependencyVersion {
          * @property value bound value
          * @property isExclusive true if the bound is exclusive
          */
-        public class Bound(public val value: Single, public val isExclusive: Boolean) {
+        public class Bound(public val value: Static, public val isExclusive: Boolean) {
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (other == null || this::class != other::class) return false
@@ -348,6 +360,9 @@ public sealed interface GradleDependencyVersion {
      */
     public class Prefix(override val text: String) : GradleDependencyVersion {
 
+        override val isStatic: Boolean
+            get() = false
+
         private val regex: Regex?
 
         internal val baseVersion: Exact?
@@ -371,11 +386,11 @@ public sealed interface GradleDependencyVersion {
             baseVersion = exactText?.let(::Exact)
         }
 
-        override fun contains(version: Single): Boolean {
+        override fun contains(version: Static): Boolean {
             return regex == null || regex.matches(version.text)
         }
 
-        override fun isUpdate(version: Single): Boolean {
+        override fun isUpdate(version: Static): Boolean {
             return baseVersion != null && !contains(version) && baseVersion.isUpdate(version)
         }
 
@@ -399,9 +414,13 @@ public sealed interface GradleDependencyVersion {
      * Latest version
      */
     public class Latest(override val text: String) : GradleDependencyVersion {
-        override fun contains(version: Single): Boolean = false
 
-        override fun isUpdate(version: Single): Boolean = false
+        override val isStatic: Boolean
+            get() = false
+
+        override fun contains(version: Static): Boolean = false
+
+        override fun isUpdate(version: Static): Boolean = false
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -429,11 +448,11 @@ public sealed interface GradleDependencyVersion {
     /**
      * Snapshot version
      */
-    public class Snapshot(override val text: String) : Single {
+    public class Snapshot(override val text: String) : Static {
 
         override val exactVersion: Exact = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
 
-        override fun compareTo(other: Single): Int = when (other) {
+        override fun compareTo(other: Static): Int = when (other) {
             is Snapshot -> exactVersion.compareTo(other.exactVersion)
             is Exact -> {
                 val compareResult = exactVersion.compareTo(other)
@@ -441,9 +460,9 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
-        override fun contains(version: Single): Boolean = this == version
+        override fun contains(version: Static): Boolean = this == version
 
-        override fun isUpdate(version: Single): Boolean = version.exactVersion > exactVersion
+        override fun isUpdate(version: Static): Boolean = version.exactVersion > exactVersion
 
         override fun toString(): String = text
 
@@ -465,9 +484,13 @@ public sealed interface GradleDependencyVersion {
      * Unknown version
      */
     public class Unknown(override val text: String) : GradleDependencyVersion {
-        override fun contains(version: Single): Boolean = false
 
-        override fun isUpdate(version: Single): Boolean = false
+        override val isStatic: Boolean
+            get() = false
+
+        override fun contains(version: Static): Boolean = false
+
+        override fun isUpdate(version: Static): Boolean = false
 
         override fun toString(): String = "Unknown"
 
