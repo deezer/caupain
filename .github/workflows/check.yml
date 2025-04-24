@@ -16,6 +16,7 @@ on:
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         include:
@@ -42,6 +43,9 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace
+      - name: Test publication
+        run: ./gradlew publishToMavenLocal --stacktrace
+        if: matrix.os == 'ubuntu-latest'
       - name: Upload reports
         uses: actions/upload-artifact@v4
         if: always()

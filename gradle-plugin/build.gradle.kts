@@ -26,6 +26,16 @@ gradlePlugin {
 
 afterEvaluate {
     publishing {
+        repositories {
+            maven {
+                name = "github"
+                setUrl("https://maven.pkg.github.com/bishiboodsh/caupain")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
         publications {
             named<MavenPublication>("pluginMaven") {
                 artifact(

@@ -1,4 +1,3 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
 plugins {
@@ -84,5 +83,18 @@ kotlin {
 dokka {
     dokkaSourceSets.configureEach {
         documentedVisibilities(VisibilityModifier.Public)
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "github"
+            setUrl("https://maven.pkg.github.com/bishiboodsh/caupain")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }

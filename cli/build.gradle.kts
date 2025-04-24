@@ -1,8 +1,9 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-import io.gitlab.arturbosch.detekt.Detekt
+import com.deezer.caupain.tasks.MakeBinariesZipTask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,7 +13,7 @@ plugins {
 
 fun KotlinNativeTargetWithHostTests.configureTarget() =
     binaries {
-        executable {
+        executable(listOf(NativeBuildType.RELEASE)) {
             entryPoint = "main"
             baseName = "caupain"
         }
@@ -59,4 +60,22 @@ kotlin {
 
 tasks.named<JavaExec>("runJvm") {
     workingDir = rootProject.projectDir
+}
+val zipAndCopyBinaries = tasks.register<MakeBinariesZipTask>("zipAndCopyBinaries") {
+    dependsOn(
+        "macosX64Binaries",
+        "macosArm64Binaries",
+        "mingwX64Binaries",
+        "linuxX64Binaries"
+    )
+}
+tasks.register("assembleAll") {
+    dependsOn(zipAndCopyBinaries, "jvmDistZip")
+}
+
+enum class Architectures(val archName: String, val ext: String, val outExt: String?) {
+    MACOS_ARM("macosArm64", "kexe", null),
+    MACOS_X86("macosX64", "kexe", null),
+    LINUX("linuxX64", "kexe", null),
+    WINDOWS("mingwX64", "exe", "exe"),
 }
