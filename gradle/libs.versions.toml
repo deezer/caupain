@@ -53,3 +53,4 @@ kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.27.0"
 dokka = "org.jetbrains.dokka:2.0.0"
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 mokkery = "dev.mokkery:2.7.2"
+changelog = "org.jetbrains.changelog:2.2.1"

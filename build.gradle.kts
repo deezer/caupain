@@ -6,13 +6,16 @@ plugins {
     alias(libs.plugins.kotlinx.serialization) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.detekt)
+    alias(libs.plugins.changelog)
 }
+
+version = "0.0.1-SNAPSHOT"
 
 subprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     group = "com.deezer.caupain"
-    version = "0.0.1-SNAPSHOT"
+    version = rootProject.version
 
     extensions.configure<DetektExtension> {
         config.setFrom(rootProject.file("code-quality/detekt.yml"))
