@@ -62,7 +62,8 @@ versionCatalogPath = "another/path/to/libs.versions.toml"
 # Excluded dependencies. These will not be checked for updates.
 # You can exclude by key. The key matches the name used in the version catalog.
 excludedKeys = [ "excluded1", "excluded2" ]
-# You can also exclude by group and optionally by name. If name is not specified, all dependencies in the group are excluded.
+# You can also exclude by group and optionally by name. If name is not specified, all dependencies in the group
+# are excluded.
 excludedLibraries = [
     { group = "com.google.guava" }, # Exclude all dependencies in the group
     { group = "com.google.guava", name = "guava" } # Exclude only the guava dependency
@@ -85,7 +86,8 @@ outputPath = "path/to/output/file.html"
 # Path to the Gradle wrapper properties file. This is used to check for an update in the Gradle wrapper. 
 # Default is "gradle/wrapper/gradle-wrapper.properties".
 gradleWrapperPropertiesPath = "/path/to/properties/file"
-# By default, Caupain only checks updates for static versions in the version catalog (versions like 1.0.0 or 1.0.0-SNAPSHOT).
+# By default, Caupain only checks updates for static versions in the version catalog (versions like 1.0.0 or 
+# 1.0.0-SNAPSHOT).
 # The rationale behind this is that dynamic versions or rich versions indicate that the version range is
 # already specified, and that an update isn't needed. If this value is passed to false, Caupain will try
 # to find the latest version for all dependencies, even if they are dynamic or rich versions.
