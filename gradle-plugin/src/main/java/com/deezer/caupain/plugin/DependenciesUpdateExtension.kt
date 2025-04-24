@@ -52,6 +52,20 @@ open class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactor
     val useCache = objects.property<Boolean>().convention(true)
 
     /**
+     * Excludes keys from the update check.
+     */
+    fun excludeKeys(vararg keys: String) {
+        excludedKeys.addAll(keys.asIterable())
+    }
+
+    /**
+     * Excludes pluginIds from the update check.
+     */
+    fun excludePluginIds(vararg pluginIds: String) {
+        excludedPluginIds.addAll(pluginIds.asIterable())
+    }
+
+    /**
      * Excludes a library from the update check.
      *
      * @param group The group ID of the library.
@@ -60,5 +74,12 @@ open class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactor
     @Suppress("unused")
     fun excludeLibrary(group: String, name: String? = null) {
         excludedLibraries.add(LibraryExclusion(group, name))
+    }
+
+    /**
+     * Excludes libraries from the update check.
+     */
+    fun excludeLibraries(vararg libraries: LibraryExclusion) {
+        excludedLibraries.addAll(libraries.asIterable())
     }
 }

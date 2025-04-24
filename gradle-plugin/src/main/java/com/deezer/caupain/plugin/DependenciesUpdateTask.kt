@@ -9,6 +9,7 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toOkioPath
@@ -140,9 +141,22 @@ open class DependenciesUpdateTask : DefaultTask() {
     /**
      * Sets the update policy to use for the task.
      */
-    @Suppress("unused")
     fun selectIf(policy: Policy) {
         this.policy = policy
+    }
+
+    /**
+     * Sets the update policy to use for the task.
+     */
+    fun selectIf(policy: com.deezer.caupain.model.Policy) {
+        selectIf(Policy.from(policy))
+    }
+
+    /**
+     * Sets the update policy to use for the task.
+     */
+    fun selectIf(policy: VersionUpdateInfo.() -> Boolean) {
+        selectIf(Policy { policy() })
     }
 
     /**
