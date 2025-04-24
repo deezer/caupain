@@ -33,5 +33,5 @@ There are two ways to use Caupain: either as a [command line tool](cli/README.md
 
 ## Why the name ?
 
-"Copain" is a French word that means "buddy" or "pal". It also means **CA**talog **UPdate** **IN**dexer, 
+"Copain" is a French word that means "buddy" or "pal". It also means **CA**talog **UP**d**A**te **IN**dexer, 
 but honestly that's only to be serious.

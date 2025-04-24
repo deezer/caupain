@@ -100,6 +100,9 @@ This means that if you're using a beta version, alpha versions won't be suggeste
 
 Custom policies are only usable if you launch the tool via the JVM launch script.
 
+You'll also need to use the `core` dependency in order to create this policy. See the [core module](../core/README.md) 
+for more information.
+
 You can write your custom policy by extending the [Policy](../core/src/commonMain/kotlin/com/deezer/caupain/model/Policy.kt) 
 interface and implementing the `select` method. You can take an example from `AndroidXVersionLevelPolicy` 
 in the same file if needed. You'll then need to make a JAR file of your custom policy, with a `META-INF/services/com.deezer.caupain.model.Policy` 
