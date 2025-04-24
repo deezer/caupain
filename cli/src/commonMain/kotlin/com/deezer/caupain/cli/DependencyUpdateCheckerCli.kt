@@ -18,7 +18,10 @@ import com.deezer.caupain.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.ProgramResult
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.installMordant
 import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
 import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
@@ -84,8 +87,7 @@ class DependencyUpdateCheckerCli(
     private val policyPluginDir by option(
         "--policy-plugin-dir",
         help = "Custom policies plugin dir"
-    )
-        .path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
+    ).path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
     private val policy by option("-p", "--policy", help = "Update policy")
 
@@ -95,10 +97,13 @@ class DependencyUpdateCheckerCli(
             HTML_TYPE to ParsedConfiguration.OutputType.HTML,
             MARKDOWN_TYPE to ParsedConfiguration.OutputType.MARKDOWN
         )
-        .default(ParsedConfiguration.OutputType.CONSOLE)
+        .default(
+            value = ParsedConfiguration.OutputType.CONSOLE,
+            defaultForHelp = CONSOLE_TYPE
+        )
 
     private val outputPath by option("-o", "--output", help = "Report output path")
-        .path(mustExist = false, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+        .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
     private val cacheDir by option(help = "Cache directory")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
@@ -118,7 +123,20 @@ class DependencyUpdateCheckerCli(
     private val debugHttpCalls by option(
         "--debug-http-calls",
         help = "Enable debugging for HTTP calls"
-    ).flag(default = false)
+    ).flag()
+
+    init {
+        installMordant()
+        context {
+            helpFormatter = { ctx ->
+                MordantMarkdownHelpFormatter(
+                    context = ctx,
+                    showDefaultValues = true,
+                    showRequiredTag = true
+                )
+            }
+        }
+    }
 
     override suspend fun run() {
         val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)

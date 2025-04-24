@@ -23,7 +23,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import okio.Path
-import okio.Path.Companion.toPath
 import com.deezer.caupain.model.Configuration as ModelConfiguration
 
 @Serializable(ConfigurationSerializer::class)
@@ -39,7 +38,7 @@ interface Configuration {
     val cacheDir: Path?
     val outputType: OutputType?
     val outputPath: Path?
-    val gradleWrapperPropertiesPath: Path
+    val gradleWrapperPropertiesPath: Path?
 
     fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration
 
@@ -61,7 +60,7 @@ private data class ConfigurationImpl(
     override val cacheDir: Path? = null,
     @Serializable(OutputTypeSerializer::class) override val outputType: Configuration.OutputType? = Configuration.OutputType.CONSOLE,
     override val outputPath: Path?,
-    override val gradleWrapperPropertiesPath: Path = "gradle/wrapper/gradle-wrapper.properties".toPath(),
+    override val gradleWrapperPropertiesPath: Path?,
 ) : Configuration {
     override fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration {
         return ModelConfiguration(

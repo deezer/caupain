@@ -10,6 +10,7 @@ mordant = "3.0.2"
 jetbrains-kotlin-jvm = "2.1.20"
 okhttp = "5.0.0-alpha.14"
 detekt = "1.23.8"
+clikt = "5.0.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -35,7 +36,8 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 jetbrains-annotations = "org.jetbrains:annotations:26.0.2"
 slf4j-nop = "org.slf4j:slf4j-nop:2.0.17"
-clikt = "com.github.ajalt.clikt:clikt:5.0.3"
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+clikt-markdown = { module = "com.github.ajalt.clikt:clikt-markdown", version.ref = "clikt" }
 mordant = { module = "com.github.ajalt.mordant:mordant", version.ref = "mordant" }
 mordant-coroutines = { module = "com.github.ajalt.mordant:mordant-coroutines", version.ref = "mordant" }
 kotlinx-html = "org.jetbrains.kotlinx:kotlinx-html:0.12.0"

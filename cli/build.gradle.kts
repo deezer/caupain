@@ -41,6 +41,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlinx.serialization.toml)
                 implementation(libs.clikt)
+                implementation(libs.clikt.markdown)
                 implementation(libs.mordant)
                 implementation(libs.mordant.coroutines)
                 implementation(libs.kotlinx.coroutines.core)

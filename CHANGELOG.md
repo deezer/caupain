@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- First version of the library !
+- First version of the tool !
 
 ### Changed
 
