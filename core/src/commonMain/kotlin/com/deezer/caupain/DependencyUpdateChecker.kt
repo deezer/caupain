@@ -13,12 +13,13 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.GradleVersion
+import com.deezer.caupain.model.KtorLoggerAdapter
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
-import com.deezer.caupain.model.PolicyLoader
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.isExcluded
+import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.versionCatalog.Version
@@ -136,7 +137,7 @@ public fun DependencyUpdateChecker(
     logger: Logger = Logger.EMPTY,
     fileSystem: FileSystem = FileSystem.SYSTEM,
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    policies: Map<String, Policy>? = null
+    policies: List<Policy>? = null,
 ): DependencyUpdateChecker = DefaultDependencyUpdateChecker(
     configuration = configuration,
     currentGradleVersion = currentGradleVersion,
@@ -147,7 +148,7 @@ public fun DependencyUpdateChecker(
             xml(DefaultXml, ContentType.Any)
         }
         install(Logging) {
-            this.logger = logger
+            this.logger = KtorLoggerAdapter(logger)
             level = if (configuration.debugHttpCalls) LogLevel.ALL else LogLevel.INFO
             sanitizeHeader { it == HttpHeaders.Authorization }
         }
@@ -178,35 +179,30 @@ internal class DefaultDependencyUpdateChecker(
     private val ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
     private val logger: Logger,
-    policies: Map<String, Policy>?,
+    policies: List<Policy>?,
 ) : DependencyUpdateChecker {
 
     private val policies by lazy {
-        policies ?: buildMap {
-            putAll(DEFAULT_POLICIES)
-            configuration
-                .policyPluginsDir
-                ?.takeIf { fileSystem.exists(it) }
-                ?.let { fileSystem.list(it) }
-                .orEmpty()
-                .asSequence()
-                .filter { it.extension == "jar" }
-                .asIterable()
-                .let { PolicyLoader.loadPolicies(it) }
-                .let { policies ->
-                    buildMap {
-                        for (policy in policies) {
-                            if (put(policy.name, policy) != null) {
-                                throw SamePolicyNameException(policy.name)
-                            }
-                        }
-                    }
-                }
+        policies?.asSequence() ?: sequence {
+            yieldAll(DEFAULT_POLICIES)
+            yieldAll(
+                configuration
+                    .policyPluginsDir
+                    ?.takeIf { fileSystem.exists(it) }
+                    ?.let { fileSystem.list(it) }
+                    .orEmpty()
+                    .asSequence()
+                    .filter { it.extension == "jar" }
+                    .asIterable()
+                    .let { loadPolicies(it) }
+            )
         }
     }
 
     private val policy by lazy {
-        configuration.policy?.let { this.policies[it] }
+        configuration.policy?.let { name ->
+            this.policies.firstOrNull { it.name == name }
+        }
     }
 
     private var completed by atomic(0)

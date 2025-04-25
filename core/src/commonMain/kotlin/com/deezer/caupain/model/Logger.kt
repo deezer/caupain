@@ -5,7 +5,7 @@ import io.ktor.client.plugins.logging.Logger as KtorLogger
 /**
  * Logger interface for logging messages at different levels.
  */
-public interface Logger : KtorLogger {
+public interface Logger {
 
     /**
      * Logs a debug message.
@@ -44,10 +44,6 @@ public interface Logger : KtorLogger {
      */
     public fun error(message: String, throwable: Throwable? = null)
 
-    override fun log(message: String) {
-        debug(message)
-    }
-
     public companion object {
         /**
          * A logger that does nothing. This is useful for disabling logging.
@@ -73,5 +69,11 @@ public interface Logger : KtorLogger {
                 // Nothing to do
             }
         }
+    }
+}
+
+internal class KtorLoggerAdapter(private val logger: Logger) : KtorLogger {
+    override fun log(message: String) {
+        logger.debug(message)
     }
 }

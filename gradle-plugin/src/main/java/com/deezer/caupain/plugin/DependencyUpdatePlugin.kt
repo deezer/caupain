@@ -20,6 +20,8 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         require(target == target.rootProject) {
             "Plugin must be applied to the root project"
         }
+        // This could break in further versions of Gradle, but it is the only way to access the list
+        // of repositories in the settings.gradle.kts file.
         val settings = (target.gradle as GradleInternal).settings
         target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
@@ -48,8 +50,12 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             )
             outputToConsole.convention(ext.outputToConsole)
             outputToFile.convention(ext.outputToFile)
-            this.repositories.convention(settings.dependencyResolutionManagement.repositories.toRepositories())
-            this.pluginRepositories.convention(settings.pluginManagement.repositories.toRepositories())
+            repositoryHandler.libraries.convention(
+                settings.dependencyResolutionManagement.repositories.toRepositories()
+            )
+            repositoryHandler.plugins.convention(
+                settings.pluginManagement.repositories.toRepositories()
+            )
             useCache.convention(ext.useCache)
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
         }

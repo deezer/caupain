@@ -105,9 +105,11 @@ class DependencyUpdatePluginTest {
     }
 
     tasks.withType<DependenciesUpdateTask> {
-        selectIf(Policy.from(AndroidXVersionLevelPolicy))
-        repositories.set(listOf(Repository("$repositoryUrl")))
-        pluginRepositories.set(listOf(Repository("$repositoryUrl")))
+        selectIf(AndroidXVersionLevelPolicy)
+        repositories {
+            repository("$repositoryUrl")
+            pluginRepository("$repositoryUrl")
+        }   
         gradleCurrentVersionUrl.set("$gradleUrl")
     }    
     """.trimIndent()

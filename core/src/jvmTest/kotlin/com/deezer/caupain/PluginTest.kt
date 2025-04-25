@@ -125,11 +125,6 @@ class PluginTest {
     @After
     fun teardown() {
         engine.close()
-        val hitUrls = engine.requestHistory.map { it.url }
-        assertContentEquals(
-            expected = EXPECTED_HIT_URLS.sortedBy { it.toString() },
-            actual = hitUrls.sortedBy { it.toString() }
-        )
     }
 
     @Test
@@ -152,6 +147,11 @@ class PluginTest {
                 )
             ),
             actual = checker.checkForUpdates()
+        )
+        val hitUrls = engine.requestHistory.map { it.url }
+        assertContentEquals(
+            expected = EXPECTED_HIT_URLS.sortedBy { it.toString() },
+            actual = hitUrls.sortedBy { it.toString() }
         )
     }
 

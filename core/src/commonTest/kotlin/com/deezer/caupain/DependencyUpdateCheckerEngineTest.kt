@@ -42,7 +42,7 @@ class DependencyUpdateCheckerEngineTest {
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            policies = emptyMap(),
+            policies = emptyList(),
             httpClient = HttpClient {
                 install(ContentNegotiation) {
                     json(DefaultJson)

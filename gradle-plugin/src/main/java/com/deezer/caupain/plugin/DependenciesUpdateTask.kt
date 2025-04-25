@@ -8,15 +8,19 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
-import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.versionCatalog.Version
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toOkioPath
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
@@ -28,27 +32,16 @@ import java.util.UUID
 /**
  * Dependencies Update task.
  */
-open class DependenciesUpdateTask : DefaultTask() {
+abstract class DependenciesUpdateTask : DefaultTask() {
 
-    /**
-     * The list of repositories to check for updates. Default uses the repositories defined in the
-     * `dependencyResolutionManagement` block of settings file.
-     */
-    @get:Input
-    val repositories = project.objects.listProperty<Repository>()
-
-    /**
-     * The list of plugin repositories to check for updates. Default uses the repositories defined in the
-     * `pluginManagement` block of settings file.
-     */
-    @get:Input
-    val pluginRepositories = project.objects.listProperty<Repository>()
+    @get:Nested
+    abstract val repositoryHandler: RepositoryHandler
 
     /**
      * @see DependenciesUpdateExtension.versionCatalogFile
      */
     @get:InputFile
-    val versionCatalogFile = project.objects.fileProperty()
+    val versionCatalogFile: RegularFileProperty = project.objects.fileProperty()
 
     /**
      * @see DependenciesUpdateExtension.excludedKeys
@@ -72,7 +65,7 @@ open class DependenciesUpdateTask : DefaultTask() {
      * @see DependenciesUpdateExtension.outputFile
      */
     @OutputFile
-    val outputFile = project.objects.fileProperty()
+    val outputFile: RegularFileProperty = project.objects.fileProperty()
 
     /**
      * @see DependenciesUpdateExtension.outputToConsole
@@ -102,13 +95,13 @@ open class DependenciesUpdateTask : DefaultTask() {
      * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
      */
     @get:Internal
-    val cacheDir = project
+    val cacheDir: DirectoryProperty = project
         .objects
         .directoryProperty()
         .convention(project.layout.buildDirectory.dir("cache/dependency-updates"))
 
     @get:Input
-    val gradleCurrentVersionUrl = project
+    val gradleCurrentVersionUrl: Property<String> = project
         .objects
         .property<String>()
         .convention(Configuration.DEFAULT_GRADLE_VERSION_URL)
@@ -132,7 +125,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         val checker = DependencyUpdateChecker(
             configuration = configuration,
             logger = LoggerAdapter(logger),
-            policies = policy?.let { mapOf(it.name to it) },
+            policies = policy?.let { listOf(it) },
             currentGradleVersion = GradleVersion.current().version,
         )
         runBlocking {
@@ -154,7 +147,7 @@ open class DependenciesUpdateTask : DefaultTask() {
      * Sets the update policy to use for the task.
      */
     fun selectIf(policy: com.deezer.caupain.model.Policy) {
-        selectIf(Policy.from(policy))
+        selectIf(Policy { policy.select(currentVersion, updatedVersion) })
     }
 
     /**
@@ -165,23 +158,15 @@ open class DependenciesUpdateTask : DefaultTask() {
     }
 
     /**
-     * Adds a repository to check for updates.
-     *
-     * @param url The URL of the repository.
-     * @param user The username for authentication (optional).
-     * @param password The password for authentication (optional).
+     * Configures repositories
      */
-    fun repository(
-        url: String,
-        user: String? = null,
-        password: String? = null
-    ) {
-        repositories.add(Repository(url, user, password))
+    fun repositories(action: Action<RepositoryHandler>) {
+        action.execute(repositoryHandler)
     }
 
     private fun createConfiguration(policyId: String?): Configuration = Configuration(
-        repositories = repositories.get(),
-        pluginRepositories = pluginRepositories.get(),
+        repositories = repositoryHandler.libraries.get(),
+        pluginRepositories = repositoryHandler.plugins.get(),
         versionCatalogPath = versionCatalogFile.asFile.get().toOkioPath(),
         excludedKeys = excludedKeys.get(),
         excludedLibraries = excludedLibraries.get(),

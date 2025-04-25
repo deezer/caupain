@@ -84,7 +84,7 @@ class DependencyUpdateCheckerTest {
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            policies = emptyMap(),
+            policies = emptyList(),
             currentGradleVersion = "8.11"
         )
     }

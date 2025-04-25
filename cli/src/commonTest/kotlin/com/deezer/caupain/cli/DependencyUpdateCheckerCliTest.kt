@@ -1,6 +1,7 @@
 package com.deezer.caupain.cli
 
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.GradleUpdateInfo
@@ -40,7 +41,7 @@ class DependencyUpdateCheckerCliTest {
 
     private val versionCatalogPath = "libs.versions.toml".toPath()
 
-    private val policyPluginDir = "policies".toPath()
+    private val mockPolicyPluginDir = "policies".toPath()
 
     private val cacheDir = "cache".toPath()
 
@@ -49,7 +50,7 @@ class DependencyUpdateCheckerCliTest {
         fileSystem = FakeFileSystem()
         fileSystem.write(versionCatalogPath) { writeUtf8("") }
         fileSystem.write(configurationPath) { writeUtf8("") }
-        fileSystem.createDirectories(policyPluginDir)
+        fileSystem.createDirectories(mockPolicyPluginDir)
         fileSystem.createDirectories(cacheDir)
         checker = mock {
             every { progress } returns mockProgressFlow
@@ -122,10 +123,12 @@ class DependencyUpdateCheckerCliTest {
             versionCatalogPath = versionCatalogPath,
             excludedKeys = setOf("excluded"),
             policy = "custom",
-            policyPluginsDir = policyPluginDir,
+            policyPluginsDir = mockPolicyPluginDir,
             cacheDir = cacheDir
         )
-        val mergedConfiguration = mock<Configuration>()
+        val mergedConfiguration = mock<Configuration> {
+            every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
+        }
         every { parsedConfiguration.toConfiguration(baseConfiguration) } returns mergedConfiguration
         val cli = createCli { conf ->
             assertEquals(mergedConfiguration, conf)
@@ -140,7 +143,7 @@ class DependencyUpdateCheckerCliTest {
                 "-c",
                 configurationPath.toString(),
                 "--policy-plugin-dir",
-                policyPluginDir.toString(),
+                mockPolicyPluginDir.toString(),
                 "-p",
                 "custom",
                 "-t",

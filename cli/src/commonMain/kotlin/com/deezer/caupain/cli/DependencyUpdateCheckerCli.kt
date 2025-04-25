@@ -2,6 +2,7 @@ package com.deezer.caupain.cli
 
 import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.serialization.DefaultToml
@@ -30,6 +31,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
+import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
 import com.github.ajalt.mordant.widgets.progress.marquee
 import com.github.ajalt.mordant.widgets.progress.percentage
@@ -42,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -86,7 +89,8 @@ class DependencyUpdateCheckerCli(
 
     private val policyPluginDir by option(
         "--policy-plugin-dir",
-        help = "Custom policies plugin dir"
+        help = "Custom policies plugin dir",
+        hidden = !CAN_USE_PLUGINS
     ).path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
     private val policy by option("-p", "--policy", help = "Update policy")
@@ -142,14 +146,37 @@ class DependencyUpdateCheckerCli(
         val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
         val configuration = loadConfiguration()
+        val finalConfiguration = createConfiguration(configuration)
+        if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
+            echo("Policy plugins are not supported on this platform", err = true)
+        }
         val updateChecker =
             createUpdateChecker(
-                createConfiguration(configuration),
+                finalConfiguration,
                 loadGradleVersion(configuration),
                 fileSystem,
                 ClicktLogger()
             )
-        val progress = if (logLevel == LogLevel.DEFAULT) {
+        val progress = backgroundScope.createProgress(updateChecker.progress)
+
+        val updates = try {
+            updateChecker.checkForUpdates()
+        } catch (e: CaupainException) {
+            echo(e.message, err = true)
+            throw Abort()
+        }
+        val formatter = outputFormatter(configuration)
+        formatter.format(updates)
+        progress?.clear()
+        backgroundScope.cancel()
+        if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
+            echo("Report generated at ${formatter.outputPath}")
+        }
+        throw ProgramResult(0)
+    }
+
+    private fun CoroutineScope.createProgress(progressFlow: Flow<DependencyUpdateChecker.Progress?>): CoroutineProgressTaskAnimator<String>? {
+        return if (logLevel == LogLevel.DEFAULT) {
             val terminalProgress = progressBarContextLayout {
                 marquee(DependencyUpdateChecker.MAX_TASK_NAME_LENGTH) { context }
                 percentage()
@@ -157,13 +184,12 @@ class DependencyUpdateCheckerCli(
                 timeElapsed()
             }.animateInCoroutine(terminal, context = "Starting")
 
-            backgroundScope.launch {
+            launch {
                 terminalProgress.execute()
             }
 
-            backgroundScope.launch {
-                updateChecker
-                    .progress
+            launch {
+                progressFlow
                     .filterNotNull()
                     .collect { progress ->
                         terminalProgress.update {
@@ -187,21 +213,6 @@ class DependencyUpdateCheckerCli(
         } else {
             null
         }
-
-        val updates = try {
-            updateChecker.checkForUpdates()
-        } catch (e: CaupainException) {
-            echo(e.message, err = true)
-            throw Abort()
-        }
-        val formatter = outputFormatter(configuration)
-        formatter.format(updates)
-        progress?.clear()
-        backgroundScope.cancel()
-        if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
-            echo("Report generated at ${formatter.outputPath}")
-        }
-        throw ProgramResult(0)
     }
 
     private fun createConfiguration(parsedConfiguration: ParsedConfiguration?): Configuration {

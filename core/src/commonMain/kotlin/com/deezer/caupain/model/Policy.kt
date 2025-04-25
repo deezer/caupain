@@ -21,19 +21,11 @@ public interface Policy {
     ): Boolean
 }
 
-internal expect object PolicyLoader {
-    fun loadPolicies(paths: Iterable<Path>): Iterable<Policy>
-}
+internal expect fun loadPolicies(paths: Iterable<Path>): Iterable<Policy>
 
-internal val DEFAULT_POLICIES by lazy {
-    buildMap {
-        putPolicy(AndroidXVersionLevelPolicy)
-    }
-}
-
-internal fun MutableMap<String, Policy>.putPolicy(policy: Policy) {
-    put(policy.name, policy)
-}
+internal val DEFAULT_POLICIES = listOf(
+    AndroidXVersionLevelPolicy
+)
 
 /**
  * This a default implementation for policy, based on the version levels used in AndroidX. Basically,

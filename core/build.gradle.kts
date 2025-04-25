@@ -1,4 +1,5 @@
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -94,4 +95,8 @@ publishing {
             }
         }
     }
+}
+
+tasks.register("testAll") {
+    dependsOn(tasks.withType<Test>(), tasks.withType<KotlinNativeTest>())
 }
