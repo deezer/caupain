@@ -44,6 +44,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import com.deezer.caupain.model.maven.Dependency as MavenDependency
 import com.deezer.caupain.model.maven.Version as MavenVersion
@@ -63,9 +64,9 @@ class PluginTest {
     @Before
     fun setup() {
         val pluginDir = temporaryFolder.newFolder("plugins")
-        copyPluginToPluginDir(pluginDir)
+        copyPluginToPluginDir(pluginDir, "plugin.jar")
         val versionCatalogFile = temporaryFolder.newFile("libs.versions.toml")
-        versionCatalogFile.writeText("")
+        versionCatalogFile.writeBytes(ByteArray(0))
         val configuration = Configuration(
             repositories = listOf(BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY),
@@ -94,13 +95,12 @@ class PluginTest {
         )
     }
 
-    private fun copyPluginToPluginDir(pluginDir: File) {
-
+    private fun copyPluginToPluginDir(pluginDir: File, pluginFileName: String) {
         javaClass
-            .getResourceAsStream("plugin.jar")
+            .getResourceAsStream(pluginFileName)
             ?.buffered()
             ?.use { input ->
-                File(pluginDir, "plugin.jar")
+                File(pluginDir, pluginFileName)
                     .outputStream()
                     .buffered()
                     .use { output ->
@@ -125,6 +125,11 @@ class PluginTest {
     @After
     fun teardown() {
         engine.close()
+        val hitUrls = engine.requestHistory.map { it.url }
+        assertContentEquals(
+            expected = EXPECTED_HIT_URLS.sortedBy { it.toString() },
+            actual = hitUrls.sortedBy { it.toString() }
+        )
     }
 
     @Test
@@ -213,8 +218,8 @@ class PluginTest {
             .build()
 
         private val GROOVY_NIO_METADATA = metadata(
-            latest = "1.0.1",
-            versions = listOf("1.0.0", "1.0.1")
+            latest = "1.1.0",
+            versions = listOf("1.0.0", "1.1.0")
         )
         private val GROOVY_NIO_METADATA_URL = URLBuilder()
             .takeFrom(BASE_URL)
@@ -228,10 +233,13 @@ class PluginTest {
                     version = Version.Simple(GradleDependencyVersion.Exact("1.0.0"))
                 ),
                 "will-not-update" to Dependency.Library(
-                    module = "org.codehaus.groovy:groovy-json",
+                    module = "org.codehaus.groovy:groovy-nio",
                     version = Version.Simple(GradleDependencyVersion.Exact("1.0.0"))
                 ),
             )
         )
+
+        private val EXPECTED_HIT_URLS =
+            listOf(GROOVY_CORE_INFO_URL, GROOVY_CORE_METADATA_URL, GROOVY_NIO_METADATA_URL)
     }
 }

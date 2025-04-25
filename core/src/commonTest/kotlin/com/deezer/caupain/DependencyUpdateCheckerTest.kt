@@ -264,7 +264,14 @@ class DependencyUpdateCheckerTest {
         )
         private val GROOVY_NIO_INFO_URL = URLBuilder()
             .takeFrom(BASE_URL)
-            .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "3.0.5", "groovy-nio-3.0.5.pom")
+            .appendPathSegments(
+                "org",
+                "codehaus",
+                "groovy",
+                "groovy-nio",
+                "3.0.5",
+                "groovy-nio-3.0.5.pom"
+            )
             .build()
 
         private val VERSIONS_METADATA = metadata(
