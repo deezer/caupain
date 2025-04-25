@@ -496,5 +496,8 @@ internal class DefaultDependencyUpdateChecker(
 public class NoVersionCatalogException(path: Path) :
     CaupainException("No version catalog found at $path")
 
-internal class SamePolicyNameException(name: String) :
+/**
+ * Exception thrown when multiple policies have the same name.
+ */
+public class SamePolicyNameException(name: String) :
     CaupainException("Policy name conflict: multiple polices have the same name $name")
