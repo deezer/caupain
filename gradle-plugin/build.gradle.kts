@@ -29,7 +29,7 @@ afterEvaluate {
         repositories {
             maven {
                 name = "github"
-                setUrl("https://maven.pkg.github.com/bishiboodsh/caupain")
+                setUrl("https://maven.pkg.github.com/bishiboosh/caupain")
                 credentials {
                     username = System.getenv("GITHUB_ACTOR")
                     password = System.getenv("GITHUB_TOKEN")
