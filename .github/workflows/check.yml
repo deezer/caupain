@@ -38,9 +38,6 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Install CURL dev headers
-        run: sudo apt-get install libcurl4-gnutls-dev
-        if: matrix.os == 'ubuntu-latest'
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace
       - name: Test publication
