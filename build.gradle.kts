@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.changelog)
 }
 
-version = "0.0.1-SNAPSHOT"
+version = "0.1.0"
 
 val sampleProjectsNames = listOf(
     projects.samplePluginPolicy.name
