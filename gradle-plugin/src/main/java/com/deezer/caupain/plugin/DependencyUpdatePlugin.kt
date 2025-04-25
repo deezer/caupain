@@ -1,18 +1,13 @@
 package com.deezer.caupain.plugin
 
-import com.deezer.caupain.model.Repository
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.gradle.api.internal.GradleInternal
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
 
 /**
  * Plugin to check for dependency updates.
  */
-@Suppress("UnstableApiUsage")
 open class DependencyUpdatePlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
@@ -20,9 +15,6 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         require(target == target.rootProject) {
             "Plugin must be applied to the root project"
         }
-        // This could break in further versions of Gradle, but it is the only way to access the list
-        // of repositories in the settings.gradle.kts file.
-        val settings = (target.gradle as GradleInternal).settings
         target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
             description = "Check for dependency updates"
@@ -50,32 +42,10 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             )
             outputToConsole.convention(ext.outputToConsole)
             outputToFile.convention(ext.outputToFile)
-            repositoryHandler.libraries.convention(
-                settings.dependencyResolutionManagement.repositories.toRepositories()
-            )
-            repositoryHandler.plugins.convention(
-                settings.pluginManagement.repositories.toRepositories()
-            )
+            repositories.convention(ext.repositories.libraries)
+            pluginRepositories.convention(ext.repositories.plugins)
             useCache.convention(ext.useCache)
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
         }
-    }
-
-    private fun RepositoryHandler.toRepositories(): List<Repository> {
-        return mapNotNull { repository ->
-            if (repository is MavenArtifactRepository && repository.url.scheme in ACCEPTED_SCHEMES) {
-                Repository(
-                    url = repository.url.toString(),
-                    user = repository.credentials.username,
-                    password = repository.credentials.password
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-    companion object {
-        private val ACCEPTED_SCHEMES = setOf("http", "https")
     }
 }

@@ -104,12 +104,19 @@ class DependencyUpdatePluginTest {
         id("com.deezer.caupain")
     }
 
+    caupain {
+        repositories {
+            libraries {
+                repository("$repositoryUrl") 
+            }   
+            plugins {
+                repository("$repositoryUrl") 
+            }
+        }
+    }
+
     tasks.withType<DependenciesUpdateTask> {
         selectIf(AndroidXVersionLevelPolicy)
-        repositories {
-            repository("$repositoryUrl")
-            pluginRepository("$repositoryUrl")
-        }   
         gradleCurrentVersionUrl.set("$gradleUrl")
     }    
     """.trimIndent()

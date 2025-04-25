@@ -1,7 +1,13 @@
 package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.LibraryExclusion
+import org.gradle.api.Action
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
+import org.gradle.api.tasks.Nested
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
@@ -10,52 +16,65 @@ import javax.inject.Inject
 /**
  * Configuration for the Dependencies Update plugin.
  */
-open class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactory) {
+abstract class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactory) {
+
+    @get:Nested
+    abstract val repositories: RepositoryHandler
+
     /**
      * The path to the version catalog file (default is gradle/libs.versions.toml").
      */
-    val versionCatalogFile = objects.fileProperty()
+    val versionCatalogFile: RegularFileProperty = objects.fileProperty()
 
     /**
      * The set of keys in the version catalog for which updates should be ignored. Default is empty.
      */
-    val excludedKeys = objects.setProperty<String>().convention(emptySet())
+    val excludedKeys: SetProperty<String> = objects.setProperty<String>().convention(emptySet())
 
     /**
      * The list of libraries to exclude from the update check. Defauklt is empty.
      */
-    val excludedLibraries = objects.listProperty<LibraryExclusion>().convention(emptyList())
+    val excludedLibraries: ListProperty<LibraryExclusion> =
+        objects.listProperty<LibraryExclusion>().convention(emptyList())
 
     /**
      * The set of plugin IDs to exclude from the update check. Default is empty.
      */
-    val excludedPluginIds = objects.setProperty<String>().convention(emptySet())
+    val excludedPluginIds: SetProperty<String> =
+        objects.setProperty<String>().convention(emptySet())
 
     /**
      * The path to the output file for the HTML report (default is "build/reports/dependency-updates.html").
      */
-    val outputFile = objects.fileProperty()
+    val outputFile: RegularFileProperty = objects.fileProperty()
 
     /**
      * Whether to output the results to the console. Default is true.
      */
-    val outputToConsole = objects.property<Boolean>().convention(true)
+    val outputToConsole: Property<Boolean> = objects.property<Boolean>().convention(true)
 
     /**
      * Whether to output the results to a file. Default is true.
      */
-    val outputToFile = objects.property<Boolean>().convention(true)
+    val outputToFile: Property<Boolean> = objects.property<Boolean>().convention(true)
 
     /**
      * Whether to use an HTTP cache for the update check. Default is true.
      */
-    val useCache = objects.property<Boolean>().convention(true)
+    val useCache: Property<Boolean> = objects.property<Boolean>().convention(true)
 
     /**
      * Whether to check updates only for static versions (e.g., 1.0.0 or 1.0.0-SNAPSHOT) and not for
      * dynamic versions (e.g., 1.+). Default is true.
      */
-    val onlyCheckStaticVersions = objects.property<Boolean>().convention(true)
+    val onlyCheckStaticVersions: Property<Boolean> = objects.property<Boolean>().convention(true)
+
+    /**
+     * Configure repositories
+     */
+    fun repositories(action: Action<RepositoryHandler>) {
+        action.execute(repositories)
+    }
 
     /**
      * Excludes keys from the update check.

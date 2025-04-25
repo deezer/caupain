@@ -8,10 +8,10 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.versionCatalog.Version
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toOkioPath
-import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -20,7 +20,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
@@ -34,8 +33,11 @@ import java.util.UUID
  */
 abstract class DependenciesUpdateTask : DefaultTask() {
 
-    @get:Nested
-    abstract val repositoryHandler: RepositoryHandler
+    @get:Input
+    val repositories = project.objects.listProperty<Repository>()
+
+    @get:Input
+    val pluginRepositories = project.objects.listProperty<Repository>()
 
     /**
      * @see DependenciesUpdateExtension.versionCatalogFile
@@ -157,16 +159,9 @@ abstract class DependenciesUpdateTask : DefaultTask() {
         selectIf(Policy { policy() })
     }
 
-    /**
-     * Configures repositories
-     */
-    fun repositories(action: Action<RepositoryHandler>) {
-        action.execute(repositoryHandler)
-    }
-
     private fun createConfiguration(policyId: String?): Configuration = Configuration(
-        repositories = repositoryHandler.libraries.get(),
-        pluginRepositories = repositoryHandler.plugins.get(),
+        repositories = repositories.get(),
+        pluginRepositories = pluginRepositories.get(),
         versionCatalogPath = versionCatalogFile.asFile.get().toOkioPath(),
         excludedKeys = excludedKeys.get(),
         excludedLibraries = excludedLibraries.get(),
