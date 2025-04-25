@@ -47,6 +47,11 @@ mockwebserver-junit = { module = "com.squareup.okhttp3:mockwebserver3-junit4", v
 detekt-libraries = { module = "io.gitlab.arturbosch.detekt:detekt-rules-libraries", version.ref = "detekt" }
 semver = "io.github.z4kn4fein:semver:3.0.0"
 
+[bundles]
+clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]
+ktor = ["ktor-client-core", "ktor-client-logging", "ktor-client-content-negociation"]
+ktor-serialization = ["ktor-serialization-kotlinx-json", "ktor-serialization-kotlinx-xml"]
+
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
