@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 include(":core")
 include(":cli")
 include(":gradle-plugin")
+include(":sample-plugin-policy")

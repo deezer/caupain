@@ -12,7 +12,7 @@ internal actual object PolicyLoader {
                 .map { it.toNioPath().toUri().toURL() }
                 .toList()
                 .toTypedArray(),
-            javaClass.classLoader
+            Policy::class.java.classLoader
         )
         return ServiceLoader.load(Policy::class.java, childClassLoader)
     }

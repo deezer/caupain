@@ -118,6 +118,8 @@ interface and implementing the `select` method. You can take an example from `An
 in the same file if needed. You'll then need to make a JAR file of your custom policy, with a `META-INF/services/com.deezer.caupain.model.Policy` 
 file containing the fully qualified name of your class, and place the JAR file in your `policyPluginDir` directory.
 
+As sample can be found in the [sample plugin module](../sample-plugin-policy) of the project.
+
 If this is a bit too difficult to do (and let's be honest, it is), custom policy use is way easier 
 when using the [Gradle plugin version](../gradle-plugin/README.md) of the tool.
 
