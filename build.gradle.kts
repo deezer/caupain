@@ -26,19 +26,6 @@ subprojects {
     extensions.configure<DetektExtension> {
         config.setFrom(rootProject.file("code-quality/detekt.yml"))
     }
-    tasks.withType<Detekt> {
-        reports {
-            sarif {
-                required = true
-                outputLocation = file(
-                    rootProject
-                        .layout
-                        .buildDirectory
-                        .file("reports/detekt/${this@withType.name}-${this@subprojects.name}.sarif")
-                )
-            }
-        }
-    }
     val detektAll = tasks.register("detektAll") {
         group = "verification"
         description = "Run detekt analysis for all targets"
