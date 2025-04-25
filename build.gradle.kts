@@ -11,7 +11,13 @@ plugins {
 
 version = "0.0.1-SNAPSHOT"
 
+val sampleProjectsNames = listOf(
+    projects.samplePluginPolicy.name
+)
+
 subprojects {
+    if (name in sampleProjectsNames) return@subprojects
+
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     group = "com.deezer.caupain"
@@ -21,7 +27,17 @@ subprojects {
         config.setFrom(rootProject.file("code-quality/detekt.yml"))
     }
     tasks.withType<Detekt> {
-        reports.sarif.required.set(true)
+        reports {
+            sarif {
+                required = true
+                outputLocation = file(
+                    rootProject
+                        .layout
+                        .buildDirectory
+                        .file("reports/detekt/${this@withType.name}-${this@subprojects.name}.sarif")
+                )
+            }
+        }
     }
     val detektAll = tasks.register("detektAll") {
         group = "verification"

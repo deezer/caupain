@@ -49,8 +49,6 @@ jobs:
         with:
           name: check-results-${{ matrix.os }}
           path: '*/build/test-results/**/TEST-*.xml'
-      - name: Copy SARIF files to global result directory
-        run: mkdir -p build/reports/detekt && cp */build/reports/detekt/*.sarif build/reports/detekt/
       - name: Publish Detekt reports
         if: matrix.os == 'ubuntu-latest'
         uses: github/codeql-action/upload-sarif@v3
