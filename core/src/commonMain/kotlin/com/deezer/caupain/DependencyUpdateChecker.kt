@@ -193,7 +193,15 @@ internal class DefaultDependencyUpdateChecker(
                 .filter { it.extension == "jar" }
                 .asIterable()
                 .let { PolicyLoader.loadPolicies(it) }
-                .associateByTo(this) { it.name }
+                .let { policies ->
+                    buildMap {
+                        for (policy in policies) {
+                            if (put(policy.name, policy) != null) {
+                                throw SamePolicyNameException(policy.name)
+                            }
+                        }
+                    }
+                }
         }
     }
 
@@ -208,7 +216,10 @@ internal class DefaultDependencyUpdateChecker(
     override val progress: Flow<DependencyUpdateChecker.Progress?>
         get() = progressFlow.asStateFlow()
 
-    @Suppress("LongMethod", "CyclomaticComplexMethod") // This cannot be easily simplified because of the async blocks
+    @Suppress(
+        "LongMethod",
+        "CyclomaticComplexMethod"
+    ) // This cannot be easily simplified because of the async blocks
     override suspend fun checkForUpdates(): DependenciesUpdateResult {
         if (!fileSystem.exists(configuration.versionCatalogPath)) {
             throw NoVersionCatalogException(configuration.versionCatalogPath)
@@ -350,7 +361,8 @@ internal class DefaultDependencyUpdateChecker(
                     ?.body<GradleVersion>()
                     ?.version
             }
-            val updatedVersion = updatedVersionString?.let { SemanticVersion.parse(it, strict = false) }
+            val updatedVersion =
+                updatedVersionString?.let { SemanticVersion.parse(it, strict = false) }
             return if (updatedVersion == null || updatedVersion <= currentVersion) {
                 null
             } else {
@@ -481,4 +493,8 @@ internal class DefaultDependencyUpdateChecker(
  *
  * @param path The path to the version catalog.
  */
-public class NoVersionCatalogException(path: Path) : Exception("No version catalog found at $path")
+public class NoVersionCatalogException(path: Path) :
+    CaupainException("No version catalog found at $path")
+
+internal class SamePolicyNameException(name: String) :
+    CaupainException("Policy name conflict: multiple polices have the same name $name")

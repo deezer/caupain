@@ -1,7 +1,7 @@
 package com.deezer.caupain.cli
 
+import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
-import com.deezer.caupain.NoVersionCatalogException
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.serialization.DefaultToml
@@ -190,7 +190,7 @@ class DependencyUpdateCheckerCli(
 
         val updates = try {
             updateChecker.checkForUpdates()
-        } catch (e: NoVersionCatalogException) {
+        } catch (e: CaupainException) {
             echo(e.message, err = true)
             throw Abort()
         }

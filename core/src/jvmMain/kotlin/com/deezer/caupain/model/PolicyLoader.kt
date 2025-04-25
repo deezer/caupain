@@ -14,6 +14,7 @@ internal actual object PolicyLoader {
                 .toTypedArray(),
             Policy::class.java.classLoader
         )
-        return ServiceLoader.load(Policy::class.java, childClassLoader)
+        return ServiceLoader
+            .load(Policy::class.java, childClassLoader)
     }
 }
