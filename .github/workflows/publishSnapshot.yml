@@ -1,4 +1,4 @@
-name: release
+name: publishSnapshot
 on:
   push:
     branches: [ "main" ]
