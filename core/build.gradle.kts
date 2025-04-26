@@ -1,6 +1,5 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -114,6 +113,7 @@ tasks.withType<Detekt> {
 dokka {
     dokkaSourceSets.configureEach {
         documentedVisibilities(VisibilityModifier.Public)
+        suppressedFiles.from(project.layout.buildDirectory.dir("generated-src"))
     }
 }
 
