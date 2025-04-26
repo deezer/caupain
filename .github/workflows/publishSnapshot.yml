@@ -9,6 +9,10 @@ on:
 permissions:
   packages: write
 
+concurrency:
+  group: "snapshot"
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
