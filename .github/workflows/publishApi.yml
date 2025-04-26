@@ -37,7 +37,7 @@ jobs:
       - name: Generate Dokka
         run: ./gradlew :core:dokkaGenerate --stacktrace
       - name: Upload Dokka HTML
-        run: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           path: core/build/dokka/html
       - name: Deploy to GitHub Pages
