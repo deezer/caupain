@@ -2,6 +2,7 @@ package com.deezer.caupain
 
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,39 +42,42 @@ class VersionCatalogParserTest {
     @Test
     fun testParsing() = runTest(testDispatcher) {
         assertEquals(
-            expected = VersionCatalog(
-                versions = mapOf(
-                    "groovy" to Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
-                    "checkstyle" to Version.Simple(GradleDependencyVersion.Exact("8.37"))
-                ),
-                libraries = mapOf(
-                    "groovy-core" to Dependency.Library(
-                        module = "org.codehaus.groovy:groovy",
-                        version = Version.Reference("groovy")
+            expected = VersionCatalogParseResult(
+                versionCatalog = VersionCatalog(
+                    versions = mapOf(
+                        "groovy" to Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
+                        "checkstyle" to Version.Simple(GradleDependencyVersion.Exact("8.37"))
                     ),
-                    "groovy-json" to Dependency.Library(
-                        module = "org.codehaus.groovy:groovy-json",
-                        version = Version.Reference("groovy")
+                    libraries = mapOf(
+                        "groovy-core" to Dependency.Library(
+                            module = "org.codehaus.groovy:groovy",
+                            version = Version.Reference("groovy")
+                        ),
+                        "groovy-json" to Dependency.Library(
+                            module = "org.codehaus.groovy:groovy-json",
+                            version = Version.Reference("groovy")
+                        ),
+                        "groovy-nio" to Dependency.Library(
+                            module = "org.codehaus.groovy:groovy-nio",
+                            version = Version.Reference("groovy")
+                        ),
+                        "commons-lang3" to Dependency.Library(
+                            group = "org.apache.commons",
+                            name = "commons-lang3",
+                            version = Version.Rich(
+                                strictly = GradleDependencyVersion.Range("[3.8, 4.0["),
+                                prefer = GradleDependencyVersion.Exact("3.9")
+                            )
+                        )
                     ),
-                    "groovy-nio" to Dependency.Library(
-                        module = "org.codehaus.groovy:groovy-nio",
-                        version = Version.Reference("groovy")
-                    ),
-                    "commons-lang3" to Dependency.Library(
-                        group = "org.apache.commons",
-                        name = "commons-lang3",
-                        version = Version.Rich(
-                            strictly = GradleDependencyVersion.Range("[3.8, 4.0["),
-                            prefer = GradleDependencyVersion.Exact("3.9")
+                    plugins = mapOf(
+                        "versions" to Dependency.Plugin(
+                            id = "com.github.ben-manes.versions",
+                            version = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT"))
                         )
                     )
                 ),
-                plugins = mapOf(
-                    "versions" to Dependency.Plugin(
-                        id = "com.github.ben-manes.versions",
-                        version = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT"))
-                    )
-                )
+                ignores = Ignores()
             ),
             actual = parser.parseDependencyInfo()
         )

@@ -35,7 +35,7 @@ fun parsePropertiesFile(fileSystem: FileSystem, path: Path): Map<String, String>
 }
 
 @OptIn(InternalSerializationApi::class)
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions") // Needs all implementations
 private class StringMapDecoder(
     private val map: Map<String, String>,
     descriptor: SerialDescriptor,

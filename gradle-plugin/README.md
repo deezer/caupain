@@ -47,6 +47,20 @@ excludeLibraries(
 excludePluginIds("excluded.plugin.id")
 ```
 
+You can also exclude dependencies directly in the TOML file by adding an inline comment `#ignoreUpdates`
+on the same line as a version reference or dependency/plugin definition, like so:
+```toml
+[versions]
+my-excluded-version-ref = "1.0.0" #ignoreUpdates
+my-regular-ref = "1.0.0"
+[libraries]
+my-excluded-lib = { module = "com.example:example", version.ref = "my-excluded-version-ref" } #ignoreUpdates
+my-regular-lib = { module = "com.example:example", version.ref = "my-regular-ref" }
+[plugins]
+my-excluded-plugin = { id = "com.example.plugin", version.ref = "my-excluded-version-ref" } #ignoreUpdates
+my-regular-plugin = { id = "com.example.plugin", version.ref = "my-regular-ref" }
+```
+
 ### Repositories
 
 By default, the Maven repositories that are used are the ones defined in the the `pluginManagement`

@@ -19,7 +19,6 @@ private fun pathType(context: Context, fileOkay: Boolean, folderOkay: Boolean): 
     else -> context.localization.pathTypeOther()
 }
 
-@Suppress("LongParameterList")
 private fun convertToPath(
     stringPath: String,
     mustExist: Boolean,

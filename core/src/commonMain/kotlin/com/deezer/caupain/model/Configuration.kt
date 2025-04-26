@@ -56,7 +56,7 @@ public interface Configuration : Serializable {
  * @param gradleCurrentVersionUrl The URL to check for the current version of Gradle.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList") // Needed to reflect parameters
 public fun Configuration(
     repositories: List<Repository> = listOf(
         DefaultRepositories.mavenCentral,

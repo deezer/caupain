@@ -14,7 +14,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@Suppress("OPT_IN_USAGE")
 class MarkdownFormatterTest {
 
     private lateinit var fileSystem: FakeFileSystem
