@@ -9,7 +9,19 @@ plugins {
     alias(libs.plugins.changelog)
 }
 
-version = "0.1.0"
+val currentVersion = "0.1.0"
+
+val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
+val isCI = System.getenv("CI").toBoolean()
+val runNumber = System.getenv("GITHUB_RUN_NUMBER") ?: "0"
+version = buildString {
+    append(currentVersion)
+    if (isSnapshot || !isCI) {
+        append('.')
+        append(runNumber)
+    }
+    if (isSnapshot || !isCI) append("-SNAPSHOT")
+}
 
 val sampleProjectsNames = listOf(
     projects.samplePluginPolicy.name
