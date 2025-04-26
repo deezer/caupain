@@ -39,6 +39,7 @@ jobs:
       - name: Upload Dokka HTML
         uses: actions/upload-artifact@v4
         with:
+          name: github-pages
           path: core/build/dokka/html
       - name: Deploy to GitHub Pages
         id: deployment
