@@ -36,6 +36,8 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Generate Dokka
         run: ./gradlew :core:dokkaGenerate --stacktrace
+      - name: Fix permissions
+        run: chmod -c -R +rX core/build/dokka/html
       - name: Upload Dokka HTML
         uses: actions/upload-artifact@v4
         with:
