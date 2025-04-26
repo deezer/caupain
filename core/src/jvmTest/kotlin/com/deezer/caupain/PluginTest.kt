@@ -4,6 +4,7 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.UpdateInfo
@@ -167,7 +168,8 @@ class PluginTest {
         private val BASE_REPOSITORY = Repository(BASE_URL.toString())
 
         private object FixedVersionCatalogParser : VersionCatalogParser {
-            override suspend fun parseDependencyInfo(): VersionCatalog = VERSION_CATALOG
+            override suspend fun parseDependencyInfo() =
+                VersionCatalogParseResult(VERSION_CATALOG, Ignores())
         }
 
         private fun metadata(

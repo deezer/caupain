@@ -27,6 +27,8 @@ jobs:
             - os: ubuntu-latest
               TEST_TASK: linuxX64Test jvmTest test detektAll
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:

@@ -251,7 +251,7 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
-        @Suppress("CyclomaticComplexMethod")
+        @Suppress("CyclomaticComplexMethod") // This applies the documented algorithm
         override fun contains(version: Static): Boolean {
             val exactVersion = version.exactVersion
             return when {

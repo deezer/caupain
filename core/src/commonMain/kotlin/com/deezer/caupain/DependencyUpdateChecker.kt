@@ -13,6 +13,7 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.GradleVersion
+import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.KtorLoggerAdapter
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
@@ -23,6 +24,7 @@ import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.DefaultXml
@@ -130,7 +132,7 @@ public interface DependencyUpdateChecker {
 /**
  * Creates a new [DependencyUpdateChecker] instance with the specified parameters.
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList") // Needed to reflect parameters
 public fun DependencyUpdateChecker(
     configuration: Configuration,
     currentGradleVersion: String?,
@@ -170,7 +172,7 @@ public fun DependencyUpdateChecker(
     policies = policies
 )
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList") // Needed to reflect parameters
 internal class DefaultDependencyUpdateChecker(
     private val configuration: Configuration,
     private val currentGradleVersion: String?,
@@ -212,17 +214,13 @@ internal class DefaultDependencyUpdateChecker(
     override val progress: Flow<DependencyUpdateChecker.Progress?>
         get() = progressFlow.asStateFlow()
 
-    @Suppress(
-        "LongMethod",
-        "CyclomaticComplexMethod"
-    ) // This cannot be easily simplified because of the async blocks
     override suspend fun checkForUpdates(): DependenciesUpdateResult {
         if (!fileSystem.exists(configuration.versionCatalogPath)) {
             throw NoVersionCatalogException(configuration.versionCatalogPath)
         }
         logger.info("Parsing version catalog path from ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
-        val versionCatalog = versionCatalogParser.parseDependencyInfo()
+        val (versionCatalog, ignores) = versionCatalogParser.parseDependencyInfo()
         val checkGradleUpdate = currentGradleVersion != null
         val updatedVersionsMutex = Mutex()
         var updatedGradleVersion: String? = null
@@ -237,31 +235,14 @@ internal class DefaultDependencyUpdateChecker(
                 .asSequence()
                 .map { (key, dep) ->
                     async {
-                        if (!configuration.isExcluded(key, dep)) {
-                            logger.info("Finding updated version for ${dep.moduleId}")
-                            val currentVersion = dep.version?.resolve(versionCatalog.versions)
-                            if (currentVersion == null || configuration.onlyCheckStaticVersions && !currentVersion.isStatic) {
-                                return@async
-                            }
-                            val updatedVersion = findUpdatedVersion(
-                                dependency = dep,
-                                versionReferences = versionCatalog.versions
-                            )
-                            if (updatedVersion != null) {
-                                logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
-                                updatedVersionsMutex.withLock {
-                                    updatedVersions.add(
-                                        DependencyUpdateResult(
-                                            dependencyKey = key,
-                                            dependency = dep,
-                                            repository = updatedVersion.repository,
-                                            currentVersion = currentVersion,
-                                            updatedVersion = updatedVersion.updatedVersion
-                                        )
-                                    )
-                                }
-                            }
-                        }
+                        checkUpdate(
+                            key = key,
+                            dependency = dep,
+                            ignores = ignores,
+                            versionCatalog = versionCatalog,
+                            updatedVersionsMutex = updatedVersionsMutex,
+                            updatedVersions = updatedVersions
+                        )
                         val percentage = ++completed * 50 / nbDependencies
                         progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                             taskName = FINDING_UPDATES_TASK,
@@ -272,11 +253,7 @@ internal class DefaultDependencyUpdateChecker(
                 .plus(
                     async {
                         if (currentGradleVersion != null) {
-                            logger.info("Finding updated Gradle version")
-                            updatedGradleVersion = findGradleUpdatedVersion(currentGradleVersion)
-                            if (updatedGradleVersion != null) {
-                                logger.debug("Found updated Gradle version $updatedGradleVersion")
-                            }
+                            updatedGradleVersion = checkGradleVersionUpdate(currentGradleVersion)
                             val percentage = ++completed * 50 / nbDependencies
                             progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                                 taskName = FINDING_UPDATES_TASK,
@@ -296,13 +273,7 @@ internal class DefaultDependencyUpdateChecker(
             updatedVersions
                 .map { result ->
                     async {
-                        logger.info("Finding Maven info for ${result.dependency.moduleId}")
-                        val (type, updateInfo) = computeUpdateInfo(result)
-                        updateInfosMutex.withLock {
-                            val infosForType = updatesInfos[type]
-                                ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
-                            infosForType.add(updateInfo)
-                        }
+                        getMavenInfo(result, updateInfosMutex, updatesInfos)
                         val percentage = ++completed * 50 / nbUpdatedVersions + 50
                         progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                             taskName = GATHERING_INFO_TASK,
@@ -329,6 +300,63 @@ internal class DefaultDependencyUpdateChecker(
                 }
             }
         )
+    }
+
+    private suspend fun DefaultDependencyUpdateChecker.getMavenInfo(
+        updateResult: DependencyUpdateResult,
+        updateInfosMutex: Mutex,
+        updatesInfos: MutableMap<UpdateInfo.Type, MutableList<UpdateInfo>>
+    ) {
+        logger.info("Finding Maven info for ${updateResult.dependency.moduleId}")
+        val (type, updateInfo) = computeUpdateInfo(updateResult)
+        updateInfosMutex.withLock {
+            val infosForType = updatesInfos[type]
+                ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
+            infosForType.add(updateInfo)
+        }
+    }
+
+    private suspend fun DefaultDependencyUpdateChecker.checkGradleVersionUpdate(currentGradleVersion: String): String? {
+        logger.info("Finding updated Gradle version")
+        val updatedGradleVersion = findGradleUpdatedVersion(currentGradleVersion)
+        if (updatedGradleVersion != null) {
+            logger.debug("Found updated Gradle version $updatedGradleVersion")
+        }
+        return updatedGradleVersion
+    }
+
+    private suspend fun DefaultDependencyUpdateChecker.checkUpdate(
+        key: String,
+        dependency: Dependency,
+        ignores: Ignores,
+        versionCatalog: VersionCatalog,
+        updatedVersionsMutex: Mutex,
+        updatedVersions: MutableList<DependencyUpdateResult>
+    ) {
+        if (configuration.isExcluded(key, dependency) || ignores.isExcluded(key, dependency)) return
+        logger.info("Finding updated version for ${dependency.moduleId}")
+        val currentVersion = dependency.version?.resolve(versionCatalog.versions)
+        if (currentVersion == null || configuration.onlyCheckStaticVersions && !currentVersion.isStatic) {
+            return
+        }
+        val updatedVersion = findUpdatedVersion(
+            dependency = dependency,
+            versionReferences = versionCatalog.versions
+        )
+        if (updatedVersion != null) {
+            logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dependency.moduleId}")
+            updatedVersionsMutex.withLock {
+                updatedVersions.add(
+                    DependencyUpdateResult(
+                        dependencyKey = key,
+                        dependency = dependency,
+                        repository = updatedVersion.repository,
+                        currentVersion = currentVersion,
+                        updatedVersion = updatedVersion.updatedVersion
+                    )
+                )
+            }
+        }
     }
 
     @OptIn(ExperimentalEncodingApi::class)

@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Possibility to ignore directly in the TOML file via inline comment
 
 ### Changed
 

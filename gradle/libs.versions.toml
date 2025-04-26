@@ -11,6 +11,7 @@ jetbrains-kotlin-jvm = "2.1.20"
 okhttp = "5.0.0-alpha.14"
 detekt = "1.23.8"
 clikt = "5.0.3"
+antlr-kotlin = "1.0.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -46,6 +47,7 @@ mockwebserver = { module = "com.squareup.okhttp3:mockwebserver3", version.ref = 
 mockwebserver-junit = { module = "com.squareup.okhttp3:mockwebserver3-junit4", version.ref = "okhttp" }
 detekt-libraries = { module = "io.gitlab.arturbosch.detekt:detekt-rules-libraries", version.ref = "detekt" }
 semver = "io.github.z4kn4fein:semver:3.0.0"
+antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
 
 [bundles]
 clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]
@@ -61,3 +63,4 @@ dokka = "org.jetbrains.dokka:2.0.0"
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 mokkery = "dev.mokkery:2.7.2"
 changelog = "org.jetbrains.changelog:2.2.1"
+antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }

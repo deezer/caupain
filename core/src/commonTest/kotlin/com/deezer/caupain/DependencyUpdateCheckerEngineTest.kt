@@ -3,6 +3,7 @@ package com.deezer.caupain
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
@@ -65,7 +66,8 @@ class DependencyUpdateCheckerEngineTest {
     }
 
     private object FixedVersionCatalogParser : VersionCatalogParser {
-        override suspend fun parseDependencyInfo(): VersionCatalog = VERSION_CATALOG
+        override suspend fun parseDependencyInfo() =
+            VersionCatalogParseResult(VERSION_CATALOG, Ignores())
     }
 }
 

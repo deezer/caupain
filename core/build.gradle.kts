@@ -1,5 +1,9 @@
+import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -7,6 +11,7 @@ plugins {
     `maven-publish`
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.dokka)
+    alias(libs.plugins.antlr.kotlin)
 }
 
 dependencies {
@@ -25,6 +30,9 @@ kotlin {
         jvm()
 
         getByName("commonMain") {
+            kotlin {
+                srcDir(layout.buildDirectory.dir("generated-src/antlr"))
+            }
             dependencies {
                 implementation(libs.kotlinx.serialization.xml)
                 implementation(libs.kotlinx.serialization.toml)
@@ -37,6 +45,7 @@ kotlin {
                 implementation(libs.kotlinx.html)
                 implementation(libs.stately.concurrent.collections)
                 implementation(libs.semver)
+                implementation(libs.antlr.kotlin.runtime)
             }
         }
         getByName("commonTest") {
@@ -76,6 +85,30 @@ kotlin {
             }
         }
     }
+}
+
+val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+    dependsOn("cleanGenerateKotlinGrammarSource")
+    source = fileTree(layout.projectDirectory.dir("src/antlr")) {
+        include("**/*.g4")
+    }
+    packageName = "com.deezer.caupain.antlr"
+    arguments = listOf("-visitor")
+    outputDirectory = layout
+        .buildDirectory
+        .dir("generated-src/antlr/${packageName!!.replace(".", "/")}")
+        .get()
+        .asFile
+}
+tasks.withType<KotlinCompilationTask<*>> {
+    dependsOn(generateKotlinGrammarSource)
+}
+tasks
+    .matching { it.name.endsWith("SourcesJar", ignoreCase = true) }
+    .configureEach { dependsOn(generateKotlinGrammarSource) }
+tasks.withType<Detekt> {
+    dependsOn(generateKotlinGrammarSource)
+    exclude("**/antlr/**")
 }
 
 dokka {

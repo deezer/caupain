@@ -95,6 +95,23 @@ gradleWrapperPropertiesPath = "/path/to/properties/file"
 onlyCheckStaticVersions = false
 ```
 
+### Exclusions
+
+Alongside the exclusion configuration, you can also exclude dependencies directly in the TOML file by
+adding an inline comment `#ignoreUpdates` on the same line as a version reference or dependency/plugin 
+definition, like so:
+```toml
+[versions]
+my-excluded-version-ref = "1.0.0" #ignoreUpdates
+my-regular-ref = "1.0.0"
+[libraries]
+my-excluded-lib = { module = "com.example:example", version.ref = "my-excluded-version-ref" } #ignoreUpdates
+my-regular-lib = { module = "com.example:example", version.ref = "my-regular-ref" }
+[plugins]
+my-excluded-plugin = { id = "com.example.plugin", version.ref = "my-excluded-version-ref" } #ignoreUpdates
+my-regular-plugin = { id = "com.example.plugin", version.ref = "my-regular-ref" }
+```
+
 ### Policies
 
 Policies are used to filter available updates. You can either use a predefined policy or create your own.

@@ -96,7 +96,6 @@ abstract class DependenciesUpdateExtension @Inject constructor(objects: ObjectFa
      * @param group The group ID of the library.
      * @param name The artifact ID of the library. If null, all libraries in the group are excluded.
      */
-    @Suppress("unused")
     fun excludeLibrary(group: String, name: String? = null) {
         excludedLibraries.add(LibraryExclusion(group, name))
     }

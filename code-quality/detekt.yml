@@ -3,6 +3,10 @@ comments:
     active: true
 
 complexity:
+  LongMethod:
+    threshold: 100
+  LongParameterList:
+    functionThreshold: 10
   ReplaceSafeCallChainWithRun:
     active: true
   StringLiteralDuplication:

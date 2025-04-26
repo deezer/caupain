@@ -6,6 +6,7 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.GradleVersion
+import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
@@ -43,6 +44,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import com.deezer.caupain.model.maven.Dependency as MavenDependency
 import com.deezer.caupain.model.maven.Version as MavenVersion
 
@@ -173,6 +175,10 @@ class DependencyUpdateCheckerTest {
             ),
             actual = checker.checkForUpdates()
         )
+        assertFalse(
+            engine.requestHistory.any { it.url.toString().contains("groovy-other") },
+            "Unexpected request for groovy-other"
+        )
     }
 
     companion object {
@@ -199,7 +205,10 @@ class DependencyUpdateCheckerTest {
         )
 
         private object FixedVersionCatalogParser : VersionCatalogParser {
-            override suspend fun parseDependencyInfo(): VersionCatalog = VERSION_CATALOG
+            override suspend fun parseDependencyInfo(): VersionCatalogParseResult = VersionCatalogParseResult(
+                versionCatalog = VERSION_CATALOG,
+                ignores = Ignores(libraryKeys = setOf("groovy-other"))
+            )
         }
 
         private fun metadata(
@@ -340,6 +349,10 @@ class DependencyUpdateCheckerTest {
                 "groovy-nio" to Dependency.Library(
                     module = "org.codehaus.groovy:groovy-nio",
                     version = Version.Reference("groovy")
+                ),
+                "groovy-other" to Dependency.Library(
+                    module = "org.codehaus.groovy:groovy-other",
+                    version = Version.Simple(GradleDependencyVersion.Exact("1.0"))
                 ),
                 "commons-lang3" to Dependency.Library(
                     group = "org.apache.commons",
