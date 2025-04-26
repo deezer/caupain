@@ -1,0 +1,235 @@
+package com.deezer.caupain.resolver
+
+import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Logger
+import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.maven.SnapshotVersion
+import com.deezer.caupain.model.maven.Versioning
+import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.serialization.DefaultXml
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockRequestHandleScope
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.HttpRequestData
+import io.ktor.client.request.HttpResponseData
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
+import io.ktor.http.appendPathSegments
+import io.ktor.http.headersOf
+import io.ktor.http.takeFrom
+import io.ktor.serialization.kotlinx.xml.xml
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import com.deezer.caupain.model.maven.Version as MavenVersion
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class UpdatedVersionResolverTest {
+    private lateinit var engine: MockEngine
+
+    private val testDispatcher = UnconfinedTestDispatcher()
+
+    private lateinit var resolver: UpdatedVersionResolver
+
+    @BeforeTest
+    fun setup() {
+        engine = MockEngine { requestData ->
+            handleRequest(this, requestData)
+                ?: respond("Not found", HttpStatusCode.NotFound)
+        }
+        resolver = UpdatedVersionResolver(
+            httpClient = HttpClient(engine) {
+                install(ContentNegotiation) {
+                    xml(DefaultXml, ContentType.Any)
+                }
+            },
+            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
+            onlyCheckStaticVersions = true,
+            policy = null,
+            ioDispatcher = testDispatcher,
+            logger = Logger.EMPTY
+        )
+    }
+
+    private fun handleRequest(
+        scope: MockRequestHandleScope,
+        requestData: HttpRequestData
+    ): HttpResponseData? {
+        val url = requestData.url
+        // Check authentification
+        if (url.host == SIGNED_URL.host) {
+            val authHeader = requestData.headers[HttpHeaders.Authorization]
+            if (authHeader != AUTHORIZATION) {
+                return scope.respond("Unauthorized", HttpStatusCode.Unauthorized)
+            }
+        }
+        return when (url) {
+            GROOVY_CORE_METADATA_URL -> scope.respondElement(GROOVY_CORE_METADATA)
+            GROOVY_NIO_METADATA_URL -> scope.respondElement(GROOVY_NIO_METADATA)
+            VERSIONS_METADATA_URL -> scope.respondElement(VERSIONS_METADATA)
+            else -> null
+        }
+    }
+
+    @AfterTest
+    fun teardown() {
+        engine.close()
+    }
+
+    @Test
+    fun testUpdate() = runTest(testDispatcher) {
+        assertEquals(
+            expected = UpdatedVersionResolver.Result(
+                currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
+                updatedVersion = GradleDependencyVersion.Exact("3.0.6"),
+                repository = BASE_REPOSITORY
+            ),
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+        assertNull(
+            resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy-json",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+        assertEquals(
+            expected = UpdatedVersionResolver.Result(
+                currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
+                updatedVersion = GradleDependencyVersion.Exact("3.0.5"),
+                repository = BASE_REPOSITORY
+            ),
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy-nio",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+        assertEquals(
+            expected = UpdatedVersionResolver.Result(
+                currentVersion = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT")),
+                updatedVersion = GradleDependencyVersion.Exact("1.0.0"),
+                repository = SIGNED_REPOSITORY
+            ),
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Plugin(
+                    id = "com.github.ben-manes.versions",
+                    version = Version.Simple(
+                        GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT")
+                    )
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+    }
+
+    companion object {
+        private inline fun <reified T> MockRequestHandleScope.respondElement(element: T): HttpResponseData {
+            return respond(
+                content = DefaultXml.encodeToString(element),
+                headers = headersOf(HttpHeaders.ContentType, "application/xml")
+            )
+        }
+
+        private val BASE_URL = Url("http://www.example.com")
+        private val BASE_REPOSITORY = Repository(BASE_URL.toString())
+
+        private const val USER = "user"
+        private const val PASSWORD = "password"
+        private const val AUTHORIZATION = "Basic dXNlcjpwYXNzd29yZA=="
+
+        private val SIGNED_URL = Url("http://www.example.fr")
+
+        private val SIGNED_REPOSITORY = Repository(
+            url = SIGNED_URL.toString(),
+            user = USER,
+            password = PASSWORD
+        )
+
+        private fun metadata(
+            latest: String,
+            versions: List<String> = emptyList(),
+            pomSnapshotVersion: String? = null
+        ) = Metadata(
+            versioning = Versioning(
+                latest = GradleDependencyVersion(latest),
+                versions = versions.map { MavenVersion(GradleDependencyVersion(it)) },
+                snapshotVersions = listOfNotNull(
+                    pomSnapshotVersion?.let { version ->
+                        SnapshotVersion(
+                            extension = "pom",
+                            value = GradleDependencyVersion(version)
+                        )
+                    }
+                )
+            )
+        )
+
+        private val GROOVY_CORE_METADATA = metadata(
+            latest = "3.0.6",
+            versions = listOf("3.0.5", "3.0.5-alpha-1", "3.0.6")
+        )
+        private val GROOVY_CORE_METADATA_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("org", "codehaus", "groovy", "groovy", "maven-metadata.xml")
+            .build()
+
+        private val GROOVY_NIO_METADATA = metadata(
+            latest = "3.0.5-alpha-1",
+            versions = listOf("3.0.5", "3.0.5-alpha-1")
+        )
+        private val GROOVY_NIO_METADATA_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "maven-metadata.xml")
+            .build()
+
+        private val VERSIONS_METADATA = metadata(
+            latest = "1.0.0",
+            versions = listOf("0.45.0-SNAPSHOT", "1.0.0")
+        )
+        private val VERSIONS_METADATA_URL = URLBuilder()
+            .takeFrom(SIGNED_URL)
+            .appendPathSegments(
+                "com",
+                "github",
+                "ben-manes",
+                "versions",
+                "com.github.ben-manes.versions.gradle.plugin",
+                "maven-metadata.xml"
+            )
+            .build()
+
+        private val VERSION_REFERENCES = mapOf(
+            "groovy" to Version.Simple(
+                GradleDependencyVersion.Exact("3.0.5-alpha-1")
+            ),
+            "checkstyle" to Version.Simple(
+                GradleDependencyVersion.Exact("8.37")
+            )
+        )
+    }
+}

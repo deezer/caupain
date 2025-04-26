@@ -3,6 +3,7 @@ package com.deezer.caupain.model
 import com.deezer.caupain.model.maven.Dependency
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Version
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.serialization.DefaultXml
@@ -45,6 +46,27 @@ class MavenParsingTest {
                 )
             ),
             actual = DefaultXml.decodeFromString(INFO)
+        )
+    }
+
+    @Test
+    fun testSnapshotParsing() {
+        assertEquals(
+            expected = Metadata(
+                versioning = Versioning(
+                    snapshotVersions = listOf(
+                        SnapshotVersion(
+                            extension = "pom",
+                            value = GradleDependencyVersion.Exact("4.0.0-beta-2-20240702.052209-2")
+                        ),
+                        SnapshotVersion(
+                            extension = "jar",
+                            value = GradleDependencyVersion.Exact("4.0.0-beta-2-20240702.052209-2")
+                        ),
+                    )
+                )
+            ),
+            actual = DefaultXml.decodeFromString(SNAPSHOT_METADATA)
         )
     }
 }
@@ -104,3 +126,32 @@ private const val INFO = """
     </dependencies>
 </project>
 """
+
+@Language("XML")
+private val SNAPSHOT_METADATA = """
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-jar-plugin</artifactId>
+  <versioning>
+    <lastUpdated>20240702052209</lastUpdated>
+    <snapshot>
+      <timestamp>20240702.052209</timestamp>
+      <buildNumber>2</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>4.0.0-beta-2-20240702.052209-2</value>
+        <updated>20240702052209</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>4.0.0-beta-2-20240702.052209-2</value>
+        <updated>20240702052209</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>4.0.0-beta-2-SNAPSHOT</version>
+</metadata>
+""".trimIndent()

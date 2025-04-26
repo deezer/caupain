@@ -12,6 +12,7 @@
 ### Removed
 
 ### Fixed
+- Handle info for snapshot versions correctly
 
 ### Security
 
