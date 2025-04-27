@@ -43,20 +43,8 @@ abstract class DependenciesUpdateExtension @Inject constructor(objects: ObjectFa
     val excludedPluginIds: SetProperty<String> =
         objects.setProperty<String>().convention(emptySet())
 
-    /**
-     * The path to the output file for the HTML report (default is "build/reports/dependency-updates.html").
-     */
-    val outputFile: RegularFileProperty = objects.fileProperty()
-
-    /**
-     * Whether to output the results to the console. Default is true.
-     */
-    val outputToConsole: Property<Boolean> = objects.property<Boolean>().convention(true)
-
-    /**
-     * Whether to output the results to a file. Default is true.
-     */
-    val outputToFile: Property<Boolean> = objects.property<Boolean>().convention(true)
+    @get:Nested
+    abstract val outputsHandler: OutputsHandler
 
     /**
      * Whether to use an HTTP cache for the update check. Default is true.
@@ -105,5 +93,12 @@ abstract class DependenciesUpdateExtension @Inject constructor(objects: ObjectFa
      */
     fun excludeLibraries(vararg libraries: LibraryExclusion) {
         excludedLibraries.addAll(libraries.asIterable())
+    }
+
+    /**
+     * Configures the outputs
+     */
+    fun outputs(action: Action<OutputsHandler>) {
+        action.execute(outputsHandler)
     }
 }

@@ -8,8 +8,6 @@ complexity:
   LongParameterList:
     functionThreshold: 10
     constructorThreshold: 10
-  ReplaceSafeCallChainWithRun:
-    active: true
   StringLiteralDuplication:
     active: true
 

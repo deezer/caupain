@@ -4,25 +4,29 @@ import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
+import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.plugin.internal.toOkioPath
 import kotlinx.coroutines.runBlocking
-import okio.Path.Companion.toOkioPath
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 import org.gradle.util.GradleVersion
@@ -63,23 +67,15 @@ abstract class DependenciesUpdateTask : DefaultTask() {
     @get:Input
     val excludedPluginIds = project.objects.setProperty<String>()
 
-    /**
-     * @see DependenciesUpdateExtension.outputFile
-     */
-    @OutputFile
-    val outputFile: RegularFileProperty = project.objects.fileProperty()
+    @get:Internal
+    val formatterOutputs = project.objects.mapProperty<OutputsHandler.Type, OutputsHandler.Output>()
 
-    /**
-     * @see DependenciesUpdateExtension.outputToConsole
-     */
-    @get:Input
-    val outputToConsole = project.objects.property<Boolean>()
+    private val customFormatter = project.objects.property<Formatter>()
 
-    /**
-     * @see DependenciesUpdateExtension.outputToFile
-     */
-    @get:Input
-    val outputToFile = project.objects.property<Boolean>()
+    @get:OutputFiles
+    val outputFiles: Provider<List<Provider<RegularFile>>> = formatterOutputs.map { outputsByType ->
+        outputsByType.values.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
+    }
 
     /**
      * @see DependenciesUpdateExtension.useCache
@@ -121,8 +117,20 @@ abstract class DependenciesUpdateTask : DefaultTask() {
         val policy = this.policy?.let { SinglePolicy(it) }
         val configuration = createConfiguration(policy?.name)
         val formatters = buildList {
-            if (outputToConsole.get()) add(ConsoleFormatter(ConsolePrinterAdapter(logger)))
-            if (outputToFile.get()) add(HtmlFormatter(outputFile.get().asFile.toOkioPath()))
+            formatterOutputs.get().mapTo(this) { (type, output) ->
+                when (type) {
+                    OutputsHandler.Type.Console -> ConsoleFormatter(ConsolePrinterAdapter(logger))
+
+                    OutputsHandler.Type.Html -> HtmlFormatter(
+                        (output as OutputsHandler.Output.File).file.get().toOkioPath(),
+                    )
+
+                    OutputsHandler.Type.Markdown -> MarkdownFormatter(
+                        (output as OutputsHandler.Output.File).file.get().toOkioPath(),
+                    )
+                }
+            }
+            if (customFormatter.isPresent) add(customFormatter.get())
         }
         val checker = DependencyUpdateChecker(
             configuration = configuration,
@@ -159,19 +167,22 @@ abstract class DependenciesUpdateTask : DefaultTask() {
         selectIf(Policy { policy() })
     }
 
+    /**
+     * Sets a custom formatter
+     */
+    fun customFormatter(formatter: Formatter) {
+        customFormatter.set(formatter)
+    }
+
     private fun createConfiguration(policyId: String?): Configuration = Configuration(
         repositories = repositories.get(),
         pluginRepositories = pluginRepositories.get(),
-        versionCatalogPath = versionCatalogFile.asFile.get().toOkioPath(),
+        versionCatalogPath = versionCatalogFile.get().toOkioPath(),
         excludedKeys = excludedKeys.get(),
         excludedLibraries = excludedLibraries.get(),
         excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
         policy = policyId,
-        cacheDir = if (useCache.get()) {
-            cacheDir.asFile.get().toOkioPath()
-        } else {
-            null
-        },
+        cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
         debugHttpCalls = true,
         gradleCurrentVersionUrl = gradleCurrentVersionUrl.get(),
         onlyCheckStaticVersions = onlyCheckStaticVersions.get()

@@ -114,17 +114,45 @@ tasks.withType<DependenciesUpdateTask> {
 }
 ```
 
+### Outputs
+
+By default, the plugins outputs both a console result and an HTML file in the `build/reports` directory.
+This can be customized like so:
+```kotlin
+outputs {
+    // Console output. Enabled by default
+    console {
+        enabled = true
+    }
+    // HTML output. Enabled by default. Default output file is "build/reports/dependency-updates.html"
+    html {
+        enabled = true
+        outputFile = file("path/to/output.html")
+    }
+    // Markdown output. Disabled by default. Default output file is "build/reports/dependency-updates.md"
+    markdown {
+        enabled = true
+        outputFile = file("path/to/output.md")
+    }
+}
+```
+
+#### Custom formatter
+If needed, you can also create a custom formatter by providing your custom implementation in the task
+configuration like so:
+```kotlin
+tasks.withType<DependenciesUpdateTask> {
+    customFormatter { result ->
+        // output whatever you want here
+    }
+}
+```
+
 ### Other options
 
 ```kotlin
 // Version catalog path. Default is "gradle/libs.versions.toml".
 versionCatalogFile = file("path/to/libs.versions.toml")
-// Output path. Default is build/reports/dependencies-update.md
-outputFile = File(rootProject.projectDir, "path/to/output/file.html")
-// Whether or not to ouput update result to console
-outputToConsole = true
-// Whether or not to ouput update result to HTML file
-outputToFile = true
 // Whether or not to store HTTP cache for the Maven requests
 useCache = true
 // By default, Caupain only checks updates for static versions in the version catalog (versions like 

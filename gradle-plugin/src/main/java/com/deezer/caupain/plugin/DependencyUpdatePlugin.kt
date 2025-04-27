@@ -31,17 +31,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             excludedKeys.convention(ext.excludedKeys)
             excludedLibraries.convention(ext.excludedLibraries)
             excludedPluginIds.convention(ext.excludedPluginIds)
-            outputFile.convention(
-                ext
-                    .outputFile
-                    .convention(
-                        target
-                            .layout
-                            .buildDirectory.file("reports/dependency-updates.html")
-                    )
-            )
-            outputToConsole.convention(ext.outputToConsole)
-            outputToFile.convention(ext.outputToFile)
+            formatterOutputs.convention(ext.outputsHandler.outputs)
             repositories.convention(ext.repositories.libraries)
             pluginRepositories.convention(ext.repositories.plugins)
             useCache.convention(ext.useCache)

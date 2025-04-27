@@ -28,10 +28,16 @@ class DependencyUpdatePluginTest {
     @get:Rule
     val mockWebserverRule = MockWebServerRule()
 
+    private lateinit var htmlOutputFile: File
+    private lateinit var markdownOutputFile: File
+
     @Before
     fun setup() {
         // Unzip project
         unzipProject()
+        // Create output files
+        htmlOutputFile = tempFolder.newFile("output.html")
+        markdownOutputFile = tempFolder.newFile("output.md")
         // Add repository in build file
         File(tempFolder.root, "build.gradle.kts").writeText(
             createBuildFile(
@@ -113,11 +119,27 @@ class DependencyUpdatePluginTest {
                 repository("$repositoryUrl") 
             }
         }
+        outputs {
+            console {
+                enabled.set(true)
+            }
+            html {
+                enabled.set(true)
+                outputFile.set(File("${htmlOutputFile.canonicalPath}"))
+            }
+            markdown {
+                enabled.set(true)
+                outputFile.set(File("${markdownOutputFile.canonicalPath}"))
+            }   
+        }   
     }
 
     tasks.withType<DependenciesUpdateTask> {
         selectIf(AndroidXVersionLevelPolicy)
         gradleCurrentVersionUrl.set("$gradleUrl")
+        customFormatter { info ->
+            println("Infos size : " + info.updateInfos.size)
+        }   
     }    
     """.trimIndent()
 
@@ -131,11 +153,14 @@ class DependencyUpdatePluginTest {
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertContains(result.output, EXPECTED_CONSOLE_RESULT)
+        assertContains(result.output, "Infos size : 2")
         assertEquals(
-            expected = EXPECTED_HTML_RESULT.trim(),
-            actual = File(tempFolder.root, "build/reports/dependency-updates.html")
-                .readText()
-                .trim()
+            expected = EXPECTED_HTML_RESULT,
+            actual = htmlOutputFile.readText().trim()
+        )
+        assertEquals(
+            expected = EXPECTED_MARKDOWN_RESULT,
+            actual = markdownOutputFile.readText().trim()
         )
     }
 }
@@ -906,7 +931,7 @@ private val EXPECTED_HTML_RESULT = """
     </p>
   </body>
 </html>    
-""".trimIndent()
+""".trimIndent().trim()
 
 private val EXPECTED_CONSOLE_RESULT = """
 Updates are available
@@ -915,4 +940,19 @@ Library updates:
 - androidx.core:core-ktx: 1.16.0 -> 1.17.0
 Plugin updates:
 - org.jetbrains.kotlin.android: 2.0.21 -> 2.1.20    
+""".trimIndent().trim()
+
+@Language("Markdown")
+private val EXPECTED_MARKDOWN_RESULT = """
+# Dependency updates
+## Gradle
+Gradle current version is 8.13 whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
+## Libraries
+| Id | Name | Current version | Updated version | URL |
+|----|------|----------------|------------------|-----|
+| androidx.core:core-ktx | Core Kotlin Extensions | 1.16.0 | 1.17.0 | [https://developer.android.com/jetpack/androidx/releases/core#1.17.0](https://developer.android.com/jetpack/androidx/releases/core#1.17.0) |
+## Plugins
+| Id | Name | Current version | Updated version | URL |
+|----|------|----------------|------------------|-----|
+| org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21 | 2.1.20 | [https://kotlinlang.org/](https://kotlinlang.org/) |
 """.trimIndent().trim()
