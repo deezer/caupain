@@ -1,10 +1,11 @@
 name: publishSnapshot
 on:
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - '*.md'
-      - '*/*.md'
+  workflow_dispatch:
+#  push:
+#    branches: [ "main" ]
+#    paths-ignore:
+#      - '*.md'
+#      - '*/*.md'
 
 permissions:
   packages: write
