@@ -22,7 +22,9 @@ Options:
   -t, --output-type=(console|html|markdown)
                                 Output type (default: console)
   -o, --output=<path>           Report output path
-  --cache-dir=<path>            Cache directory
+  --cache-dir=<path>            Cache directory. This is not used if --no-cache
+                                is set (default: user cache dir)
+  --no--cache                   Disable HTTP cache
   -q, --quiet                   Suppress all output
   -v, --verbose                 Verbose output
   -d, --debug                   Debug output
@@ -77,7 +79,8 @@ policy = "androidx-version-level"
 # Policy plugin directory. This is the directory where the custom policies are located. 
 # Only applies to JVM, see the documentation section about policies for more information
 policyPluginDir = "path/to/policy/plugin/dir"
-# Cache directory. This is the directory where the HTTP cache is stored, if specified.
+# Cache directory. This is the directory where the HTTP cache is stored. Defaults to the user cache
+# directory.
 cacheDir = "path/to/cache/dir"
 # Output type. Can be "console", "html" or "markdown". Default is "console".
 outputType = "html"

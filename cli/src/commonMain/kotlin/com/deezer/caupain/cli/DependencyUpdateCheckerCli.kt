@@ -1,5 +1,6 @@
 package com.deezer.caupain.cli
 
+import ca.gosyer.appdirs.AppDirs
 import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
@@ -71,6 +72,8 @@ class DependencyUpdateCheckerCli(
     }
 ) : SuspendingCliktCommand(name = "caupain") {
 
+    private val appDirs = AppDirs("caupain")
+
     private val versionCatalogPath by
     option("-i", "--version-catalog", help = "Version catalog path")
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
@@ -109,8 +112,14 @@ class DependencyUpdateCheckerCli(
     private val outputPath by option("-o", "--output", help = "Report output path")
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
-    private val cacheDir by option(help = "Cache directory")
+    private val cacheDir by option(help = "Cache directory. This is not used if --no-cache is set")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
+        .default(
+            value = appDirs.getUserCacheDir().toPath(),
+            defaultForHelp = "user cache dir"
+        )
+
+    private val doNotCache by option("--no--cache", help = "Disable HTTP cache").flag()
 
     private val logLevel by mutuallyExclusiveOptions(
         option("-q", "--quiet", help = "Suppress all output")
@@ -221,7 +230,7 @@ class DependencyUpdateCheckerCli(
             excludedKeys = excluded.toSet(),
             policyPluginsDir = policyPluginDir,
             policy = policy,
-            cacheDir = cacheDir,
+            cacheDir = if (doNotCache) null else cacheDir,
             debugHttpCalls = debugHttpCalls,
         )
         return parsedConfiguration?.toConfiguration(baseConfiguration) ?: baseConfiguration

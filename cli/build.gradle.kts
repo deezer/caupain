@@ -43,6 +43,7 @@ kotlin {
                 implementation(libs.bundles.clikt)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(projects.core)
+                implementation(libs.app.dirs)
             }
         }
         getByName("commonTest") {
