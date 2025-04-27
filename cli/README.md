@@ -143,6 +143,11 @@ As sample can be found in the [sample plugin module](../sample-plugin-policy) of
 If this is a bit too difficult to do (and let's be honest, it is), custom policy use is way easier 
 when using the [Gradle plugin version](../gradle-plugin/README.md) of the tool.
 
+## Completions
+
+Shell completions can be found in the [completions](completions) directory. You can source them in
+your shell to enable completions for the `caupain` command.
+
 ## Build locally
 
 You can build binaries locally by using `./gradlew :cli:assembleAll`
