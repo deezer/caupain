@@ -1,5 +1,6 @@
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.plugin.internal.combine
 import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
@@ -7,56 +8,36 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import java.io.Serializable
+import java.util.Optional
 import javax.inject.Inject
+import kotlin.jvm.optionals.getOrNull
 
 abstract class OutputsHandler @Inject constructor(
-    private val objects: ObjectFactory,
-    private val layout: ProjectLayout
+    objects: ObjectFactory,
+    layout: ProjectLayout
 ) {
-    private val outputHandlers = objects.mapProperty<Type, OutputHandler>()
+    val console = ConsoleOutputHandler(objects)
 
-    private val defaultOutputPaths = Type.FILE.associateWith { it.defaultOutputPath(layout) }
+    val html = FileOutputHandler(Type.Html, objects, layout)
 
-    val outputs: Provider<Map<Type, Output>> = outputHandlers.map { specifiedHandlers ->
-        buildMap {
-            for (type in Type.ALL) {
-                val handler = specifiedHandlers[type]
-                val enabled = handler?.enabled?.get() ?: type.enabledByDefault
-                if (enabled) {
-                    val outputFile = when (type) {
-                        is Type.Console -> {
-                            put(type, Output.Console)
-                            continue
-                        }
-                        is Type.File -> (handler as? FileOutputHandler)
-                            ?.outputFile
-                            ?: defaultOutputPaths[type]!!
-                    }
-                    put(type, Output.File(outputFile))
-                }
-            }
-        }
+    val markdown = FileOutputHandler(Type.Markdown, objects, layout)
+
+    val outputs = combine(console.output, html.output, markdown.output) { outputs ->
+        outputs.mapNotNull { it.getOrNull() }
     }
 
     fun console(action: Action<ConsoleOutputHandler>) {
-        val handler = ConsoleOutputHandler(objects)
-        action.execute(handler)
-        outputHandlers.put(Type.Console, handler)
+        action.execute(console)
     }
 
     fun html(action: Action<FileOutputHandler>) {
-        val handler = FileOutputHandler(Type.Html, objects, layout)
-        action.execute(handler)
-        outputHandlers.put(Type.Html, handler)
+        action.execute(html)
     }
 
     fun markdown(action: Action<FileOutputHandler>) {
-        val handler = FileOutputHandler(Type.Markdown, objects, layout)
-        action.execute(handler)
-        outputHandlers.put(Type.Markdown, handler)
+        action.execute(markdown)
     }
 
     sealed interface Output : Serializable {
@@ -66,9 +47,13 @@ abstract class OutputsHandler @Inject constructor(
             override fun toString(): String = "Console"
         }
 
-        data class File(val file: Provider<RegularFile>) : Output {
-            override fun toString(): String = "File(file=${file.get().asFile.canonicalPath})"
+        sealed interface File : Output {
+            val file: Provider<RegularFile>
         }
+
+        data class Html(override val file: Provider<RegularFile>) : File
+
+        data class Markdown(override val file: Provider<RegularFile>) : File
     }
 
     sealed class Type(val enabledByDefault: Boolean) {
@@ -83,20 +68,19 @@ abstract class OutputsHandler @Inject constructor(
         object Html : File(true, "html")
 
         object Markdown : File(false, "md")
-
-        companion object {
-            val ALL = listOf(Console, Html, Markdown)
-            val FILE = listOf(Html, Markdown)
-        }
     }
 }
 
 sealed interface OutputHandler {
     val enabled: Property<Boolean>
+    val output: Provider<Optional<OutputsHandler.Output>>
 }
 
 open class ConsoleOutputHandler(objects: ObjectFactory) : OutputHandler {
-    override val enabled: Property<Boolean> = objects.property<Boolean>().convention(true)
+    final override val enabled: Property<Boolean> = objects.property<Boolean>().convention(true)
+    override val output: Provider<Optional<OutputsHandler.Output>> = enabled.map { isEnabled ->
+        Optional.of<OutputsHandler.Output>(OutputsHandler.Output.Console).filter { isEnabled }
+    }
 }
 
 open class FileOutputHandler(
@@ -104,9 +88,22 @@ open class FileOutputHandler(
     objects: ObjectFactory,
     layout: ProjectLayout
 ) : OutputHandler {
-    override val enabled: Property<Boolean> =
+    final override val enabled: Property<Boolean> =
         objects.property<Boolean>().convention(type.enabledByDefault)
 
     val outputFile: RegularFileProperty =
         objects.fileProperty().convention(type.defaultOutputPath(layout))
+
+    override val output: Provider<Optional<OutputsHandler.Output>> = enabled.map { isEnabled ->
+        if (isEnabled) {
+            Optional.of(
+                when (type) {
+                    OutputsHandler.Type.Html -> OutputsHandler.Output.Html(outputFile)
+                    OutputsHandler.Type.Markdown -> OutputsHandler.Output.Markdown(outputFile)
+                }
+            )
+        } else {
+            Optional.empty()
+        }
+    }
 }

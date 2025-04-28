@@ -26,7 +26,6 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.listProperty
-import org.gradle.kotlin.dsl.mapProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 import org.gradle.util.GradleVersion
@@ -68,13 +67,13 @@ abstract class DependenciesUpdateTask : DefaultTask() {
     val excludedPluginIds = project.objects.setProperty<String>()
 
     @get:Internal
-    val formatterOutputs = project.objects.mapProperty<OutputsHandler.Type, OutputsHandler.Output>()
+    val formatterOutputs = project.objects.listProperty<OutputsHandler.Output>()
 
     private val customFormatter = project.objects.property<Formatter>()
 
     @get:OutputFiles
-    val outputFiles: Provider<List<Provider<RegularFile>>> = formatterOutputs.map { outputsByType ->
-        outputsByType.values.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
+    val outputFiles: Provider<List<Provider<RegularFile>>> = formatterOutputs.map { outputs ->
+        outputs.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
     }
 
     /**
@@ -117,17 +116,16 @@ abstract class DependenciesUpdateTask : DefaultTask() {
         val policy = this.policy?.let { SinglePolicy(it) }
         val configuration = createConfiguration(policy?.name)
         val formatters = buildList {
-            formatterOutputs.get().mapTo(this) { (type, output) ->
-                when (type) {
-                    OutputsHandler.Type.Console -> ConsoleFormatter(ConsolePrinterAdapter(logger))
+            formatterOutputs.get().mapTo(this) { output ->
+                when (output) {
+                    is OutputsHandler.Output.Console ->
+                        ConsoleFormatter(ConsolePrinterAdapter(logger))
 
-                    OutputsHandler.Type.Html -> HtmlFormatter(
-                        (output as OutputsHandler.Output.File).file.get().toOkioPath(),
-                    )
+                    is OutputsHandler.Output.Html ->
+                        HtmlFormatter(output.file.get().toOkioPath())
 
-                    OutputsHandler.Type.Markdown -> MarkdownFormatter(
-                        (output as OutputsHandler.Output.File).file.get().toOkioPath(),
-                    )
+                    is OutputsHandler.Output.Markdown ->
+                        MarkdownFormatter(output.file.get().toOkioPath())
                 }
             }
             if (customFormatter.isPresent) add(customFormatter.get())
