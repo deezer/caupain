@@ -98,7 +98,7 @@ class DependencyUpdatePluginTest {
         repositoryUrl: String,
         gradleUrl: String
     ) = """
-    import com.deezer.caupain.model.AndroidXVersionLevelPolicy
+    import com.deezer.caupain.model.StabilityLevelPolicy
     import com.deezer.caupain.plugin.DependenciesUpdateTask
     import com.deezer.caupain.plugin.Policy
     import com.deezer.caupain.model.Repository
@@ -135,7 +135,7 @@ class DependencyUpdatePluginTest {
     }
 
     tasks.withType<DependenciesUpdateTask> {
-        selectIf(AndroidXVersionLevelPolicy)
+        selectIf(StabilityLevelPolicy)
         gradleCurrentVersionUrl.set("$gradleUrl")
         customFormatter { info ->
             println("Infos size : " + info.updateInfos.size)
@@ -948,11 +948,11 @@ private val EXPECTED_MARKDOWN_RESULT = """
 ## Gradle
 Gradle current version is 8.13 whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
 ## Libraries
-| Id | Name | Current version | Updated version | URL |
-|----|------|----------------|------------------|-----|
-| androidx.core:core-ktx | Core Kotlin Extensions | 1.16.0 | 1.17.0 | [https://developer.android.com/jetpack/androidx/releases/core#1.17.0](https://developer.android.com/jetpack/androidx/releases/core#1.17.0) |
+| Id                     | Name                   | Current version | Updated version | URL                                                                                                                                        |
+| ---------------------- | ---------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| androidx.core:core-ktx | Core Kotlin Extensions | 1.16.0          | 1.17.0          | [https://developer.android.com/jetpack/androidx/releases/core#1.17.0](https://developer.android.com/jetpack/androidx/releases/core#1.17.0) |
 ## Plugins
-| Id | Name | Current version | Updated version | URL |
-|----|------|----------------|------------------|-----|
-| org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21 | 2.1.20 | [https://kotlinlang.org/](https://kotlinlang.org/) |
+| Id                           | Name                 | Current version | Updated version | URL                                                |
+| ---------------------------- | -------------------- | --------------- | --------------- | -------------------------------------------------- |
+| org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21          | 2.1.20          | [https://kotlinlang.org/](https://kotlinlang.org/) |
 """.trimIndent().trim()

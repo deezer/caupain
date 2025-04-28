@@ -75,7 +75,7 @@ excludedPlugins = [
     { id = "excluded.plugin.id" }
 ]
 # Policy name to use. See the documentation section about policies for more information
-policy = "androidx-version-level"
+policy = "stability-level"
 # Policy plugin directory. This is the directory where the custom policies are located. 
 # Only applies to JVM, see the documentation section about policies for more information
 policyPluginDir = "path/to/policy/plugin/dir"
@@ -121,7 +121,7 @@ Policies are used to filter available updates. You can either use a predefined p
 
 #### Predefined policies
 
-There's only one predefined policy at the moment, which is `androidx-version-level`. This policy will
+There's only one predefined policy at the moment, which is `stability-level`. This policy will
 only select an update if its stability is greater than or equal to the stability of the current version.
 
 This means that if you're using a beta version, alpha versions won't be suggested for you, and so on.
@@ -134,7 +134,7 @@ You'll also need to use the `core` dependency in order to create this policy. Se
 for more information.
 
 You can write your custom policy by extending the [Policy](../core/src/commonMain/kotlin/com/deezer/caupain/model/Policy.kt) 
-interface and implementing the `select` method. You can take an example from `AndroidXVersionLevelPolicy` 
+interface and implementing the `select` method. You can take an example from `StabilityLevelPolicy` 
 in the same file if needed. You'll then need to make a JAR file of your custom policy, with a `META-INF/services/com.deezer.caupain.model.Policy` 
 file containing the fully qualified name of your class, and place the JAR file in your `policyPluginDir` directory.
 

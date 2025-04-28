@@ -22,27 +22,27 @@ class PolicyTest {
 
     @Test
     fun testVersionLevelPolicy() {
-        AndroidXVersionLevelPolicy.testSelect(
+        StabilityLevelPolicy.testSelect(
             currentVersion = "1.0.0",
             updatedVersion = "1.0.1",
             expected = true
         )
-        AndroidXVersionLevelPolicy.testSelect(
+        StabilityLevelPolicy.testSelect(
             currentVersion = "1.0.0-beta01",
             updatedVersion = "1.0.0",
             expected = true
         )
-        AndroidXVersionLevelPolicy.testSelect(
+        StabilityLevelPolicy.testSelect(
             currentVersion = "1.0.0-beta01",
             updatedVersion = "1.0.1-alpha01",
             expected = false
         )
-        AndroidXVersionLevelPolicy.testSelect(
+        StabilityLevelPolicy.testSelect(
             currentVersion = "1.0.0",
             updatedVersion = "1.0.1-SNAPSHOT",
             expected = false
         )
-        AndroidXVersionLevelPolicy.testSelect(
+        StabilityLevelPolicy.testSelect(
             currentVersion = "1.0.0-SNAPSHOT",
             updatedVersion = "1.0.1-SNAPSHOT",
             expected = true

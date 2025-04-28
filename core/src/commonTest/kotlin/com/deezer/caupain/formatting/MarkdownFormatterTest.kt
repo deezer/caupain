@@ -80,11 +80,11 @@ private val FULL_RESULT = """
 ## Gradle
 Gradle current version is 1.0 whereas last version is 1.1. See [https://docs.gradle.org/1.1/release-notes.html](https://docs.gradle.org/1.1/release-notes.html).
 ## Libraries
-| Id | Name | Current version | Updated version | URL |
-|----|------|----------------|------------------|-----|
-| com.deezer:library |  | 1.0.0 | 2.0.0 |  |
+| Id                 | Name | Current version | Updated version | URL |
+| ------------------ | ---- | --------------- | --------------- | --- |
+| com.deezer:library |      | 1.0.0           | 2.0.0           |     |
 ## Plugins
-| Id | Name | Current version | Updated version | URL |
-|----|------|----------------|------------------|-----|
-| com.deezer:plugin |  | 1.0.0 | 2.0.0 |  |    
+| Id                | Name | Current version | Updated version | URL |
+| ----------------- | ---- | --------------- | --------------- | --- |
+| com.deezer:plugin |      | 1.0.0           | 2.0.0           |     |
 """.trimIndent()

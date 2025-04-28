@@ -24,16 +24,16 @@ public interface Policy {
 internal expect fun loadPolicies(paths: Iterable<Path>): Iterable<Policy>
 
 internal val DEFAULT_POLICIES = listOf(
-    AndroidXVersionLevelPolicy
+    StabilityLevelPolicy
 )
 
 /**
- * This a default implementation for policy, based on the version levels used in AndroidX. Basically,
- * this version accept an update if the update's version level (alpha/beta/rc/stable) is greater than
- * or equal to the current version level.
+ * This a default implementation for policy, based on stability levels. Basically, this version accept
+ * an update if the update's stability level (alpha/beta/rc/stable) is greater than or equal to the
+ * current stability level.
  */
-public object AndroidXVersionLevelPolicy : Policy {
-    override val name: String = "androidx-version-level"
+public object StabilityLevelPolicy : Policy {
+    override val name: String = "stability-level"
 
     override fun select(
         currentVersion: Version.Resolved,
@@ -47,14 +47,13 @@ public object AndroidXVersionLevelPolicy : Policy {
             // We don't want to select snapshot versions if current is not snapshot
             return resolvedCurrentVersion is GradleDependencyVersion.Snapshot
         }
-        val currentVersionLevel = resolvedCurrentVersion?.let(VersionLevel::of)
+        val currentLevel = resolvedCurrentVersion?.let(StabilityLevel::of)
         // If no version level can be found we'll select the update
-        return currentVersionLevel == null ||
-                currentVersionLevel >= VersionLevel.of(updatedVersion)
+        return currentLevel == null || currentLevel >= StabilityLevel.of(updatedVersion)
     }
 
-    private enum class VersionLevel(private val regex: Regex? = null) :
-        Comparable<VersionLevel> {
+    private enum class StabilityLevel(private val regex: Regex? = null) :
+        Comparable<StabilityLevel> {
         STABLE("^[0-9,.v-]+(-r)?$".toRegex()) {
             override fun matches(version: String): Boolean {
                 return STABLE_KEYWORDS.any { keyword ->

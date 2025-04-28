@@ -82,15 +82,3 @@ fun <T, R> combine(
 ): Provider<R> {
     return CombiningProvider(providers.asList(), transform)
 }
-
-@Suppress("UNCHECKED_CAST")
-fun <T1, T2, T3, R> combine(
-    p1: Provider<T1>,
-    p2: Provider<T2>,
-    p3: Provider<T3>,
-    transform: (T1, T2, T3) -> R
-): Provider<R> {
-    return combine(p1, p2, p3) { values ->
-        transform(values[0] as T1, values[1] as T2, values[2] as T3)
-    }
-}

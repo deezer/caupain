@@ -93,7 +93,7 @@ Policies are used to filter available updates. You can either use a predefined p
 
 #### Predefined policies
 
-There's only one predefined policy at the moment, which is based on versions level (like in AndroidX).
+There's only one predefined policy at the moment, which is based on stability level.
 This policy will only select an update if its stability is greater than or equal to the stability of 
 the current version.
 
@@ -105,7 +105,7 @@ They are defined via task configuration like so:
 ```kotlin
 tasks.withType<DependenciesUpdateTask> {
     // You can use one of the predefined policies
-    selectIf(AndroidXVersionLevelPolicy)
+    selectIf(StabilityLevelPolicy)
     // Or define your own. In the "selectIf" block, "this" will have properties "currentVersion" and
     // "updatedVersion" which are the current and updated versions of the dependency.
     selectIf {

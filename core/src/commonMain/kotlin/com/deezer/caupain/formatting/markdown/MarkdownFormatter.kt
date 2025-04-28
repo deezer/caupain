@@ -64,28 +64,60 @@ public class MarkdownFormatter(
         if (updates.isEmpty()) return
         append("## ")
         appendLine(type.title)
-        appendLine("| Id | Name | Current version | Updated version | URL |")
-        appendLine("|----|------|----------------|------------------|-----|")
-        for (update in updates) {
-            append("| ")
-            append(update.dependencyId)
-            append(" | ")
-            append(update.name.orEmpty())
-            append(" | ")
-            append(update.currentVersion)
-            append(" | ")
-            append(update.updatedVersion)
-            append(" | ")
-            update
-                .url
-                ?.let { url ->
-                    append("[")
-                    append(url)
-                    append("](")
-                    append(url)
-                    appendLine(") |")
-                }
-                ?: appendLine(" |")
+        appendTable(
+            headers = listOf("Id", "Name", "Current version", "Updated version", "URL"),
+            rows = updates.map { update ->
+                listOf(
+                    update.dependencyId,
+                    update.name.orEmpty(),
+                    update.currentVersion,
+                    update.updatedVersion,
+                    buildString {
+                        if (update.url != null) {
+                            append("[")
+                            append(update.url)
+                            append("](")
+                            append(update.url)
+                            append(')')
+                        }
+                    }
+                )
+            }
+        )
+    }
+
+    private fun Appendable.appendTable(
+        headers: List<String>,
+        rows: List<List<String>>
+    ) {
+        // Compute each column width
+        val columnWidths = IntArray(headers.size) { index ->
+            maxOf(headers[index].length, rows.maxOf { it[index].length })
         }
+        // Append headers
+        appendTableLine(headers, columnWidths)
+        // Append separator line
+        val separators = List(headers.size) { index ->
+            buildString {
+                repeat(columnWidths[index]) { append('-') }
+            }
+        }
+        appendTableLine(separators, columnWidths)
+        // Append rows
+        for (row in rows) appendTableLine(row, columnWidths)
+    }
+
+    private fun Appendable.appendTableLine(line: List<String>, columnWidths: IntArray) {
+        append("| ")
+        for (i in line.indices) {
+            if (i > 0) append(" | ")
+            appendPadded(line[i], columnWidths[i])
+        }
+        appendLine(" |")
+    }
+
+    private fun Appendable.appendPadded(value: String, width: Int) {
+        append(value)
+        repeat(width - value.length) { append(' ') }
     }
 }
