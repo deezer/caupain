@@ -4,8 +4,11 @@
 
 ### Added
 - Possibility to ignore directly in the TOML file via inline comment
+- Shell completion scripts
 
 ### Changed
+- Use default cache dir from system in CLI 
+- Enhance configuration for formatters in Gradle plugin and allow for custom formatter
 
 ### Deprecated
 
@@ -13,6 +16,7 @@
 
 ### Fixed
 - Handle info for snapshot versions correctly
+- Markdown table formatting
 
 ### Security
 
