@@ -1,0 +1,542 @@
+// Klib ABI Dump
+// Targets: [linuxX64, macosArm64, macosX64, mingwX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <com.deezer.caupain:core>
+abstract fun interface com.deezer.caupain.formatting/Formatter { // com.deezer.caupain.formatting/Formatter|null[0]
+    abstract suspend fun format(com.deezer.caupain.model/DependenciesUpdateResult) // com.deezer.caupain.formatting/Formatter.format|format(com.deezer.caupain.model.DependenciesUpdateResult){}[0]
+}
+
+abstract interface com.deezer.caupain.formatting.console/ConsolePrinter { // com.deezer.caupain.formatting.console/ConsolePrinter|null[0]
+    abstract fun print(kotlin/String) // com.deezer.caupain.formatting.console/ConsolePrinter.print|print(kotlin.String){}[0]
+    abstract fun printError(kotlin/String) // com.deezer.caupain.formatting.console/ConsolePrinter.printError|printError(kotlin.String){}[0]
+}
+
+abstract interface com.deezer.caupain.model/Configuration : com.deezer.caupain/Serializable { // com.deezer.caupain.model/Configuration|null[0]
+    abstract val cacheDir // com.deezer.caupain.model/Configuration.cacheDir|{}cacheDir[0]
+        abstract fun <get-cacheDir>(): okio/Path? // com.deezer.caupain.model/Configuration.cacheDir.<get-cacheDir>|<get-cacheDir>(){}[0]
+    abstract val debugHttpCalls // com.deezer.caupain.model/Configuration.debugHttpCalls|{}debugHttpCalls[0]
+        abstract fun <get-debugHttpCalls>(): kotlin/Boolean // com.deezer.caupain.model/Configuration.debugHttpCalls.<get-debugHttpCalls>|<get-debugHttpCalls>(){}[0]
+    abstract val excludedKeys // com.deezer.caupain.model/Configuration.excludedKeys|{}excludedKeys[0]
+        abstract fun <get-excludedKeys>(): kotlin.collections/Set<kotlin/String> // com.deezer.caupain.model/Configuration.excludedKeys.<get-excludedKeys>|<get-excludedKeys>(){}[0]
+    abstract val excludedLibraries // com.deezer.caupain.model/Configuration.excludedLibraries|{}excludedLibraries[0]
+        abstract fun <get-excludedLibraries>(): kotlin.collections/List<com.deezer.caupain.model/LibraryExclusion> // com.deezer.caupain.model/Configuration.excludedLibraries.<get-excludedLibraries>|<get-excludedLibraries>(){}[0]
+    abstract val excludedPlugins // com.deezer.caupain.model/Configuration.excludedPlugins|{}excludedPlugins[0]
+        abstract fun <get-excludedPlugins>(): kotlin.collections/List<com.deezer.caupain.model/PluginExclusion> // com.deezer.caupain.model/Configuration.excludedPlugins.<get-excludedPlugins>|<get-excludedPlugins>(){}[0]
+    abstract val gradleCurrentVersionUrl // com.deezer.caupain.model/Configuration.gradleCurrentVersionUrl|{}gradleCurrentVersionUrl[0]
+        abstract fun <get-gradleCurrentVersionUrl>(): kotlin/String // com.deezer.caupain.model/Configuration.gradleCurrentVersionUrl.<get-gradleCurrentVersionUrl>|<get-gradleCurrentVersionUrl>(){}[0]
+    abstract val onlyCheckStaticVersions // com.deezer.caupain.model/Configuration.onlyCheckStaticVersions|{}onlyCheckStaticVersions[0]
+        abstract fun <get-onlyCheckStaticVersions>(): kotlin/Boolean // com.deezer.caupain.model/Configuration.onlyCheckStaticVersions.<get-onlyCheckStaticVersions>|<get-onlyCheckStaticVersions>(){}[0]
+    abstract val pluginRepositories // com.deezer.caupain.model/Configuration.pluginRepositories|{}pluginRepositories[0]
+        abstract fun <get-pluginRepositories>(): kotlin.collections/List<com.deezer.caupain.model/Repository> // com.deezer.caupain.model/Configuration.pluginRepositories.<get-pluginRepositories>|<get-pluginRepositories>(){}[0]
+    abstract val policy // com.deezer.caupain.model/Configuration.policy|{}policy[0]
+        abstract fun <get-policy>(): kotlin/String? // com.deezer.caupain.model/Configuration.policy.<get-policy>|<get-policy>(){}[0]
+    abstract val policyPluginsDir // com.deezer.caupain.model/Configuration.policyPluginsDir|{}policyPluginsDir[0]
+        abstract fun <get-policyPluginsDir>(): okio/Path? // com.deezer.caupain.model/Configuration.policyPluginsDir.<get-policyPluginsDir>|<get-policyPluginsDir>(){}[0]
+    abstract val repositories // com.deezer.caupain.model/Configuration.repositories|{}repositories[0]
+        abstract fun <get-repositories>(): kotlin.collections/List<com.deezer.caupain.model/Repository> // com.deezer.caupain.model/Configuration.repositories.<get-repositories>|<get-repositories>(){}[0]
+    abstract val versionCatalogPath // com.deezer.caupain.model/Configuration.versionCatalogPath|{}versionCatalogPath[0]
+        abstract fun <get-versionCatalogPath>(): okio/Path // com.deezer.caupain.model/Configuration.versionCatalogPath.<get-versionCatalogPath>|<get-versionCatalogPath>(){}[0]
+
+    final object Companion { // com.deezer.caupain.model/Configuration.Companion|null[0]
+        final const val DEFAULT_GRADLE_VERSION_URL // com.deezer.caupain.model/Configuration.Companion.DEFAULT_GRADLE_VERSION_URL|{}DEFAULT_GRADLE_VERSION_URL[0]
+            final fun <get-DEFAULT_GRADLE_VERSION_URL>(): kotlin/String // com.deezer.caupain.model/Configuration.Companion.DEFAULT_GRADLE_VERSION_URL.<get-DEFAULT_GRADLE_VERSION_URL>|<get-DEFAULT_GRADLE_VERSION_URL>(){}[0]
+    }
+}
+
+abstract interface com.deezer.caupain.model/Logger { // com.deezer.caupain.model/Logger|null[0]
+    abstract fun debug(kotlin/String) // com.deezer.caupain.model/Logger.debug|debug(kotlin.String){}[0]
+    abstract fun error(kotlin/String, kotlin/Throwable? = ...) // com.deezer.caupain.model/Logger.error|error(kotlin.String;kotlin.Throwable?){}[0]
+    abstract fun info(kotlin/String) // com.deezer.caupain.model/Logger.info|info(kotlin.String){}[0]
+    abstract fun lifecycle(kotlin/String) // com.deezer.caupain.model/Logger.lifecycle|lifecycle(kotlin.String){}[0]
+    abstract fun warn(kotlin/String, kotlin/Throwable? = ...) // com.deezer.caupain.model/Logger.warn|warn(kotlin.String;kotlin.Throwable?){}[0]
+
+    final object Companion { // com.deezer.caupain.model/Logger.Companion|null[0]
+        final val EMPTY // com.deezer.caupain.model/Logger.Companion.EMPTY|{}EMPTY[0]
+            final fun <get-EMPTY>(): com.deezer.caupain.model/Logger // com.deezer.caupain.model/Logger.Companion.EMPTY.<get-EMPTY>|<get-EMPTY>(){}[0]
+    }
+}
+
+abstract interface com.deezer.caupain.model/Policy { // com.deezer.caupain.model/Policy|null[0]
+    abstract val name // com.deezer.caupain.model/Policy.name|{}name[0]
+        abstract fun <get-name>(): kotlin/String // com.deezer.caupain.model/Policy.name.<get-name>|<get-name>(){}[0]
+
+    abstract fun select(com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/Policy.select|select(com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+}
+
+abstract interface com.deezer.caupain/DependencyUpdateChecker { // com.deezer.caupain/DependencyUpdateChecker|null[0]
+    abstract val progress // com.deezer.caupain/DependencyUpdateChecker.progress|{}progress[0]
+        abstract fun <get-progress>(): kotlinx.coroutines.flow/Flow<com.deezer.caupain/DependencyUpdateChecker.Progress?> // com.deezer.caupain/DependencyUpdateChecker.progress.<get-progress>|<get-progress>(){}[0]
+
+    abstract suspend fun checkForUpdates(): com.deezer.caupain.model/DependenciesUpdateResult // com.deezer.caupain/DependencyUpdateChecker.checkForUpdates|checkForUpdates(){}[0]
+
+    sealed interface Progress { // com.deezer.caupain/DependencyUpdateChecker.Progress|null[0]
+        abstract val taskName // com.deezer.caupain/DependencyUpdateChecker.Progress.taskName|{}taskName[0]
+            abstract fun <get-taskName>(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.taskName.<get-taskName>|<get-taskName>(){}[0]
+
+        final class Determinate : com.deezer.caupain/DependencyUpdateChecker.Progress { // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate|null[0]
+            constructor <init>(kotlin/String, kotlin/Int) // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.<init>|<init>(kotlin.String;kotlin.Int){}[0]
+
+            final val percentage // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.percentage|{}percentage[0]
+                final fun <get-percentage>(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.percentage.<get-percentage>|<get-percentage>(){}[0]
+            final val taskName // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.taskName|{}taskName[0]
+                final fun <get-taskName>(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.taskName.<get-taskName>|<get-taskName>(){}[0]
+
+            final fun component1(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.component1|component1(){}[0]
+            final fun component2(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.component2|component2(){}[0]
+            final fun copy(kotlin/String = ..., kotlin/Int = ...): com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.copy|copy(kotlin.String;kotlin.Int){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.toString|toString(){}[0]
+        }
+
+        final class Indeterminate : com.deezer.caupain/DependencyUpdateChecker.Progress { // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate|null[0]
+            constructor <init>(kotlin/String) // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.<init>|<init>(kotlin.String){}[0]
+
+            final val taskName // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.taskName|{}taskName[0]
+                final fun <get-taskName>(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.taskName.<get-taskName>|<get-taskName>(){}[0]
+
+            final fun component1(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.component1|component1(){}[0]
+            final fun copy(kotlin/String = ...): com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.copy|copy(kotlin.String){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.toString|toString(){}[0]
+        }
+    }
+
+    final object Companion { // com.deezer.caupain/DependencyUpdateChecker.Companion|null[0]
+        final val MAX_TASK_NAME_LENGTH // com.deezer.caupain/DependencyUpdateChecker.Companion.MAX_TASK_NAME_LENGTH|{}MAX_TASK_NAME_LENGTH[0]
+            final fun <get-MAX_TASK_NAME_LENGTH>(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Companion.MAX_TASK_NAME_LENGTH.<get-MAX_TASK_NAME_LENGTH>|<get-MAX_TASK_NAME_LENGTH>(){}[0]
+    }
+}
+
+abstract interface com.deezer.caupain/Serializable // com.deezer.caupain/Serializable|null[0]
+
+sealed interface com.deezer.caupain.model.versionCatalog/Version { // com.deezer.caupain.model.versionCatalog/Version|null[0]
+    open fun resolve(kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.model.versionCatalog/Version.Resolved? // com.deezer.caupain.model.versionCatalog/Version.resolve|resolve(kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
+
+    sealed interface Resolved : com.deezer.caupain.model.versionCatalog/Version { // com.deezer.caupain.model.versionCatalog/Version.Resolved|null[0]
+        abstract val isStatic // com.deezer.caupain.model.versionCatalog/Version.Resolved.isStatic|{}isStatic[0]
+            abstract fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Resolved.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+
+        abstract fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Resolved.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+
+        final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model.versionCatalog/Version.Resolved.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model.versionCatalog/Version.Resolved> // com.deezer.caupain.model.versionCatalog/Version.Resolved.Companion.serializer|serializer(){}[0]
+            final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model.versionCatalog/Version.Resolved.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+        }
+    }
+
+    final class Reference : com.deezer.caupain.model.versionCatalog/Version { // com.deezer.caupain.model.versionCatalog/Version.Reference|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model.versionCatalog/Version.Reference.<init>|<init>(kotlin.String){}[0]
+
+        final val ref // com.deezer.caupain.model.versionCatalog/Version.Reference.ref|{}ref[0]
+            final fun <get-ref>(): kotlin/String // com.deezer.caupain.model.versionCatalog/Version.Reference.ref.<get-ref>|<get-ref>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Reference.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model.versionCatalog/Version.Reference.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model.versionCatalog/Version.Reference.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.model.versionCatalog/Version.Reference> { // com.deezer.caupain.model.versionCatalog/Version.Reference.$serializer|null[0]
+            final val descriptor // com.deezer.caupain.model.versionCatalog/Version.Reference.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.model.versionCatalog/Version.Reference.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.model.versionCatalog/Version.Reference.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.model.versionCatalog/Version.Reference // com.deezer.caupain.model.versionCatalog/Version.Reference.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.model.versionCatalog/Version.Reference) // com.deezer.caupain.model.versionCatalog/Version.Reference.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.model.versionCatalog.Version.Reference){}[0]
+        }
+
+        final object Companion { // com.deezer.caupain.model.versionCatalog/Version.Reference.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model.versionCatalog/Version.Reference> // com.deezer.caupain.model.versionCatalog/Version.Reference.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class Rich : com.deezer.caupain.model.versionCatalog/Version.Resolved { // com.deezer.caupain.model.versionCatalog/Version.Rich|null[0]
+        constructor <init>(com.deezer.caupain.model/GradleDependencyVersion? = ..., com.deezer.caupain.model/GradleDependencyVersion? = ..., com.deezer.caupain.model/GradleDependencyVersion? = ..., com.deezer.caupain.model/GradleDependencyVersion? = ..., kotlin/Boolean = ...) // com.deezer.caupain.model.versionCatalog/Version.Rich.<init>|<init>(com.deezer.caupain.model.GradleDependencyVersion?;com.deezer.caupain.model.GradleDependencyVersion?;com.deezer.caupain.model.GradleDependencyVersion?;com.deezer.caupain.model.GradleDependencyVersion?;kotlin.Boolean){}[0]
+
+        final val isStatic // com.deezer.caupain.model.versionCatalog/Version.Rich.isStatic|{}isStatic[0]
+            final fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Rich.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+        final val prefer // com.deezer.caupain.model.versionCatalog/Version.Rich.prefer|{}prefer[0]
+            final fun <get-prefer>(): com.deezer.caupain.model/GradleDependencyVersion? // com.deezer.caupain.model.versionCatalog/Version.Rich.prefer.<get-prefer>|<get-prefer>(){}[0]
+        final val probableSelectedVersion // com.deezer.caupain.model.versionCatalog/Version.Rich.probableSelectedVersion|{}probableSelectedVersion[0]
+            final fun <get-probableSelectedVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Static? // com.deezer.caupain.model.versionCatalog/Version.Rich.probableSelectedVersion.<get-probableSelectedVersion>|<get-probableSelectedVersion>(){}[0]
+        final val reject // com.deezer.caupain.model.versionCatalog/Version.Rich.reject|{}reject[0]
+            final fun <get-reject>(): com.deezer.caupain.model/GradleDependencyVersion? // com.deezer.caupain.model.versionCatalog/Version.Rich.reject.<get-reject>|<get-reject>(){}[0]
+        final val rejectAll // com.deezer.caupain.model.versionCatalog/Version.Rich.rejectAll|{}rejectAll[0]
+            final fun <get-rejectAll>(): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Rich.rejectAll.<get-rejectAll>|<get-rejectAll>(){}[0]
+        final val require // com.deezer.caupain.model.versionCatalog/Version.Rich.require|{}require[0]
+            final fun <get-require>(): com.deezer.caupain.model/GradleDependencyVersion? // com.deezer.caupain.model.versionCatalog/Version.Rich.require.<get-require>|<get-require>(){}[0]
+        final val strictly // com.deezer.caupain.model.versionCatalog/Version.Rich.strictly|{}strictly[0]
+            final fun <get-strictly>(): com.deezer.caupain.model/GradleDependencyVersion? // com.deezer.caupain.model.versionCatalog/Version.Rich.strictly.<get-strictly>|<get-strictly>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Rich.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model.versionCatalog/Version.Rich.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Rich.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model.versionCatalog/Version.Rich.toString|toString(){}[0]
+
+        final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.model.versionCatalog/Version.Rich> { // com.deezer.caupain.model.versionCatalog/Version.Rich.$serializer|null[0]
+            final val descriptor // com.deezer.caupain.model.versionCatalog/Version.Rich.$serializer.descriptor|{}descriptor[0]
+                final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.model.versionCatalog/Version.Rich.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+            final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.model.versionCatalog/Version.Rich.$serializer.childSerializers|childSerializers(){}[0]
+            final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.model.versionCatalog/Version.Rich // com.deezer.caupain.model.versionCatalog/Version.Rich.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+            final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.model.versionCatalog/Version.Rich) // com.deezer.caupain.model.versionCatalog/Version.Rich.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.model.versionCatalog.Version.Rich){}[0]
+        }
+
+        final object Companion { // com.deezer.caupain.model.versionCatalog/Version.Rich.Companion|null[0]
+            final val $childSerializers // com.deezer.caupain.model.versionCatalog/Version.Rich.Companion.$childSerializers|{}$childSerializers[0]
+
+            final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model.versionCatalog/Version.Rich> // com.deezer.caupain.model.versionCatalog/Version.Rich.Companion.serializer|serializer(){}[0]
+        }
+    }
+
+    final class Simple : com.deezer.caupain.model.versionCatalog/Version.Resolved { // com.deezer.caupain.model.versionCatalog/Version.Simple|null[0]
+        constructor <init>(com.deezer.caupain.model/GradleDependencyVersion) // com.deezer.caupain.model.versionCatalog/Version.Simple.<init>|<init>(com.deezer.caupain.model.GradleDependencyVersion){}[0]
+
+        final val isStatic // com.deezer.caupain.model.versionCatalog/Version.Simple.isStatic|{}isStatic[0]
+            final fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Simple.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+        final val value // com.deezer.caupain.model.versionCatalog/Version.Simple.value|{}value[0]
+            final fun <get-value>(): com.deezer.caupain.model/GradleDependencyVersion // com.deezer.caupain.model.versionCatalog/Version.Simple.value.<get-value>|<get-value>(){}[0]
+
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Simple.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model.versionCatalog/Version.Simple.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model.versionCatalog/Version.Simple.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model.versionCatalog/Version.Simple.toString|toString(){}[0]
+    }
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model.versionCatalog/Version.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model.versionCatalog/Version> // com.deezer.caupain.model.versionCatalog/Version.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model.versionCatalog/Version.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+sealed interface com.deezer.caupain.model/GradleDependencyVersion { // com.deezer.caupain.model/GradleDependencyVersion|null[0]
+    abstract val isStatic // com.deezer.caupain.model/GradleDependencyVersion.isStatic|{}isStatic[0]
+        abstract fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+    abstract val text // com.deezer.caupain.model/GradleDependencyVersion.text|{}text[0]
+        abstract fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.text.<get-text>|<get-text>(){}[0]
+
+    abstract fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+    abstract fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+
+    sealed interface Static : com.deezer.caupain.model/GradleDependencyVersion, kotlin/Comparable<com.deezer.caupain.model/GradleDependencyVersion.Static> { // com.deezer.caupain.model/GradleDependencyVersion.Static|null[0]
+        abstract val exactVersion // com.deezer.caupain.model/GradleDependencyVersion.Static.exactVersion|{}exactVersion[0]
+            abstract fun <get-exactVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Exact // com.deezer.caupain.model/GradleDependencyVersion.Static.exactVersion.<get-exactVersion>|<get-exactVersion>(){}[0]
+        open val isStatic // com.deezer.caupain.model/GradleDependencyVersion.Static.isStatic|{}isStatic[0]
+            open fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Static.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+    }
+
+    final class Exact : com.deezer.caupain.model/GradleDependencyVersion.Static { // com.deezer.caupain.model/GradleDependencyVersion.Exact|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleDependencyVersion.Exact.<init>|<init>(kotlin.String){}[0]
+
+        final val exactVersion // com.deezer.caupain.model/GradleDependencyVersion.Exact.exactVersion|{}exactVersion[0]
+            final fun <get-exactVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Exact // com.deezer.caupain.model/GradleDependencyVersion.Exact.exactVersion.<get-exactVersion>|<get-exactVersion>(){}[0]
+        final val text // com.deezer.caupain.model/GradleDependencyVersion.Exact.text|{}text[0]
+            final fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Exact.text.<get-text>|<get-text>(){}[0]
+
+        final fun compareTo(com.deezer.caupain.model/GradleDependencyVersion.Exact): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Exact.compareTo|compareTo(com.deezer.caupain.model.GradleDependencyVersion.Exact){}[0]
+        final fun compareTo(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Exact.compareTo|compareTo(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Exact.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Exact.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Exact.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Exact.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Exact.toString|toString(){}[0]
+    }
+
+    final class Latest : com.deezer.caupain.model/GradleDependencyVersion { // com.deezer.caupain.model/GradleDependencyVersion.Latest|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleDependencyVersion.Latest.<init>|<init>(kotlin.String){}[0]
+
+        final val isStatic // com.deezer.caupain.model/GradleDependencyVersion.Latest.isStatic|{}isStatic[0]
+            final fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Latest.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+        final val text // com.deezer.caupain.model/GradleDependencyVersion.Latest.text|{}text[0]
+            final fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Latest.text.<get-text>|<get-text>(){}[0]
+
+        final fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Latest.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Latest.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Latest.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Latest.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Latest.toString|toString(){}[0]
+    }
+
+    final class Prefix : com.deezer.caupain.model/GradleDependencyVersion { // com.deezer.caupain.model/GradleDependencyVersion.Prefix|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleDependencyVersion.Prefix.<init>|<init>(kotlin.String){}[0]
+
+        final val isStatic // com.deezer.caupain.model/GradleDependencyVersion.Prefix.isStatic|{}isStatic[0]
+            final fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Prefix.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+        final val text // com.deezer.caupain.model/GradleDependencyVersion.Prefix.text|{}text[0]
+            final fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Prefix.text.<get-text>|<get-text>(){}[0]
+
+        final fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Prefix.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Prefix.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Prefix.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Prefix.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Prefix.toString|toString(){}[0]
+    }
+
+    final class Range : com.deezer.caupain.model/GradleDependencyVersion { // com.deezer.caupain.model/GradleDependencyVersion.Range|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleDependencyVersion.Range.<init>|<init>(kotlin.String){}[0]
+
+        final val isStatic // com.deezer.caupain.model/GradleDependencyVersion.Range.isStatic|{}isStatic[0]
+            final fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Range.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+        final val lowerBound // com.deezer.caupain.model/GradleDependencyVersion.Range.lowerBound|{}lowerBound[0]
+            final fun <get-lowerBound>(): com.deezer.caupain.model/GradleDependencyVersion.Range.Bound? // com.deezer.caupain.model/GradleDependencyVersion.Range.lowerBound.<get-lowerBound>|<get-lowerBound>(){}[0]
+        final val text // com.deezer.caupain.model/GradleDependencyVersion.Range.text|{}text[0]
+            final fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Range.text.<get-text>|<get-text>(){}[0]
+        final val upperBound // com.deezer.caupain.model/GradleDependencyVersion.Range.upperBound|{}upperBound[0]
+            final fun <get-upperBound>(): com.deezer.caupain.model/GradleDependencyVersion.Range.Bound? // com.deezer.caupain.model/GradleDependencyVersion.Range.upperBound.<get-upperBound>|<get-upperBound>(){}[0]
+
+        final fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Range.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Range.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Range.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Range.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Range.toString|toString(){}[0]
+
+        final class Bound { // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound|null[0]
+            constructor <init>(com.deezer.caupain.model/GradleDependencyVersion.Static, kotlin/Boolean) // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.<init>|<init>(com.deezer.caupain.model.GradleDependencyVersion.Static;kotlin.Boolean){}[0]
+
+            final val isExclusive // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.isExclusive|{}isExclusive[0]
+                final fun <get-isExclusive>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.isExclusive.<get-isExclusive>|<get-isExclusive>(){}[0]
+            final val value // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.value|{}value[0]
+                final fun <get-value>(): com.deezer.caupain.model/GradleDependencyVersion.Static // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.value.<get-value>|<get-value>(){}[0]
+
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Range.Bound.toString|toString(){}[0]
+        }
+    }
+
+    final class Snapshot : com.deezer.caupain.model/GradleDependencyVersion.Static { // com.deezer.caupain.model/GradleDependencyVersion.Snapshot|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.<init>|<init>(kotlin.String){}[0]
+
+        final val exactVersion // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.exactVersion|{}exactVersion[0]
+            final fun <get-exactVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Exact // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.exactVersion.<get-exactVersion>|<get-exactVersion>(){}[0]
+        final val text // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.text|{}text[0]
+            final fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.text.<get-text>|<get-text>(){}[0]
+
+        final fun compareTo(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.compareTo|compareTo(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Snapshot.toString|toString(){}[0]
+    }
+
+    final class Unknown : com.deezer.caupain.model/GradleDependencyVersion { // com.deezer.caupain.model/GradleDependencyVersion.Unknown|null[0]
+        constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleDependencyVersion.Unknown.<init>|<init>(kotlin.String){}[0]
+
+        final val isStatic // com.deezer.caupain.model/GradleDependencyVersion.Unknown.isStatic|{}isStatic[0]
+            final fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Unknown.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+        final val text // com.deezer.caupain.model/GradleDependencyVersion.Unknown.text|{}text[0]
+            final fun <get-text>(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Unknown.text.<get-text>|<get-text>(){}[0]
+
+        final fun contains(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Unknown.contains|contains(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Unknown.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleDependencyVersion.Unknown.hashCode|hashCode(){}[0]
+        final fun isUpdate(com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Unknown.isUpdate|isUpdate(com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.model/GradleDependencyVersion.Unknown.toString|toString(){}[0]
+    }
+
+    final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model/GradleDependencyVersion.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/GradleDependencyVersion> // com.deezer.caupain.model/GradleDependencyVersion.Companion.serializer|serializer(){}[0]
+        final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model/GradleDependencyVersion.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+    }
+}
+
+abstract class com.deezer.caupain.formatting/FileFormatter : com.deezer.caupain.formatting/Formatter { // com.deezer.caupain.formatting/FileFormatter|null[0]
+    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting/FileFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+
+    final val fileSystem // com.deezer.caupain.formatting/FileFormatter.fileSystem|{}fileSystem[0]
+        final fun <get-fileSystem>(): okio/FileSystem // com.deezer.caupain.formatting/FileFormatter.fileSystem.<get-fileSystem>|<get-fileSystem>(){}[0]
+    final val ioDispatcher // com.deezer.caupain.formatting/FileFormatter.ioDispatcher|{}ioDispatcher[0]
+        final fun <get-ioDispatcher>(): kotlinx.coroutines/CoroutineDispatcher // com.deezer.caupain.formatting/FileFormatter.ioDispatcher.<get-ioDispatcher>|<get-ioDispatcher>(){}[0]
+    final val path // com.deezer.caupain.formatting/FileFormatter.path|{}path[0]
+        final fun <get-path>(): okio/Path // com.deezer.caupain.formatting/FileFormatter.path.<get-path>|<get-path>(){}[0]
+    open val outputPath // com.deezer.caupain.formatting/FileFormatter.outputPath|{}outputPath[0]
+        open fun <get-outputPath>(): kotlin/String // com.deezer.caupain.formatting/FileFormatter.outputPath.<get-outputPath>|<get-outputPath>(){}[0]
+
+    abstract suspend fun (okio/BufferedSink).writeUpdates(com.deezer.caupain.model/DependenciesUpdateResult) // com.deezer.caupain.formatting/FileFormatter.writeUpdates|writeUpdates@okio.BufferedSink(com.deezer.caupain.model.DependenciesUpdateResult){}[0]
+    open suspend fun format(com.deezer.caupain.model/DependenciesUpdateResult) // com.deezer.caupain.formatting/FileFormatter.format|format(com.deezer.caupain.model.DependenciesUpdateResult){}[0]
+}
+
+abstract class com.deezer.caupain/CaupainException : kotlin/Exception { // com.deezer.caupain/CaupainException|null[0]
+    constructor <init>(kotlin/String, kotlin/Throwable? = ...) // com.deezer.caupain/CaupainException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
+}
+
+final class com.deezer.caupain.formatting.console/ConsoleFormatter : com.deezer.caupain.formatting/Formatter { // com.deezer.caupain.formatting.console/ConsoleFormatter|null[0]
+    constructor <init>(com.deezer.caupain.formatting.console/ConsolePrinter) // com.deezer.caupain.formatting.console/ConsoleFormatter.<init>|<init>(com.deezer.caupain.formatting.console.ConsolePrinter){}[0]
+
+    final suspend fun format(com.deezer.caupain.model/DependenciesUpdateResult) // com.deezer.caupain.formatting.console/ConsoleFormatter.format|format(com.deezer.caupain.model.DependenciesUpdateResult){}[0]
+}
+
+final class com.deezer.caupain.formatting.html/HtmlFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.html/HtmlFormatter|null[0]
+    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.html/HtmlFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+}
+
+final class com.deezer.caupain.formatting.markdown/MarkdownFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.markdown/MarkdownFormatter|null[0]
+    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.markdown/MarkdownFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+}
+
+final class com.deezer.caupain.model/DependenciesUpdateResult { // com.deezer.caupain.model/DependenciesUpdateResult|null[0]
+    constructor <init>(com.deezer.caupain.model/GradleUpdateInfo?, kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>>) // com.deezer.caupain.model/DependenciesUpdateResult.<init>|<init>(com.deezer.caupain.model.GradleUpdateInfo?;kotlin.collections.Map<com.deezer.caupain.model.UpdateInfo.Type,kotlin.collections.List<com.deezer.caupain.model.UpdateInfo>>){}[0]
+
+    final val gradleUpdateInfo // com.deezer.caupain.model/DependenciesUpdateResult.gradleUpdateInfo|{}gradleUpdateInfo[0]
+        final fun <get-gradleUpdateInfo>(): com.deezer.caupain.model/GradleUpdateInfo? // com.deezer.caupain.model/DependenciesUpdateResult.gradleUpdateInfo.<get-gradleUpdateInfo>|<get-gradleUpdateInfo>(){}[0]
+    final val updateInfos // com.deezer.caupain.model/DependenciesUpdateResult.updateInfos|{}updateInfos[0]
+        final fun <get-updateInfos>(): kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>> // com.deezer.caupain.model/DependenciesUpdateResult.updateInfos.<get-updateInfos>|<get-updateInfos>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/DependenciesUpdateResult.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/DependenciesUpdateResult.hashCode|hashCode(){}[0]
+    final fun isEmpty(): kotlin/Boolean // com.deezer.caupain.model/DependenciesUpdateResult.isEmpty|isEmpty(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/DependenciesUpdateResult.toString|toString(){}[0]
+}
+
+final class com.deezer.caupain.model/GradleUpdateInfo { // com.deezer.caupain.model/GradleUpdateInfo|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // com.deezer.caupain.model/GradleUpdateInfo.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+    final val currentVersion // com.deezer.caupain.model/GradleUpdateInfo.currentVersion|{}currentVersion[0]
+        final fun <get-currentVersion>(): kotlin/String // com.deezer.caupain.model/GradleUpdateInfo.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
+    final val updatedVersion // com.deezer.caupain.model/GradleUpdateInfo.updatedVersion|{}updatedVersion[0]
+        final fun <get-updatedVersion>(): kotlin/String // com.deezer.caupain.model/GradleUpdateInfo.updatedVersion.<get-updatedVersion>|<get-updatedVersion>(){}[0]
+    final val url // com.deezer.caupain.model/GradleUpdateInfo.url|{}url[0]
+        final fun <get-url>(): kotlin/String // com.deezer.caupain.model/GradleUpdateInfo.url.<get-url>|<get-url>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleUpdateInfo.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleUpdateInfo.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/GradleUpdateInfo.toString|toString(){}[0]
+}
+
+final class com.deezer.caupain.model/GradleVersion { // com.deezer.caupain.model/GradleVersion|null[0]
+    constructor <init>(kotlin/String) // com.deezer.caupain.model/GradleVersion.<init>|<init>(kotlin.String){}[0]
+
+    final val version // com.deezer.caupain.model/GradleVersion.version|{}version[0]
+        final fun <get-version>(): kotlin/String // com.deezer.caupain.model/GradleVersion.version.<get-version>|<get-version>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleVersion.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleVersion.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/GradleVersion.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.model/GradleVersion> { // com.deezer.caupain.model/GradleVersion.$serializer|null[0]
+        final val descriptor // com.deezer.caupain.model/GradleVersion.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.model/GradleVersion.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.model/GradleVersion.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.model/GradleVersion // com.deezer.caupain.model/GradleVersion.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.model/GradleVersion) // com.deezer.caupain.model/GradleVersion.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.model.GradleVersion){}[0]
+    }
+
+    final object Companion { // com.deezer.caupain.model/GradleVersion.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/GradleVersion> // com.deezer.caupain.model/GradleVersion.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class com.deezer.caupain.model/LibraryExclusion : com.deezer.caupain/Serializable { // com.deezer.caupain.model/LibraryExclusion|null[0]
+    constructor <init>(kotlin/String, kotlin/String? = ...) // com.deezer.caupain.model/LibraryExclusion.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+
+    final val group // com.deezer.caupain.model/LibraryExclusion.group|{}group[0]
+        final fun <get-group>(): kotlin/String // com.deezer.caupain.model/LibraryExclusion.group.<get-group>|<get-group>(){}[0]
+    final val name // com.deezer.caupain.model/LibraryExclusion.name|{}name[0]
+        final fun <get-name>(): kotlin/String? // com.deezer.caupain.model/LibraryExclusion.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String // com.deezer.caupain.model/LibraryExclusion.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // com.deezer.caupain.model/LibraryExclusion.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ...): com.deezer.caupain.model/LibraryExclusion // com.deezer.caupain.model/LibraryExclusion.copy|copy(kotlin.String;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/LibraryExclusion.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/LibraryExclusion.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/LibraryExclusion.toString|toString(){}[0]
+}
+
+final class com.deezer.caupain.model/PluginExclusion { // com.deezer.caupain.model/PluginExclusion|null[0]
+    constructor <init>(kotlin/String) // com.deezer.caupain.model/PluginExclusion.<init>|<init>(kotlin.String){}[0]
+
+    final val id // com.deezer.caupain.model/PluginExclusion.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.deezer.caupain.model/PluginExclusion.id.<get-id>|<get-id>(){}[0]
+
+    final fun component1(): kotlin/String // com.deezer.caupain.model/PluginExclusion.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): com.deezer.caupain.model/PluginExclusion // com.deezer.caupain.model/PluginExclusion.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/PluginExclusion.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/PluginExclusion.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/PluginExclusion.toString|toString(){}[0]
+}
+
+final class com.deezer.caupain.model/Repository : com.deezer.caupain/Serializable { // com.deezer.caupain.model/Repository|null[0]
+    constructor <init>(kotlin/String) // com.deezer.caupain.model/Repository.<init>|<init>(kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin/String?, kotlin/String?) // com.deezer.caupain.model/Repository.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+
+    final val password // com.deezer.caupain.model/Repository.password|{}password[0]
+        final fun <get-password>(): kotlin/String? // com.deezer.caupain.model/Repository.password.<get-password>|<get-password>(){}[0]
+    final val url // com.deezer.caupain.model/Repository.url|{}url[0]
+        final fun <get-url>(): kotlin/String // com.deezer.caupain.model/Repository.url.<get-url>|<get-url>(){}[0]
+    final val user // com.deezer.caupain.model/Repository.user|{}user[0]
+        final fun <get-user>(): kotlin/String? // com.deezer.caupain.model/Repository.user.<get-user>|<get-user>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/Repository.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/Repository.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/Repository.toString|toString(){}[0]
+
+    final object Companion // com.deezer.caupain.model/Repository.Companion|null[0]
+}
+
+final class com.deezer.caupain.model/UpdateInfo { // com.deezer.caupain.model/UpdateInfo|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/String? = ..., kotlin/String, kotlin/String) // com.deezer.caupain.model/UpdateInfo.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.String?;kotlin.String;kotlin.String){}[0]
+
+    final val currentVersion // com.deezer.caupain.model/UpdateInfo.currentVersion|{}currentVersion[0]
+        final fun <get-currentVersion>(): kotlin/String // com.deezer.caupain.model/UpdateInfo.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
+    final val dependency // com.deezer.caupain.model/UpdateInfo.dependency|{}dependency[0]
+        final fun <get-dependency>(): kotlin/String // com.deezer.caupain.model/UpdateInfo.dependency.<get-dependency>|<get-dependency>(){}[0]
+    final val dependencyId // com.deezer.caupain.model/UpdateInfo.dependencyId|{}dependencyId[0]
+        final fun <get-dependencyId>(): kotlin/String // com.deezer.caupain.model/UpdateInfo.dependencyId.<get-dependencyId>|<get-dependencyId>(){}[0]
+    final val name // com.deezer.caupain.model/UpdateInfo.name|{}name[0]
+        final fun <get-name>(): kotlin/String? // com.deezer.caupain.model/UpdateInfo.name.<get-name>|<get-name>(){}[0]
+    final val updatedVersion // com.deezer.caupain.model/UpdateInfo.updatedVersion|{}updatedVersion[0]
+        final fun <get-updatedVersion>(): kotlin/String // com.deezer.caupain.model/UpdateInfo.updatedVersion.<get-updatedVersion>|<get-updatedVersion>(){}[0]
+    final val url // com.deezer.caupain.model/UpdateInfo.url|{}url[0]
+        final fun <get-url>(): kotlin/String? // com.deezer.caupain.model/UpdateInfo.url.<get-url>|<get-url>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/UpdateInfo.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/UpdateInfo.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/UpdateInfo.toString|toString(){}[0]
+
+    final enum class Type : kotlin/Enum<com.deezer.caupain.model/UpdateInfo.Type> { // com.deezer.caupain.model/UpdateInfo.Type|null[0]
+        enum entry LIBRARY // com.deezer.caupain.model/UpdateInfo.Type.LIBRARY|null[0]
+        enum entry PLUGIN // com.deezer.caupain.model/UpdateInfo.Type.PLUGIN|null[0]
+
+        final val entries // com.deezer.caupain.model/UpdateInfo.Type.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<com.deezer.caupain.model/UpdateInfo.Type> // com.deezer.caupain.model/UpdateInfo.Type.entries.<get-entries>|<get-entries>#static(){}[0]
+        final val title // com.deezer.caupain.model/UpdateInfo.Type.title|{}title[0]
+            final fun <get-title>(): kotlin/String // com.deezer.caupain.model/UpdateInfo.Type.title.<get-title>|<get-title>(){}[0]
+
+        final fun valueOf(kotlin/String): com.deezer.caupain.model/UpdateInfo.Type // com.deezer.caupain.model/UpdateInfo.Type.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<com.deezer.caupain.model/UpdateInfo.Type> // com.deezer.caupain.model/UpdateInfo.Type.values|values#static(){}[0]
+    }
+}
+
+final class com.deezer.caupain/NoVersionCatalogException : com.deezer.caupain/CaupainException { // com.deezer.caupain/NoVersionCatalogException|null[0]
+    constructor <init>(okio/Path) // com.deezer.caupain/NoVersionCatalogException.<init>|<init>(okio.Path){}[0]
+}
+
+final class com.deezer.caupain/SamePolicyNameException : com.deezer.caupain/CaupainException { // com.deezer.caupain/SamePolicyNameException|null[0]
+    constructor <init>(kotlin/String) // com.deezer.caupain/SamePolicyNameException.<init>|<init>(kotlin.String){}[0]
+}
+
+final object com.deezer.caupain.model/DefaultRepositories { // com.deezer.caupain.model/DefaultRepositories|null[0]
+    final val google // com.deezer.caupain.model/DefaultRepositories.google|{}google[0]
+        final fun <get-google>(): com.deezer.caupain.model/Repository // com.deezer.caupain.model/DefaultRepositories.google.<get-google>|<get-google>(){}[0]
+    final val gradlePlugins // com.deezer.caupain.model/DefaultRepositories.gradlePlugins|{}gradlePlugins[0]
+        final fun <get-gradlePlugins>(): com.deezer.caupain.model/Repository // com.deezer.caupain.model/DefaultRepositories.gradlePlugins.<get-gradlePlugins>|<get-gradlePlugins>(){}[0]
+    final val mavenCentral // com.deezer.caupain.model/DefaultRepositories.mavenCentral|{}mavenCentral[0]
+        final fun <get-mavenCentral>(): com.deezer.caupain.model/Repository // com.deezer.caupain.model/DefaultRepositories.mavenCentral.<get-mavenCentral>|<get-mavenCentral>(){}[0]
+}
+
+final object com.deezer.caupain.model/StabilityLevelPolicy : com.deezer.caupain.model/Policy { // com.deezer.caupain.model/StabilityLevelPolicy|null[0]
+    final val name // com.deezer.caupain.model/StabilityLevelPolicy.name|{}name[0]
+        final fun <get-name>(): kotlin/String // com.deezer.caupain.model/StabilityLevelPolicy.name.<get-name>|<get-name>(){}[0]
+
+    final fun select(com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/StabilityLevelPolicy.select|select(com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
+}
+
+final fun com.deezer.caupain.model/Configuration(kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., okio/Path = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<com.deezer.caupain.model/LibraryExclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/PluginExclusion> = ..., kotlin/String? = ..., okio/Path? = ..., okio/Path? = ..., kotlin/Boolean = ..., kotlin/String = ..., kotlin/Boolean = ...): com.deezer.caupain.model/Configuration // com.deezer.caupain.model/Configuration|Configuration(kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.List<com.deezer.caupain.model.Repository>;okio.Path;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<com.deezer.caupain.model.LibraryExclusion>;kotlin.collections.List<com.deezer.caupain.model.PluginExclusion>;kotlin.String?;okio.Path?;okio.Path?;kotlin.Boolean;kotlin.String;kotlin.Boolean){}[0]
+final fun com.deezer.caupain.model/GradleDependencyVersion(kotlin/String): com.deezer.caupain.model/GradleDependencyVersion // com.deezer.caupain.model/GradleDependencyVersion|GradleDependencyVersion(kotlin.String){}[0]
+final fun com.deezer.caupain/DependencyUpdateChecker(com.deezer.caupain.model/Configuration, kotlin/String?, com.deezer.caupain.model/Logger = ..., okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ..., kotlin.collections/List<com.deezer.caupain.model/Policy>? = ...): com.deezer.caupain/DependencyUpdateChecker // com.deezer.caupain/DependencyUpdateChecker|DependencyUpdateChecker(com.deezer.caupain.model.Configuration;kotlin.String?;com.deezer.caupain.model.Logger;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher;kotlin.collections.List<com.deezer.caupain.model.Policy>?){}[0]

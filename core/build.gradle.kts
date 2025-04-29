@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalBCVApi::class)
+
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 import io.gitlab.arturbosch.detekt.Detekt
+import kotlinx.validation.ExperimentalBCVApi
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -120,6 +123,9 @@ dokka {
 
 apiValidation {
     ignoredPackages.add("com.deezer.caupain.antlr")
+    klib {
+        enabled = true
+    }
 }
 
 publishing {
