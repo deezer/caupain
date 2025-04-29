@@ -73,13 +73,8 @@ open class FixKMPMetadata : DefaultTask() {
 
     @get:OutputFiles
     val manifestFiles = compileOutputs
-        .asSequence()
-        .flatMap { output ->
-            output
-                .walkTopDown()
-                .filter { it.isFile && it.name == "manifest" }
-        }
-        .asIterable()
+        .asFileTree
+        .filter { it.isFile && it.name == "manifest" }
 
     @TaskAction
     fun fixUniqueName() {
@@ -94,8 +89,7 @@ open class FixKMPMetadata : DefaultTask() {
                         }
                         line.substring(0, iEq) to line.substring(iEq + 1)
                     }
-                    .toMap()
-                    .toMutableMap()
+                    .toMap(mutableMapOf())
             }
             val old = content["unique_name"] ?: return
             val prefix = "$groupId\\:"
