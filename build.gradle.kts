@@ -7,55 +7,45 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.changelog)
+    alias(libs.plugins.fix.kmp.metadata)
 }
 
 val currentVersion = "0.1.0"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isCI = System.getenv("CI").toBoolean()
-val runNumber = System.getenv("GITHUB_RUN_NUMBER") ?: "0"
 version = buildString {
     append(currentVersion)
-    if (isSnapshot || !isCI) {
-        append('.')
-        append(runNumber)
-    }
-    if (isSnapshot || !isCI) append("-SNAPSHOT")
+    if (isSnapshot || !isCI) append(".0-SNAPSHOT")
 }
 
-val sampleProjectsNames = listOf(
+val ignoredForChecks = listOf(
     projects.samplePluginPolicy.name
 )
 
 subprojects {
-    if (name in sampleProjectsNames) return@subprojects
-
-    apply(plugin = "io.gitlab.arturbosch.detekt")
-
     group = "com.deezer.caupain"
     version = rootProject.version
 
-    extensions.configure<DetektExtension> {
-        config.setFrom(rootProject.file("code-quality/detekt.yml"))
-    }
-    val detektAll = tasks.register("detektAll") {
-        group = "verification"
-        description = "Run detekt analysis for all targets"
-        dependsOn(
-            tasks
-                .withType<Detekt>()
-                .matching { !it.name.contains("test", ignoreCase = true) }
-        )
-    }
-    afterEvaluate {
-        tasks.named("check") {
-            dependsOn(detektAll)
+    if (name !in ignoredForChecks) {
+        apply(plugin = "io.gitlab.arturbosch.detekt")
+
+        extensions.configure<DetektExtension> {
+            config.setFrom(rootProject.file("code-quality/detekt.yml"))
+        }
+        val detektAll = tasks.register("detektAll") {
+            group = "verification"
+            description = "Run detekt analysis for all targets"
+            dependsOn(
+                tasks
+                    .withType<Detekt>()
+                    .matching { !it.name.contains("test", ignoreCase = true) }
+            )
+        }
+        afterEvaluate {
+            tasks.named("check") {
+                dependsOn(detektAll)
+            }
         }
     }
-}
-
-tasks.register("checkUpdates") {
-    group = "verification"
-    description = "Check for dependency updates"
-    dependsOn("cli:runJvm")
 }
