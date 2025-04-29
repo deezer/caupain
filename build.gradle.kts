@@ -31,7 +31,7 @@ subprojects {
         apply(plugin = "io.gitlab.arturbosch.detekt")
 
         extensions.configure<DetektExtension> {
-            config.setFrom(rootProject.file("code-quality/detekt.yml"))
+            config.setFrom(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
         }
         val detektAll = tasks.register("detektAll") {
             group = "verification"
@@ -65,16 +65,19 @@ subprojects {
 }
 
 open class FixKMPMetadata : DefaultTask() {
-    @get:InputFiles
+    @get:Internal
     val compileOutputs = project.objects.fileCollection()
 
     @get:Input
     val groupId = project.group.toString()
 
+    @get:InputFiles
+    val manifestFiles: FileCollection
+        get() = compileOutputs.asFileTree.filter { it.isFile && it.name == "manifest" }
+
     @get:OutputFiles
-    val manifestFiles = compileOutputs
-        .asFileTree
-        .filter { it.isFile && it.name == "manifest" }
+    val outputFile: FileCollection
+        get() = manifestFiles
 
     @TaskAction
     fun fixUniqueName() {
