@@ -1,5 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
@@ -7,7 +8,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.changelog)
-    alias(libs.plugins.fix.kmp.metadata)
 }
 
 val currentVersion = "0.1.0"
@@ -42,9 +42,73 @@ subprojects {
                     .matching { !it.name.contains("test", ignoreCase = true) }
             )
         }
+        val fixKMPMetadata = tasks.register<FixKMPMetadata>("fixKMPMetadata")
+        tasks.withType<KotlinCompileTool> {
+            if (name.startsWith("compile") && name.endsWith("MainKotlinMetadata")) {
+                finalizedBy(fixKMPMetadata)
+                fixKMPMetadata.configure {
+                    compileOutputs.from(this@withType.outputs.files)
+                }
+            }
+        }
+        tasks.withType<Jar> {
+            if (name == "allMetadataJar") {
+                mustRunAfter(fixKMPMetadata)
+            }
+        }
         afterEvaluate {
             tasks.named("check") {
                 dependsOn(detektAll)
+            }
+        }
+    }
+}
+
+open class FixKMPMetadata : DefaultTask() {
+    @get:InputFiles
+    val compileOutputs = project.objects.fileCollection()
+
+    @get:Input
+    val groupId = project.group.toString()
+
+    @get:OutputFiles
+    val manifestFiles = compileOutputs
+        .asSequence()
+        .flatMap { output ->
+            output
+                .walkTopDown()
+                .filter { it.isFile && it.name == "manifest" }
+        }
+        .asIterable()
+
+    @TaskAction
+    fun fixUniqueName() {
+        manifestFiles.forEach { manifestFile ->
+            val content = manifestFile.useLines { lines ->
+                lines
+                    .filterNot { it.isBlank() }
+                    .map { line ->
+                        val iEq = line.indexOf('=')
+                        require(iEq != -1) {
+                            "Metadata manifest file contents invalid. Contains invalid key-value-pair '$line'"
+                        }
+                        line.substring(0, iEq) to line.substring(iEq + 1)
+                    }
+                    .toMap()
+                    .toMutableMap()
+            }
+            val old = content["unique_name"] ?: return
+            val prefix = "$groupId\\:"
+            if (old.startsWith(prefix)) return
+            val new = "$prefix$old"
+            content["unique_name"] = new
+
+            manifestFile.bufferedWriter().use { writer ->
+                for ((key, value) in content) {
+                    writer.append(key)
+                    writer.append('=')
+                    writer.appendLine(value)
+                }
             }
         }
     }
