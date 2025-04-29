@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mokkery)
+    alias(libs.plugins.compat.patrouille)
 }
 
 fun KotlinNativeTargetWithHostTests.configureTarget() =
@@ -18,6 +19,11 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
             baseName = "caupain"
         }
     }
+
+compatPatrouille {
+    java(17)
+    kotlin(libs.versions.kotlin.get())
+}
 
 kotlin {
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")

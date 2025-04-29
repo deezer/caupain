@@ -15,10 +15,16 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.antlr.kotlin)
     alias(libs.plugins.binary.compatibility.validator)
+    alias(libs.plugins.compat.patrouille)
 }
 
 dependencies {
     "detektPlugins"(libs.detekt.libraries)
+}
+
+compatPatrouille {
+    java(17)
+    kotlin(libs.versions.kotlin.get())
 }
 
 kotlin {

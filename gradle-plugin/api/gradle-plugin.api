@@ -1,0 +1,143 @@
+public class com/deezer/caupain/plugin/ConsoleOutputHandler : com/deezer/caupain/plugin/OutputHandler {
+	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
+	public fun getOutput ()Lorg/gradle/api/provider/Provider;
+}
+
+public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
+	public final fun excludeKeys ([Ljava/lang/String;)V
+	public final fun excludeLibraries ([Lcom/deezer/caupain/model/LibraryExclusion;)V
+	public final fun excludeLibrary (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun excludeLibrary$default (Lcom/deezer/caupain/plugin/DependenciesUpdateExtension;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun excludePluginIds ([Ljava/lang/String;)V
+	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
+	public abstract fun getOutputsHandler ()Lcom/deezer/caupain/plugin/OutputsHandler;
+	public abstract fun getRepositories ()Lcom/deezer/caupain/plugin/RepositoryHandler;
+	public final fun getUseCache ()Lorg/gradle/api/provider/Property;
+	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun outputs (Lorg/gradle/api/Action;)V
+	public final fun repositories (Lorg/gradle/api/Action;)V
+}
+
+public abstract class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun checkUpdates ()V
+	public final fun customFormatter (Lcom/deezer/caupain/plugin/Formatter;)V
+	public final fun getCacheDir ()Lorg/gradle/api/file/DirectoryProperty;
+	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getGradleCurrentVersionUrl ()Lorg/gradle/api/provider/Property;
+	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
+	public final fun getPluginRepositories ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getRepositories ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getUseCache ()Lorg/gradle/api/provider/Property;
+	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun selectIf (Lcom/deezer/caupain/model/Policy;)V
+	public final fun selectIf (Lcom/deezer/caupain/plugin/Policy;)V
+	public final fun selectIf (Lkotlin/jvm/functions/Function1;)V
+}
+
+public class com/deezer/caupain/plugin/DependencyUpdatePlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public final class com/deezer/caupain/plugin/DependencyUpdatePlugin$inlined$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final synthetic fun execute (Ljava/lang/Object;)V
+}
+
+public class com/deezer/caupain/plugin/FileOutputHandler : com/deezer/caupain/plugin/OutputHandler {
+	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
+	public fun getOutput ()Lorg/gradle/api/provider/Provider;
+	public final fun getOutputFile ()Lorg/gradle/api/file/RegularFileProperty;
+}
+
+public abstract interface class com/deezer/caupain/plugin/Formatter : com/deezer/caupain/formatting/Formatter, java/io/Serializable {
+}
+
+public abstract interface class com/deezer/caupain/plugin/OutputHandler {
+	public abstract fun getEnabled ()Lorg/gradle/api/provider/Property;
+	public abstract fun getOutput ()Lorg/gradle/api/provider/Provider;
+}
+
+public abstract class com/deezer/caupain/plugin/OutputsHandler {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/file/ProjectLayout;)V
+	public final fun console (Lorg/gradle/api/Action;)V
+	public final fun getConsole ()Lcom/deezer/caupain/plugin/ConsoleOutputHandler;
+	public final fun getHtml ()Lcom/deezer/caupain/plugin/FileOutputHandler;
+	public final fun getMarkdown ()Lcom/deezer/caupain/plugin/FileOutputHandler;
+	public final fun getOutputs ()Lorg/gradle/api/provider/Provider;
+	public final fun html (Lorg/gradle/api/Action;)V
+	public final fun markdown (Lorg/gradle/api/Action;)V
+}
+
+public abstract interface class com/deezer/caupain/plugin/OutputsHandler$Output : java/io/Serializable {
+}
+
+public final class com/deezer/caupain/plugin/OutputsHandler$Output$Console : com/deezer/caupain/plugin/OutputsHandler$Output {
+	public static final field INSTANCE Lcom/deezer/caupain/plugin/OutputsHandler$Output$Console;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/deezer/caupain/plugin/OutputsHandler$Output$File : com/deezer/caupain/plugin/OutputsHandler$Output {
+	public abstract fun getFile ()Lorg/gradle/api/provider/Provider;
+}
+
+public final class com/deezer/caupain/plugin/OutputsHandler$Output$Html : com/deezer/caupain/plugin/OutputsHandler$Output$File {
+	public fun <init> (Lorg/gradle/api/provider/Provider;)V
+	public final fun component1 ()Lorg/gradle/api/provider/Provider;
+	public final fun copy (Lorg/gradle/api/provider/Provider;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Html;
+	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/OutputsHandler$Output$Html;Lorg/gradle/api/provider/Provider;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Html;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getFile ()Lorg/gradle/api/provider/Provider;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/plugin/OutputsHandler$Output$Markdown : com/deezer/caupain/plugin/OutputsHandler$Output$File {
+	public fun <init> (Lorg/gradle/api/provider/Provider;)V
+	public final fun component1 ()Lorg/gradle/api/provider/Provider;
+	public final fun copy (Lorg/gradle/api/provider/Provider;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Markdown;
+	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/OutputsHandler$Output$Markdown;Lorg/gradle/api/provider/Provider;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Markdown;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getFile ()Lorg/gradle/api/provider/Provider;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/deezer/caupain/plugin/Policy {
+	public abstract fun select (Lcom/deezer/caupain/plugin/VersionUpdateInfo;)Z
+}
+
+public final class com/deezer/caupain/plugin/RepositoryCategoryHandler {
+	public final fun repository (Lcom/deezer/caupain/model/Repository;)V
+	public final fun repository (Ljava/lang/String;)V
+	public final fun repository (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public abstract class com/deezer/caupain/plugin/RepositoryHandler {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/invocation/Gradle;)V
+	public final fun getLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getPlugins ()Lorg/gradle/api/provider/ListProperty;
+	public final fun libraries (Lorg/gradle/api/Action;)V
+	public final fun plugins (Lorg/gradle/api/Action;)V
+}
+
+public final class com/deezer/caupain/plugin/VersionUpdateInfo {
+	public fun <init> (Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)V
+	public final fun component1 ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public final fun component2 ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
+	public final fun copy (Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Lcom/deezer/caupain/plugin/VersionUpdateInfo;
+	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/VersionUpdateInfo;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/VersionUpdateInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+

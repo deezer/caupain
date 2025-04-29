@@ -69,7 +69,7 @@ private fun RepositoryHandler.toRepositories(): List<Repository> {
     }
 }
 
-class RepositoryCategoryHandler(private val listProperty: ListProperty<Repository>) {
+class RepositoryCategoryHandler internal constructor(private val listProperty: ListProperty<Repository>) {
 
     fun repository(repository: Repository) {
         listProperty.add(repository)

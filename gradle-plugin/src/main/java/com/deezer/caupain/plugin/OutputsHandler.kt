@@ -56,7 +56,7 @@ abstract class OutputsHandler @Inject constructor(
         data class Markdown(override val file: Provider<RegularFile>) : File
     }
 
-    sealed class Type(val enabledByDefault: Boolean) {
+    internal sealed class Type(val enabledByDefault: Boolean) {
         object Console : Type(true)
 
         sealed class File(enabledByDefault: Boolean, private val extension: String) :
@@ -76,14 +76,14 @@ sealed interface OutputHandler {
     val output: Provider<Optional<OutputsHandler.Output>>
 }
 
-open class ConsoleOutputHandler(objects: ObjectFactory) : OutputHandler {
+open class ConsoleOutputHandler internal constructor(objects: ObjectFactory) : OutputHandler {
     final override val enabled: Property<Boolean> = objects.property<Boolean>().convention(true)
     override val output: Provider<Optional<OutputsHandler.Output>> = enabled.map { isEnabled ->
         Optional.of<OutputsHandler.Output>(OutputsHandler.Output.Console).filter { isEnabled }
     }
 }
 
-open class FileOutputHandler(
+open class FileOutputHandler internal constructor(
     type: OutputsHandler.Type.File,
     objects: ObjectFactory,
     layout: ProjectLayout

@@ -66,3 +66,4 @@ mokkery = "dev.mokkery:2.7.2"
 changelog = "org.jetbrains.changelog:2.2.1"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
 binary-compatibility-validator = "org.jetbrains.kotlinx.binary-compatibility-validator:0.17.0"
+compat-patrouille = "com.gradleup.compat.patrouille:0.0.0"

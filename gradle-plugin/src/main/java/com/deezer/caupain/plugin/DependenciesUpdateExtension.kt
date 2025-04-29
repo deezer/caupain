@@ -16,7 +16,7 @@ import javax.inject.Inject
 /**
  * Configuration for the Dependencies Update plugin.
  */
-abstract class DependenciesUpdateExtension @Inject constructor(objects: ObjectFactory) {
+abstract class DependenciesUpdateExtension @Inject internal constructor(objects: ObjectFactory) {
 
     @get:Nested
     abstract val repositories: RepositoryHandler

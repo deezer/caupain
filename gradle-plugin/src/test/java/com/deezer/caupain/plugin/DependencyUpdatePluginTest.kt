@@ -9,6 +9,7 @@ import okhttp3.Headers
 import okio.use
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
 import org.junit.Before
 import org.junit.Rule
@@ -55,7 +56,7 @@ class DependencyUpdatePluginTest {
                     "/maven/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
                     "/gradle" -> return MockResponse(
                         code = 200,
-                        body = GRADLE_VERSION,
+                        body = GRADLE_VERSION_JSON,
                         headers = Headers.headersOf("Content-Type", "application/json")
                     )
                     else -> null
@@ -150,6 +151,7 @@ class DependencyUpdatePluginTest {
             .withProjectDir(tempFolder.root)
             .withArguments(":checkDependencyUpdates", "--no-configuration-cache", "--stacktrace")
             .withPluginClasspath()
+            .withGradleVersion(GRADLE_VERSION)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertContains(result.output, EXPECTED_CONSOLE_RESULT)
@@ -164,6 +166,8 @@ class DependencyUpdatePluginTest {
         )
     }
 }
+
+private val GRADLE_VERSION = GradleVersion.current().version
 
 @Language("XML")
 private val CORE_KTX_METADATA = """
@@ -843,7 +847,7 @@ private val ANDROID_KOTLIN_PLUGIN_REAL_POM = """
 """.trimIndent()
 
 @Language("JSON")
-private val GRADLE_VERSION = """
+private val GRADLE_VERSION_JSON = """
 {
   "version" : "99.0.0",
   "buildTime" : "20250225092214+0000",
@@ -890,7 +894,7 @@ private val EXPECTED_HTML_RESULT = """
   <body>
     <h1>Dependency updates</h1>
     <h2>Gradle</h2>
-    <p>Gradle current version is 8.13 whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
+    <p>Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
     <h2>Libraries</h2>
     <p>
       <table>
@@ -935,7 +939,7 @@ private val EXPECTED_HTML_RESULT = """
 
 private val EXPECTED_CONSOLE_RESULT = """
 Updates are available
-Gradle: 8.13 -> 99.0.0
+Gradle: $GRADLE_VERSION -> 99.0.0
 Library updates:
 - androidx.core:core-ktx: 1.16.0 -> 1.17.0
 Plugin updates:
@@ -946,7 +950,7 @@ Plugin updates:
 private val EXPECTED_MARKDOWN_RESULT = """
 # Dependency updates
 ## Gradle
-Gradle current version is 8.13 whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
+Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
 ## Libraries
 | Id                     | Name                   | Current version | Updated version | URL                                                                                                                                        |
 | ---------------------- | ---------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |

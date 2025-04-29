@@ -76,7 +76,7 @@ private class CombiningProducer(private val valueProducers: List<ValueProducer>)
     }
 }
 
-fun <T, R> combine(
+internal fun <T, R> combine(
     vararg providers: Provider<out T>,
     transform: (List<T>) -> R
 ): Provider<R> {

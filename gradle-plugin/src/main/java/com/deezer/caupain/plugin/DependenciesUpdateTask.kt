@@ -67,12 +67,12 @@ abstract class DependenciesUpdateTask : DefaultTask() {
     val excludedPluginIds = project.objects.setProperty<String>()
 
     @get:Internal
-    val formatterOutputs = project.objects.listProperty<OutputsHandler.Output>()
+    internal val formatterOutputs = project.objects.listProperty<OutputsHandler.Output>()
 
     private val customFormatter = project.objects.property<Formatter>()
 
     @get:OutputFiles
-    val outputFiles: Provider<List<Provider<RegularFile>>> = formatterOutputs.map { outputs ->
+    internal val outputFiles: Provider<List<Provider<RegularFile>>> = formatterOutputs.map { outputs ->
         outputs.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
     }
 

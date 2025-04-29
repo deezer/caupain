@@ -2,6 +2,13 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     `java-gradle-plugin`
+    alias(libs.plugins.compat.patrouille)
+    alias(libs.plugins.binary.compatibility.validator)
+}
+
+compatPatrouille {
+    java(17)
+    kotlin(libs.versions.kotlin.get())
 }
 
 dependencies {
