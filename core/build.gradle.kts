@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.dokka)
     alias(libs.plugins.antlr.kotlin)
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 dependencies {
@@ -115,6 +116,10 @@ dokka {
         documentedVisibilities(VisibilityModifier.Public)
         suppressedFiles.from(project.layout.buildDirectory.dir("generated-src"))
     }
+}
+
+apiValidation {
+    ignoredPackages.add("com.deezer.caupain.antlr")
 }
 
 publishing {
