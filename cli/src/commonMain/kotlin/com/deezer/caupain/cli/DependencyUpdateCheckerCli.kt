@@ -56,6 +56,9 @@ import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.TimeSource
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
 class DependencyUpdateCheckerCli(
@@ -143,6 +146,8 @@ class DependencyUpdateCheckerCli(
 
     private val version by option(help = "Print version and exit").flag()
 
+    private val timesource = TimeSource.Monotonic
+
     init {
         installMordant()
         context {
@@ -158,6 +163,7 @@ class DependencyUpdateCheckerCli(
     }
 
     override suspend fun run() {
+        val start = timesource.markNow()
         if (version) throw PrintMessage("Caupain v${BuildKonfig.VERSION}")
 
         val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
@@ -183,12 +189,32 @@ class DependencyUpdateCheckerCli(
             throw Abort()
         }
         val formatter = outputFormatter(configuration)
+        if (formatter is ConsoleFormatter) {
+            // Clear progress early to avoid sending progress to console while formatting
+            progress?.clear()
+            backgroundScope.cancel()
+        }
         formatter.format(updates)
-        progress?.clear()
-        backgroundScope.cancel()
+        if (formatter !is ConsoleFormatter) {
+            progress?.clear()
+            backgroundScope.cancel()
+        }
         if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
             echo("Report generated at ${formatter.outputPath}")
         }
+        if (logLevel > LogLevel.DEFAULT) {
+            start.elapsedNow().toComponents { minutes, seconds, nanoseconds ->
+                val milliseconds = nanoseconds / 1_000_000
+                echo(
+                    buildString {
+                        append("Execution time: ")
+                        if (minutes > 0) append("$minutes min ")
+                        append("$seconds.$milliseconds sec")
+                    }
+                )
+            }
+        }
+
         throw ProgramResult(0)
     }
 
