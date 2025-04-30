@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.gradle.kotlin.dsl.support.zipTo
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
@@ -10,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mokkery)
     alias(libs.plugins.compat.patrouille)
+    alias(libs.plugins.buildkonfig)
 }
 
 fun KotlinNativeTargetWithHostTests.configureTarget() =
@@ -23,6 +25,14 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
 compatPatrouille {
     java(17)
     kotlin(libs.versions.kotlin.get())
+}
+
+buildkonfig {
+    packageName = "com.deezer.caupain"
+
+    defaultConfigs {
+        buildConfigField(STRING, "VERSION", version.toString())
+    }
 }
 
 kotlin {
@@ -63,6 +73,28 @@ kotlin {
     }
 }
 
+val osName: String = System.getProperty("os.name")
+val currentArch = when {
+    osName == "Mac OS X" -> if (System.getProperty("os.arch") == "aarch64") {
+        Architecture.MACOS_ARM
+    } else {
+        Architecture.MACOS_X86
+    }
+
+    osName == "Linux" -> Architecture.LINUX
+
+    osName.startsWith("Windows") -> Architecture.WINDOWS
+
+    else -> throw GradleException("Host OS not supported: $osName")
+}
+val renameCurrentBinaryTask = tasks.register<RenameCurrentBinaryTask>("renameCurrentArchBinary") {
+    architecture.set(currentArch)
+}
+tasks.register("buildCurrentArchBinary") {
+    dependsOn("${currentArch.archName}Binaries")
+    finalizedBy(renameCurrentBinaryTask)
+}
+
 tasks.named<JavaExec>("runJvm") {
     workingDir = rootProject.projectDir
 }
@@ -78,6 +110,34 @@ tasks.register("assembleAll") {
     dependsOn(zipAndCopyBinaries, "jvmDistZip")
 }
 
+open class RenameCurrentBinaryTask : DefaultTask() {
+
+    @get:Input
+    val architecture = project.objects.property<Architecture>()
+
+    @get:Internal
+    val binDir = project.layout.buildDirectory.dir("bin")
+
+    @get:InputFile
+    val binaryFile = architecture.flatMap { arch ->
+        binDir.map { binDir ->
+            binDir.file(arch.filePath)
+        }
+    }
+
+    @get:OutputFile
+    val renamedBinaryFile = architecture.flatMap { arch ->
+        binDir.map { binDir ->
+            binDir.file(arch.outFileName)
+        }
+    }
+
+    @TaskAction
+    fun rename() {
+        binaryFile.get().asFile.renameTo(renamedBinaryFile.get().asFile)
+    }
+}
+
 open class MakeBinariesZipTask : DefaultTask() {
 
     @get:Internal
@@ -88,7 +148,7 @@ open class MakeBinariesZipTask : DefaultTask() {
 
     @get:InputFiles
     val binFiles = project.files(
-        Architectures.values().map { arch ->
+        Architecture.values().map { arch ->
             binDir.map { it.file(arch.filePath) }
         }
     )
@@ -103,16 +163,10 @@ open class MakeBinariesZipTask : DefaultTask() {
         zipDir.mkdirs()
         val outDir = File(binDir, "caupain")
         outDir.mkdirs()
-        for (arch in Architectures.values()) {
+        for (arch in Architecture.values()) {
             val binaryFile = File(binDir, arch.filePath)
             outDir.listFiles()?.forEach { it.delete() }
-            val outFileName = buildString {
-                append(binaryFile.nameWithoutExtension)
-                if (arch.outExt != null) {
-                    append('.')
-                    append(arch.outExt)
-                }
-            }
+            val outFileName = arch.outFileName
             val outFile = File(outDir, outFileName)
             binaryFile.copyTo(outFile)
             val zipFile = File(zipDir, "caupain-$version-${arch.platformName}.zip")
@@ -122,9 +176,9 @@ open class MakeBinariesZipTask : DefaultTask() {
     }
 }
 
-enum class Architectures(
+enum class Architecture(
     val platformName: String,
-    private val archName: String,
+    val archName: String,
     private val ext: String,
     val outExt: String?
 ) {
@@ -135,4 +189,13 @@ enum class Architectures(
 
     val filePath: String
         get() = "${archName}/releaseExecutable/caupain.${ext}"
+
+    val outFileName: String
+        get() = buildString {
+            append("caupain")
+            if (outExt != null) {
+                append('.')
+                append(outExt)
+            }
+        }
 }

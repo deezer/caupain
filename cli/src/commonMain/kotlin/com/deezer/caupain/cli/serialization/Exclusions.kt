@@ -2,6 +2,7 @@ package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -33,7 +34,8 @@ private data class RichLibraryExclusion(
     )
 }
 
-@OptIn(InternalSerializationApi::class)
+@Suppress("UnnecessaryOptInAnnotation")
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 object LibraryExclusionSerializer : KSerializer<LibraryExclusion> {
 
     private val richSerializer = RichLibraryExclusion.serializer()

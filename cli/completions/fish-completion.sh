@@ -16,4 +16,6 @@ complete -c caupain -s q -l quiet -d 'Suppress all output'
 complete -c caupain -s v -l verbose -d 'Verbose output'
 complete -c caupain -s d -l debug -d 'Debug output'
 complete -c caupain -l debug-http-calls -d 'Enable debugging for HTTP calls'
+complete -c caupain -l version -d 'Print version and exit'
 complete -c caupain -s h -l help -d 'Show this message and exit'
+

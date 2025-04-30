@@ -1,6 +1,7 @@
 package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.model.Repository
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -42,7 +43,8 @@ private enum class DefaultRepositories(val key: String, val repository: Reposito
     ),
 }
 
-@OptIn(InternalSerializationApi::class)
+@Suppress("UnnecessaryOptInAnnotation")
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 object RepositorySerializer : KSerializer<Repository> {
 
     private val richRepositorySerializer = RichRepository.serializer()

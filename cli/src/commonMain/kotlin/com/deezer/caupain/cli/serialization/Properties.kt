@@ -1,6 +1,7 @@
 package com.deezer.caupain.cli.serialization
 
 import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -34,8 +35,8 @@ fun parsePropertiesFile(fileSystem: FileSystem, path: Path): Map<String, String>
     return map
 }
 
-@OptIn(InternalSerializationApi::class)
-@Suppress("TooManyFunctions") // Needs all implementations
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+@Suppress("TooManyFunctions", "UnnecessaryOptInAnnotation") // Needs all implementations
 private class StringMapDecoder(
     private val map: Map<String, String>,
     descriptor: SerialDescriptor,

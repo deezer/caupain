@@ -1,6 +1,7 @@
 package com.deezer.caupain.cli
 
 import ca.gosyer.appdirs.AppDirs
+import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
@@ -18,7 +19,9 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
+import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.Abort
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.installMordant
@@ -138,6 +141,8 @@ class DependencyUpdateCheckerCli(
         help = "Enable debugging for HTTP calls"
     ).flag()
 
+    private val version by option(help = "Print version and exit").flag()
+
     init {
         installMordant()
         context {
@@ -149,9 +154,12 @@ class DependencyUpdateCheckerCli(
                 )
             }
         }
+        completionOption(help = "Generate completion script", hidden = true)
     }
 
     override suspend fun run() {
+        if (version) throw PrintMessage("Caupain v${BuildKonfig.VERSION}")
+
         val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
         val configuration = loadConfiguration()

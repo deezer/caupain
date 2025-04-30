@@ -29,6 +29,7 @@ Options:
   -v, --verbose                 Verbose output
   -d, --debug                   Debug output
   --debug-http-calls            Enable debugging for HTTP calls
+  --version                     Print version and exit
   -h, --help                    Show this message and exit
 ```
 
@@ -94,6 +95,8 @@ gradleWrapperPropertiesPath = "/path/to/properties/file"
 # The rationale behind this is that dynamic versions or rich versions indicate that the version range is
 # already specified, and that an update isn't needed. If this value is passed to false, Caupain will try
 # to find the latest version for all dependencies, even if they are dynamic or rich versions.
+# This is where the result may not be exactly what you want, because Caupain will not use Gradle to 
+# try to resolve the exact dependency that is used.
 # Default is true.
 onlyCheckStaticVersions = false
 ```
