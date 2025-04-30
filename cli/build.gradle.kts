@@ -110,7 +110,8 @@ tasks.register("assembleAll") {
     dependsOn(zipAndCopyBinaries, "jvmDistZip")
 }
 
-open class RenameCurrentBinaryTask : DefaultTask() {
+@Suppress("LeakingThis") // This is only abstract to be instantiated by Gradle
+abstract class RenameCurrentBinaryTask : Copy() {
 
     @get:Input
     val architecture = project.objects.property<Architecture>()
@@ -125,16 +126,10 @@ open class RenameCurrentBinaryTask : DefaultTask() {
         }
     }
 
-    @get:OutputFile
-    val renamedBinaryFile = architecture.flatMap { arch ->
-        binDir.map { binDir ->
-            binDir.file(arch.outFileName)
-        }
-    }
-
-    @TaskAction
-    fun rename() {
-        binaryFile.get().asFile.renameTo(renamedBinaryFile.get().asFile)
+    init {
+        from(binaryFile)
+        into(binDir)
+        rename { architecture.get().outFileName }
     }
 }
 
