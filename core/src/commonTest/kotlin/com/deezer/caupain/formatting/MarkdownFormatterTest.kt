@@ -4,6 +4,7 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
@@ -14,6 +15,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MarkdownFormatterTest {
 
     private lateinit var fileSystem: FakeFileSystem

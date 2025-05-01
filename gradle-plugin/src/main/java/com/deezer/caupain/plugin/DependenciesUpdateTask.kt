@@ -6,6 +6,7 @@ import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.model.Configuration
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
@@ -155,7 +156,7 @@ abstract class DependenciesUpdateTask : DefaultTask() {
      * Sets the update policy to use for the task.
      */
     fun selectIf(policy: com.deezer.caupain.model.Policy) {
-        selectIf(Policy { policy.select(currentVersion, updatedVersion) })
+        selectIf(Policy { policy.select(dependency, currentVersion, updatedVersion) })
     }
 
     /**
@@ -224,10 +225,11 @@ abstract class DependenciesUpdateTask : DefaultTask() {
         override val name: String = UUID.randomUUID().toString()
 
         override fun select(
+            dependency: Dependency,
             currentVersion: Version.Resolved,
             updatedVersion: GradleDependencyVersion.Static
         ): Boolean {
-            return policy.select(VersionUpdateInfo(currentVersion, updatedVersion))
+            return policy.select(VersionUpdateInfo(dependency, currentVersion, updatedVersion))
         }
     }
 }

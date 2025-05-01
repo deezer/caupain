@@ -1,10 +1,12 @@
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.versionCatalog.Version
 import org.gradle.api.HasImplicitReceiver
 
 data class VersionUpdateInfo(
+    val dependency: Dependency,
     val currentVersion: Version.Resolved,
     val updatedVersion: GradleDependencyVersion.Static
 )

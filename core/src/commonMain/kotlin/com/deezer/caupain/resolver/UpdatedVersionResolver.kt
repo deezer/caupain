@@ -6,7 +6,9 @@ import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.executeRepositoryRequest
+import com.deezer.caupain.model.group
 import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.name
 import com.deezer.caupain.model.versionCatalog.Version
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -74,7 +76,7 @@ internal class UpdatedVersionResolver(
             .filterNotNull()
             .filterIsInstance<GradleDependencyVersion.Static>()
             .filter { version.isUpdate(it) }
-            .filterNot { policy?.select(version, it) == false }
+            .filterNot { policy?.select(dependency, version, it) == false }
             .maxOrNull()
     }
 

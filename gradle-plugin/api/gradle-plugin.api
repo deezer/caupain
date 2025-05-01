@@ -129,13 +129,15 @@ public abstract class com/deezer/caupain/plugin/RepositoryHandler {
 }
 
 public final class com/deezer/caupain/plugin/VersionUpdateInfo {
-	public fun <init> (Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)V
-	public final fun component1 ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
-	public final fun component2 ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
-	public final fun copy (Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Lcom/deezer/caupain/plugin/VersionUpdateInfo;
-	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/VersionUpdateInfo;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/VersionUpdateInfo;
+	public fun <init> (Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)V
+	public final fun component1 ()Lcom/deezer/caupain/model/Dependency;
+	public final fun component2 ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public final fun component3 ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
+	public final fun copy (Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Lcom/deezer/caupain/plugin/VersionUpdateInfo;
+	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/VersionUpdateInfo;Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/VersionUpdateInfo;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public final fun getDependency ()Lcom/deezer/caupain/model/Dependency;
 	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

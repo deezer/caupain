@@ -106,8 +106,8 @@ They are defined via task configuration like so:
 tasks.withType<DependenciesUpdateTask> {
     // You can use one of the predefined policies
     selectIf(StabilityLevelPolicy)
-    // Or define your own. In the "selectIf" block, "this" will have properties "currentVersion" and
-    // "updatedVersion" which are the current and updated versions of the dependency.
+    // Or define your own. In the "selectIf" block, "this" will have properties "dependency", "currentVersion" and
+    // "updatedVersion" which are the dependency, current and updated versions of the dependency.
     selectIf {
         updatedVersion.text == "1.0.0"
     }

@@ -1,5 +1,6 @@
 package com.example.plugin.policy
 
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.versionCatalog.Version
@@ -9,6 +10,7 @@ class ExamplePolicy : Policy {
     override val name: String = "my-custom-policy"
 
     override fun select(
+        dependency: Dependency,
         currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Static
     ): Boolean {

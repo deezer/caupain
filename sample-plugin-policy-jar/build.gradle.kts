@@ -15,6 +15,6 @@ kotlin {
 }
 
 dependencies {
-    // Replace this with the correct dependency for the core library
-    implementation(projects.core)
+    // Replace this with the correct dependency version for the core library
+    implementation("com.deezer.caupain:core:0.1.0.0-SNAPSHOT")
 }

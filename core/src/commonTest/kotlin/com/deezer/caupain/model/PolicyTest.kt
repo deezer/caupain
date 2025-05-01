@@ -14,6 +14,7 @@ class PolicyTest {
         assertEquals(
             expected = expected,
             actual = select(
+                dependency = Dependency.Library("com.example", "example"),
                 currentVersion = Version.Simple(GradleDependencyVersion(currentVersion)),
                 updatedVersion = GradleDependencyVersion(updatedVersion) as GradleDependencyVersion.Static
             )

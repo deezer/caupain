@@ -16,6 +16,7 @@ public interface Policy {
      * Selects if the updated version can be used as an update for the current version.
      */
     public fun select(
+        dependency: Dependency,
         currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Static
     ): Boolean
@@ -36,6 +37,7 @@ public object StabilityLevelPolicy : Policy {
     override val name: String = "stability-level"
 
     override fun select(
+        dependency: Dependency,
         currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Static
     ): Boolean {

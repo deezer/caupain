@@ -17,20 +17,29 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
 import net.peanuuutz.tomlkt.asTomlDecoder
 
-internal sealed interface Dependency {
+/**
+ * Describes a dependency from the version catalog.
+ */
+public sealed interface Dependency {
 
-    val group: String?
 
-    val name: String?
+    /**
+     * The dependency id
+     */
+    public val moduleId: String
 
-    val moduleId: String
+    /**
+     * The dependency current version
+     */
+    public val version: Version?
 
-    val version: Version?
-
+    /**
+     * Library dependency
+     */
     @Serializable(LibrarySerializer::class)
-    data class Library(
-        override val group: String? = null,
-        override val name: String? = null,
+    public data class Library(
+        public val group: String? = null,
+        public val name: String? = null,
         override val version: Version? = null,
     ) : Dependency {
 
@@ -46,7 +55,7 @@ internal sealed interface Dependency {
             version = version,
         )
 
-        constructor(
+        internal constructor(
             module: String?,
             version: Version? = null,
         ) : this(
@@ -62,18 +71,17 @@ internal sealed interface Dependency {
                 ?.let { Version.Simple(GradleDependencyVersion(it)) }
         )
 
-        constructor(library: String) : this(libraryParts = library.split(':'))
+        internal constructor(library: String) : this(libraryParts = library.split(':'))
     }
 
+    /**
+     * Plugin dependency
+     */
     @Serializable(PluginSerializer::class)
-    data class Plugin(
-        val id: String,
+    public data class Plugin(
+        public val id: String,
         override val version: Version? = null,
     ) : Dependency {
-        override val group: String
-            get() = id
-
-        override val name: String = "$id.gradle.plugin"
 
         override val moduleId: String
             get() = id
@@ -85,9 +93,21 @@ internal sealed interface Dependency {
                 ?.let { Version.Simple(GradleDependencyVersion(it)) }
         )
 
-        constructor(plugin: String) : this(plugin.split(':'))
+        internal constructor(plugin: String) : this(plugin.split(':'))
     }
 }
+
+internal val Dependency.group: String?
+    get() = when (this) {
+        is Library -> group
+        is Plugin -> id
+    }
+
+internal val Dependency.name: String?
+    get() = when (this) {
+        is Library -> name
+        is Plugin -> "$id.gradle.plugin"
+    }
 
 @Serializable
 private data class RichLibrary(

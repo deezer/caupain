@@ -6,8 +6,10 @@ import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.executeRepositoryRequest
+import com.deezer.caupain.model.group
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.name
 import com.deezer.caupain.model.versionCatalog.Version
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
