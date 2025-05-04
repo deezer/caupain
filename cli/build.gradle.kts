@@ -2,11 +2,17 @@
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import com.deezer.caupain.currentArch
+import com.deezer.caupain.rename
 import com.deezer.caupain.tasks.MakeBinariesZipTask
 import com.deezer.caupain.tasks.RenameCurrentBinaryTask
+import com.netflix.gradle.plugins.deb.Deb
+import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
+import com.netflix.gradle.plugins.rpm.Rpm
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.redline_rpm.header.Architecture
+import org.redline_rpm.header.Os
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -14,6 +20,7 @@ plugins {
     alias(libs.plugins.mokkery)
     alias(libs.plugins.compat.patrouille)
     alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.netflix.nebula.ospackage)
 }
 
 fun KotlinNativeTargetWithHostTests.configureTarget() =
@@ -73,6 +80,78 @@ kotlin {
             }
         }
     }
+}
+
+ospackage {
+    packageName = "caupain"
+    packageGroup = "devel"
+    maintainer = "Valentin Rocher <bishiboosh@gmail.com>"
+    distribution = "stable"
+    packageDescription = "CLI tool to manage Gradle version catalog updates"
+    url = "https://github.com/bishiboosh/caupain"
+    release = "1"
+    setArch(Architecture.X86_64)
+    os = Os.LINUX
+
+    into("/usr")
+
+    // Binary
+    from(project.layout.buildDirectory.dir("bin/linuxX64/releaseExecutable/caupain.kexe")) {
+        into("bin")
+        rename("caupain")
+        filePermissions {
+            user {
+                read = true
+                write = true
+                execute = true
+            }
+            group {
+                read = true
+                execute = true
+            }
+            other {
+                read = true
+                execute = true
+            }
+        }
+    }
+    // Bash completion
+    from(project.layout.projectDirectory.file("completions/bash-completion.sh")) {
+        into("share/bash-completion/completions")
+        rename("caupain")
+        filePermissions {
+            user {
+                read = true
+                write = true
+            }
+            group.read = true
+            other.read = true
+        }
+    }
+    // Zsh completion
+    from(project.layout.projectDirectory.file("completions/zsh-completion.sh")) {
+        into("share/zsh/vendor-completions")
+        rename("_caupain")
+        filePermissions {
+            user {
+                read = true
+                write = true
+            }
+            group.read = true
+            other.read = true
+        }
+    }
+}
+
+fun ProjectPackagingExtension.from(sourcePath: Any, configure: CopySpec.() -> Unit) {
+    from(sourcePath, closureOf(configure))
+}
+val buildLinuxBinariesTask = tasks.named("linuxX64Binaries")
+tasks.withType<Deb> {
+    dependsOn(buildLinuxBinariesTask)
+}
+tasks.withType<Rpm> {
+    dependsOn(buildLinuxBinariesTask)
 }
 
 val renameCurrentBinaryTask = tasks.register<RenameCurrentBinaryTask>("renameCurrentArchBinary")
