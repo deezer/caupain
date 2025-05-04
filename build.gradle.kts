@@ -1,3 +1,4 @@
+import com.deezer.caupain.tasks.FixKMPMetadata
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
@@ -54,53 +55,6 @@ subprojects {
     afterEvaluate {
         tasks.named("check") {
             dependsOn(detektAll)
-        }
-    }
-}
-
-open class FixKMPMetadata : DefaultTask() {
-    @get:Internal
-    val compileOutputs = project.objects.fileCollection()
-
-    @get:Input
-    val groupId = project.group.toString()
-
-    @get:InputFiles
-    val manifestFiles: FileCollection
-        get() = compileOutputs.asFileTree.filter { it.isFile && it.name == "manifest" }
-
-    @get:OutputFiles
-    val outputFile: FileCollection
-        get() = manifestFiles
-
-    @TaskAction
-    fun fixUniqueName() {
-        manifestFiles.forEach { manifestFile ->
-            val content = manifestFile.useLines { lines ->
-                lines
-                    .filterNot { it.isBlank() }
-                    .map { line ->
-                        val iEq = line.indexOf('=')
-                        require(iEq != -1) {
-                            "Metadata manifest file contents invalid. Contains invalid key-value-pair '$line'"
-                        }
-                        line.substring(0, iEq) to line.substring(iEq + 1)
-                    }
-                    .toMap(mutableMapOf())
-            }
-            val old = content["unique_name"] ?: return
-            val prefix = "$groupId\\:"
-            if (old.startsWith(prefix)) return
-            val new = "$prefix$old"
-            content["unique_name"] = new
-
-            manifestFile.bufferedWriter().use { writer ->
-                for ((key, value) in content) {
-                    writer.append(key)
-                    writer.append('=')
-                    writer.appendLine(value)
-                }
-            }
         }
     }
 }
