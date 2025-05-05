@@ -1,0 +1,50 @@
+name: testDistributions
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testDeb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build Debian package
+        run: ./gradlew :cli:buildDeb --stacktrace --no-configuration-cache
+      - name: Install Debian package
+        run: sudo apt install cli/build/distributions/*.deb
+      - name: Run CLI
+        run: caupain --verbose
+
+  testChoco:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build Chocolatey package
+        run: ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
+      - name: Package installation
+        run: choco pack cli/build/distributions/chocolatey/caupain.nuspec --out cli/build/distributions
+      - name: Install Chocolatey package
+        run: choco install choco install packageName --debug --verbose --source cli/build/distributions
+      - name: Run CLI
+        run: caupain --verbose
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
