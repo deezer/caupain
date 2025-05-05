@@ -3,6 +3,7 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import com.deezer.caupain.currentArch
 import com.deezer.caupain.rename
+import com.deezer.caupain.tasks.CreateChocolateyFilesTask
 import com.deezer.caupain.tasks.MakeBinariesZipTask
 import com.deezer.caupain.tasks.RenameCurrentBinaryTask
 import com.netflix.gradle.plugins.deb.Deb
@@ -96,7 +97,7 @@ ospackage {
     into("/usr")
 
     // Binary
-    from(project.layout.buildDirectory.dir("bin/linuxX64/releaseExecutable/caupain.kexe")) {
+    from(layout.buildDirectory.dir("bin/linuxX64/releaseExecutable/caupain.kexe")) {
         into("bin")
         rename("caupain")
         filePermissions {
@@ -116,7 +117,7 @@ ospackage {
         }
     }
     // Bash completion
-    from(project.layout.projectDirectory.file("completions/bash-completion.sh")) {
+    from(layout.projectDirectory.file("completions/bash-completion.sh")) {
         into("share/bash-completion/completions")
         rename("caupain")
         filePermissions {
@@ -129,7 +130,7 @@ ospackage {
         }
     }
     // Zsh completion
-    from(project.layout.projectDirectory.file("completions/zsh-completion.sh")) {
+    from(layout.projectDirectory.file("completions/zsh-completion.sh")) {
         into("share/zsh/vendor-completions")
         rename("_caupain")
         filePermissions {
@@ -152,6 +153,16 @@ tasks.withType<Deb> {
 }
 tasks.withType<Rpm> {
     dependsOn(buildLinuxBinariesTask)
+}
+
+val createChocolateyFilesTask = tasks.register<CreateChocolateyFilesTask>("createChocolateyFiles") {
+    repositoryUrl = "https://github.com/bishiboosh/caupain"
+    licenseUrl = "https://opensource.org/license/mit"
+}
+tasks.register<Copy>("buildChoco") {
+    dependsOn("mingwX64Binaries", createChocolateyFilesTask)
+    into(layout.buildDirectory.dir("distributions/chocolatey/tools/bin"))
+    from(layout.buildDirectory.dir("bin/mingwX64/releaseExecutable/caupain.exe"))
 }
 
 val renameCurrentBinaryTask = tasks.register<RenameCurrentBinaryTask>("renameCurrentArchBinary")
