@@ -21,7 +21,7 @@ jobs:
       - name: Build Debian package
         run: ./gradlew :cli:buildDeb --stacktrace --no-configuration-cache
       - name: Install Debian package
-        run: sudo apt install cli/build/distributions/*.deb
+        run: sudo dpkg -i cli/build/distributions/*.deb
       - name: Run CLI
         run: caupain --verbose
 
@@ -39,10 +39,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Build Chocolatey package
         run: ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
-      - name: Package installation
-        run: choco pack cli/build/distributions/chocolatey/caupain.nuspec --out cli/build/distributions
-      - name: Install Chocolatey package
-        run: choco install choco install packageName --debug --verbose --source cli/build/distributions
+      - name: Package and install
+        run: |
+          cd cli\build\distributions\chocolatey
+          choco pack
+          choco install caupain --debug --verbose --source .
       - name: Run CLI
         run: caupain --verbose
 
