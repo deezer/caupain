@@ -91,7 +91,7 @@ ospackage {
     packageDescription = "CLI tool to manage Gradle version catalog updates"
     url = "https://github.com/bishiboosh/caupain"
     release = "1"
-    setArch(Architecture.X86_64)
+    archStr = "amd64"
     os = Os.LINUX
 
     into("/usr")
