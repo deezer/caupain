@@ -164,23 +164,23 @@ private class FileCacheStorage(
 
     private suspend fun BufferedSink.writeCache(cache: CachedResponseData) {
         withContext(dispatcher) {
-            writeUtf8(cache.url.toString() + "\n")
+            writeUtf8Line(cache.url.toString())
             writeInt(cache.statusCode.value)
-            writeUtf8(cache.statusCode.description + "\n")
-            writeUtf8(cache.version.toString() + "\n")
+            writeUtf8Line(cache.statusCode.description)
+            writeUtf8Line(cache.version.toString())
             val headers = cache.headers.flattenEntries()
             writeInt(headers.size)
             for ((key, value) in headers) {
-                writeUtf8(key + "\n")
-                writeUtf8(value + "\n")
+                writeUtf8Line(key)
+                writeUtf8Line(value)
             }
             writeLong(cache.requestTime.timestamp)
             writeLong(cache.responseTime.timestamp)
             writeLong(cache.expires.timestamp)
             writeInt(cache.varyKeys.size)
             for ((key, value) in cache.varyKeys) {
-                writeUtf8(key + "\n")
-                writeUtf8(value + "\n")
+                writeUtf8Line(key)
+                writeUtf8Line(value)
             }
             writeInt(cache.body.size)
             write(cache.body)
@@ -226,4 +226,9 @@ private class FileCacheStorage(
             )
         }
     }
+}
+
+private fun BufferedSink.writeUtf8Line(line: String) {
+    writeUtf8(line)
+    writeUtf8CodePoint('\n'.code)
 }
