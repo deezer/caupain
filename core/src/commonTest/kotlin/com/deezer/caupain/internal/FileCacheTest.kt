@@ -29,6 +29,8 @@
 
 package com.deezer.caupain.internal
 
+import com.deezer.caupain.AfterClass
+import com.deezer.caupain.BeforeClass
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
@@ -66,6 +68,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import kotlin.jvm.JvmStatic
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -80,10 +83,6 @@ class FileCacheTest {
 
     private lateinit var privateStorage: CacheStorage
 
-    private lateinit var server: EmbeddedServer<*, *>
-
-    private val counter = atomic(0)
-
     @BeforeTest
     fun setup() {
         fileSystem = FakeFileSystem()
@@ -93,57 +92,12 @@ class FileCacheTest {
         val privatePath = "cache-test-private".toPath()
         fileSystem.createDirectories(privatePath)
         privateStorage = FileStorage(fileSystem, privatePath)
-        server = embeddedServer(CIO, port = 8080) {
-            configureRequests()
-        }.start()
     }
 
     @AfterTest
     fun teardown() {
-        server.stop(0L, 0L)
         fileSystem.checkNoOpenFiles()
         fileSystem.close()
-    }
-
-    private fun Application.configureRequests() {
-        routing {
-            route("/cache") {
-                install(CachingHeaders)
-                install(ConditionalHeaders)
-
-                get("/etag-304") {
-                    if (call.request.header("If-None-Match") == "My-ETAG") {
-                        call.response.header("Etag", "My-ETAG")
-                        call.response.header("Vary", "Origin, Accept-Encoding")
-                        call.respond(HttpStatusCode.NotModified)
-                        return@get
-                    }
-
-                    call.response.header("Etag", "My-ETAG")
-                    call.response.header("Vary", "Origin, Accept-Encoding")
-                    call.respondText(contentType = ContentType.Application.Json) { "{}" }
-                }
-
-                get("/vary") {
-                    val current = counter.incrementAndGet()
-                    val response = TextContent("$current", ContentType.Text.Plain).apply {
-                        caching = CachingOptions(CacheControl.MaxAge(60))
-                    }
-                    response.versions += LastModifiedVersion(GMTDate.START)
-
-                    call.response.header(HttpHeaders.Vary, HttpHeaders.ContentLanguage)
-                    call.respond(response)
-                }
-
-                get("/public") {
-                    call.response.cacheControl(CacheControl.MaxAge(60))
-                    call.respondText("public")
-                }
-                get("/cache_${"a".repeat(3000)}") {
-                    call.respondText { "abc" }
-                }
-            }
-        }
     }
 
     private inline fun testOnClient(
@@ -277,5 +231,65 @@ class FileCacheTest {
 
     companion object {
         private const val TEST_SERVER = "http://127.0.0.1:8080"
+
+        private var server: EmbeddedServer<*, *>? = null
+
+        private val counter = atomic(0)
+
+        @BeforeClass
+        @JvmStatic
+        fun setupServer() {
+            server = embeddedServer(CIO, port = 8080) {
+                configureRequests()
+            }.start()
+        }
+
+        private fun Application.configureRequests() {
+            routing {
+                route("/cache") {
+                    install(CachingHeaders)
+                    install(ConditionalHeaders)
+
+                    get("/etag-304") {
+                        if (call.request.header("If-None-Match") == "My-ETAG") {
+                            call.response.header("Etag", "My-ETAG")
+                            call.response.header("Vary", "Origin, Accept-Encoding")
+                            call.respond(HttpStatusCode.NotModified)
+                            return@get
+                        }
+
+                        call.response.header("Etag", "My-ETAG")
+                        call.response.header("Vary", "Origin, Accept-Encoding")
+                        call.respondText(contentType = ContentType.Application.Json) { "{}" }
+                    }
+
+                    get("/vary") {
+                        val current = counter.incrementAndGet()
+                        val response = TextContent("$current", ContentType.Text.Plain).apply {
+                            caching = CachingOptions(CacheControl.MaxAge(60))
+                        }
+                        response.versions += LastModifiedVersion(GMTDate.START)
+
+                        call.response.header(HttpHeaders.Vary, HttpHeaders.ContentLanguage)
+                        call.respond(response)
+                    }
+
+                    get("/public") {
+                        call.response.cacheControl(CacheControl.MaxAge(60))
+                        call.respondText("public")
+                    }
+                    get("/cache_${"a".repeat(3000)}") {
+                        call.respondText { "abc" }
+                    }
+                }
+            }
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun teardownServer() {
+            server?.stop(0, 0)
+            server = null
+        }
     }
 }
