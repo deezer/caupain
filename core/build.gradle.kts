@@ -16,6 +16,7 @@ plugins {
     alias(libs.plugins.antlr.kotlin)
     alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.compat.patrouille)
+    alias(libs.plugins.kotlinx.kover)
 }
 
 dependencies {
@@ -64,6 +65,8 @@ kotlin {
                 implementation(libs.ktor.client.mock)
                 implementation(libs.kotlinx.coroutines.test)
                 compileOnly(libs.jetbrains.annotations)
+                implementation(libs.bundles.ktor.test.server)
+                implementation(libs.ktor.client.cio)
             }
         }
         getByName("jvmMain") {
@@ -118,6 +121,16 @@ tasks
 tasks.withType<Detekt> {
     dependsOn(generateKotlinGrammarSource)
     exclude("**/antlr/**")
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("com.deezer.caupain.antlr.*")
+            }
+        }
+    }
 }
 
 dokka {

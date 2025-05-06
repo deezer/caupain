@@ -188,9 +188,9 @@ public fun DependencyUpdateChecker(
 internal class DefaultDependencyUpdateChecker(
     private val configuration: Configuration,
     private val currentGradleVersion: String?,
-    private val httpClient: HttpClient,
+    httpClient: HttpClient,
     private val fileSystem: FileSystem,
-    private val ioDispatcher: CoroutineDispatcher,
+    ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
     private val logger: Logger,
     policies: List<Policy>?,

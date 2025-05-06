@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.changelog)
+
 }
 
 val currentVersion = "0.1.0"
