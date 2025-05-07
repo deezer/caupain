@@ -51,7 +51,7 @@ jobs:
           ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
           cd cli\build\distributions\chocolatey
           choco pack
-          choco push caupain.nupkg --source https://push.chocolatey.org/ --api-key %CHOCO_API_KEY%
+          choco push --source https://push.chocolatey.org/ --api-key %CHOCO_API_KEY%
         env:
           CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
 

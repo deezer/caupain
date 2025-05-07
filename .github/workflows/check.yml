@@ -45,6 +45,9 @@ jobs:
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest'
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
       - name: Test DEB build
         run: |
           ./gradlew :cli:buildDeb --stacktrace --no-configuration-cache
