@@ -23,7 +23,7 @@ jobs:
       - name: Build binaries and packages
         run: ./gradlew :cli:assembleAll :cli:buildDeb --stacktrace --no-configuration-cache
       - name: Create release notes
-        run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > build/release-notes.md
+        run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > release-notes.md
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -32,7 +32,7 @@ jobs:
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
             cli/build/distributions/*.deb
-            build/release-notes.md
+            release-notes.md
 
   publish:
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: build/release-notes.md
+          body_path: release-notes.md
           files: |
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
