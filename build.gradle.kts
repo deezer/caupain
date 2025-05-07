@@ -12,13 +12,17 @@ plugins {
 
 }
 
-val currentVersion = "0.1.0"
+val currentVersion = "0.2.0"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isCI = System.getenv("CI").toBoolean()
 version = buildString {
     append(currentVersion)
     if (isSnapshot || !isCI) append(".0-SNAPSHOT")
+}
+
+changelog {
+    version.set(currentVersion)
 }
 
 subprojects {
