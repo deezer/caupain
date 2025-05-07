@@ -38,7 +38,7 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build binaries and packages
-        run: ./gradlew :cli:assembleAll :cli:buildDeb :cli:buildRpm --stacktrace --no-configuration-cache
+        run: ./gradlew :cli:assembleAll :cli:buildDeb --stacktrace --no-configuration-cache
       - name: Create release notes
         run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > build/release-notes.md
       - name: Upload release artifacts
@@ -49,7 +49,6 @@ jobs:
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
             cli/build/distributions/*.deb
-            cli/build/distributions/*.rpm
             build/release-notes.md
 
   release:
@@ -68,7 +67,6 @@ jobs:
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
             cli/build/distributions/*.deb
-            cli/build/distributions/*.rpm
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
