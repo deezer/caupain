@@ -45,6 +45,20 @@ jobs:
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest'
+      - name: Test DEB build
+        run: |
+          ./gradlew :cli:buildDeb --stacktrace --no-configuration-cache
+          sudo dpkg -i cli/build/distributions/*.deb
+          caupain --version
+        if: matrix.os == 'ubuntu-latest'
+      - name: Test Choco build
+        run: |
+          ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
+          cd cli\build\distributions\chocolatey
+          choco pack
+          choco install caupain --debug --verbose --source .
+          caupain --version
+        if: matrix.os == 'windows-latest'
       - name: Upload reports
         uses: actions/upload-artifact@v4
         if: always()
