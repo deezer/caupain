@@ -1,0 +1,36 @@
+[versions]
+kotlin = "2.1.20"
+okio = "3.11.0"
+ktor = "3.1.3"
+
+[libraries]
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fake-filesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
+kotlinx-serialization-toml = "net.peanuuutz.tomlkt:tomlkt:0.4.0"
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-winhttp = { module = "io.ktor:ktor-client-winhttp", version.ref = "ktor" }
+ktor-client-curl = { module = "io.ktor:ktor-client-curl", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negociation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-serialization-kotlinx-xml = { module = "io.ktor:ktor-serialization-kotlinx-xml", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers", version.ref = "ktor" }
+ktor-server-conditional-headers = { module = "io.ktor:ktor-server-conditional-headers", version.ref = "ktor" }
+
+[bundles]
+ktor = ["ktor-client-core", "ktor-client-logging", "ktor-client-content-negociation"]
+ktor-serialization = ["ktor-serialization-kotlinx-json", "ktor-serialization-kotlinx-xml"]
+ktor-test-server = ["ktor-server-cio", "ktor-server-caching-headers", "ktor-server-conditional-headers"]
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.27.0"
+dokka = "org.jetbrains.dokka:2.0.0"

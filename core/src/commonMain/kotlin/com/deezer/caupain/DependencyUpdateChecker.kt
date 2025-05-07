@@ -207,7 +207,7 @@ internal class DefaultDependencyUpdateChecker(
                 .asSequence()
                 .filter { it.extension == "jar" }
                 .asIterable()
-                .let { loadPolicies(it) }
+                .let { loadPolicies(it, logger) }
         )
     }
 

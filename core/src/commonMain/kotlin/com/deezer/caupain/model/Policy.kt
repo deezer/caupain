@@ -46,7 +46,7 @@ public interface Policy {
     ): Boolean
 }
 
-internal expect fun loadPolicies(paths: Iterable<Path>): Iterable<Policy>
+internal expect fun loadPolicies(paths: Iterable<Path>, logger: Logger): Iterable<Policy>
 
 internal val DEFAULT_POLICIES = listOf(
     StabilityLevelPolicy

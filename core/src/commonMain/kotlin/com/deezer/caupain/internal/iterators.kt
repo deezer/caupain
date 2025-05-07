@@ -25,10 +25,12 @@
 package com.deezer.caupain.internal
 
 import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
-internal class CatchingIterator<T>(
+internal class CatchingIterator<T, E : Throwable>(
     private val delegate: Iterator<T>,
-    private val ignoredExceptionClass: KClass<out Throwable>
+    private val ignoredExceptionClass: KClass<E>,
+    private val onCatch: (E) -> Unit,
 ) : Iterator<T> {
 
     private var nextState = -1
@@ -43,7 +45,11 @@ internal class CatchingIterator<T>(
                 nextState = 1
                 return
             } catch (e: Throwable) {
-                if (!ignoredExceptionClass.isInstance(e)) throw e
+                if (ignoredExceptionClass.isInstance(e)) {
+                    onCatch(ignoredExceptionClass.cast(e))
+                } else {
+                    throw e
+                }
             }
         }
         nextState = 0
@@ -65,7 +71,9 @@ internal class CatchingIterator<T>(
     }
 }
 
-internal inline fun <T, reified E : Throwable> Iterable<T>.catch(): Iterable<T> =
+internal inline fun <T, reified E : Throwable> Iterable<T>.catch(
+    noinline onCatch: (E) -> Unit = {}
+): Iterable<T> =
     object : Iterable<T> {
-        override fun iterator(): Iterator<T> = CatchingIterator(this@catch.iterator(), E::class)
+        override fun iterator(): Iterator<T> = CatchingIterator(this@catch.iterator(), E::class, onCatch)
     }

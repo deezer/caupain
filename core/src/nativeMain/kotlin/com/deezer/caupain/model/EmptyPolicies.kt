@@ -26,4 +26,4 @@ package com.deezer.caupain.model
 
 import okio.Path
 
-internal actual fun loadPolicies(paths: Iterable<Path>): Iterable<Policy> = emptyList()
+internal actual fun loadPolicies(paths: Iterable<Path>, logger: Logger): Iterable<Policy> = emptyList()

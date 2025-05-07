@@ -12,11 +12,10 @@ import com.netflix.gradle.plugins.rpm.Rpm
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.redline_rpm.header.Architecture
 import org.redline_rpm.header.Os
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mokkery)
     alias(libs.plugins.compat.patrouille)
@@ -147,6 +146,7 @@ ospackage {
 fun ProjectPackagingExtension.from(sourcePath: Any, configure: CopySpec.() -> Unit) {
     from(sourcePath, closureOf(configure))
 }
+
 val buildLinuxBinariesTask = tasks.named("linuxX64Binaries")
 tasks.withType<Deb> {
     dependsOn(buildLinuxBinariesTask)

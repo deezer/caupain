@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.serialization)
     `maven-publish`
     alias(libs.plugins.kotlinx.atomicfu)

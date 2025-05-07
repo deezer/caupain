@@ -30,7 +30,7 @@ import java.net.URLClassLoader
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
-internal actual fun loadPolicies(paths: Iterable<Path>): Iterable<Policy> {
+internal actual fun loadPolicies(paths: Iterable<Path>, logger: Logger): Iterable<Policy> {
     val childClassLoader = URLClassLoader(
         paths
             .asSequence()
@@ -41,5 +41,5 @@ internal actual fun loadPolicies(paths: Iterable<Path>): Iterable<Policy> {
     )
     return ServiceLoader
         .load(Policy::class.java, childClassLoader)
-        .catch<Policy, ServiceConfigurationError>()
+        .catch<Policy, ServiceConfigurationError> { logger.warn("Unable to load policy", it) }
 }
