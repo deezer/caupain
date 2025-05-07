@@ -9,6 +9,7 @@
 ### Changed
 - Use default cache dir from system in CLI 
 - Enhance configuration for formatters in Gradle plugin and allow for custom formatter
+- Add dependency information in policy
 
 ### Deprecated
 
