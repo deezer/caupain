@@ -1,9 +1,12 @@
+import com.vanniktech.maven.publish.GradlePublishPlugin
+
 plugins {
     `kotlin-dsl`
-    `maven-publish`
     `java-gradle-plugin`
     alias(libs.plugins.compat.patrouille)
     alias(libs.plugins.binary.compatibility.validator)
+    alias(libs.plugins.vanniktech.maven.publish)
+    alias(libs.plugins.gradle.plugin.publish)
 }
 
 compatPatrouille {
@@ -23,36 +26,19 @@ dependencies {
 }
 
 gradlePlugin {
+    website = "https://github.com/deezer/caupain"
+    vcsUrl = "https://github.com/deezer/caupain"
     plugins {
         create("dependencies") {
             id = "com.deezer.caupain"
+            displayName = "Caupain"
+            description = "Plugin to check for dependency updates from version catalog"
+            tags = listOf("dependencies", "update", "version-catalog")
             implementationClass = "com.deezer.caupain.plugin.DependencyUpdatePlugin"
         }
     }
 }
 
-afterEvaluate {
-    publishing {
-        repositories {
-            maven {
-                name = "github"
-                setUrl("https://maven.pkg.github.com/bishiboosh/caupain")
-                credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
-                }
-            }
-        }
-        publications {
-            named<MavenPublication>("pluginMaven") {
-                artifact(
-                    tasks.register<Jar>("sourcesJar") {
-                        archiveClassifier.convention("sources")
-                        archiveClassifier.set("sources")
-                        from(sourceSets["main"].allSource)
-                    }
-                )
-            }
-        }
-    }
+mavenPublishing {
+    configure(GradlePublishPlugin())
 }

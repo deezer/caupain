@@ -1,22 +1,26 @@
 @file:OptIn(ExperimentalBCVApi::class)
 
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SonatypeHost
 import io.gitlab.arturbosch.detekt.Detekt
 import kotlinx.validation.ExperimentalBCVApi
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
+import org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.serialization)
-    `maven-publish`
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.dokka)
     alias(libs.plugins.antlr.kotlin)
     alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.compat.patrouille)
     alias(libs.plugins.kotlinx.kover)
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
 dependencies {
@@ -139,6 +143,9 @@ dokka {
         suppressedFiles.from(project.layout.buildDirectory.dir("generated-src"))
     }
 }
+tasks.withType<DokkaGeneratePublicationTask> {
+    dependsOn("fixKMPMetadata")
+}
 
 apiValidation {
     ignoredPackages.add("com.deezer.caupain.antlr")
@@ -147,15 +154,39 @@ apiValidation {
     }
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "github"
-            setUrl("https://maven.pkg.github.com/bishiboosh/caupain")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+mavenPublishing {
+    configure(
+        KotlinMultiplatform(
+            javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationHtml"),
+            sourcesJar = true
+        )
+    )
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    signAllPublications()
+    pom {
+        name = "Caupain core library"
+        description = "Dependency update check for Gradle version catalog. This is the core library " +
+                "used by the CLI tool and the Gradle plugin."
+        inceptionYear = "2025"
+        url = "https://github.com/deezer/caupain"
+        licenses {
+            license {
+                name = "The MIT License"
+                url = "https://opensource.org/license/mit"
+                distribution = url
             }
+        }
+        developers {
+            developer {
+                id = "bishiboosh"
+                name = "Valentin Rocher"
+                url = "https://github.com/bishiboosh"
+            }
+        }
+        scm {
+            url = "https://github.com/deezer/caupain"
+            connection = "scm:git:git://github.com/deezer/caupain.git"
+            developerConnection = "scm:git:ssh://git@github.com:deezer/caupain.git"
         }
     }
 }

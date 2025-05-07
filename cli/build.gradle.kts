@@ -85,10 +85,10 @@ kotlin {
 ospackage {
     packageName = "caupain"
     packageGroup = "devel"
-    maintainer = "Valentin Rocher <bishiboosh@gmail.com>"
+    maintainer = "Deezer <androidteam@deezer.com>"
     distribution = "stable"
     packageDescription = "CLI tool to manage Gradle version catalog updates"
-    url = "https://github.com/bishiboosh/caupain"
+    url = "https://github.com/deezer/caupain"
     release = "1"
     archStr = "amd64"
     os = Os.LINUX
@@ -156,7 +156,12 @@ tasks.withType<Rpm> {
 }
 
 val createChocolateyFilesTask = tasks.register<CreateChocolateyFilesTask>("createChocolateyFiles") {
-    repositoryUrl = "https://github.com/bishiboosh/caupain"
+    id = "caupain"
+    title = "Caupain"
+    authors = "Deezer"
+    summary = "CLI tool to manage Gradle version catalog updates"
+    tags.addAll("gradle", "dependencies")
+    repositoryUrl = "https://github.com/deezer/caupain"
     licenseUrl = "https://opensource.org/license/mit"
 }
 tasks.register<Copy>("buildChoco") {

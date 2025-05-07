@@ -7,6 +7,11 @@ on:
     paths-ignore:
       - '*.md'
       - '*/*.md'
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '*.md'
+      - '*/*.md'
 
 jobs:
   test:
@@ -36,9 +41,9 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Check
-        run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace
+        run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache
       - name: Test publication
-        run: ./gradlew publishToMavenLocal --stacktrace
+        run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest'
       - name: Upload reports
         uses: actions/upload-artifact@v4

@@ -22,7 +22,7 @@ jobs:
         with:
           add-job-summary: 'never'
       - name: Check updates
-        run: ./gradlew :cli:runJvm
+        run: ./gradlew :cli:runJvm --no-configuration-cache --stacktrace
       - name: Update summary
         run: cat build/reports/dependency-updates.md >> $GITHUB_STEP_SUMMARY
 

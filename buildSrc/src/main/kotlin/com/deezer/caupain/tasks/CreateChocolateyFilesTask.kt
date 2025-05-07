@@ -26,6 +26,8 @@ package com.deezer.caupain.tasks
 
 import org.apache.commons.text.StringEscapeUtils
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
@@ -34,16 +36,31 @@ import org.gradle.kotlin.dsl.property
 import org.intellij.lang.annotations.Language
 import java.io.File
 
-open class CreateChocolateyFilesTask : DefaultTask() {
+abstract class CreateChocolateyFilesTask : DefaultTask() {
+
+    @get:Input
+    abstract val id: Property<String>
+
+    @get:Input
+    abstract val title: Property<String>
+
+    @get:Input
+    abstract val authors: Property<String>
 
     @get:Input
     val version = project.version
 
     @get:Input
-    val repositoryUrl = project.objects.property<String>()
+    abstract val repositoryUrl: Property<String>
 
     @get:Input
-    val licenseUrl = project.objects.property<String>()
+    abstract val licenseUrl: Property<String>
+
+    @get:Input
+    abstract val tags: ListProperty<String>
+
+    @get:Input
+    abstract val summary: Property<String>
 
     @get:InputFile
     val readmeFile = project
@@ -69,15 +86,20 @@ open class CreateChocolateyFilesTask : DefaultTask() {
         createSpec(File(outputDir, "caupain.nuspec"))
         val toolsDir = File(outputDir, "tools").apply { mkdirs() }
         createLicense(File(toolsDir, "LICENSE.txt"))
-        File(toolsDir, "VERIFICATION.txt").writeText(VERIFICATION_FILE)
+        File(toolsDir, "VERIFICATION.txt").writeText(verificationFile(repositoryUrl.get()))
     }
 
     private fun createSpec(specFile: File) {
         specFile.writeText(
             createSpec(
+                id = id.get(),
+                title = title.get(),
+                authors = authors.get(),
+                tags = tags.get().joinToString(" "),
                 version = version.toString(),
                 repositoryUrl = repositoryUrl.get(),
                 licenceUrl = licenseUrl.get(),
+                summary = summary.get(),
                 description = buildString {
                     appendLine()
                     readmeFile.get().asFile.useLines { lines ->
@@ -106,26 +128,30 @@ open class CreateChocolateyFilesTask : DefaultTask() {
     companion object {
         @Language("XML")
         private fun createSpec(
+            id: String,
+            title: String,
+            authors: String,
             version: String,
             repositoryUrl: String,
             licenceUrl: String,
             description: String,
+            tags: String,
+            summary: String,
         ) = """<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
     <metadata>
-        <id>caupain</id>
+        <id>$id</id>
         <version>$version</version>
         <packageSourceUrl>$repositoryUrl</packageSourceUrl>
-        <owners>Valentin Rocher</owners>
-        <title>caupain</title>
-        <authors>Valentin Rocher</authors>
+        <authors>$authors</authors>
+        <title>$title</title>
         <projectUrl>$repositoryUrl</projectUrl>
         <licenseUrl>$licenceUrl</licenseUrl>
-        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <projectSourceUrl>$repositoryUrl</projectSourceUrl>
         <bugTrackerUrl>${"$repositoryUrl/issues"}</bugTrackerUrl>
-        <tags>gradle dependencies</tags>
-        <summary>CLI tool to manage Gradle version catalog updates</summary>
+        <tags>$tags</tags>
+        <summary>$summary</summary>
         <description>$description</description>
     </metadata>
     <files>
@@ -133,12 +159,12 @@ open class CreateChocolateyFilesTask : DefaultTask() {
     </files>
 </package>"""
 
-        private val VERIFICATION_FILE = """
+        private fun verificationFile(repositoryUrl: String) = """
         VERIFICATION
         Verification is intended to assist the Chocolatey moderators and community
         in verifying that this package's contents are trustworthy.
 
-        Releases can be found at https://github.com/bishiboosh/caupain/releases    
+        Releases can be found at $repositoryUrl/releases    
         """.trimIndent()
     }
 }
