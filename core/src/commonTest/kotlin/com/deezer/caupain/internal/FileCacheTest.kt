@@ -65,6 +65,8 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.util.date.GMTDate
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
@@ -75,6 +77,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FileCacheTest {
 
     private lateinit var fileSystem: FakeFileSystem
@@ -83,15 +86,17 @@ class FileCacheTest {
 
     private lateinit var privateStorage: CacheStorage
 
+    private val testDispatcher = UnconfinedTestDispatcher()
+
     @BeforeTest
     fun setup() {
         fileSystem = FakeFileSystem()
         val publicPath = "cache-test-public".toPath()
         fileSystem.createDirectories(publicPath)
-        publicStorage = FileStorage(fileSystem, publicPath)
+        publicStorage = FileStorage(fileSystem, publicPath, testDispatcher)
         val privatePath = "cache-test-private".toPath()
         fileSystem.createDirectories(privatePath)
-        privateStorage = FileStorage(fileSystem, privatePath)
+        privateStorage = FileStorage(fileSystem, privatePath, testDispatcher)
     }
 
     @AfterTest
@@ -107,7 +112,7 @@ class FileCacheTest {
         val client = HttpClient(io.ktor.client.engine.cio.CIO) {
             config()
         }
-        runTest {
+        runTest(testDispatcher) {
             test(client)
         }
     }
