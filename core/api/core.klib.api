@@ -115,6 +115,10 @@ abstract interface com.deezer.caupain/DependencyUpdateChecker { // com.deezer.ca
 
 abstract interface com.deezer.caupain/Serializable // com.deezer.caupain/Serializable|null[0]
 
+sealed interface <#A: com.deezer.caupain.model/Dependency> com.deezer.caupain.model/Exclusion { // com.deezer.caupain.model/Exclusion|null[0]
+    abstract fun isExcluded(#A): kotlin/Boolean // com.deezer.caupain.model/Exclusion.isExcluded|isExcluded(1:0){}[0]
+}
+
 sealed interface com.deezer.caupain.model.versionCatalog/Version { // com.deezer.caupain.model.versionCatalog/Version|null[0]
     open fun resolve(kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.model.versionCatalog/Version.Resolved? // com.deezer.caupain.model.versionCatalog/Version.resolve|resolve(kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
 
@@ -486,7 +490,7 @@ final class com.deezer.caupain.model/GradleVersion { // com.deezer.caupain.model
     }
 }
 
-final class com.deezer.caupain.model/LibraryExclusion : com.deezer.caupain/Serializable { // com.deezer.caupain.model/LibraryExclusion|null[0]
+final class com.deezer.caupain.model/LibraryExclusion : com.deezer.caupain.model/Exclusion<com.deezer.caupain.model/Dependency.Library>, com.deezer.caupain/Serializable { // com.deezer.caupain.model/LibraryExclusion|null[0]
     constructor <init>(kotlin/String, kotlin/String? = ...) // com.deezer.caupain.model/LibraryExclusion.<init>|<init>(kotlin.String;kotlin.String?){}[0]
 
     final val group // com.deezer.caupain.model/LibraryExclusion.group|{}group[0]
@@ -494,24 +498,21 @@ final class com.deezer.caupain.model/LibraryExclusion : com.deezer.caupain/Seria
     final val name // com.deezer.caupain.model/LibraryExclusion.name|{}name[0]
         final fun <get-name>(): kotlin/String? // com.deezer.caupain.model/LibraryExclusion.name.<get-name>|<get-name>(){}[0]
 
-    final fun component1(): kotlin/String // com.deezer.caupain.model/LibraryExclusion.component1|component1(){}[0]
-    final fun component2(): kotlin/String? // com.deezer.caupain.model/LibraryExclusion.component2|component2(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String? = ...): com.deezer.caupain.model/LibraryExclusion // com.deezer.caupain.model/LibraryExclusion.copy|copy(kotlin.String;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/LibraryExclusion.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.deezer.caupain.model/LibraryExclusion.hashCode|hashCode(){}[0]
+    final fun isExcluded(com.deezer.caupain.model/Dependency.Library): kotlin/Boolean // com.deezer.caupain.model/LibraryExclusion.isExcluded|isExcluded(com.deezer.caupain.model.Dependency.Library){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.model/LibraryExclusion.toString|toString(){}[0]
 }
 
-final class com.deezer.caupain.model/PluginExclusion { // com.deezer.caupain.model/PluginExclusion|null[0]
+final class com.deezer.caupain.model/PluginExclusion : com.deezer.caupain.model/Exclusion<com.deezer.caupain.model/Dependency.Plugin> { // com.deezer.caupain.model/PluginExclusion|null[0]
     constructor <init>(kotlin/String) // com.deezer.caupain.model/PluginExclusion.<init>|<init>(kotlin.String){}[0]
 
     final val id // com.deezer.caupain.model/PluginExclusion.id|{}id[0]
         final fun <get-id>(): kotlin/String // com.deezer.caupain.model/PluginExclusion.id.<get-id>|<get-id>(){}[0]
 
-    final fun component1(): kotlin/String // com.deezer.caupain.model/PluginExclusion.component1|component1(){}[0]
-    final fun copy(kotlin/String = ...): com.deezer.caupain.model/PluginExclusion // com.deezer.caupain.model/PluginExclusion.copy|copy(kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/PluginExclusion.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.deezer.caupain.model/PluginExclusion.hashCode|hashCode(){}[0]
+    final fun isExcluded(com.deezer.caupain.model/Dependency.Plugin): kotlin/Boolean // com.deezer.caupain.model/PluginExclusion.isExcluded|isExcluded(com.deezer.caupain.model.Dependency.Plugin){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.model/PluginExclusion.toString|toString(){}[0]
 }
 

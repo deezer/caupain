@@ -36,8 +36,10 @@ You can exclude dependencies from the update check by a variety of means:
 // You can exclude by key. The key matches the name used in the version catalog.
 excludeKeys("excluded1", "excluded2")
 // You can also exclude by group and optionally by name. If name is not specified, all dependencies 
-// in the group are excluded.
+// in the group are excluded. Furthermore, if name is not specified, then group is interpreted as a glob.
 excludeLibrary(group = "com.example")
+excludeLibrary(group = "com.example.**")
+excludeLibrary(group = "com.example.*.sub")
 excludeLibrary(group = "com.example", name = "example")
 excludeLibraries(
         LibraryExclusion(group = "com.example"),

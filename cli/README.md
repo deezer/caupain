@@ -66,10 +66,12 @@ versionCatalogPath = "another/path/to/libs.versions.toml"
 # You can exclude by key. The key matches the name used in the version catalog.
 excludedKeys = [ "excluded1", "excluded2" ]
 # You can also exclude by group and optionally by name. If name is not specified, all dependencies in the group
-# are excluded.
+# are excluded. Furthermore, if name is not specified, then group is interpreted as a glob.
 excludedLibraries = [
     { group = "com.google.guava" }, # Exclude all dependencies in the group
-    { group = "com.google.guava", name = "guava" } # Exclude only the guava dependency
+    { group = "com.google.guava", name = "guava" }, # Exclude only the guava dependency
+    { group = "com.google.**" }, # Exclude all dependencies with group starting with com.google
+    { group = "com.google.*.sub" }, # Exclude all dependencies like com.google.something.sub
 ]
 # You can exclude plugins by their id
 excludedPlugins = [

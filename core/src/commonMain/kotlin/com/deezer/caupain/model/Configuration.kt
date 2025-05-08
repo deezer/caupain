@@ -25,6 +25,7 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
+import com.deezer.caupain.internal.packageGlobToRegularExpression
 import okio.Path
 import okio.Path.Companion.toPath
 
@@ -60,7 +61,8 @@ public interface Configuration : Serializable {
 
     public companion object {
         private const val serialVersionUID = 1L
-        public const val DEFAULT_GRADLE_VERSION_URL: String = "https://services.gradle.org/versions/current"
+        public const val DEFAULT_GRADLE_VERSION_URL: String =
+            "https://services.gradle.org/versions/current"
     }
 }
 
@@ -139,15 +141,71 @@ internal data class ConfigurationImpl(
 ) : Configuration
 
 /**
- * Library exclusion info
+ * Configuration for excluded items
+ */
+public sealed interface Exclusion<D : Dependency> {
+
+    /**
+     * Checks if a dependency is excluded
+     */
+    public fun isExcluded(dependency: D): Boolean
+}
+
+/**
+ * Library exclusion info. If name is null, group is used as a glob, with the following rules:
+ * - `*`: wildcard that matches zero, one or multiple characters, other than `.`
+ * - `**`: Wildcard that matches zero, one or multiple packages. For example, `**.sub.name` matches
+ * `com.example.sub.name`, `com.example.sub.sub.name`. `**` must be either preceded by `.` or be at
+ * the beginning of the glob. `**` must be either followed by `.` or be at the end of the glob.
+ * If the glob only consist of a `**`, it will be a match for everything.
  *
- * @property group The group of the library to exclude.
+ * @property group The group of the library to exclude. If `name` is null, then this is interpreted as a glob
  * @property name The name of the library to exclude. If null, all libraries in the group are excluded.
  */
-public data class LibraryExclusion(
-    val group: String,
-    val name: String? = null,
-) : Serializable {
+public class LibraryExclusion(
+    public val group: String,
+    public val name: String? = null,
+) : Exclusion<Dependency.Library>, Serializable {
+
+    private val isGlob = '*' in group
+    private val groupGlobRegex by lazy { packageGlobToRegularExpression(group) }
+
+    override fun isExcluded(dependency: Dependency.Library): Boolean {
+        return when {
+            dependency.group == null -> false
+
+            name == null -> if (isGlob) {
+                groupGlobRegex.matches(dependency.group)
+            } else {
+                dependency.group == group
+            }
+
+            else -> dependency.group == group && dependency.name == name
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as LibraryExclusion
+
+        if (group != other.group) return false
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = group.hashCode()
+        result = 31 * result + (name?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString(): String {
+        return "LibraryExclusion(group='$group', name=$name)"
+    }
+
     private companion object {
         private const val serialVersionUID = 1L
     }
@@ -156,19 +214,32 @@ public data class LibraryExclusion(
 /**
  * Wrapper for plugin id exclusion.
  */
-public data class PluginExclusion(val id: String)
+public class PluginExclusion(public val id: String) : Exclusion<Dependency.Plugin> {
+
+    override fun isExcluded(dependency: Dependency.Plugin): Boolean = dependency.id == id
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as PluginExclusion
+
+        return id == other.id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    override fun toString(): String {
+        return "PluginExclusion(id='$id')"
+    }
+}
 
 internal fun Configuration.isExcluded(dependencyKey: String, dependency: Dependency): Boolean {
     if (dependencyKey in excludedKeys) return true
     return when (dependency) {
-        is Dependency.Library -> excludedLibraries.any { excluded ->
-            if (excluded.name == null) {
-                dependency.group == excluded.group
-            } else {
-                dependency.group == excluded.group && dependency.name == excluded.name
-            }
-        }
-
-        is Dependency.Plugin -> excludedPlugins.any { it.id == dependency.id }
+        is Dependency.Library -> excludedLibraries.any { it.isExcluded(dependency) }
+        is Dependency.Plugin -> excludedPlugins.any { it.isExcluded(dependency) }
     }
 }

@@ -6,6 +6,7 @@
 - First official release !
 
 ### Changed
+- Library exclusions can now use globs
 
 ### Deprecated
 
