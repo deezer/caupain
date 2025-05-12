@@ -12,7 +12,7 @@ plugins {
 
 }
 
-val currentVersion = "0.2.0"
+val currentVersion = "1.0.0"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isCI = System.getenv("CI").toBoolean()

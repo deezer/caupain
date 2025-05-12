@@ -3,19 +3,30 @@
 ## Unreleased
 
 ### Added
-- First official release !
 
 ### Changed
-- Library exclusions can now use globs
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Handle correctly IO errors and retry version update checks
 
 ### Security
+
+## 1.0.0 - 2025-05-12
+
+### Added
+
+- First official release !
+
+### Changed
+
+- Library exclusions can now use globs
+
+### Fixed
+
+- Handle correctly IO errors and retry version update checks
 
 ## 0.2.0 - 2025-05-07
 
