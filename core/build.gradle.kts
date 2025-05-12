@@ -178,9 +178,9 @@ mavenPublishing {
         }
         developers {
             developer {
-                id = "bishiboosh"
-                name = "Valentin Rocher"
-                url = "https://github.com/bishiboosh"
+                id = "deezer-android-team"
+                name = "Deezer Android Team"
+                url = "https://github.com/deezer"
             }
         }
         scm {

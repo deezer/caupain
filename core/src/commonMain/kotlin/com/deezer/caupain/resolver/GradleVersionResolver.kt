@@ -33,6 +33,7 @@ import io.ktor.client.request.get
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 
 internal class GradleVersionResolver(
     private val httpClient: HttpClient,
@@ -43,11 +44,15 @@ internal class GradleVersionResolver(
         return try {
             val currentVersion = Version.parse(currentGradleVersion, strict = false)
             val updatedVersionString = withContext(ioDispatcher) {
-                httpClient
-                    .get(gradleCurrentVersionUrl)
-                    .takeIf { it.status.isSuccess() }
-                    ?.body<GradleVersion>()
-                    ?.version
+                try {
+                    httpClient
+                        .get(gradleCurrentVersionUrl)
+                        .takeIf { it.status.isSuccess() }
+                        ?.body<GradleVersion>()
+                        ?.version
+                } catch (ignored: IOException) {
+                    null
+                }
             }
             val updatedVersion = updatedVersionString?.let { Version.parse(it, strict = false) }
             return if (updatedVersion == null || updatedVersion <= currentVersion) {

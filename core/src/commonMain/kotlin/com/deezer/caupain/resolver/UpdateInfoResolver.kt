@@ -88,7 +88,7 @@ internal class UpdateInfoResolver(
             httpClient.executeRepositoryRequest(repository) {
                 appendPathSegments(group.split('.'))
                 appendPathSegments(name, updatedVersion.toString(), "$name-$resolvedUpdatedVersion.pom")
-            }.takeIf { it.status.isSuccess() }?.body<MavenInfo>()
+            }?.takeIf { it.status.isSuccess() }?.body<MavenInfo>()
         }
         // If this is a plugin, we need to find the real maven info by following the dependency
         return if (dependency is Dependency.Plugin && mavenInfo != null) {
@@ -124,7 +124,7 @@ internal class UpdateInfoResolver(
                 appendPathSegments(group.split('.'))
                 appendPathSegments(name, updatedVersion.toString(), "maven-metadata.xml")
             }
-        }.takeIf { it.status.isSuccess() }?.body<Metadata>()
+        }?.takeIf { it.status.isSuccess() }?.body<Metadata>()
         return snapshotMetadata
             ?.versioning
             ?.snapshotVersions

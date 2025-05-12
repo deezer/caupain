@@ -13,6 +13,7 @@
 ### Removed
 
 ### Fixed
+- Handle correctly IO errors and retry version update checks
 
 ### Security
 

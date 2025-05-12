@@ -53,6 +53,7 @@ import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.DefaultXml
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
@@ -171,6 +172,11 @@ public fun DependencyUpdateChecker(
                 fileSystem.createDirectories(cacheDir)
                 publicStorage(FileStorage(fileSystem, cacheDir))
             }
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 30_000
+            socketTimeoutMillis = 30_000
         }
     },
     ioDispatcher = ioDispatcher,

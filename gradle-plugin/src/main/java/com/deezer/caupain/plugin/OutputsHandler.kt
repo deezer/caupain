@@ -24,7 +24,6 @@
 
 package com.deezer.caupain.plugin
 
-import com.deezer.caupain.plugin.internal.combine
 import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
@@ -48,8 +47,12 @@ abstract class OutputsHandler @Inject constructor(
 
     val markdown = FileOutputHandler(Type.Markdown, objects, layout)
 
-    val outputs = combine(console.output, html.output, markdown.output) { outputs ->
-        outputs.mapNotNull { it.getOrNull() }
+    val outputs = console.output.flatMap { console ->
+        html.output.flatMap { html ->
+            markdown.output.map { markdown ->
+                listOfNotNull(console.getOrNull(), html.getOrNull(), markdown.getOrNull())
+            }
+        }
     }
 
     fun console(action: Action<ConsoleOutputHandler>) {
