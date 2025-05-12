@@ -123,7 +123,7 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
     return repositoriesProvider
 }
 
-class ComponentFilterAdapter(private val delegate: Action<in ArtifactResolutionDetails>) :
+private class ComponentFilterAdapter(private val delegate: Action<in ArtifactResolutionDetails>) :
     ComponentFilter {
 
     override fun accepts(dependency: Dependency): Boolean {
