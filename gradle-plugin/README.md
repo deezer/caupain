@@ -1,5 +1,7 @@
 # Caupain Gradle plugin
 
+![Gradle Plugin Portal Version](https://img.shields.io/gradle-plugin-portal/v/com.deezer.caupain)
+
 This is the Gradle plugin version of the tool.
 
 ## Installation

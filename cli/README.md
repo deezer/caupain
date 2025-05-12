@@ -1,8 +1,47 @@
 # Caupain Command Line Interface
 
+![Chocolatey Version](https://img.shields.io/chocolatey/v/caupain)
+[![Homebrew](https://img.shields.io/badge/homebrew-1.0.0-blue)](https://github.com/deezer/homebrew-repo)
+[![Debian](https://img.shields.io/badge/debian-1.0.0-blue)](https://github.com/deezer/debian-repo)
+
 This is the command-line version of the tool. It is available as a single executable file for Linux,
-MacOS (Intel and Silicon), Windows, and as a JAR file alongside its launch script. You can download 
-the latest version from the [releases page](https://github.com/bishiboosh/caupain/releases).
+MacOS (Intel and Silicon), Windows, and as a JAR file alongside its launch script.
+
+## Installation
+
+### macOS
+
+You can install Caupain via Homebrew by running the following command:
+```bash
+brew install deezer/repo/<formula>
+```
+
+### Linux
+
+For Debian-based distributions, you'll first need to add the repository to your system:
+```bash
+sudo mkdir -p /usr/local/share/keyrings
+sudo curl -sfLo /usr/local/share/keyrings/deezer.gpg https://research.deezer.com/debian-repo/gpg.key
+echo "deb [signed-by=/usr/share/local/keyrings/deezer.gpg] https://research.deezer.com/debian-repo/ stable main" | sudo tee -a /etc/apt/sources.list.d/deezer.list
+sudo apt update
+```
+
+You can then install Caupain with the following command:
+```bash
+sudo apt install caupain
+```
+
+### Windows
+
+You can install Caupain via [Chocolatey](https://chocolatey.org/) with the following command:
+```powershell
+choco install caupain
+```
+
+### Other
+
+You can also download the latest release from the [releases page](https://github.com/deezer/caupain/releases)
+or build it yourself by cloning the repository and running `./gradlew :cli:buildCurrentArchBinary` in the root directory.
 
 ## Usage
 
@@ -145,8 +184,8 @@ file containing the fully qualified name of your class, and place the JAR file i
 
 As sample can be found in the [sample plugin module](../sample-plugin-policy-jar) of the project.
 
-If this is a bit too difficult to do (and let's be honest, it is), custom policy use is way easier 
-when using the [Gradle plugin version](../gradle-plugin/README.md) of the tool.
+If this is a bit too difficult to do, custom policy use is way easier when using the [Gradle plugin version](../gradle-plugin/README.md)
+of the tool.
 
 ## Completions
 

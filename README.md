@@ -4,8 +4,6 @@
 
 *Your best buddy for keeping versions catalogs up to date!*
 
-### *This is still a work-in-progress with no real release yet, but it will be available where needed soon !*
-
 ## What's this ?
 
 **Caupain** is a tool to help you keep your Gradle versions catalogs up to date.  It is fast, simple
