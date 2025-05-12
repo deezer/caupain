@@ -25,7 +25,6 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
-import com.deezer.caupain.internal.packageGlobToRegularExpression
 import okio.Path
 import okio.Path.Companion.toPath
 
@@ -167,22 +166,9 @@ public class LibraryExclusion(
     public val name: String? = null,
 ) : Exclusion<Dependency.Library>, Serializable {
 
-    private val isGlob = '*' in group
-    private val groupGlobRegex by lazy { packageGlobToRegularExpression(group) }
+    private val spec = PackageSpec(group, name)
 
-    override fun isExcluded(dependency: Dependency.Library): Boolean {
-        return when {
-            dependency.group == null -> false
-
-            name == null -> if (isGlob) {
-                groupGlobRegex.matches(dependency.group)
-            } else {
-                dependency.group == group
-            }
-
-            else -> dependency.group == group && dependency.name == name
-        }
-    }
+    override fun isExcluded(dependency: Dependency.Library): Boolean = spec.matches(dependency)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

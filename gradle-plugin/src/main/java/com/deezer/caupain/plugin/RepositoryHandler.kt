@@ -26,12 +26,20 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.model.ComponentFilter
+import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.Dependency.Library
+import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.Repository
 import org.gradle.api.Action
+import org.gradle.api.artifacts.ModuleIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.api.internal.GradleInternal
+import org.gradle.api.internal.artifacts.repositories.ArtifactResolutionDetails
+import org.gradle.api.internal.artifacts.repositories.ContentFilteringRepository
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
@@ -113,6 +121,75 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
         }
     }
     return repositoriesProvider
+}
+
+class ComponentFilterAdapter(private val delegate: Action<in ArtifactResolutionDetails>) :
+    ComponentFilter {
+
+    override fun accepts(dependency: Dependency): Boolean {
+        if (dependency.group == null || dependency.name == null) return false
+        return ArtifactResolutionDetailsAdapter(dependency)
+            .apply { delegate.execute(this) }
+            .isFound
+    }
+
+    private class ModuleIdentifierAdapter(private val dependency: Dependency) : ModuleIdentifier {
+        override fun getGroup(): String = dependency.group!!
+
+        override fun getName(): String = dependency.name!!
+    }
+
+    private class ModuleComponentIdentifierAdapter(private val dependency: Dependency) :
+        ModuleComponentIdentifier {
+        private val identifier = ModuleIdentifierAdapter(dependency)
+
+        override fun getDisplayName(): String = dependency.moduleId
+
+        override fun getGroup(): String = identifier.group
+
+        override fun getModule(): String = identifier.name
+
+        override fun getVersion(): String = dependency.version!!.toString()
+
+        override fun getModuleIdentifier(): ModuleIdentifier = identifier
+    }
+
+    private class ArtifactResolutionDetailsAdapter(
+        private val dependency: Dependency
+    ) : ArtifactResolutionDetails {
+
+        var isFound = true
+            private set
+
+        override fun getModuleId(): ModuleIdentifier = ModuleIdentifierAdapter(dependency)
+
+        override fun getComponentId(): ModuleComponentIdentifier? =
+            if (dependency.version == null) {
+                null
+            } else {
+                ModuleComponentIdentifierAdapter(dependency)
+            }
+
+        override fun isVersionListing(): Boolean = dependency.version != null
+
+        override fun notFound() {
+            isFound = false
+        }
+    }
+
+    companion object {
+        private val Dependency.group: String?
+            get() = when (this) {
+                is Library -> group
+                is Plugin -> id
+            }
+
+        private val Dependency.name: String?
+            get() = when (this) {
+                is Library -> name
+                is Plugin -> "$id.gradle.plugin"
+            }
+    }
 }
 
 class RepositoryCategoryHandler internal constructor(private val listProperty: ListProperty<Repository>) {

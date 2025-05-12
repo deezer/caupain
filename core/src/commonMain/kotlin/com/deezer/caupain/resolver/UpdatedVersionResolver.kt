@@ -40,6 +40,7 @@ import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
@@ -68,6 +69,7 @@ internal class UpdatedVersionResolver(
         }
         return repositories
             .asFlow()
+            .filter { dependency in it }
             .mapNotNull { repository ->
                 findUpdatedVersion(
                     dependency = dependency,

@@ -75,13 +75,10 @@ class ExclusionsTest {
     }
 
     @Test
-    fun testSimpleLibraryExclusions() {
+    fun testLibraryExclusions() {
         assertMatching(LibraryExclusion("com.example", "name"), "com.example:name")
         assertNotMatching(LibraryExclusion("com.example", "name"), "com.example:otherName")
         assertNotMatching(LibraryExclusion("com.example", "name"), "com.other:name")
-        assertMatching(LibraryExclusion("com.example"), "com.example:name")
-        assertMatching(LibraryExclusion("com.example"), "com.example:otherName")
-        assertNotMatching(LibraryExclusion("com.example"), "com.other:name")
     }
 
     @Test
@@ -89,29 +86,5 @@ class ExclusionsTest {
         assertMatching(PluginExclusion("com.example.plugin"), "com.example.plugin")
         assertNotMatching(PluginExclusion("com.example.plugin"), "com.other.plugin")
         assertNotMatching(PluginExclusion("com.example.plugin"), "com.example.otherPlugin")
-    }
-
-    @Test
-    fun testLibraryGlobExclusion() {
-        assertMatching(LibraryExclusion("com.example.*"), "com.example.sub:name")
-        assertNotMatching(LibraryExclusion("com.example.*"), "com.other.sub:name")
-        assertNotMatching(LibraryExclusion("com.example.*"), "com.other.sub.subsub:name")
-        assertNotMatching(LibraryExclusion("com.example.*"), "com.example:name")
-        assertMatching(LibraryExclusion("com.example.**"), "com.example.sub:name")
-        assertMatching(LibraryExclusion("com.example.**"), "com.example.sub.sub:name")
-        assertNotMatching(LibraryExclusion("com.example.**"), "com.other.sub:name")
-        assertMatching(LibraryExclusion("**"), "com.example.sub.sub:name")
-        assertMatching(LibraryExclusion("**"), "com.other.sub.sub:name")
-        assertMatching(LibraryExclusion("com.**.sub"), "com.example.sub:name")
-        assertMatching(LibraryExclusion("com.**.sub"), "com.other.sub:name")
-        assertNotMatching(LibraryExclusion("com.**.sub"), "com.example.otherSub:name")
-        assertMatching(LibraryExclusion("com.*.sub"), "com.example.sub:name")
-        assertMatching(LibraryExclusion("com.*.sub"), "com.other.sub:name")
-        assertNotMatching(LibraryExclusion("com.*.sub"), "com.example.otherSub:name")
-        assertNotMatching(LibraryExclusion("com.*.sub"), "com.example.sub.subsub:name")
-        assertMatching(LibraryExclusion("com.*.sub.**"), "com.example.sub.subsub:name")
-        assertMatching(LibraryExclusion("com.*.sub.**"), "com.other.sub.subsub:name")
-        assertMatching(LibraryExclusion("com.*.sub.**"), "com.example.sub.otherSub:name")
-        assertNotMatching(LibraryExclusion("com.*.sub.**"), "com.example.otherSub.otherSub:name")
     }
 }

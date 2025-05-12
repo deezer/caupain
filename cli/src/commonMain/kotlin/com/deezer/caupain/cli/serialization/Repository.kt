@@ -24,11 +24,11 @@
 
 package com.deezer.caupain.cli.serialization
 
-import com.deezer.caupain.model.Repository
+import com.deezer.caupain.cli.model.DefaultRepository
+import com.deezer.caupain.cli.model.Repository
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
@@ -39,58 +39,38 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
 import net.peanuuutz.tomlkt.asTomlDecoder
 
-@Serializable
-private data class RichRepository(
-    val url: String,
-    val user: String?,
-    val password: String?
-) {
-    constructor(repository: Repository) : this(
-        url = repository.url,
-        user = repository.user,
-        password = repository.password
-    )
-
-    fun toRepository() = Repository(
-        url = url,
-        user = user,
-        password = password
-    )
-}
-
-private enum class DefaultRepositories(val key: String, val repository: Repository) {
-    GOOGLE("google", com.deezer.caupain.model.DefaultRepositories.google),
-    MAVEN_CENTRAL("mavenCentral", com.deezer.caupain.model.DefaultRepositories.mavenCentral),
-    GRADLE_PLUGINS(
-        "gradlePluginPortal",
-        com.deezer.caupain.model.DefaultRepositories.gradlePlugins
-    ),
-}
-
 @Suppress("UnnecessaryOptInAnnotation")
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 object RepositorySerializer : KSerializer<Repository> {
 
-    private val richRepositorySerializer = RichRepository.serializer()
+    private val richRepositorySerializer = Repository.Rich.serializer()
 
     override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        serialName = "com.deezer.dependencies.model.Repository",
+        serialName = "com.deezer.caupain.cli.model.Repository",
         kind = SerialKind.CONTEXTUAL,
     )
 
     override fun deserialize(decoder: Decoder): Repository {
         val tomlDecoder = decoder.asTomlDecoder()
         return when (val element = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> DefaultRepositories
-                .entries
-                .firstOrNull { it.key == element.content }
-                ?.repository
-                ?: throw SerializationException("Unknown repository: ${element.content}")
+            is TomlLiteral -> Repository.Default(
+                DefaultRepository
+                    .entries
+                    .firstOrNull { it.key == element.content }
+                    ?: throw SerializationException("Unknown repository: ${element.content}")
+            )
 
-            is TomlTable -> tomlDecoder
-                .toml
-                .decodeFromTomlElement(richRepositorySerializer, element)
-                .toRepository()
+            is TomlTable -> (element["default"] as? TomlLiteral)
+                ?.content
+                ?.let { defaultRepoName ->
+                    DefaultRepository
+                        .entries
+                        .firstOrNull { it.key == defaultRepoName }
+                        ?.let { Repository.Default(it) }
+                }
+                ?: tomlDecoder
+                    .toml
+                    .decodeFromTomlElement(richRepositorySerializer, element)
 
             else ->
                 throw SerializationException("Unsupported TOML element type: ${element::class.simpleName}")
@@ -98,6 +78,9 @@ object RepositorySerializer : KSerializer<Repository> {
     }
 
     override fun serialize(encoder: Encoder, value: Repository) {
-        encoder.encodeSerializableValue(richRepositorySerializer, RichRepository(value))
+        when (value) {
+            is Repository.Default -> encoder.encodeString(value.repository.key)
+            is Repository.Rich -> encoder.encodeSerializableValue(richRepositorySerializer, value)
+        }
     }
 }
