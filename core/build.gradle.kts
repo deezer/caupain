@@ -60,6 +60,7 @@ kotlin {
                 implementation(libs.stately.concurrent.collections)
                 implementation(libs.semver)
                 implementation(libs.antlr.kotlin.runtime)
+                implementation(libs.kotlinx.immutable.collections)
             }
         }
         getByName("commonTest") {

@@ -22,34 +22,28 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.model
+package com.deezer.caupain.model
 
-import com.deezer.caupain.cli.serialization.ConfigurationSerializer
-import com.deezer.caupain.model.LibraryExclusion
-import com.deezer.caupain.model.PluginExclusion
-import kotlinx.serialization.Serializable
-import okio.Path
-import com.deezer.caupain.model.Configuration as ModelConfiguration
+import com.deezer.caupain.internal.packageGlobToRegularExpression
 
-@Serializable(ConfigurationSerializer::class)
-interface Configuration {
-    val repositories: List<Repository>?
-    val pluginRepositories: List<Repository>?
-    val versionCatalogPath: Path?
-    val excludedKeys: Set<String>?
-    val excludedLibraries: List<LibraryExclusion>?
-    val excludedPlugins: List<PluginExclusion>?
-    val policy: String?
-    val policyPluginDir: Path?
-    val cacheDir: Path?
-    val outputType: OutputType?
-    val outputPath: Path?
-    val gradleWrapperPropertiesPath: Path?
-    val onlyCheckStaticVersions: Boolean?
+internal data class PackageSpec(
+    val group: String,
+    val name: String? = null,
+) {
+    private val isGlob = '*' in group
+    private val groupGlobRegex by lazy { packageGlobToRegularExpression(group) }
 
-    fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration
+    fun matches(dependency: Dependency): Boolean {
+        return when {
+            dependency.group == null -> false
 
-    enum class OutputType {
-        CONSOLE, HTML, MARKDOWN
+            name == null -> if (isGlob) {
+                groupGlobRegex.matches(dependency.group!!)
+            } else {
+                dependency.group == group
+            }
+
+            else -> dependency.group == group && dependency.name == name
+        }
     }
 }

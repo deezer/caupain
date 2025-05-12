@@ -32,6 +32,7 @@ import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -45,9 +46,17 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 public class Repository(
     public val url: String,
     public val user: String?,
-    public val password: String?
+    public val password: String?,
+    public val componentFilter: ComponentFilter? = null
 ) : Serializable {
-    public constructor(url: String) : this(url, null, null)
+    public constructor(
+        url: String,
+        componentFilter: ComponentFilter? = null
+    ) : this(url, null, null, componentFilter)
+
+    public operator fun contains(dependency: Dependency): Boolean {
+        return componentFilter == null || componentFilter.accepts(dependency)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -58,6 +67,7 @@ public class Repository(
         if (url != other.url) return false
         if (user != other.user) return false
         if (password != other.password) return false
+        if (componentFilter != other.componentFilter) return false
 
         return true
     }
@@ -66,6 +76,7 @@ public class Repository(
         var result = url.hashCode()
         result = 31 * result + (user?.hashCode() ?: 0)
         result = 31 * result + (password?.hashCode() ?: 0)
+        result = 31 * result + (componentFilter?.hashCode() ?: 0)
         return result
     }
 
@@ -75,6 +86,48 @@ public class Repository(
 
     public companion object {
         private const val serialVersionUID = 1L
+    }
+}
+
+public interface ComponentFilter : Serializable {
+    public fun accepts(dependency: Dependency): Boolean
+}
+
+public class ComponentFilterBuilder {
+    private val includes = persistentListOf<PackageSpec>().builder()
+    private val excludes = persistentListOf<PackageSpec>().builder()
+
+    public fun exclude(group: String, name: String? = null): ComponentFilterBuilder {
+        excludes.add(PackageSpec(group, name))
+        return this
+    }
+
+    public fun include(group: String, name: String? = null): ComponentFilterBuilder {
+        includes.add(PackageSpec(group, name))
+        return this
+    }
+
+    public fun build(): ComponentFilter {
+        return DefaultComponentFilter(includes.build(), excludes.build())
+    }
+}
+
+public inline fun buildComponentFilter(builder: ComponentFilterBuilder.() -> Unit): ComponentFilter {
+    return ComponentFilterBuilder().apply(builder).build()
+}
+
+internal data class DefaultComponentFilter(
+    private val includes: List<PackageSpec>,
+    private val excludes: List<PackageSpec>,
+) : ComponentFilter {
+    override fun accepts(dependency: Dependency): Boolean {
+        if (excludes.isNotEmpty()) {
+            if (excludes.any { it.matches(dependency) }) return false
+        }
+        if (includes.isNotEmpty()) {
+            if (includes.none { it.matches(dependency) }) return false
+        }
+        return true
     }
 }
 
