@@ -160,6 +160,7 @@ val createChocolateyFilesTask = tasks.register<CreateChocolateyFilesTask>("creat
     title = "Caupain"
     authors = "Deezer"
     summary = "CLI tool to manage Gradle version catalog updates"
+    descriptionFile = project.layout.projectDirectory.file("chocolatey/description.md")
     tags.addAll("gradle", "dependencies")
     repositoryUrl = "https://github.com/deezer/caupain"
     licenseUrl = "https://opensource.org/license/mit"

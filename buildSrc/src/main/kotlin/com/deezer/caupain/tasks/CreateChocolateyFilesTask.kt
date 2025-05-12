@@ -63,10 +63,7 @@ abstract class CreateChocolateyFilesTask : DefaultTask() {
     abstract val summary: Property<String>
 
     @get:InputFile
-    val readmeFile = project
-        .objects
-        .fileProperty()
-        .convention(project.layout.projectDirectory.file("README.md"))
+    val descriptionFile = project.objects.fileProperty()
 
     @get:InputFile
     val licenceFile = project
@@ -102,10 +99,8 @@ abstract class CreateChocolateyFilesTask : DefaultTask() {
                 summary = summary.get(),
                 description = buildString {
                     appendLine()
-                    readmeFile.get().asFile.useLines { lines ->
-                        lines
-                            .dropWhile { !it.startsWith("##") }
-                            .forEach { appendLine(StringEscapeUtils.escapeXml10(it)) }
+                    descriptionFile.get().asFile.useLines { lines ->
+                        lines.joinTo(this, "\n") { StringEscapeUtils.escapeXml10(it) }
                     }
                     appendLine()
                 }
