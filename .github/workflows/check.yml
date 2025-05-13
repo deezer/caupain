@@ -35,6 +35,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
