@@ -2,7 +2,6 @@ import com.deezer.caupain.tasks.FixKMPMetadata
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import io.gitlab.arturbosch.detekt.report.ReportMergeTask
-import kotlinx.coroutines.flow.merge
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 plugins {
@@ -44,7 +43,6 @@ subprojects {
     val detektAll = tasks.register("detektAll") {
         group = "verification"
         description = "Run detekt analysis for all targets"
-        finalizedBy(mergeDetektReports)
     }
     tasks.withType<Detekt> {
         if (!name.contains("test", ignoreCase = true)) {
@@ -54,6 +52,7 @@ subprojects {
             mergeDetektReports {
                 input.from(this@withType.sarifReportFile)
             }
+            finalizedBy(mergeDetektReports)
         }
         reports.sarif.required = true
     }
