@@ -82,6 +82,13 @@ kotlin {
     }
 }
 
+dependencyGuard {
+    configuration("jvmMainCompileClasspath")
+    configuration("jvmMainRuntimeClasspath")
+    configuration("metadataCommonMainCompileClasspath")
+    configuration("metadataNativeMainCompileClasspath")
+}
+
 ospackage {
     packageName = "caupain"
     packageGroup = "devel"

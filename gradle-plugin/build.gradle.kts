@@ -25,6 +25,10 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 }
 
+dependencyGuard {
+    configuration("runtimeClasspath")
+}
+
 gradlePlugin {
     website = "https://github.com/deezer/caupain"
     vcsUrl = "https://github.com/deezer/caupain"

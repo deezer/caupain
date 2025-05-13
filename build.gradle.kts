@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.changelog)
-
+    alias(libs.plugins.dependency.guard) apply false
 }
 
 val currentVersion = "1.0.0"
@@ -56,6 +56,12 @@ subprojects {
         }
         reports.sarif.required = true
     }
+    afterEvaluate {
+        tasks.named("check") {
+            dependsOn(detektAll)
+        }
+    }
+
     val fixKMPMetadata = tasks.register<FixKMPMetadata>("fixKMPMetadata")
     tasks.withType<KotlinCompileTool> {
         if (name.startsWith("compile") && name.endsWith("MainKotlinMetadata")) {
@@ -70,9 +76,6 @@ subprojects {
             mustRunAfter(fixKMPMetadata)
         }
     }
-    afterEvaluate {
-        tasks.named("check") {
-            dependsOn(detektAll)
-        }
-    }
+
+    apply(plugin = "com.dropbox.dependency-guard")
 }
