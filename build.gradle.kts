@@ -1,6 +1,8 @@
 import com.deezer.caupain.tasks.FixKMPMetadata
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import io.gitlab.arturbosch.detekt.report.ReportMergeTask
+import kotlinx.coroutines.flow.merge
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 plugins {
@@ -25,6 +27,10 @@ changelog {
     version.set(currentVersion)
 }
 
+val mergeDetektReports = tasks.register<ReportMergeTask>("mergeDetektReports") {
+    output = layout.buildDirectory.file("reports/detekt/merged.sarif")
+}
+
 subprojects {
     group = "com.deezer.caupain"
     version = rootProject.version
@@ -33,15 +39,23 @@ subprojects {
 
     extensions.configure<DetektExtension> {
         config.setFrom(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
+        basePath = rootDir.absolutePath
     }
     val detektAll = tasks.register("detektAll") {
         group = "verification"
         description = "Run detekt analysis for all targets"
-        dependsOn(
-            tasks
-                .withType<Detekt>()
-                .matching { !it.name.contains("test", ignoreCase = true) }
-        )
+        finalizedBy(mergeDetektReports)
+    }
+    tasks.withType<Detekt> {
+        if (!name.contains("test", ignoreCase = true)) {
+            detektAll {
+                dependsOn(this@withType)
+            }
+            mergeDetektReports {
+                input.from(this@withType.sarifReportFile)
+            }
+        }
+        reports.sarif.required = true
     }
     val fixKMPMetadata = tasks.register<FixKMPMetadata>("fixKMPMetadata")
     tasks.withType<KotlinCompileTool> {
