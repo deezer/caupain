@@ -30,7 +30,6 @@ import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.internal.path
-import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.serialization.DefaultToml
 import com.deezer.caupain.cli.serialization.decodeFromPath

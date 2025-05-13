@@ -24,6 +24,8 @@
 
 package com.deezer.caupain
 
+import kotlinx.io.IOException
+
 /**
  * Base exception for exceptions thrown by Caupain.
  */
