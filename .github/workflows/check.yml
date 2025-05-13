@@ -35,6 +35,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -46,6 +47,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache
+      - name: Upload SARIF files
+        if: (success() || failure()) && matrix.os == 'ubuntu-latest'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: build/reports/detekt/merged.sarif
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest'
@@ -68,7 +74,7 @@ jobs:
         if: matrix.os == 'windows-latest'
       - name: Upload reports
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success() || failure()
         with:
           name: check-results-${{ matrix.os }}
           path: '*/build/test-results/**/TEST-*.xml'
@@ -76,13 +82,29 @@ jobs:
   merge-reports:
     runs-on: ubuntu-latest
     needs: test
-    if: always()
+    if: success() || failure()
     steps:
       - name: Merge artifacts
         uses: actions/upload-artifact/merge@v4
         with:
           name: check-results
           delete-merged: true
+
+  test-report:
+    runs-on: ubuntu-latest
+    needs: merge-reports
+    if: success() || failure()
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: check-results
+      - name: Publish test annotations
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: '*/build/test-results/**/TEST-*.xml'
+          annotate_only: true
+
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"

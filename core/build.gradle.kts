@@ -154,6 +154,13 @@ apiValidation {
     }
 }
 
+dependencyGuard {
+    configuration("jvmMainCompileClasspath")
+    configuration("jvmMainRuntimeClasspath")
+    configuration("metadataCommonMainCompileClasspath")
+    configuration("metadataNativeMainCompileClasspath")
+}
+
 mavenPublishing {
     configure(
         KotlinMultiplatform(

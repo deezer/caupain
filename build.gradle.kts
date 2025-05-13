@@ -1,6 +1,7 @@
 import com.deezer.caupain.tasks.FixKMPMetadata
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import io.gitlab.arturbosch.detekt.report.ReportMergeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 plugins {
@@ -9,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.changelog)
-
+    alias(libs.plugins.dependency.guard) apply false
 }
 
 val currentVersion = "1.0.0"
@@ -25,6 +26,10 @@ changelog {
     version.set(currentVersion)
 }
 
+val mergeDetektReports = tasks.register<ReportMergeTask>("mergeDetektReports") {
+    output = layout.buildDirectory.file("reports/detekt/merged.sarif")
+}
+
 subprojects {
     group = "com.deezer.caupain"
     version = rootProject.version
@@ -33,16 +38,30 @@ subprojects {
 
     extensions.configure<DetektExtension> {
         config.setFrom(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
+        basePath = rootDir.absolutePath
     }
     val detektAll = tasks.register("detektAll") {
         group = "verification"
         description = "Run detekt analysis for all targets"
-        dependsOn(
-            tasks
-                .withType<Detekt>()
-                .matching { !it.name.contains("test", ignoreCase = true) }
-        )
     }
+    tasks.withType<Detekt> {
+        if (!name.contains("test", ignoreCase = true)) {
+            detektAll {
+                dependsOn(this@withType)
+            }
+            mergeDetektReports {
+                input.from(this@withType.sarifReportFile)
+            }
+            finalizedBy(mergeDetektReports)
+        }
+        reports.sarif.required = true
+    }
+    afterEvaluate {
+        tasks.named("check") {
+            dependsOn(detektAll)
+        }
+    }
+
     val fixKMPMetadata = tasks.register<FixKMPMetadata>("fixKMPMetadata")
     tasks.withType<KotlinCompileTool> {
         if (name.startsWith("compile") && name.endsWith("MainKotlinMetadata")) {
@@ -57,9 +76,6 @@ subprojects {
             mustRunAfter(fixKMPMetadata)
         }
     }
-    afterEvaluate {
-        tasks.named("check") {
-            dependsOn(detektAll)
-        }
-    }
+
+    apply(plugin = "com.dropbox.dependency-guard")
 }
