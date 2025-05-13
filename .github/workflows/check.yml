@@ -46,6 +46,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache
+      - name: Upload SARIF files
+        if: matrix.os == 'ubuntu-latest'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: build/reports/detekt/merged.sarif
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest'
@@ -72,17 +77,6 @@ jobs:
         with:
           name: check-results-${{ matrix.os }}
           path: '*/build/test-results/**/TEST-*.xml'
-
-  merge-reports:
-    runs-on: ubuntu-latest
-    needs: test
-    if: always()
-    steps:
-      - name: Merge artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: check-results
-          delete-merged: true
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
