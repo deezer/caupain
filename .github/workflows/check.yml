@@ -47,7 +47,7 @@ jobs:
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache
       - name: Upload SARIF files
-        if: matrix.os == 'ubuntu-latest'
+        if: (success() || failure()) && matrix.os == 'ubuntu-latest'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: build/reports/detekt/merged.sarif
