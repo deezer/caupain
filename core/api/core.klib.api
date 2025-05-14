@@ -533,6 +533,7 @@ final class com.deezer.caupain.model/Repository : com.deezer.caupain/Serializabl
     final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/Repository.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.deezer.caupain.model/Repository.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.model/Repository.toString|toString(){}[0]
+    final inline fun withComponentFilter(kotlin/Function1<com.deezer.caupain.model/ComponentFilterBuilder, kotlin/Unit>): com.deezer.caupain.model/Repository // com.deezer.caupain.model/Repository.withComponentFilter|withComponentFilter(kotlin.Function1<com.deezer.caupain.model.ComponentFilterBuilder,kotlin.Unit>){}[0]
 
     final object Companion // com.deezer.caupain.model/Repository.Companion|null[0]
 }

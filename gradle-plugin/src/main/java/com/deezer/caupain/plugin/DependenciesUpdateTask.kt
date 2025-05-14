@@ -45,8 +45,6 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
@@ -54,41 +52,43 @@ import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 import org.gradle.util.GradleVersion
+import org.gradle.work.DisableCachingByDefault
 import java.util.UUID
 
 /**
  * Dependencies Update task.
  */
+@DisableCachingByDefault(because = "Will never be up to date")
 open class DependenciesUpdateTask : DefaultTask() {
 
-    @get:Input
+    @get:Internal
     val repositories = project.objects.listProperty<Repository>()
 
-    @get:Input
+    @get:Internal
     val pluginRepositories = project.objects.listProperty<Repository>()
 
     /**
      * @see DependenciesUpdateExtension.versionCatalogFile
      */
-    @get:InputFile
+    @get:Internal
     val versionCatalogFile: RegularFileProperty = project.objects.fileProperty()
 
     /**
      * @see DependenciesUpdateExtension.excludedKeys
      */
-    @get:Input
+    @get:Internal
     val excludedKeys = project.objects.setProperty<String>()
 
     /**
      * @see DependenciesUpdateExtension.excludedLibraries
      */
-    @get:Input
+    @get:Internal
     val excludedLibraries = project.objects.listProperty<LibraryExclusion>()
 
     /**
      * @see DependenciesUpdateExtension.excludedPluginIds
      */
-    @get:Input
+    @get:Internal
     val excludedPluginIds = project.objects.setProperty<String>()
 
     @get:Internal
@@ -97,20 +97,21 @@ open class DependenciesUpdateTask : DefaultTask() {
     private val customFormatter = project.objects.property<Formatter>()
 
     @get:OutputFiles
-    internal val outputFiles: Provider<List<Provider<RegularFile>>> = formatterOutputs.map { outputs ->
-        outputs.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
-    }
+    internal val outputFiles: Provider<List<Provider<RegularFile>>> =
+        formatterOutputs.map { outputs ->
+            outputs.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
+        }
 
     /**
      * @see DependenciesUpdateExtension.useCache
      */
-    @get:Input
+    @get:Internal
     val useCache = project.objects.property<Boolean>()
 
     /**
      * @see DependenciesUpdateExtension.onlyCheckStaticVersions
      */
-    @get:Input
+    @get:Internal
     val onlyCheckStaticVersions = project.objects.property<Boolean>()
 
     /**
@@ -122,7 +123,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         .directoryProperty()
         .convention(project.layout.buildDirectory.dir("cache/dependency-updates"))
 
-    @get:Input
+    @get:Internal
     val gradleCurrentVersionUrl: Property<String> = project
         .objects
         .property<String>()

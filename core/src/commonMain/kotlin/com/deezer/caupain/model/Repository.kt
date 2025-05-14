@@ -32,9 +32,9 @@ import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
-import kotlinx.collections.immutable.persistentListOf
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.jvm.JvmOverloads
 
 /**
  * Maven repository
@@ -56,6 +56,15 @@ public class Repository(
 
     public operator fun contains(dependency: Dependency): Boolean {
         return componentFilter == null || componentFilter.accepts(dependency)
+    }
+
+    public inline fun withComponentFilter(builder: ComponentFilterBuilder.() -> Unit): Repository {
+        return Repository(
+            url = url,
+            user = user,
+            password = password,
+            componentFilter = buildComponentFilter(builder)
+        )
     }
 
     override fun equals(other: Any?): Boolean {
@@ -94,21 +103,23 @@ public interface ComponentFilter : Serializable {
 }
 
 public class ComponentFilterBuilder {
-    private val includes = persistentListOf<PackageSpec>().builder()
-    private val excludes = persistentListOf<PackageSpec>().builder()
+    private val includes = mutableListOf<PackageSpec>()
+    private val excludes = mutableListOf<PackageSpec>()
 
+    @JvmOverloads
     public fun exclude(group: String, name: String? = null): ComponentFilterBuilder {
         excludes.add(PackageSpec(group, name))
         return this
     }
 
+    @JvmOverloads
     public fun include(group: String, name: String? = null): ComponentFilterBuilder {
         includes.add(PackageSpec(group, name))
         return this
     }
 
     public fun build(): ComponentFilter {
-        return DefaultComponentFilter(includes.build(), excludes.build())
+        return DefaultComponentFilter(includes.toList(), excludes.toList())
     }
 }
 

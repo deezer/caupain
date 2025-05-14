@@ -35,6 +35,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -67,14 +68,22 @@ class DependencyUpdatePluginTest {
         File(tempFolder.root, "build.gradle.kts").writeText(
             createBuildFile(
                 repositoryUrl = mockWebserverRule.server.url("maven").toString(),
+                forbiddenRepositoryUrl = mockWebserverRule.server.url("maven-forbidden").toString(),
                 gradleUrl = mockWebserverRule.server.url("gradle").toString()
+            )
+        )
+        // Add settings files
+        File(tempFolder.root, "settings.gradle.kts").writeText(
+            createSettingsFile(
+                filteredRepositoryUrl = mockWebserverRule.server.url("maven-androidx").toString(),
+                fallbackRepositoryUrl = mockWebserverRule.server.url("maven").toString()
             )
         )
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val body = when (request.path) {
-                    "/maven/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
-                    "/maven/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM
+                    "/maven-androidx/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
+                    "/maven-androidx/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
                     "/maven/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
@@ -121,6 +130,7 @@ class DependencyUpdatePluginTest {
     @Language("kotlin")
     private fun createBuildFile(
         repositoryUrl: String,
+        forbiddenRepositoryUrl: String,
         gradleUrl: String
     ) = """
     import com.deezer.caupain.model.StabilityLevelPolicy
@@ -137,10 +147,10 @@ class DependencyUpdatePluginTest {
 
     caupain {
         repositories {
-            libraries {
-                repository("$repositoryUrl") 
-            }   
             plugins {
+                repository("$forbiddenRepositoryUrl") {
+                    exclude("**")
+                }
                 repository("$repositoryUrl") 
             }
         }
@@ -167,6 +177,52 @@ class DependencyUpdatePluginTest {
         }   
     }    
     """.trimIndent()
+
+    @Language("kotlin")
+    private fun createSettingsFile(
+        filteredRepositoryUrl: String,
+        fallbackRepositoryUrl: String
+    ) = """
+    pluginManagement {
+        repositories {
+            google {
+                content {
+                    includeGroupByRegex("com\\.android.*")
+                    includeGroupByRegex("com\\.google.*")
+                    includeGroupByRegex("androidx.*")
+                }
+            }
+            mavenCentral()
+            gradlePluginPortal()
+            mavenLocal()
+        }
+    }
+    
+    dependencyResolutionManagement {
+        repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+        repositories {
+            maven {
+                setUrl("$filteredRepositoryUrl")
+                content { 
+                    includeGroupAndSubgroups("androidx.core")
+                }
+                isAllowInsecureProtocol = true
+            }
+            maven {
+                setUrl("$fallbackRepositoryUrl")
+                isAllowInsecureProtocol = true
+            }
+        }
+    }
+    
+    rootProject.name = "Fake project"
+    include(":app")
+    """.trimIndent()
+
+    @After
+    fun teardown() {
+        assertEquals(7, mockWebserverRule.server.requestCount)
+    }
 
     @Test
     fun testPlugin() {

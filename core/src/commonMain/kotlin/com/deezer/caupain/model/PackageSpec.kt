@@ -24,12 +24,13 @@
 
 package com.deezer.caupain.model
 
+import com.deezer.caupain.Serializable
 import com.deezer.caupain.internal.packageGlobToRegularExpression
 
 internal data class PackageSpec(
     val group: String,
     val name: String? = null,
-) {
+) : Serializable {
     private val isGlob = '*' in group
     private val groupGlobRegex by lazy { packageGlobToRegularExpression(group) }
 
@@ -45,5 +46,9 @@ internal data class PackageSpec(
 
             else -> dependency.group == group && dependency.name == name
         }
+    }
+
+    companion object {
+        private const val serialVersionUID = 1L
     }
 }
