@@ -98,7 +98,6 @@ excludedLibraries = [
 excludedPlugins = [ "com.first", "com.second" ]
 [[ repositories ]]
 default = "mavenCentral"
-
 [[ repositories ]]
 url = "http://www.example.com/repo"
 includes = [

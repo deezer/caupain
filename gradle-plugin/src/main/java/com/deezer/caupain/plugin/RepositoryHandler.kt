@@ -27,10 +27,12 @@
 package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.ComponentFilter
+import com.deezer.caupain.model.ComponentFilterBuilder
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.Dependency.Library
 import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.buildComponentFilter
 import org.gradle.api.Action
 import org.gradle.api.artifacts.ModuleIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
@@ -123,13 +125,13 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
     return repositoriesProvider
 }
 
-private class ComponentFilterAdapter(private val delegate: Action<in ArtifactResolutionDetails>) :
+private class ComponentFilterAdapter(private val repository: ContentFilteringRepository) :
     ComponentFilter {
 
     override fun accepts(dependency: Dependency): Boolean {
         if (dependency.group == null || dependency.name == null) return false
         return ArtifactResolutionDetailsAdapter(dependency)
-            .apply { delegate.execute(this) }
+            .apply { repository.contentFilter.execute(this) }
             .isFound
     }
 
@@ -198,6 +200,13 @@ class RepositoryCategoryHandler internal constructor(private val listProperty: L
         listProperty.add(repository)
     }
 
+    fun repository(
+        repository: Repository,
+        configureComponentFilter: Action<ComponentFilterBuilder>
+    ) {
+        listProperty.add(repository.withComponentFilter { configureComponentFilter.execute(this) })
+    }
+
     /**
      * Adds a repository
      */
@@ -205,10 +214,39 @@ class RepositoryCategoryHandler internal constructor(private val listProperty: L
         listProperty.add(Repository(url))
     }
 
+    fun repository(url: String, configureComponentFilter: Action<ComponentFilterBuilder>) {
+        listProperty.add(
+            Repository(
+                url = url,
+                componentFilter = buildComponentFilter {
+                    configureComponentFilter.execute(this)
+                }
+            )
+        )
+    }
+
     /**
      * Adds a repository with authentication
      */
     fun repository(url: String, user: String, password: String) {
         listProperty.add(Repository(url, user, password))
+    }
+
+    fun repository(
+        url: String,
+        user: String,
+        password: String,
+        configureComponentFilter: Action<ComponentFilterBuilder>
+    ) {
+        listProperty.add(
+            Repository(
+                url = url,
+                user = user,
+                password = password,
+                componentFilter = buildComponentFilter {
+                    configureComponentFilter.execute(this)
+                }
+            )
+        )
     }
 }

@@ -116,8 +116,11 @@ public abstract interface class com/deezer/caupain/plugin/Policy {
 
 public final class com/deezer/caupain/plugin/RepositoryCategoryHandler {
 	public final fun repository (Lcom/deezer/caupain/model/Repository;)V
+	public final fun repository (Lcom/deezer/caupain/model/Repository;Lorg/gradle/api/Action;)V
 	public final fun repository (Ljava/lang/String;)V
 	public final fun repository (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun repository (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public final fun repository (Ljava/lang/String;Lorg/gradle/api/Action;)V
 }
 
 public abstract class com/deezer/caupain/plugin/RepositoryHandler {

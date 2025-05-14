@@ -53,7 +53,6 @@ semver = "io.github.z4kn4fein:semver:3.0.0"
 antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
 app-dirs = "ca.gosyer:kotlin-multiplatform-appdirs:1.2.0"
 commons-text = "org.apache.commons:commons-text:1.13.1"
-kotlinx-immutable-collections = "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.8"
 
 [bundles]
 clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]

@@ -45,7 +45,6 @@ import com.deezer.caupain.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.Abort
-import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.installMordant
@@ -58,6 +57,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
@@ -166,8 +166,6 @@ class DependencyUpdateCheckerCli(
         help = "Enable debugging for HTTP calls"
     ).flag()
 
-    private val version by option(help = "Print version and exit").flag()
-
     private val timesource = TimeSource.Monotonic
 
     init {
@@ -182,11 +180,11 @@ class DependencyUpdateCheckerCli(
             }
         }
         completionOption(help = "Generate completion script", hidden = true)
+        versionOption(BuildKonfig.VERSION)
     }
 
     override suspend fun run() {
         val start = timesource.markNow()
-        if (version) throw PrintMessage("Caupain v${BuildKonfig.VERSION}")
 
         val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
 
