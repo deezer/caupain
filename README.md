@@ -1,5 +1,7 @@
 # Caupain
 
+![GitHub License](https://img.shields.io/github/license/deezer/caupain)
+
 [\\kɔ.pɛ̃\\](https://ipa-reader.com/?text=%5Ck%C9%94.p%C9%9B%CC%83%5C&voice=Celine)
 
 *Your best buddy for keeping versions catalogs up to date!*
