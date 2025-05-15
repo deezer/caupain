@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.changelog)
     alias(libs.plugins.dependency.guard) apply false
+    alias(libs.plugins.vanniktech.maven.publish) apply false
 }
 
 val currentVersion = "1.0.1"

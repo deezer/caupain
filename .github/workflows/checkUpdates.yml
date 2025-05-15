@@ -1,4 +1,4 @@
-name: checkUpdates
+name: Dependency update check
 
 on:
   schedule:
