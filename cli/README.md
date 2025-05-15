@@ -1,8 +1,8 @@
 # Caupain Command Line Interface
 
 ![Chocolatey Version](https://img.shields.io/chocolatey/v/caupain)
-[![Homebrew](https://img.shields.io/badge/homebrew-1.0.0-blue)](https://github.com/deezer/homebrew-repo)
-[![Debian](https://img.shields.io/badge/debian-1.0.0-blue)](https://github.com/deezer/debian-repo)
+[![Homebrew](https://img.shields.io/badge/homebrew-1.0.1-blue)](https://github.com/deezer/homebrew-repo)
+[![Debian](https://img.shields.io/badge/debian-1.0.1-blue)](https://github.com/deezer/debian-repo)
 
 This is the command-line version of the tool. It is available as a single executable file for Linux,
 MacOS (Intel and Silicon), Windows, and as a JAR file alongside its launch script.
