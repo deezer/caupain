@@ -13,7 +13,7 @@ plugins {
     alias(libs.plugins.dependency.guard) apply false
 }
 
-val currentVersion = "1.0.0"
+val currentVersion = "1.0.1"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isCI = System.getenv("CI").toBoolean()

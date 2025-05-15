@@ -11,9 +11,14 @@
 ### Removed
 
 ### Fixed
-- Fix an issues with credentials in the Gradle Plugin (#9)
 
 ### Security
+
+## 1.0.1 - 2025-05-15
+
+### Fixed
+
+- Fix an issues with credentials in the Gradle Plugin (#9)
 
 ## 1.0.0 - 2025-05-12
 
