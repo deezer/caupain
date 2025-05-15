@@ -11,7 +11,7 @@ Add the following lines to your `libs.versions.toml` file:
 
 ```toml
 [versions]
-caupain = "1.0.0"
+caupain = "1.0.1"
 ...your other versions
 
 [libraries]
