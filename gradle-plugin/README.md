@@ -22,6 +22,25 @@ plugins {
 This will add a task named `checkDependencyUpdates` to your root project, which when launched will start 
 the update check.
 
+### Snapshots
+
+![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fdeezer%2Fcaupain%2Fgradle-plugin%2Fmaven-metadata.xml)
+
+You can use the latest snapshot version by using the version in the badge above and adding the following
+repository to your `settings.gradle.kts` file:
+```kotlin
+pluginManagement {
+    repositories {
+        maven("https://central.sonatype.com/repository/maven-snapshots/") {
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
+        // ... your other repositories
+    }
+}
+```
+
 ## Configuration
 
 Most of the configuration is done via the `caupain` block in your root `build.gradle.kts` file, like so:
