@@ -30,13 +30,18 @@ import com.deezer.caupain.model.Repository
 import org.gradle.api.Action
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
+import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal
 import org.gradle.kotlin.dsl.listProperty
+import java.util.Optional
 import javax.inject.Inject
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Repository handler for easy configuration
@@ -51,7 +56,7 @@ abstract class RepositoryHandler @Inject constructor(
      */
     @get:Input
     val libraries: ListProperty<Repository> = objects.listProperty<Repository>().convention(
-        gradle.dependenciesRepositoryHandler.toRepositories()
+        gradle.dependenciesRepositoryHandler.toRepositories(objects)
     )
 
     /**
@@ -59,7 +64,7 @@ abstract class RepositoryHandler @Inject constructor(
      */
     @get:Input
     val plugins: ListProperty<Repository> = objects.listProperty<Repository>().convention(
-        gradle.pluginsRepositoryHandler.toRepositories()
+        gradle.pluginsRepositoryHandler.toRepositories(objects)
     )
 
     fun libraries(action: Action<RepositoryCategoryHandler>) {
@@ -79,18 +84,34 @@ private val Gradle.pluginsRepositoryHandler: RepositoryHandler
 
 private val ACCEPTED_SCHEMES = setOf("http", "https")
 
-private fun RepositoryHandler.toRepositories(): List<Repository> {
-    return mapNotNull { repository ->
+private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<List<Repository>> {
+    val repositoriesProvider = objects.listProperty<Repository>()
+    for (repository in this) {
         if (repository is MavenArtifactRepository && repository.url.scheme in ACCEPTED_SCHEMES) {
-            Repository(
-                url = repository.url.toString(),
-                user = repository.credentials.username,
-                password = repository.credentials.password
-            )
-        } else {
-            null
+            val url = repository.url.toString()
+            val credentials =
+                (repository as? AuthenticationSupportedInternal)?.configuredCredentials
+            if (credentials == null) {
+                repositoriesProvider.add(Repository(url = url))
+            } else {
+                repositoriesProvider.add(
+                    credentials
+                        .map { Optional.of(it) }
+                        .orElse(Optional.empty())
+                        .map { optionalCredentials ->
+                            val passwordCredentials =
+                                optionalCredentials.getOrNull() as? PasswordCredentials
+                            Repository(
+                                url = url,
+                                user = passwordCredentials?.username,
+                                password = passwordCredentials?.password
+                            )
+                        }
+                )
+            }
         }
     }
+    return repositoriesProvider
 }
 
 class RepositoryCategoryHandler internal constructor(private val listProperty: ListProperty<Repository>) {
