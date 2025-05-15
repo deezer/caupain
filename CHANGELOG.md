@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Fix an issues with credentials in the Gradle Plugin (#9)
 
 ### Security
 
