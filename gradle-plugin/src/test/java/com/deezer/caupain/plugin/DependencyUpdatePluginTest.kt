@@ -35,7 +35,6 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -72,13 +71,6 @@ class DependencyUpdatePluginTest {
                 gradleUrl = mockWebserverRule.server.url("gradle").toString()
             )
         )
-        // Add settings files
-        File(tempFolder.root, "settings.gradle.kts").writeText(
-            createSettingsFile(
-                filteredRepositoryUrl = mockWebserverRule.server.url("maven-androidx").toString(),
-                fallbackRepositoryUrl = mockWebserverRule.server.url("maven").toString()
-            )
-        )
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val body = when (request.path) {
@@ -92,6 +84,7 @@ class DependencyUpdatePluginTest {
                         body = GRADLE_VERSION_JSON,
                         headers = Headers.headersOf("Content-Type", "application/json")
                     )
+
                     else -> null
                 }
                 return if (body == null) {
@@ -219,13 +212,18 @@ class DependencyUpdatePluginTest {
     include(":app")
     """.trimIndent()
 
-    @After
-    fun teardown() {
-        assertEquals(7, mockWebserverRule.server.requestCount)
+    private fun replaceSettings() {
+        File(tempFolder.root, "settings.gradle.kts").writeText(
+            createSettingsFile(
+                filteredRepositoryUrl = mockWebserverRule.server.url("maven-androidx").toString(),
+                fallbackRepositoryUrl = mockWebserverRule.server.url("maven").toString()
+            )
+        )
     }
 
     @Test
     fun testPlugin() {
+        replaceSettings()
         val result = GradleRunner
             .create()
             .withProjectDir(tempFolder.root)
@@ -244,6 +242,19 @@ class DependencyUpdatePluginTest {
             expected = EXPECTED_MARKDOWN_RESULT,
             actual = markdownOutputFile.readText().trim()
         )
+        assertEquals(8, mockWebserverRule.server.requestCount)
+    }
+
+    @Test
+    fun testAssemble() {
+        val result = GradleRunner
+            .create()
+            .withProjectDir(tempFolder.root)
+            .withArguments(":app:assembleDebug", "--stacktrace", "--refresh-dependencies")
+            .withPluginClasspath()
+            .withGradleVersion(GRADLE_VERSION)
+            .build()
+        assertEquals(TaskOutcome.SUCCESS, result.task(":app:assembleDebug")?.outcome)
     }
 }
 
