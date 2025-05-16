@@ -8,10 +8,15 @@ complexity:
   LongParameterList:
     functionThreshold: 10
     constructorThreshold: 10
+  NamedArguments:
+    active: true
+    threshold: 4
   StringLiteralDuplication:
     active: true
 
 coroutines:
+  GlobalCoroutineUsage:
+    active: true
   SuspendFunSwallowedCancellation:
     active: true
   SuspendFunWithCoroutineScopeReceiver:
@@ -19,6 +24,8 @@ coroutines:
 
 exceptions:
   NotImplementedDeclaration:
+    active: true
+  ObjectExtendsThrowable:
     active: true
 
 naming:
