@@ -6,6 +6,8 @@
 
 *Your best buddy for keeping versions catalogs up to date!*
 
+![Demo](demo_cli.svg)
+
 ## What's this ?
 
 **Caupain** is a tool to help you keep your Gradle versions catalogs up to date.  It is fast, simple
@@ -21,7 +23,7 @@ The main design choice that distinguishes Caupain from the others is that a simp
 there's only one source of truth, which is the [version catalog](https://docs.gradle.org/current/userguide/version_catalogs.html),
 and it only handles Maven repositories.
 
-By not pluggin itself into Gradle, it avoids the long runtime that comes with having to wait for Gradle
+By not plugging itself into Gradle, it avoids the long runtime that comes with having to wait for Gradle
 resolving the dependencies. It also doesn't force you to do anything, nor changes anything by itself: 
 it only tells you what the new versions are and where to find info, and lets you deal with the info.
 
@@ -32,6 +34,18 @@ will be your best buddy !
 
 There are two ways to use Caupain: either as a [command line tool](cli/README.md), or as a 
 [Gradle plugin](gradle-plugin/README.md). See each README for more details.
+
+## What does the reports look like ?
+
+Caupain can generate reports in the following formats:
+- **HTML**: a simple HTML report that you can open in your browser. It contains the list of updates 
+alongside with infos about them
+![HTML report](demo_html.png)
+- **Markdown**: a simple Markdown report that you can use in a Github summary action for example. This
+very repository actually uses it for its own dependencies updates
+![Markdown report](demo_md.png)
+- **Console**: a simple console report listing the updates.
+![Console report](demo_console.png)
 
 ## Why the name ?
 
