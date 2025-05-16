@@ -13,7 +13,7 @@ MacOS (Intel and Silicon), Windows, and as a JAR file alongside its launch scrip
 
 You can install Caupain via Homebrew by running the following command:
 ```bash
-brew install deezer/repo/<formula>
+brew install deezer/repo/caupain
 ```
 
 ### Linux
@@ -29,13 +29,6 @@ sudo apt update
 You can then install Caupain with the following command:
 ```bash
 sudo apt install caupain
-```
-
-### Windows
-
-You can install Caupain via [Chocolatey](https://chocolatey.org/) with the following command:
-```powershell
-choco install caupain
 ```
 
 ### Other
