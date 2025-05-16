@@ -46,7 +46,6 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Input
 import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal
 import org.gradle.kotlin.dsl.listProperty
 import java.util.Optional
@@ -65,7 +64,6 @@ abstract class RepositoryHandler @Inject constructor(
     /**
      * Libraries repositories to check for updates.
      */
-    @get:Input
     val libraries: ListProperty<Repository> = objects.listProperty<Repository>().convention(
         gradle.dependenciesRepositoryHandler.toRepositories(objects)
     )
@@ -73,7 +71,6 @@ abstract class RepositoryHandler @Inject constructor(
     /**
      * Plugin repositories
      */
-    @get:Input
     val plugins: ListProperty<Repository> = objects.listProperty<Repository>().convention(
         gradle.pluginsRepositoryHandler.toRepositories(objects)
     )
@@ -102,8 +99,14 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
             val url = repository.url.toString()
             val credentials =
                 (repository as? AuthenticationSupportedInternal)?.configuredCredentials
+            val filter = (repository as? ContentFilteringRepository)?.contentFilter
             if (credentials == null) {
-                repositoriesProvider.add(Repository(url = url))
+                repositoriesProvider.add(
+                    Repository(
+                        url = url,
+                        componentFilter = filter?.let(::ComponentFilterAdapter)
+                    )
+                )
             } else {
                 repositoriesProvider.add(
                     credentials
@@ -115,7 +118,8 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
                             Repository(
                                 url = url,
                                 user = passwordCredentials?.username,
-                                password = passwordCredentials?.password
+                                password = passwordCredentials?.password,
+                                componentFilter = filter?.let(::ComponentFilterAdapter)
                             )
                         }
                 )
@@ -125,13 +129,13 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
     return repositoriesProvider
 }
 
-private class ComponentFilterAdapter(private val repository: ContentFilteringRepository) :
+private class ComponentFilterAdapter(private val filter: Action<in ArtifactResolutionDetails>) :
     ComponentFilter {
 
     override fun accepts(dependency: Dependency): Boolean {
         if (dependency.group == null || dependency.name == null) return false
         return ArtifactResolutionDetailsAdapter(dependency)
-            .apply { repository.contentFilter.execute(this) }
+            .apply { filter.execute(this) }
             .isFound
     }
 
