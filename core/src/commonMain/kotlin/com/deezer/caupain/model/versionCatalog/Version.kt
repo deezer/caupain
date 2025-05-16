@@ -68,6 +68,9 @@ public sealed interface Version {
          */
         public val isStatic: Boolean
 
+        /**
+         * Checks is [version] is an update compared to this version.
+         */
         public fun isUpdate(version: GradleDependencyVersion.Static): Boolean
     }
 
@@ -102,7 +105,7 @@ public sealed interface Version {
     /**
      * Represents a version reference.
      *
-     * @param ref The reference key
+     * @property ref The reference key
      */
     @Serializable
     public class Reference(public val ref: String) : Version {

@@ -72,6 +72,9 @@ public class UpdateInfo(
         return "UpdateInfo(dependency='$dependency', dependencyId='$dependencyId', name=$name, url=$url, currentVersion='$currentVersion', updatedVersion='$updatedVersion')"
     }
 
+    /**
+     * Update info type (library or plugin).
+     */
     public enum class Type(public val title: String) {
         LIBRARY("Libraries"), PLUGIN("Plugins")
     }
@@ -80,7 +83,6 @@ public class UpdateInfo(
 /**
  * Holds information about a Gradle update.
  *
- * @property url The URL of the dependency.
  * @property currentVersion The current Gradle version.
  * @property updatedVersion The updated Gradle version
  */

@@ -37,9 +37,9 @@ import okio.SYSTEM
 /**
  * Interface for formatters that write to a file.
  *
- * @param path The path to the HTML file to write.
- * @param fileSystem The file system to use for writing the file. Default uses the native file system.
- * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default is [Dispatchers.IO].
+ * @property path The path to the HTML file to write.
+ * @property fileSystem The file system to use for writing the file. Default uses the native file system.
+ * @property ioDispatcher The coroutine dispatcher to use for IO operations. Default is [Dispatchers.IO].
  */
 public abstract class FileFormatter(
     protected val path: Path,

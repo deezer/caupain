@@ -59,7 +59,7 @@ import java.util.UUID
 /**
  * Dependencies Update task.
  */
-abstract class DependenciesUpdateTask : DefaultTask() {
+open class DependenciesUpdateTask : DefaultTask() {
 
     @get:Input
     val repositories = project.objects.listProperty<Repository>()

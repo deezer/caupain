@@ -85,9 +85,6 @@ abstract interface com.deezer.caupain/DependencyUpdateChecker { // com.deezer.ca
             final val taskName // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.taskName|{}taskName[0]
                 final fun <get-taskName>(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.taskName.<get-taskName>|<get-taskName>(){}[0]
 
-            final fun component1(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.component1|component1(){}[0]
-            final fun component2(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.component2|component2(){}[0]
-            final fun copy(kotlin/String = ..., kotlin/Int = ...): com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.copy|copy(kotlin.String;kotlin.Int){}[0]
             final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.equals|equals(kotlin.Any?){}[0]
             final fun hashCode(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.hashCode|hashCode(){}[0]
             final fun toString(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Determinate.toString|toString(){}[0]
@@ -99,8 +96,6 @@ abstract interface com.deezer.caupain/DependencyUpdateChecker { // com.deezer.ca
             final val taskName // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.taskName|{}taskName[0]
                 final fun <get-taskName>(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.taskName.<get-taskName>|<get-taskName>(){}[0]
 
-            final fun component1(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.component1|component1(){}[0]
-            final fun copy(kotlin/String = ...): com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.copy|copy(kotlin.String){}[0]
             final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.equals|equals(kotlin.Any?){}[0]
             final fun hashCode(): kotlin/Int // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.hashCode|hashCode(){}[0]
             final fun toString(): kotlin/String // com.deezer.caupain/DependencyUpdateChecker.Progress.Indeterminate.toString|toString(){}[0]
@@ -235,10 +230,6 @@ sealed interface com.deezer.caupain.model/Dependency { // com.deezer.caupain.mod
         final val version // com.deezer.caupain.model/Dependency.Library.version|{}version[0]
             final fun <get-version>(): com.deezer.caupain.model.versionCatalog/Version? // com.deezer.caupain.model/Dependency.Library.version.<get-version>|<get-version>(){}[0]
 
-        final fun component1(): kotlin/String? // com.deezer.caupain.model/Dependency.Library.component1|component1(){}[0]
-        final fun component2(): kotlin/String? // com.deezer.caupain.model/Dependency.Library.component2|component2(){}[0]
-        final fun component3(): com.deezer.caupain.model.versionCatalog/Version? // com.deezer.caupain.model/Dependency.Library.component3|component3(){}[0]
-        final fun copy(kotlin/String? = ..., kotlin/String? = ..., com.deezer.caupain.model.versionCatalog/Version? = ...): com.deezer.caupain.model/Dependency.Library // com.deezer.caupain.model/Dependency.Library.copy|copy(kotlin.String?;kotlin.String?;com.deezer.caupain.model.versionCatalog.Version?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/Dependency.Library.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.deezer.caupain.model/Dependency.Library.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.deezer.caupain.model/Dependency.Library.toString|toString(){}[0]
@@ -258,9 +249,6 @@ sealed interface com.deezer.caupain.model/Dependency { // com.deezer.caupain.mod
         final val version // com.deezer.caupain.model/Dependency.Plugin.version|{}version[0]
             final fun <get-version>(): com.deezer.caupain.model.versionCatalog/Version? // com.deezer.caupain.model/Dependency.Plugin.version.<get-version>|<get-version>(){}[0]
 
-        final fun component1(): kotlin/String // com.deezer.caupain.model/Dependency.Plugin.component1|component1(){}[0]
-        final fun component2(): com.deezer.caupain.model.versionCatalog/Version? // com.deezer.caupain.model/Dependency.Plugin.component2|component2(){}[0]
-        final fun copy(kotlin/String = ..., com.deezer.caupain.model.versionCatalog/Version? = ...): com.deezer.caupain.model/Dependency.Plugin // com.deezer.caupain.model/Dependency.Plugin.copy|copy(kotlin.String;com.deezer.caupain.model.versionCatalog.Version?){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/Dependency.Plugin.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.deezer.caupain.model/Dependency.Plugin.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // com.deezer.caupain.model/Dependency.Plugin.toString|toString(){}[0]

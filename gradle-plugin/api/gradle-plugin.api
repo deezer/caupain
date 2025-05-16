@@ -21,7 +21,7 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun repositories (Lorg/gradle/api/Action;)V
 }
 
-public abstract class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/DefaultTask {
+public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
 	public final fun checkUpdates ()V
 	public final fun customFormatter (Lcom/deezer/caupain/plugin/Formatter;)V

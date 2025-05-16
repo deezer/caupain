@@ -38,8 +38,9 @@ subprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     extensions.configure<DetektExtension> {
-        config.setFrom(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
+        config.from(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
         basePath = rootDir.absolutePath
+        buildUponDefaultConfig = true
     }
     val detektAll = tasks.register("detektAll") {
         group = "verification"

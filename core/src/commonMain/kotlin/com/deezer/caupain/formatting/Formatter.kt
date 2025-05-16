@@ -35,6 +35,9 @@ import com.deezer.caupain.model.DependenciesUpdateResult
  * @see [HtmlFormatter]
  */
 public fun interface Formatter {
+    /**
+     * Formats the update result to the desired output format.
+     */
     public suspend fun format(updates: DependenciesUpdateResult)
 }
 

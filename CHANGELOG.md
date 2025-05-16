@@ -6,6 +6,8 @@
 - Dark mode handling for HTML formatter
 
 ### Changed
+- Updated style rules
+- Removed usage of data classes in the core lib
 
 ### Deprecated
 

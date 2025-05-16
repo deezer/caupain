@@ -9,6 +9,7 @@ import com.deezer.caupain.tasks.RenameCurrentBinaryTask
 import com.netflix.gradle.plugins.deb.Deb
 import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
 import com.netflix.gradle.plugins.rpm.Rpm
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
@@ -87,6 +88,10 @@ dependencyGuard {
     configuration("jvmMainRuntimeClasspath")
     configuration("metadataCommonMainCompileClasspath")
     configuration("metadataNativeMainCompileClasspath")
+}
+
+tasks.withType<Detekt> {
+    exclude("**/BuildKonfig.kt")
 }
 
 ospackage {

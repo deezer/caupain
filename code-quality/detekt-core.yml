@@ -1,0 +1,12 @@
+comments:
+  UndocumentedPublicClass:
+    active: true
+    ignoreDefaultCompanionObject: true
+  UndocumentedPublicFunction:
+    active: true
+
+libraries:
+  LibraryCodeMustSpecifyReturnType:
+    allowOmitUnit: true
+  LibraryEntitiesShouldNotBePublic:
+    active: false

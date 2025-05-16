@@ -5,6 +5,13 @@ email, or any other method with the owners of this repository before making a ch
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
+## Style guide
+
+We use [Detekt](https://detekt.dev/) to ensure that the code follows a clean style. Its checks are
+included in the `./gradlew check` command. You can also use the [detekt plugin](https://plugins.jetbrains.com/plugin/10761-detekt)
+in your IDE and use the [`detekt.yml`](code-quality/detekt.yml) as configuration (take care to check the
+"build upon default configuration" checkbox).
+
 ## Pull Request Process
 
 1. Ensure that your code compiles and is checked by running `./gradlew check` before committing.

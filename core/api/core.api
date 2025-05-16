@@ -19,10 +19,6 @@ public abstract interface class com/deezer/caupain/DependencyUpdateChecker$Progr
 
 public final class com/deezer/caupain/DependencyUpdateChecker$Progress$Determinate : com/deezer/caupain/DependencyUpdateChecker$Progress {
 	public fun <init> (Ljava/lang/String;I)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()I
-	public final fun copy (Ljava/lang/String;I)Lcom/deezer/caupain/DependencyUpdateChecker$Progress$Determinate;
-	public static synthetic fun copy$default (Lcom/deezer/caupain/DependencyUpdateChecker$Progress$Determinate;Ljava/lang/String;IILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker$Progress$Determinate;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getPercentage ()I
 	public fun getTaskName ()Ljava/lang/String;
@@ -32,9 +28,6 @@ public final class com/deezer/caupain/DependencyUpdateChecker$Progress$Determina
 
 public final class com/deezer/caupain/DependencyUpdateChecker$Progress$Indeterminate : com/deezer/caupain/DependencyUpdateChecker$Progress {
 	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lcom/deezer/caupain/DependencyUpdateChecker$Progress$Indeterminate;
-	public static synthetic fun copy$default (Lcom/deezer/caupain/DependencyUpdateChecker$Progress$Indeterminate;Ljava/lang/String;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker$Progress$Indeterminate;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getTaskName ()Ljava/lang/String;
 	public fun hashCode ()I
@@ -146,11 +139,6 @@ public final class com/deezer/caupain/model/Dependency$Library : com/deezer/caup
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Lcom/deezer/caupain/model/versionCatalog/Version;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;)Lcom/deezer/caupain/model/Dependency$Library;
-	public static synthetic fun copy$default (Lcom/deezer/caupain/model/Dependency$Library;Ljava/lang/String;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;ILjava/lang/Object;)Lcom/deezer/caupain/model/Dependency$Library;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getGroup ()Ljava/lang/String;
 	public fun getModuleId ()Ljava/lang/String;
@@ -168,10 +156,6 @@ public final class com/deezer/caupain/model/Dependency$Plugin : com/deezer/caupa
 	public static final field Companion Lcom/deezer/caupain/model/Dependency$Plugin$Companion;
 	public fun <init> (Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;)V
 	public synthetic fun <init> (Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lcom/deezer/caupain/model/versionCatalog/Version;
-	public final fun copy (Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;)Lcom/deezer/caupain/model/Dependency$Plugin;
-	public static synthetic fun copy$default (Lcom/deezer/caupain/model/Dependency$Plugin;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version;ILjava/lang/Object;)Lcom/deezer/caupain/model/Dependency$Plugin;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Ljava/lang/String;
 	public fun getModuleId ()Ljava/lang/String;

@@ -1,5 +1,6 @@
 import com.vanniktech.maven.publish.GradlePublishPlugin
 import com.vanniktech.maven.publish.SonatypeHost
+import io.gitlab.arturbosch.detekt.Detekt
 
 plugins {
     `kotlin-dsl`
@@ -76,4 +77,8 @@ mavenPublishing {
             }
         }
     }
+}
+
+tasks.withType<Detekt> {
+    setSource(files("src/main/java"))
 }

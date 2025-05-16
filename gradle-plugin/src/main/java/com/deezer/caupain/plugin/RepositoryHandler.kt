@@ -46,6 +46,7 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * Repository handler for easy configuration
  */
+@Suppress("UnnecessaryAbstractClass") // Needed by Gradle
 abstract class RepositoryHandler @Inject constructor(
     objects: ObjectFactory,
     gradle: Gradle

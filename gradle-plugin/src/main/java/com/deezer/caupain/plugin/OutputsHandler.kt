@@ -37,6 +37,7 @@ import java.util.Optional
 import javax.inject.Inject
 import kotlin.jvm.optionals.getOrNull
 
+@Suppress("UnnecessaryAbstractClass") // Needed by Gradle
 abstract class OutputsHandler @Inject constructor(
     objects: ObjectFactory,
     layout: ProjectLayout
@@ -47,7 +48,7 @@ abstract class OutputsHandler @Inject constructor(
 
     val markdown = FileOutputHandler(Type.Markdown, objects, layout)
 
-    val outputs = console.output.flatMap { console ->
+    val outputs: Provider<List<Output>> = console.output.flatMap { console ->
         html.output.flatMap { html ->
             markdown.output.map { markdown ->
                 listOfNotNull(console.getOrNull(), html.getOrNull(), markdown.getOrNull())

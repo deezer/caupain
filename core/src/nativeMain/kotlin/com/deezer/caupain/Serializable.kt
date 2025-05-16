@@ -24,4 +24,7 @@
 
 package com.deezer.caupain
 
+/**
+ * Placeholder interface for the Java Serializable interface.
+ */
 public actual interface Serializable

@@ -137,6 +137,10 @@ kover {
     }
 }
 
+detekt {
+    config.from(rootProject.layout.projectDirectory.file("code-quality/detekt-core.yml"))
+}
+
 dokka {
     dokkaSourceSets.configureEach {
         documentedVisibilities(VisibilityModifier.Public)

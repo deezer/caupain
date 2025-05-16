@@ -112,15 +112,54 @@ public interface DependencyUpdateChecker {
         /**
          * Intederminate progress, used when the task length is not known.
          */
-        public data class Indeterminate(override val taskName: String) : Progress
+        public class Indeterminate(override val taskName: String) : Progress {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other == null || this::class != other::class) return false
+
+                other as Indeterminate
+
+                return taskName == other.taskName
+            }
+
+            override fun hashCode(): Int {
+                return taskName.hashCode()
+            }
+
+            override fun toString(): String {
+                return "Indeterminate(taskName='$taskName')"
+            }
+        }
 
         /**
          * Determinate progress, used when the task length is known.
          */
-        public data class Determinate(
+        public class Determinate(
             override val taskName: String,
-            val percentage: Int,
-        ) : Progress
+            public val percentage: Int,
+        ) : Progress {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other == null || this::class != other::class) return false
+
+                other as Determinate
+
+                if (percentage != other.percentage) return false
+                if (taskName != other.taskName) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = percentage
+                result = 31 * result + taskName.hashCode()
+                return result
+            }
+
+            override fun toString(): String {
+                return "Determinate(taskName='$taskName', percentage=$percentage)"
+            }
+        }
     }
 
     public companion object {
