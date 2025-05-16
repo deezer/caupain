@@ -50,7 +50,6 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.content.caching
 import io.ktor.http.content.versions
 import io.ktor.server.application.Application
-import io.ktor.server.cio.CIO
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.cachingheaders.CachingHeaders
@@ -76,6 +75,8 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import io.ktor.client.engine.cio.CIO as ClientCIO
+import io.ktor.server.cio.CIO as ServerCIO
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FileCacheTest {
@@ -109,7 +110,7 @@ class FileCacheTest {
         crossinline config: HttpClientConfig<*>.() -> Unit,
         crossinline test: suspend (HttpClient) -> Unit
     ) {
-        val client = HttpClient(io.ktor.client.engine.cio.CIO) {
+        val client = HttpClient(ClientCIO) {
             config()
         }
         runTest(testDispatcher) {
@@ -244,7 +245,7 @@ class FileCacheTest {
         @BeforeClass
         @JvmStatic
         fun setupServer() {
-            server = embeddedServer(CIO, port = 8080) {
+            server = embeddedServer(ServerCIO, port = 8080) {
                 configureRequests()
             }.start()
         }

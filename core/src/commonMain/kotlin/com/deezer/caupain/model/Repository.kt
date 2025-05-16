@@ -54,10 +54,19 @@ public class Repository(
         componentFilter: ComponentFilter? = null
     ) : this(url, null, null, componentFilter)
 
+    /**
+     * Checks if the given [Dependency] is accepted by this repository.
+     */
     public operator fun contains(dependency: Dependency): Boolean {
         return componentFilter == null || componentFilter.accepts(dependency)
     }
 
+    /**
+     * Returns a repository with the given [ComponentFilter] applied.
+     *
+     * @see ComponentFilterBuilder.includes
+     * @see ComponentFilterBuilder.excludes
+     */
     public inline fun withComponentFilter(builder: ComponentFilterBuilder.() -> Unit): Repository {
         return Repository(
             url = url,
@@ -98,31 +107,77 @@ public class Repository(
     }
 }
 
+/**
+ * Represents a filter for components in a repository. If used in the [Repository], only the [Dependency]
+ * that match the filter will be checked against the given [Repository].
+ */
 public interface ComponentFilter : Serializable {
+    /**
+     * Checks if the given [Dependency] is accepted by this filter.
+     *
+     * @param dependency The dependency to check.
+     * @return `true` if the dependency is accepted, `false` otherwise.
+     */
     public fun accepts(dependency: Dependency): Boolean
 }
 
+/**
+ * Builder for [ComponentFilter]. If only excludes are defined, then all dependencies except those
+ * excluded will be accepted. If only includes are defined, then only those dependencies will be accepted.
+ * If both are defined, then only those dependencies that are included and not excluded will be accepted.
+ */
 public class ComponentFilterBuilder {
     private val includes = mutableListOf<PackageSpec>()
     private val excludes = mutableListOf<PackageSpec>()
 
+    /**
+     * Excludes a dependency from this repository. If name is null, group is used as a glob, with the following rules:
+     * - `*`: wildcard that matches zero, one or multiple characters, other than `.`
+     * - `**`: Wildcard that matches zero, one or multiple packages. For example, `**.sub.name` matches
+     * `com.example.sub.name`, `com.example.sub.sub.name`. `**` must be either preceded by `.` or be at
+     * the beginning of the glob. `**` must be either followed by `.` or be at the end of the glob.
+     * If the glob only consist of a `**`, it will be a match for everything.
+     *
+     * @property group The group to exclude. If `name` is null, then this is interpreted as a glob
+     * @property name The name to exclude. If null, all libraries in the group are excluded.
+     */
     @JvmOverloads
     public fun exclude(group: String, name: String? = null): ComponentFilterBuilder {
         excludes.add(PackageSpec(group, name))
         return this
     }
 
+    /**
+     * Includes a dependency in this repository. If name is null, group is used as a glob, with the following rules:
+     * - `*`: wildcard that matches zero, one or multiple characters, other than `.`
+     * - `**`: Wildcard that matches zero, one or multiple packages. For example, `**.sub.name` matches
+     * `com.example.sub.name`, `com.example.sub.sub.name`. `**` must be either preceded by `.` or be at
+     * the beginning of the glob. `**` must be either followed by `.` or be at the end of the glob.
+     * If the glob only consist of a `**`, it will be a match for everything.
+     *
+     * @property group The group to include. If `name` is null, then this is interpreted as a glob
+     * @property name The name to included. If null, all libraries in the group are included.
+     */
     @JvmOverloads
     public fun include(group: String, name: String? = null): ComponentFilterBuilder {
         includes.add(PackageSpec(group, name))
         return this
     }
 
+    /**
+     * Builds the [ComponentFilter] with the current includes and excludes.
+     */
     public fun build(): ComponentFilter {
         return DefaultComponentFilter(includes.toList(), excludes.toList())
     }
 }
 
+/**
+ * Builds a [ComponentFilter] using the given builder function.
+ *
+ * @see ComponentFilterBuilder.includes
+ * @see ComponentFilterBuilder.excludes
+ */
 public inline fun buildComponentFilter(builder: ComponentFilterBuilder.() -> Unit): ComponentFilter {
     return ComponentFilterBuilder().apply(builder).build()
 }

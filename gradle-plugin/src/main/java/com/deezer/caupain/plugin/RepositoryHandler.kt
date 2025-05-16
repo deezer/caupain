@@ -140,9 +140,9 @@ private class ComponentFilterAdapter(private val filter: Action<in ArtifactResol
     }
 
     private class ModuleIdentifierAdapter(private val dependency: Dependency) : ModuleIdentifier {
-        override fun getGroup(): String = dependency.group!!
+        override fun getGroup(): String = requireNotNull(dependency.group)
 
-        override fun getName(): String = dependency.name!!
+        override fun getName(): String = requireNotNull(dependency.name)
     }
 
     private class ModuleComponentIdentifierAdapter(private val dependency: Dependency) :
@@ -155,7 +155,7 @@ private class ComponentFilterAdapter(private val filter: Action<in ArtifactResol
 
         override fun getModule(): String = identifier.name
 
-        override fun getVersion(): String = dependency.version!!.toString()
+        override fun getVersion(): String = requireNotNull(dependency.version).toString()
 
         override fun getModuleIdentifier(): ModuleIdentifier = identifier
     }
