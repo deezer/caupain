@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Dark mode handling for HTML formatter
 
 ### Changed
 

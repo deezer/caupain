@@ -140,9 +140,15 @@ public class HtmlFormatter(
 
     private companion object {
         private const val STYLE = """
+        body {
+          background-color: Canvas;
+          color: CanvasText;
+          color-scheme: light dark;
+        }
+            
         th,
         td {
-          border: 1px solid rgb(160 160 160);
+          border: 1px solid ButtonBorder;
           padding: 8px 10px;
         }
         
@@ -151,12 +157,12 @@ public class HtmlFormatter(
         }
         
         tr:nth-of-type(even) {
-          background-color: #eee;
+          background-color: ButtonFace;
         }
         
         table {
           border-collapse: collapse;
-          border: 2px solid rgb(140 140 140);
+          border: 2px solid ButtonBorder;
           width: 100%;
         }  
         """

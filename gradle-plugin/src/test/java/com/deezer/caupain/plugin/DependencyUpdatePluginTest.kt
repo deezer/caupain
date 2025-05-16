@@ -894,9 +894,15 @@ private val EXPECTED_HTML_RESULT = """
 <html>
   <head>
     <style>
+        body {
+          background-color: Canvas;
+          color: CanvasText;
+          color-scheme: light dark;
+        }
+            
         th,
         td {
-          border: 1px solid rgb(160 160 160);
+          border: 1px solid ButtonBorder;
           padding: 8px 10px;
         }
         
@@ -905,12 +911,12 @@ private val EXPECTED_HTML_RESULT = """
         }
         
         tr:nth-of-type(even) {
-          background-color: #eee;
+          background-color: ButtonFace;
         }
         
         table {
           border-collapse: collapse;
-          border: 2px solid rgb(140 140 140);
+          border: 2px solid ButtonBorder;
           width: 100%;
         }  
         </style>
