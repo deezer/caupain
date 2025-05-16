@@ -10,12 +10,12 @@ com.squareup.okio:okio-jvm:3.11.0
 com.squareup.okio:okio:3.11.0
 com.strumenta:antlr-kotlin-runtime-jvm:1.0.3
 com.strumenta:antlr-kotlin-runtime:1.0.3
-io.github.pdvrieze.xmlutil:core-io-jvm:0.91.0
-io.github.pdvrieze.xmlutil:core-io:0.91.0
-io.github.pdvrieze.xmlutil:core-jvmcommon:0.91.0
-io.github.pdvrieze.xmlutil:core:0.91.0
-io.github.pdvrieze.xmlutil:serialization-jvm:0.91.0
-io.github.pdvrieze.xmlutil:serialization:0.91.0
+io.github.pdvrieze.xmlutil:core-io-jvm:0.91.1
+io.github.pdvrieze.xmlutil:core-io:0.91.1
+io.github.pdvrieze.xmlutil:core-jvmcommon:0.91.1
+io.github.pdvrieze.xmlutil:core:0.91.1
+io.github.pdvrieze.xmlutil:serialization-jvm:0.91.1
+io.github.pdvrieze.xmlutil:serialization:0.91.1
 io.github.z4kn4fein:semver-jvm:3.0.0
 io.github.z4kn4fein:semver:3.0.0
 io.ktor:ktor-client-content-negotiation-jvm:3.1.3
@@ -56,7 +56,7 @@ net.peanuuutz.tomlkt:tomlkt-jvm:0.4.0
 net.peanuuutz.tomlkt:tomlkt:0.4.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.21
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21
-org.jetbrains.kotlin:kotlin-stdlib:2.1.20
+org.jetbrains.kotlin:kotlin-stdlib:2.1.21
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2
