@@ -57,7 +57,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: [ buildBinaries ]
+    needs: buildBinaries
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,7 +80,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [ publish, buildBinaries, publishChoco ]
+    needs: publish
     steps:
       - name: Download release artifacts
         uses: actions/download-artifact@v4
