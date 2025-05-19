@@ -37,6 +37,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -49,7 +51,9 @@ import io.ktor.http.appendPathSegments
 import io.ktor.http.headersOf
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.xml.xml
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
@@ -58,6 +62,8 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import com.deezer.caupain.model.maven.Version as MavenVersion
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,6 +73,13 @@ class UpdatedVersionResolverTest {
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var resolver: UpdatedVersionResolver
+
+    private var delay: Duration = Duration.ZERO
+
+    private val didDelay = mutableMapOf<String, Boolean>()
+
+    private var signedHits by atomic(0)
+    private var baseHits by atomic(0)
 
     @BeforeTest
     fun setup() {
@@ -79,6 +92,15 @@ class UpdatedVersionResolverTest {
                 install(ContentNegotiation) {
                     xml(DefaultXml, ContentType.Any)
                 }
+                install(HttpRequestRetry) {
+                    retryOnException(maxRetries = 3, retryOnTimeout = true)
+                    exponentialDelay(baseDelayMs = 100)
+                }
+                install(HttpTimeout) {
+                    requestTimeoutMillis = 1_000
+                    connectTimeoutMillis = 500
+                    socketTimeoutMillis = 500
+                }
             },
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
@@ -89,7 +111,7 @@ class UpdatedVersionResolverTest {
         )
     }
 
-    private fun handleRequest(
+    private suspend fun handleRequest(
         scope: MockRequestHandleScope,
         requestData: HttpRequestData
     ): HttpResponseData? {
@@ -100,6 +122,14 @@ class UpdatedVersionResolverTest {
             if (authHeader != AUTHORIZATION) {
                 return scope.respond("Unauthorized", HttpStatusCode.Unauthorized)
             }
+        }
+        when (url.host) {
+            SIGNED_URL.host -> signedHits++
+            BASE_URL.host -> baseHits++
+        }
+        if (didDelay[url.toString()] != true) {
+            didDelay[url.toString()] = true
+            delay(delay)
         }
         return when (url) {
             GROOVY_CORE_METADATA_URL -> scope.respondElement(GROOVY_CORE_METADATA)
@@ -112,6 +142,9 @@ class UpdatedVersionResolverTest {
     @AfterTest
     fun teardown() {
         engine.close()
+        delay = Duration.ZERO
+        baseHits = 0
+        signedHits = 0
     }
 
     @Test
@@ -143,7 +176,7 @@ class UpdatedVersionResolverTest {
             expected = UpdatedVersionResolver.Result(
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
                 updatedVersion = GradleDependencyVersion.Exact("3.0.5"),
-                repository = BASE_REPOSITORY
+                repository = SIGNED_REPOSITORY
             ),
             actual = resolver.getUpdatedVersion(
                 dependency = Dependency.Library(
@@ -169,6 +202,28 @@ class UpdatedVersionResolverTest {
                 versionReferences = VERSION_REFERENCES
             )
         )
+    }
+
+    @Test
+    fun testTimeout() = runTest(testDispatcher) {
+        delay = 2.seconds
+        assertEquals(
+            expected = UpdatedVersionResolver.Result(
+                currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
+                updatedVersion = GradleDependencyVersion.Exact("3.0.5"),
+                repository = SIGNED_REPOSITORY
+            ),
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy-nio",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+        assertEquals(1, engine.requestHistory.size)
+        assertEquals(0, baseHits)
+        assertEquals(2, signedHits)
     }
 
     companion object {
@@ -227,7 +282,7 @@ class UpdatedVersionResolverTest {
             versions = listOf("3.0.5", "3.0.5-alpha-1")
         )
         private val GROOVY_NIO_METADATA_URL = URLBuilder()
-            .takeFrom(BASE_URL)
+            .takeFrom(SIGNED_URL)
             .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "maven-metadata.xml")
             .build()
 

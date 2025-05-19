@@ -32,7 +32,6 @@ import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
-import kotlinx.io.IOException
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -83,18 +82,14 @@ public class Repository(
 internal suspend fun HttpClient.executeRepositoryRequest(
     repository: Repository,
     urlBuilder: URLBuilder.() -> Unit = {}
-): HttpResponse? = try {
-    get(repository.url) {
-        url(urlBuilder)
-        if (repository.user != null && repository.password != null) {
-            header(
-                HttpHeaders.Authorization,
-                "Basic ${Base64.encode("${repository.user}:${repository.password}".encodeToByteArray())}"
-            )
-        }
+): HttpResponse = get(repository.url) {
+    url(urlBuilder)
+    if (repository.user != null && repository.password != null) {
+        header(
+            HttpHeaders.Authorization,
+            "Basic ${Base64.encode("${repository.user}:${repository.password}".encodeToByteArray())}"
+        )
     }
-} catch (ignored: IOException) {
-    null
 }
 
 /**
