@@ -53,6 +53,7 @@ import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.DefaultXml
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -212,10 +213,14 @@ public fun DependencyUpdateChecker(
                 publicStorage(FileStorage(fileSystem, cacheDir))
             }
         }
+        install(HttpRequestRetry) {
+            retryOnException(maxRetries = 3, retryOnTimeout = true)
+            exponentialDelay(baseDelayMs = 500)
+        }
         install(HttpTimeout) {
             requestTimeoutMillis = 30_000
-            connectTimeoutMillis = 30_000
-            socketTimeoutMillis = 30_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 10_000
         }
     },
     ioDispatcher = ioDispatcher,

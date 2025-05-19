@@ -81,30 +81,18 @@ internal class UpdatedVersionResolver(
     private suspend fun findUpdatedVersion(
         dependency: Dependency,
         versionReferences: Map<String, Version.Resolved>,
-        repository: Repository,
-        tryCount: Int = 0
+        repository: Repository
     ): GradleDependencyVersion.Static? {
         val version = dependency.version?.resolve(versionReferences) ?: return null
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
-        val versioningResponse = withContext(ioDispatcher) {
-            httpClient.executeRepositoryRequest(repository) {
-                appendPathSegments(group.split('.'))
-                appendPathSegments(name, "maven-metadata.xml")
-            }
-        }
-        if (versioningResponse == null && tryCount < MAX_RETRIES) {
-            // Retry in case of IO exception
-            return findUpdatedVersion(
-                dependency = dependency,
-                versionReferences = versionReferences,
-                repository = repository,
-                tryCount = tryCount + 1
-            )
-        }
         val versioning = withContext(ioDispatcher) {
-            versioningResponse
-                ?.takeIf { it.status.isSuccess() }
+            httpClient
+                .executeRepositoryRequest(repository) {
+                    appendPathSegments(group.split('.'))
+                    appendPathSegments(name, "maven-metadata.xml")
+                }
+                .takeIf { it.status.isSuccess() }
                 ?.body<Metadata>()
                 ?.versioning
         } ?: return null
@@ -125,9 +113,5 @@ internal class UpdatedVersionResolver(
         override fun compareTo(other: Result): Int {
             return updatedVersion.compareTo(other.updatedVersion)
         }
-    }
-
-    companion object {
-        private const val MAX_RETRIES = 5
     }
 }
