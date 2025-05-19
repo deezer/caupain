@@ -67,14 +67,15 @@ class DependencyUpdatePluginTest {
         File(tempFolder.root, "build.gradle.kts").writeText(
             createBuildFile(
                 repositoryUrl = mockWebserverRule.server.url("maven").toString(),
+                forbiddenRepositoryUrl = mockWebserverRule.server.url("maven-forbidden").toString(),
                 gradleUrl = mockWebserverRule.server.url("gradle").toString()
             )
         )
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val body = when (request.path) {
-                    "/maven/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
-                    "/maven/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM
+                    "/maven-androidx/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
+                    "/maven-androidx/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
                     "/maven/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
@@ -83,6 +84,7 @@ class DependencyUpdatePluginTest {
                         body = GRADLE_VERSION_JSON,
                         headers = Headers.headersOf("Content-Type", "application/json")
                     )
+
                     else -> null
                 }
                 return if (body == null) {
@@ -121,6 +123,7 @@ class DependencyUpdatePluginTest {
     @Language("kotlin")
     private fun createBuildFile(
         repositoryUrl: String,
+        forbiddenRepositoryUrl: String,
         gradleUrl: String
     ) = """
     import com.deezer.caupain.model.StabilityLevelPolicy
@@ -137,10 +140,10 @@ class DependencyUpdatePluginTest {
 
     caupain {
         repositories {
-            libraries {
-                repository("$repositoryUrl") 
-            }   
             plugins {
+                repository("$forbiddenRepositoryUrl") {
+                    exclude("**")
+                }
                 repository("$repositoryUrl") 
             }
         }
@@ -168,8 +171,59 @@ class DependencyUpdatePluginTest {
     }    
     """.trimIndent()
 
+    @Language("kotlin")
+    private fun createSettingsFile(
+        filteredRepositoryUrl: String,
+        fallbackRepositoryUrl: String
+    ) = """
+    pluginManagement {
+        repositories {
+            google {
+                content {
+                    includeGroupByRegex("com\\.android.*")
+                    includeGroupByRegex("com\\.google.*")
+                    includeGroupByRegex("androidx.*")
+                }
+            }
+            mavenCentral()
+            gradlePluginPortal()
+            mavenLocal()
+        }
+    }
+    
+    dependencyResolutionManagement {
+        repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+        repositories {
+            maven {
+                setUrl("$filteredRepositoryUrl")
+                content { 
+                    includeGroupAndSubgroups("androidx.core")
+                }
+                isAllowInsecureProtocol = true
+            }
+            maven {
+                setUrl("$fallbackRepositoryUrl")
+                isAllowInsecureProtocol = true
+            }
+        }
+    }
+    
+    rootProject.name = "Fake project"
+    include(":app")
+    """.trimIndent()
+
+    private fun replaceSettings() {
+        File(tempFolder.root, "settings.gradle.kts").writeText(
+            createSettingsFile(
+                filteredRepositoryUrl = mockWebserverRule.server.url("maven-androidx").toString(),
+                fallbackRepositoryUrl = mockWebserverRule.server.url("maven").toString()
+            )
+        )
+    }
+
     @Test
     fun testPlugin() {
+        replaceSettings()
         val result = GradleRunner
             .create()
             .withProjectDir(tempFolder.root)
@@ -188,6 +242,19 @@ class DependencyUpdatePluginTest {
             expected = EXPECTED_MARKDOWN_RESULT,
             actual = markdownOutputFile.readText().trim()
         )
+        assertEquals(8, mockWebserverRule.server.requestCount)
+    }
+
+    @Test
+    fun testAssemble() {
+        val result = GradleRunner
+            .create()
+            .withProjectDir(tempFolder.root)
+            .withArguments(":app:assembleDebug", "--stacktrace", "--refresh-dependencies")
+            .withPluginClasspath()
+            .withGradleVersion(GRADLE_VERSION)
+            .build()
+        assertEquals(TaskOutcome.SUCCESS, result.task(":app:assembleDebug")?.outcome)
     }
 }
 

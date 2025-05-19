@@ -46,7 +46,6 @@ import net.peanuuutz.tomlkt.asTomlDecoder
  */
 public sealed interface Dependency {
 
-
     /**
      * The dependency id
      */

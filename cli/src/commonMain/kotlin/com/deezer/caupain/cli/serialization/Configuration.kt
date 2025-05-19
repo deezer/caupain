@@ -32,9 +32,9 @@
 package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.cli.model.Configuration
+import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
-import com.deezer.caupain.model.Repository
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -64,8 +64,10 @@ private data class ConfigurationImpl(
 ) : Configuration {
     override fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration {
         return ModelConfiguration(
-            repositories = repositories ?: baseConfiguration.repositories,
-            pluginRepositories = pluginRepositories ?: baseConfiguration.pluginRepositories,
+            repositories = repositories?.map { it.toModel() }
+                ?: baseConfiguration.repositories,
+            pluginRepositories = pluginRepositories?.map { it.toModel() }
+                ?: baseConfiguration.pluginRepositories,
             versionCatalogPath = versionCatalogPath ?: baseConfiguration.versionCatalogPath,
             excludedKeys = excludedKeys ?: baseConfiguration.excludedKeys,
             excludedLibraries = excludedLibraries ?: baseConfiguration.excludedLibraries,

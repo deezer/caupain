@@ -110,6 +110,38 @@ repositories {
 
 Repositories are queried in the order they are specified.
 
+#### Repository component filtering
+
+By default, Caupain will search for dependencies in all repositories, going through them in order until
+the dependency is found. If you want to specify what kind of dependencies are in each repository, you
+can set up component filtering like so:
+```kotlin
+repositories {
+    libraries {
+        // You can add filtering on default repositories
+        repository(DefaultRepositories.google) {
+            // If only exclusions are defined, then all components except those excluded will be searched
+            // for in the repository. If only inclusions are defined, then only those components will be searched
+            // for in the repository. If both are defined, then only the components that are included and not excluded
+            // will be searched for in the repository.
+            include(group = "com.example", name = "example") // You can specify a group and name
+            include(group = "com.example") // You can also only specify a group...
+            include(group = "com.example.**") // ...or use globs
+            exclude(group = "com.example")
+        }
+        // This can also be done for custom repositories
+        repository("https://www.example.com/maven2") {
+            //include(...)
+            //exclude(...)
+        }
+    }
+    // The same can be done for plugins
+    plugins {
+        //...
+    }
+}
+```
+
 ### Policies
 
 Policies are used to filter available updates. You can either use a predefined policy or create your own.

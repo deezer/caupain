@@ -27,7 +27,6 @@ package com.deezer.caupain.cli.model
 import com.deezer.caupain.cli.serialization.ConfigurationSerializer
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
-import com.deezer.caupain.model.Repository
 import kotlinx.serialization.Serializable
 import okio.Path
 import com.deezer.caupain.model.Configuration as ModelConfiguration

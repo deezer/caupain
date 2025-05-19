@@ -134,6 +134,43 @@ gradleWrapperPropertiesPath = "/path/to/properties/file"
 onlyCheckStaticVersions = false
 ```
 
+#### Repository component filtering
+
+By default, Caupain will search for dependencies in all repositories, going through them in order until
+the dependency is found. If you want to specify what kind of dependencies are in each repository, you
+can set up component filtering by defining repositories using a [TOML array of tables](https://toml.io/en/v1.0.0#array-of-tables)
+like so:
+```toml
+#... The rest of your configuration
+# Repository block in array of tables needs to be at the very end of the configuration file to be
+# parsed correctly
+[[ repositories ]]
+# If the repository is a predefined one, you can use the shortcut name with the key "default"
+default = "mavenCentral"
+# If only exclusions are defined, then all components except those excluded will be searched
+# for in the repository. If only inclusions are defined, then only those components will be searched
+# for in the repository. If both are defined, then only the components that are included and not excluded
+# will be searched for in the repository.
+includes = [
+    { group = "com.example", name = "example-lib" }, # You can specify a group and name
+    { group = "com.example" }, # You can also only specify a group...
+    { group = "com.example2.**" } # ...or use globs
+]
+excludes = [
+    { group = "com.other" }
+]
+[[ repositories ]]
+# This can also be done for custom repositories
+url = "http://www.example.com/repo"
+includes = [
+    { group = "com.example", name = "example-lib" },
+    { group = "com.example2.**" }
+]
+excludes = [
+    { group = "com.other" }
+]
+```
+
 ### Exclusions
 
 Alongside the exclusion configuration, you can also exclude dependencies directly in the TOML file by
