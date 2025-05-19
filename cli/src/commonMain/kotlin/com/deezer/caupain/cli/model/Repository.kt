@@ -25,14 +25,29 @@
 package com.deezer.caupain.cli.model
 
 import com.deezer.caupain.model.buildComponentFilter
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.deezer.caupain.model.Repository as ModelRepository
 
 sealed interface Repository {
     fun toModel(): ModelRepository
 
-    data class Default(val repository: DefaultRepository) : Repository {
-        override fun toModel(): ModelRepository = repository.repository
+    @Serializable
+    data class Default(
+        @SerialName("default") val repository: DefaultRepository,
+        val includes: List<PackageSpec>? = null,
+        val excludes: List<PackageSpec>? = null
+    ) : Repository {
+        override fun toModel(): ModelRepository {
+            return if (includes.isNullOrEmpty() && excludes.isNullOrEmpty()) {
+                repository.repository
+            } else {
+                repository.repository.withComponentFilter {
+                    for (include in includes.orEmpty()) include(include.group, include.name)
+                    for (exclude in excludes.orEmpty()) exclude(exclude.group, exclude.name)
+                }
+            }
+        }
     }
 
     @Serializable
@@ -64,9 +79,21 @@ sealed interface Repository {
 @Serializable
 data class PackageSpec(val group: String, val name: String? = null)
 
+@Serializable
 enum class DefaultRepository(val key: String, val repository: ModelRepository) {
-    GOOGLE("google", com.deezer.caupain.model.DefaultRepositories.google),
-    MAVEN_CENTRAL("mavenCentral", com.deezer.caupain.model.DefaultRepositories.mavenCentral),
+    @SerialName("google")
+    GOOGLE(
+        "google",
+        com.deezer.caupain.model.DefaultRepositories.google
+    ),
+
+    @SerialName("mavenCentral")
+    MAVEN_CENTRAL(
+        "mavenCentral",
+        com.deezer.caupain.model.DefaultRepositories.mavenCentral
+    ),
+
+    @SerialName("gradlePluginPortal")
     GRADLE_PLUGINS(
         "gradlePluginPortal",
         com.deezer.caupain.model.DefaultRepositories.gradlePlugins

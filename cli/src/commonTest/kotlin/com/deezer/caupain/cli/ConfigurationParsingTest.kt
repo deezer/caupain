@@ -45,7 +45,11 @@ class ConfigurationParsingTest {
         assertEquals(
             expected = Configuration(
                 repositories = listOf(
-                    DefaultRepositories.mavenCentral,
+                    DefaultRepositories.mavenCentral.withComponentFilter {
+                        include(group = "com.example", name = "example-lib")
+                        include("com.example2.**")
+                        exclude("com.other")
+                    },
                     Repository(
                         url = "http://www.example.com/repo",
                         componentFilter = buildComponentFilter {
@@ -53,7 +57,8 @@ class ConfigurationParsingTest {
                             include("com.example2.**")
                             exclude("com.other")
                         },
-                    )
+                    ),
+                    DefaultRepositories.google
                 ),
                 pluginRepositories = listOf(
                     DefaultRepositories.gradlePlugins,
@@ -98,6 +103,13 @@ excludedLibraries = [
 excludedPlugins = [ "com.first", "com.second" ]
 [[ repositories ]]
 default = "mavenCentral"
+includes = [
+    { group = "com.example", name = "example-lib" },
+    { group = "com.example2.**" }
+]
+excludes = [ 
+    { group = "com.other" }
+]
 [[ repositories ]]
 url = "http://www.example.com/repo"
 includes = [
@@ -107,4 +119,6 @@ includes = [
 excludes = [ 
     { group = "com.other" }
 ]
+[[ repositories ]]
+default = "google"
 """.trimIndent()

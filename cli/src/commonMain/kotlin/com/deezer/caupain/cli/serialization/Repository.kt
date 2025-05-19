@@ -45,6 +45,8 @@ object RepositorySerializer : KSerializer<Repository> {
 
     private val richRepositorySerializer = Repository.Rich.serializer()
 
+    private val defaultRepositorySerializer = Repository.Default.serializer()
+
     override val descriptor: SerialDescriptor = buildSerialDescriptor(
         serialName = "com.deezer.caupain.cli.model.Repository",
         kind = SerialKind.CONTEXTUAL,
@@ -60,17 +62,16 @@ object RepositorySerializer : KSerializer<Repository> {
                     ?: throw SerializationException("Unknown repository: ${element.content}")
             )
 
-            is TomlTable -> (element["default"] as? TomlLiteral)
-                ?.content
-                ?.let { defaultRepoName ->
-                    DefaultRepository
-                        .entries
-                        .firstOrNull { it.key == defaultRepoName }
-                        ?.let { Repository.Default(it) }
-                }
-                ?: tomlDecoder
-                    .toml
-                    .decodeFromTomlElement(richRepositorySerializer, element)
+            is TomlTable -> tomlDecoder
+                .toml
+                .decodeFromTomlElement(
+                    deserializer = if ("default" in element.keys) {
+                        defaultRepositorySerializer
+                    } else {
+                        richRepositorySerializer
+                    },
+                    element = element
+                )
 
             else ->
                 throw SerializationException("Unsupported TOML element type: ${element::class.simpleName}")
@@ -79,7 +80,7 @@ object RepositorySerializer : KSerializer<Repository> {
 
     override fun serialize(encoder: Encoder, value: Repository) {
         when (value) {
-            is Repository.Default -> encoder.encodeString(value.repository.key)
+            is Repository.Default -> encoder.encodeSerializableValue(defaultRepositorySerializer, value)
             is Repository.Rich -> encoder.encodeSerializableValue(richRepositorySerializer, value)
         }
     }
