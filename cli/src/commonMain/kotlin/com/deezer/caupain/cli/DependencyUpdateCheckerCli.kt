@@ -102,10 +102,10 @@ class DependencyUpdateCheckerCli(
 
     private val appDirs = AppDirs("caupain")
 
-    private val versionCatalogPath by
-    option("-i", "--version-catalog", help = "Version catalog path")
+    private val versionCatalogPaths by
+    option("-i", "--version-catalog", help = "Version catalog path. Use multiple times to use multiple version catalogs")
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
-        .default("gradle/libs.versions.toml".toPath())
+        .multiple(default = listOf("gradle/libs.versions.toml".toPath()))
 
     private val gradleWrapperPropertiesPath by
     option("--gradle-wrapper-properties", help = "Gradle wrapper properties path")
@@ -280,7 +280,7 @@ class DependencyUpdateCheckerCli(
 
     private fun createConfiguration(parsedConfiguration: ParsedConfiguration?): Configuration {
         val baseConfiguration = Configuration(
-            versionCatalogPath = versionCatalogPath,
+            versionCatalogPaths = versionCatalogPaths,
             excludedKeys = excluded.toSet(),
             policyPluginsDir = policyPluginDir,
             policy = policy,

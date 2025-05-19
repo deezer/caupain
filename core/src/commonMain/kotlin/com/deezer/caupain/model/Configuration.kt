@@ -33,7 +33,7 @@ import okio.Path.Companion.toPath
  *
  * @property repositories A list of repositories to search for dependencies.
  * @property pluginRepositories A list of repositories to search for plugin updates.
- * @property versionCatalogPath The path to the version catalog file.
+ * @property versionCatalogPaths The paths to the version catalog files.
  * @property excludedKeys A set of keys to exclude from the update process.
  * @property excludedLibraries A list of libraries to exclude from the update process.
  * @property excludedPlugins A list of plugins to exclude from the update process.
@@ -47,7 +47,9 @@ import okio.Path.Companion.toPath
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
     public val pluginRepositories: List<Repository>
+    @Deprecated("Use versionCatalogPaths instead")
     public val versionCatalogPath: Path
+    public val versionCatalogPaths: Iterable<Path>
     public val excludedKeys: Set<String>
     public val excludedLibraries: List<LibraryExclusion>
     public val excludedPlugins: List<PluginExclusion>
@@ -92,7 +94,59 @@ public fun Configuration(
         DefaultRepositories.mavenCentral,
         DefaultRepositories.google,
     ),
-    versionCatalogPath: Path = "gradle/libs.versions.toml".toPath(),
+    versionCatalogPath: Path,
+    excludedKeys: Set<String> = emptySet(),
+    excludedLibraries: List<LibraryExclusion> = emptyList(),
+    excludedPlugins: List<PluginExclusion> = emptyList(),
+    policy: String? = null,
+    policyPluginsDir: Path? = null,
+    cacheDir: Path? = null,
+    debugHttpCalls: Boolean = false,
+    gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
+    onlyCheckStaticVersions: Boolean = true,
+): Configuration = Configuration(
+    repositories = repositories,
+    pluginRepositories = pluginRepositories,
+    versionCatalogPaths = listOf(versionCatalogPath),
+    excludedKeys = excludedKeys,
+    excludedLibraries = excludedLibraries,
+    excludedPlugins = excludedPlugins,
+    policy = policy,
+    policyPluginsDir = policyPluginsDir,
+    cacheDir = cacheDir,
+    debugHttpCalls = debugHttpCalls,
+    gradleCurrentVersionUrl = gradleCurrentVersionUrl,
+    onlyCheckStaticVersions = onlyCheckStaticVersions
+)
+
+/**
+ * Creates a new Configuration instance with the specified parameters.
+ *
+ * @param repositories A list of repositories to search for dependencies.
+ * @param pluginRepositories A list of repositories to search for plugin updates.
+ * @param versionCatalogPaths The paths to the version catalog files.
+ * @param excludedKeys A set of keys to exclude from the update process.
+ * @param excludedLibraries A list of libraries to exclude from the update process.
+ * @param excludedPlugins A list of plugins to exclude from the update process.
+ * @param policy The policy to use for the update process.
+ * @param policyPluginsDir The directory for the policy plugins.
+ * @param cacheDir The directory for the HTTP cache.
+ * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
+ * @param gradleCurrentVersionUrl The URL to check for the current version of Gradle.
+ * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
+ */
+@Suppress("LongParameterList") // Needed to reflect parameters
+public fun Configuration(
+    repositories: List<Repository> = listOf(
+        DefaultRepositories.mavenCentral,
+        DefaultRepositories.google,
+    ),
+    pluginRepositories: List<Repository> = listOf(
+        DefaultRepositories.gradlePlugins,
+        DefaultRepositories.mavenCentral,
+        DefaultRepositories.google,
+    ),
+    versionCatalogPaths: Iterable<Path> = listOf("gradle/libs.versions.toml".toPath()),
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
@@ -105,7 +159,7 @@ public fun Configuration(
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
-    versionCatalogPath = versionCatalogPath,
+    versionCatalogPaths = versionCatalogPaths,
     excludedKeys = excludedKeys,
     excludedLibraries = excludedLibraries,
     excludedPlugins = excludedPlugins,
@@ -127,7 +181,7 @@ internal data class ConfigurationImpl(
         DefaultRepositories.mavenCentral,
         DefaultRepositories.google,
     ),
-    override val versionCatalogPath: Path = "gradle/libs.versions.toml".toPath(),
+    override val versionCatalogPaths: Iterable<Path> = listOf("gradle/libs.versions.toml".toPath()),
     override val excludedKeys: Set<String> = emptySet(),
     override val excludedLibraries: List<LibraryExclusion> = emptyList(),
     override val excludedPlugins: List<PluginExclusion> = emptyList(),
@@ -137,7 +191,11 @@ internal data class ConfigurationImpl(
     override val debugHttpCalls: Boolean = false,
     override val gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
     override val onlyCheckStaticVersions: Boolean = true,
-) : Configuration
+) : Configuration {
+    @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
+    override val versionCatalogPath: Path
+        get() = versionCatalogPaths.first()
+}
 
 /**
  * Configuration for excluded items

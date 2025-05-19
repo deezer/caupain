@@ -57,7 +57,6 @@ class VersionCatalogParserTest {
         fileSystem.createDirectories(filePath.parent!!)
         fileSystem.write(filePath) { writeUtf8(TEST_VERSION_CATALOG) }
         parser = DefaultVersionCatalogParser(
-            versionCatalogPath = filePath,
             fileSystem = fileSystem,
             ioDispatcher = testDispatcher
         )
@@ -103,7 +102,7 @@ class VersionCatalogParserTest {
                 ),
                 ignores = Ignores()
             ),
-            actual = parser.parseDependencyInfo()
+            actual = parser.parseDependencyInfo(filePath)
         )
     }
 }

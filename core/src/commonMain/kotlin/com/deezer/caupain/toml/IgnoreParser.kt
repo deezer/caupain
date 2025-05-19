@@ -39,12 +39,11 @@ import org.antlr.v4.kotlinruntime.CommonTokenStream
 
 internal class IgnoreParser(
     private val fileSystem: FileSystem,
-    private val path: Path,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-    suspend fun computeIgnores(): Ignores {
+    suspend fun computeIgnores(versionCatalogPath: Path): Ignores {
         val charStream = withContext(ioDispatcher) {
-            fileSystem.read(path) {
+            fileSystem.read(versionCatalogPath) {
                 CharStreams.fromString(readUtf8())
             }
         }

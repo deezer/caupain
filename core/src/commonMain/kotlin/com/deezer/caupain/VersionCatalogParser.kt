@@ -39,26 +39,25 @@ import okio.Path
 import okio.SYSTEM
 
 internal interface VersionCatalogParser {
-    suspend fun parseDependencyInfo(): VersionCatalogParseResult
+    suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult
 }
 
 internal class DefaultVersionCatalogParser(
     private val toml: Toml = DefaultToml,
-    private val versionCatalogPath: Path,
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : VersionCatalogParser {
 
-    private val ignoreParser = IgnoreParser(fileSystem, versionCatalogPath, ioDispatcher)
+    private val ignoreParser = IgnoreParser(fileSystem, ioDispatcher)
 
-    override suspend fun parseDependencyInfo(): VersionCatalogParseResult =
+    override suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult =
         withContext(ioDispatcher) {
             VersionCatalogParseResult(
                 versionCatalog = toml.decodeFromPath<VersionCatalog>(
                     path = versionCatalogPath,
                     fileSystem = fileSystem
                 ),
-                ignores = ignoreParser.computeIgnores()
+                ignores = ignoreParser.computeIgnores(versionCatalogPath)
             )
         }
 }

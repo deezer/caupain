@@ -38,10 +38,11 @@ import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.plugin.internal.toOkioPath
 import kotlinx.coroutines.runBlocking
+import okio.Path.Companion.toOkioPath
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -58,6 +59,7 @@ import java.util.UUID
 /**
  * Dependencies Update task.
  */
+@Suppress("UnstableApiUsage")
 @DisableCachingByDefault(because = "Will never be up to date")
 open class DependenciesUpdateTask : DefaultTask() {
 
@@ -68,10 +70,11 @@ open class DependenciesUpdateTask : DefaultTask() {
     val pluginRepositories = project.objects.listProperty<Repository>()
 
     /**
+     * @see DependenciesUpdateExtension.versionCatalogFiles
      * @see DependenciesUpdateExtension.versionCatalogFile
      */
     @get:Internal
-    val versionCatalogFile: RegularFileProperty = project.objects.fileProperty()
+    val versionCatalogFiles: ConfigurableFileCollection = project.objects.fileCollection()
 
     /**
      * @see DependenciesUpdateExtension.excludedKeys
@@ -198,19 +201,21 @@ open class DependenciesUpdateTask : DefaultTask() {
         customFormatter.set(formatter)
     }
 
-    private fun createConfiguration(policyId: String?): Configuration = Configuration(
-        repositories = repositories.get(),
-        pluginRepositories = pluginRepositories.get(),
-        versionCatalogPath = versionCatalogFile.get().toOkioPath(),
-        excludedKeys = excludedKeys.get(),
-        excludedLibraries = excludedLibraries.get(),
-        excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
-        policy = policyId,
-        cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
-        debugHttpCalls = true,
-        gradleCurrentVersionUrl = gradleCurrentVersionUrl.get(),
-        onlyCheckStaticVersions = onlyCheckStaticVersions.get()
-    )
+    private fun createConfiguration(policyId: String?): Configuration {
+        return Configuration(
+            repositories = repositories.get(),
+            pluginRepositories = pluginRepositories.get(),
+            versionCatalogPaths = versionCatalogFiles.map { it.toOkioPath() },
+            excludedKeys = excludedKeys.get(),
+            excludedLibraries = excludedLibraries.get(),
+            excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
+            policy = policyId,
+            cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
+            debugHttpCalls = true,
+            gradleCurrentVersionUrl = gradleCurrentVersionUrl.get(),
+            onlyCheckStaticVersions = onlyCheckStaticVersions.get()
+        )
+    }
 
     private class ConsolePrinterAdapter(private val logger: Logger) : ConsolePrinter {
         override fun print(message: String) {

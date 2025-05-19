@@ -63,6 +63,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
+import okio.Path
 import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -92,8 +93,10 @@ class DependencyUpdateCheckerTest {
             excludedKeys = setOf("groovy-json"),
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons"))
         )
-        fileSystem.createDirectories(configuration.versionCatalogPath.parent!!)
-        fileSystem.write(configuration.versionCatalogPath) {}
+        for (versionCatalogPath in configuration.versionCatalogPaths) {
+            fileSystem.createDirectories(versionCatalogPath.parent!!)
+            fileSystem.write(versionCatalogPath) {}
+        }
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
@@ -229,10 +232,11 @@ class DependencyUpdateCheckerTest {
         )
 
         private object FixedVersionCatalogParser : VersionCatalogParser {
-            override suspend fun parseDependencyInfo(): VersionCatalogParseResult = VersionCatalogParseResult(
-                versionCatalog = VERSION_CATALOG,
-                ignores = Ignores(libraryKeys = setOf("groovy-other"))
-            )
+            override suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult =
+                VersionCatalogParseResult(
+                    versionCatalog = VERSION_CATALOG,
+                    ignores = Ignores(libraryKeys = setOf("groovy-other"))
+                )
         }
 
         private fun metadata(

@@ -51,6 +51,7 @@ private data class ConfigurationImpl(
     override val repositories: List<Repository>? = null,
     override val pluginRepositories: List<Repository>? = null,
     override val versionCatalogPath: Path? = null,
+    override val versionCatalogPaths: Iterable<Path>? = null,
     override val excludedKeys: Set<String>? = null,
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
@@ -68,7 +69,9 @@ private data class ConfigurationImpl(
                 ?: baseConfiguration.repositories,
             pluginRepositories = pluginRepositories?.map { it.toModel() }
                 ?: baseConfiguration.pluginRepositories,
-            versionCatalogPath = versionCatalogPath ?: baseConfiguration.versionCatalogPath,
+            versionCatalogPaths = versionCatalogPaths
+                ?: versionCatalogPath?.let(::listOf)
+                ?: baseConfiguration.versionCatalogPaths,
             excludedKeys = excludedKeys ?: baseConfiguration.excludedKeys,
             excludedLibraries = excludedLibraries ?: baseConfiguration.excludedLibraries,
             excludedPlugins = excludedPlugins ?: baseConfiguration.excludedPlugins,

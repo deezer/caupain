@@ -22,35 +22,11 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.model
+package com.deezer.caupain.plugin.internal
 
-import com.deezer.caupain.cli.serialization.ConfigurationSerializer
-import com.deezer.caupain.model.LibraryExclusion
-import com.deezer.caupain.model.PluginExclusion
-import kotlinx.serialization.Serializable
-import okio.Path
-import com.deezer.caupain.model.Configuration as ModelConfiguration
+import org.gradle.api.provider.Provider
+import java.util.Optional
 
-@Serializable(ConfigurationSerializer::class)
-interface Configuration {
-    val repositories: List<Repository>?
-    val pluginRepositories: List<Repository>?
-    val versionCatalogPath: Path?
-    val versionCatalogPaths: Iterable<Path>?
-    val excludedKeys: Set<String>?
-    val excludedLibraries: List<LibraryExclusion>?
-    val excludedPlugins: List<PluginExclusion>?
-    val policy: String?
-    val policyPluginDir: Path?
-    val cacheDir: Path?
-    val outputType: OutputType?
-    val outputPath: Path?
-    val gradleWrapperPropertiesPath: Path?
-    val onlyCheckStaticVersions: Boolean?
-
-    fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration
-
-    enum class OutputType {
-        CONSOLE, HTML, MARKDOWN
-    }
+fun <T : Any> Provider<T>.asOptional(): Provider<Optional<T>> {
+    return map { Optional.of(it) }.orElse(Optional.empty())
 }

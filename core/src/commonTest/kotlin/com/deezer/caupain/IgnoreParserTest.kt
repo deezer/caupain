@@ -66,7 +66,7 @@ class IgnoreParserTest {
                     libraryKeys = setOf("kotlin-test"),
                     pluginKeys = setOf("jetbrains-kotlin-jvm")
                 ),
-                actual = IgnoreParser(fileSystem, path, testDispatcher).computeIgnores()
+                actual = IgnoreParser(fileSystem, testDispatcher).computeIgnores(path)
             )
         }
     }

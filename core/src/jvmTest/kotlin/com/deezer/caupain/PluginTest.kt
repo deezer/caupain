@@ -61,6 +61,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import okio.FileSystem
+import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.use
 import org.junit.After
@@ -192,7 +193,7 @@ class PluginTest {
         private val BASE_REPOSITORY = Repository(BASE_URL.toString())
 
         private object FixedVersionCatalogParser : VersionCatalogParser {
-            override suspend fun parseDependencyInfo() =
+            override suspend fun parseDependencyInfo(versionCatalogPath: Path) =
                 VersionCatalogParseResult(VERSION_CATALOG, Ignores())
         }
 

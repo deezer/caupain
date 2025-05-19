@@ -26,6 +26,7 @@ package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.LibraryExclusion
 import org.gradle.api.Action
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
@@ -49,6 +50,11 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      * The path to the version catalog file (default is gradle/libs.versions.toml").
      */
     val versionCatalogFile: RegularFileProperty = objects.fileProperty()
+
+    /**
+     * The path to the version catalog files (default uses a single gradle/libs.versions.toml").
+     */
+    val versionCatalogFiles: ConfigurableFileCollection = objects.fileCollection()
 
     /**
      * The set of keys in the version catalog for which updates should be ignored. Default is empty.
