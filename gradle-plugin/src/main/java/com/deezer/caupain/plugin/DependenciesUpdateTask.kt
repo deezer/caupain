@@ -59,7 +59,6 @@ import java.util.UUID
 /**
  * Dependencies Update task.
  */
-@Suppress("UnstableApiUsage")
 @DisableCachingByDefault(because = "Will never be up to date")
 open class DependenciesUpdateTask : DefaultTask() {
 
