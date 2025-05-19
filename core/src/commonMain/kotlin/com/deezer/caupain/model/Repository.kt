@@ -49,6 +49,7 @@ public class Repository(
     public val password: String?,
     public val componentFilter: ComponentFilter? = null
 ) : Serializable {
+    @JvmOverloads
     public constructor(
         url: String,
         componentFilter: ComponentFilter? = null
