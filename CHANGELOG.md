@@ -5,6 +5,7 @@
 ### Added
 - Dark mode handling for HTML formatter
 - Component filtering for repositories (#12)
+- Mutiple version catalog files handling (#13)
 
 ### Changed
 - Updated style rules
