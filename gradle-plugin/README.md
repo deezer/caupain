@@ -208,6 +208,8 @@ tasks.withType<DependenciesUpdateTask> {
 ```kotlin
 // Version catalog path. Default is "gradle/libs.versions.toml".
 versionCatalogFile = file("path/to/libs.versions.toml")
+// You can also define multiple version catalogs. Warning: defining this will override the previous single path
+versionCatalogFiles.from("path/to/libs.versions.toml", "path/to/other/libs.versions.toml")
 // Whether or not to store HTTP cache for the Maven requests
 useCache = true
 // By default, Caupain only checks updates for static versions in the version catalog (versions like 

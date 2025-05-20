@@ -34,6 +34,7 @@ package com.deezer.caupain.cli.serialization
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -63,6 +64,13 @@ private data class ConfigurationImpl(
     override val gradleWrapperPropertiesPath: Path?,
     override val onlyCheckStaticVersions: Boolean?
 ) : Configuration {
+
+    override fun validate(logger: Logger) {
+        if (versionCatalogPath != null && versionCatalogPaths != null) {
+            logger.warn("Both versionCatalogPath and versionCatalogPaths are set. Using versionCatalogPaths.")
+        }
+    }
+
     override fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration {
         return ModelConfiguration(
             repositories = repositories?.map { it.toModel() }

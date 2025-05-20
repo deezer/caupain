@@ -103,7 +103,11 @@ class DependencyUpdateCheckerCli(
     private val appDirs = AppDirs("caupain")
 
     private val versionCatalogPaths by
-    option("-i", "--version-catalog", help = "Version catalog path. Use multiple times to use multiple version catalogs")
+    option(
+        "-i",
+        "--version-catalog",
+        help = "Version catalog path. Use multiple times to use multiple version catalogs"
+    )
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
         .multiple(default = listOf("gradle/libs.versions.toml".toPath()))
 
@@ -187,8 +191,10 @@ class DependencyUpdateCheckerCli(
         val start = timesource.markNow()
 
         val backgroundScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+        val logger = ClicktLogger()
 
         val configuration = loadConfiguration()
+        configuration?.validate(logger)
         val finalConfiguration = createConfiguration(configuration)
         if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
             echo("Policy plugins are not supported on this platform", err = true)
@@ -198,7 +204,7 @@ class DependencyUpdateCheckerCli(
                 finalConfiguration,
                 loadGradleVersion(configuration),
                 fileSystem,
-                ClicktLogger()
+                logger
             )
         val progress = backgroundScope.createProgress(updateChecker.progress)
 
@@ -359,20 +365,22 @@ class DependencyUpdateCheckerCli(
 
         private fun echoError(message: String, throwable: Throwable?) {
             if (logLevel <= LogLevel.QUIET) return
-            val errorMessage = buildString {
-                append(message)
-                when {
-                    throwable == null -> Unit
-
-                    logLevel >= LogLevel.DEBUG -> {
-                        appendLine()
-                        append(throwable.stackTraceToString())
-                    }
-
-                    else -> append(": ${throwable.message}")
-                }
+            if (throwable == null) {
+                echo(message, err = true)
+            } else {
+                echo(
+                    message = buildString {
+                        append(message)
+                        if (logLevel >= LogLevel.DEBUG) {
+                            appendLine()
+                            append(throwable.stackTraceToString())
+                        } else {
+                            append(": ${throwable.message}")
+                        }
+                    },
+                    err = true
+                )
             }
-            echo(errorMessage, err = true)
         }
 
         override fun warn(message: String, throwable: Throwable?) {

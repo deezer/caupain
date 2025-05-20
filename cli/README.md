@@ -41,8 +41,8 @@ or build it yourself by cloning the repository and running `./gradlew :cli:build
 Usage: caupain [<options>]
 
 Options:
-  -i, --version-catalog=<path>  Version catalog path (default:
-                                gradle/libs.versions.toml)
+  -i, --version-catalog=<path>  Version catalog path. Use multiple times to use
+                                multiple version catalogs
   --gradle-wrapper-properties=<path>
                                 Gradle wrapper properties path (default:
                                 gradle/wrapper/gradle-wrapper.properties)
@@ -60,7 +60,7 @@ Options:
   -v, --verbose                 Verbose output
   -d, --debug                   Debug output
   --debug-http-calls            Enable debugging for HTTP calls
-  --version                     Print version and exit
+  --version                     Show the version and exit
   -h, --help                    Show this message and exit
 ```
 
@@ -93,6 +93,8 @@ repositories = [
 pluginRepositories = [ "google" ]
 # Version catalog path. Default is "gradle/libs.versions.toml".
 versionCatalogPath = "another/path/to/libs.versions.toml"
+# You can also define multiple version catalogs. Warning: defining this will override the previous single path
+versionCatalogPaths = [ "libs.versions.toml", "another/path/to/libs.versions.toml" ]
 # Excluded dependencies. These will not be checked for updates.
 # You can exclude by key. The key matches the name used in the version catalog.
 excludedKeys = [ "excluded1", "excluded2" ]
