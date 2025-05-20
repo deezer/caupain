@@ -63,6 +63,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
+import okio.Path
+import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -90,10 +92,12 @@ class DependencyUpdateCheckerTest {
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             excludedKeys = setOf("groovy-json"),
-            excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons"))
+            excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
+            versionCatalogPaths = VERSION_CATALOGS.keys
         )
-        fileSystem.createDirectories(configuration.versionCatalogPath.parent!!)
-        fileSystem.write(configuration.versionCatalogPath) {}
+        for (versionCatalogPath in VERSION_CATALOGS.keys) {
+            fileSystem.write(versionCatalogPath) {}
+        }
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
@@ -229,10 +233,11 @@ class DependencyUpdateCheckerTest {
         )
 
         private object FixedVersionCatalogParser : VersionCatalogParser {
-            override suspend fun parseDependencyInfo(): VersionCatalogParseResult = VersionCatalogParseResult(
-                versionCatalog = VERSION_CATALOG,
-                ignores = Ignores(libraryKeys = setOf("groovy-other"))
-            )
+            override suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult =
+                VersionCatalogParseResult(
+                    versionCatalog = VERSION_CATALOGS[versionCatalogPath]!!,
+                    ignores = Ignores(libraryKeys = setOf("groovy-other"))
+                )
         }
 
         private fun metadata(
@@ -356,7 +361,7 @@ class DependencyUpdateCheckerTest {
 
         private val GRADLE_VERSION_URL = Url(Configuration.DEFAULT_GRADLE_VERSION_URL)
 
-        private val VERSION_CATALOG = VersionCatalog(
+        private val VERSION_CATALOG_MAIN = VersionCatalog(
             versions = mapOf(
                 "groovy" to Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
                 "checkstyle" to Version.Simple(GradleDependencyVersion.Exact("8.37"))
@@ -370,13 +375,27 @@ class DependencyUpdateCheckerTest {
                     module = "org.codehaus.groovy:groovy-json",
                     version = Version.Reference("groovy")
                 ),
-                "groovy-nio" to Dependency.Library(
-                    module = "org.codehaus.groovy:groovy-nio",
-                    version = Version.Reference("groovy")
-                ),
                 "groovy-other" to Dependency.Library(
                     module = "org.codehaus.groovy:groovy-other",
                     version = Version.Simple(GradleDependencyVersion.Exact("1.0"))
+                ),
+            ),
+            plugins = mapOf(
+                "versions" to Dependency.Plugin(
+                    id = "com.github.ben-manes.versions",
+                    version = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT"))
+                )
+            )
+        )
+
+        private val VERSION_CATALOG_OTHER = VersionCatalog(
+            versions = mapOf(
+                "groovy" to Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
+            ),
+            libraries = mapOf(
+                "groovy-nio" to Dependency.Library(
+                    module = "org.codehaus.groovy:groovy-nio",
+                    version = Version.Reference("groovy")
                 ),
                 "commons-lang3" to Dependency.Library(
                     group = "org.apache.commons",
@@ -387,12 +406,11 @@ class DependencyUpdateCheckerTest {
                     )
                 )
             ),
-            plugins = mapOf(
-                "versions" to Dependency.Plugin(
-                    id = "com.github.ben-manes.versions",
-                    version = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT"))
-                )
-            )
+        )
+
+        private val VERSION_CATALOGS = mapOf(
+            "libs.versions.toml".toPath() to VERSION_CATALOG_MAIN,
+            "libs-other.versions.toml".toPath() to VERSION_CATALOG_OTHER
         )
     }
 }

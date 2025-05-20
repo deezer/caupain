@@ -40,7 +40,7 @@ public final class com/deezer/caupain/DependencyUpdateCheckerKt {
 }
 
 public final class com/deezer/caupain/NoVersionCatalogException : com/deezer/caupain/CaupainException {
-	public fun <init> (Lokio/Path;)V
+	public fun <init> (Ljava/lang/Iterable;)V
 }
 
 public final class com/deezer/caupain/SamePolicyNameException : com/deezer/caupain/CaupainException {
@@ -116,6 +116,7 @@ public abstract interface class com/deezer/caupain/model/Configuration : java/io
 	public abstract fun getPolicyPluginsDir ()Lokio/Path;
 	public abstract fun getRepositories ()Ljava/util/List;
 	public abstract fun getVersionCatalogPath ()Lokio/Path;
+	public abstract fun getVersionCatalogPaths ()Ljava/lang/Iterable;
 }
 
 public final class com/deezer/caupain/model/Configuration$Companion {
@@ -123,7 +124,9 @@ public final class com/deezer/caupain/model/Configuration$Companion {
 }
 
 public final class com/deezer/caupain/model/ConfigurationKt {
+	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;Z)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;Z)Lcom/deezer/caupain/model/Configuration;
+	public static synthetic fun Configuration$default (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;ZILjava/lang/Object;)Lcom/deezer/caupain/model/Configuration;
 	public static synthetic fun Configuration$default (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;ZILjava/lang/Object;)Lcom/deezer/caupain/model/Configuration;
 }
 

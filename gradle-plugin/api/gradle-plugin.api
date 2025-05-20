@@ -17,6 +17,7 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public abstract fun getRepositories ()Lcom/deezer/caupain/plugin/RepositoryHandler;
 	public final fun getUseCache ()Lorg/gradle/api/provider/Property;
 	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getVersionCatalogFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public final fun outputs (Lorg/gradle/api/Action;)V
 	public final fun repositories (Lorg/gradle/api/Action;)V
 }
@@ -34,7 +35,7 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun getPluginRepositories ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getRepositories ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getUseCache ()Lorg/gradle/api/provider/Property;
-	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getVersionCatalogFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public final fun selectIf (Lcom/deezer/caupain/model/Policy;)V
 	public final fun selectIf (Lcom/deezer/caupain/plugin/Policy;)V
 	public final fun selectIf (Lkotlin/jvm/functions/Function1;)V
@@ -144,5 +145,9 @@ public final class com/deezer/caupain/plugin/VersionUpdateInfo {
 	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/plugin/internal/ProvidersKt {
+	public static final fun asOptional (Lorg/gradle/api/provider/Provider;)Lorg/gradle/api/provider/Provider;
 }
 

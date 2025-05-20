@@ -34,6 +34,7 @@ package com.deezer.caupain.cli.serialization
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -51,6 +52,7 @@ private data class ConfigurationImpl(
     override val repositories: List<Repository>? = null,
     override val pluginRepositories: List<Repository>? = null,
     override val versionCatalogPath: Path? = null,
+    override val versionCatalogPaths: Iterable<Path>? = null,
     override val excludedKeys: Set<String>? = null,
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
@@ -62,13 +64,22 @@ private data class ConfigurationImpl(
     override val gradleWrapperPropertiesPath: Path?,
     override val onlyCheckStaticVersions: Boolean?
 ) : Configuration {
+
+    override fun validate(logger: Logger) {
+        if (versionCatalogPath != null && versionCatalogPaths != null) {
+            logger.warn("Both versionCatalogPath and versionCatalogPaths are set. Using versionCatalogPaths.")
+        }
+    }
+
     override fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration {
         return ModelConfiguration(
             repositories = repositories?.map { it.toModel() }
                 ?: baseConfiguration.repositories,
             pluginRepositories = pluginRepositories?.map { it.toModel() }
                 ?: baseConfiguration.pluginRepositories,
-            versionCatalogPath = versionCatalogPath ?: baseConfiguration.versionCatalogPath,
+            versionCatalogPaths = versionCatalogPaths
+                ?: versionCatalogPath?.let(::listOf)
+                ?: baseConfiguration.versionCatalogPaths,
             excludedKeys = excludedKeys ?: baseConfiguration.excludedKeys,
             excludedLibraries = excludedLibraries ?: baseConfiguration.excludedLibraries,
             excludedPlugins = excludedPlugins ?: baseConfiguration.excludedPlugins,

@@ -33,6 +33,7 @@ import com.deezer.caupain.model.Dependency.Library
 import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.buildComponentFilter
+import com.deezer.caupain.plugin.internal.asOptional
 import org.gradle.api.Action
 import org.gradle.api.artifacts.ModuleIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
@@ -48,7 +49,6 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal
 import org.gradle.kotlin.dsl.listProperty
-import java.util.Optional
 import javax.inject.Inject
 import kotlin.jvm.optionals.getOrNull
 
@@ -110,8 +110,7 @@ private fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<L
             } else {
                 repositoriesProvider.add(
                     credentials
-                        .map { Optional.of(it) }
-                        .orElse(Optional.empty())
+                        .asOptional()
                         .map { optionalCredentials ->
                             val passwordCredentials =
                                 optionalCredentials.getOrNull() as? PasswordCredentials

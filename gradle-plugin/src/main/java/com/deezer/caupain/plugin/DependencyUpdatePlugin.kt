@@ -24,14 +24,20 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.plugin.internal.asOptional
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Plugin to check for dependency updates.
  */
+@Suppress("UnstableApiUsage")
 open class DependencyUpdatePlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
@@ -42,16 +48,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
             description = "Check for dependency updates"
-            versionCatalogFile.convention(
-                ext
-                    .versionCatalogFile
-                    .convention(
-                        target
-                            .layout
-                            .projectDirectory
-                            .file("gradle/libs.versions.toml")
-                    )
-            )
+            versionCatalogFiles.convention(ext.resolveVersionCatalogFiles(target))
             excludedKeys.convention(ext.excludedKeys)
             excludedLibraries.convention(ext.excludedLibraries)
             excludedPluginIds.convention(ext.excludedPluginIds)
@@ -61,5 +58,36 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             useCache.convention(ext.useCache)
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
         }
+    }
+
+    private fun DependenciesUpdateExtension.resolveVersionCatalogFiles(project: Project): Provider<Iterable<FileSystemLocation>> {
+        val defaultVersionCatalogFile = project
+            .layout
+            .projectDirectory
+            .file("gradle/libs.versions.toml")
+        return versionCatalogFiles
+            .elements
+            .asOptional()
+            .flatMap { files ->
+                val isDefaultValueForCollection = files.getOrDefault(emptySet()).isEmpty()
+                versionCatalogFile
+                    .asOptional()
+                    .map { file ->
+                        val isDefaultValueForFile = !file.isPresent
+                        when {
+                            !isDefaultValueForFile && !isDefaultValueForCollection -> {
+                                project.logger.warn("Both versionCatalogFile and versionCatalogFiles are set. versionCatalogFile will be ignored.")
+                                files.get()
+                            }
+
+                            !isDefaultValueForFile -> listOf(file.get())
+
+                            else -> files
+                                .getOrNull()
+                                ?.takeUnless { it.isEmpty() }
+                                ?: setOf(defaultVersionCatalogFile)
+                        }
+                    }
+            }
     }
 }

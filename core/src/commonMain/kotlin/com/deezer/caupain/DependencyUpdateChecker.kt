@@ -36,7 +36,6 @@ import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
-import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.KtorLoggerAdapter
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
@@ -45,7 +44,6 @@ import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.versionCatalog.Version
-import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.resolver.GradleVersionResolver
 import com.deezer.caupain.resolver.UpdateInfoResolver
 import com.deezer.caupain.resolver.UpdatedVersionResolver
@@ -226,7 +224,6 @@ public fun DependencyUpdateChecker(
     ioDispatcher = ioDispatcher,
     versionCatalogParser = DefaultVersionCatalogParser(
         toml = DefaultToml,
-        versionCatalogPath = configuration.versionCatalogPath,
         fileSystem = fileSystem,
         ioDispatcher = Dispatchers.IO
     ),
@@ -295,16 +292,26 @@ internal class DefaultDependencyUpdateChecker(
         get() = progressFlow.asStateFlow()
 
     override suspend fun checkForUpdates(): DependenciesUpdateResult {
-        if (!fileSystem.exists(configuration.versionCatalogPath)) {
-            throw NoVersionCatalogException(configuration.versionCatalogPath)
+        val versionCatalogPaths = configuration
+            .versionCatalogPaths
+            .filter { fileSystem.exists(it) }
+            .toList()
+        if (versionCatalogPaths.isEmpty()) {
+            throw NoVersionCatalogException(configuration.versionCatalogPaths)
         }
-        logger.info("Parsing version catalog path from ${fileSystem.canonicalize(configuration.versionCatalogPath)}")
+        val versionCatalogPathStrings = versionCatalogPaths
+            .map { fileSystem.canonicalize(it) }
+            .joinToString()
+        logger.info("Parsing version catalogs from $versionCatalogPathStrings}")
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
-        val (versionCatalog, ignores) = versionCatalogParser.parseDependencyInfo()
+        val versionCatalogParseResults = versionCatalogPaths
+            .map { versionCatalogParser.parseDependencyInfo(it) }
         completed = 0
         progressFlow.value =
             DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
-        val (updatedVersions, updatedGradleVersion) = checkUpdatedVersions(versionCatalog, ignores)
+        val (updatedVersions, updatedGradleVersion) = checkUpdatedVersions(
+            versionCatalogParseResults
+        )
         completed = 0
         val updatesInfos = checkUpdateInfo(updatedVersions)
         // Sort and return
@@ -325,45 +332,52 @@ internal class DefaultDependencyUpdateChecker(
         )
     }
 
-    private suspend fun checkUpdatedVersions(
-        versionCatalog: VersionCatalog,
-        ignores: Ignores,
-    ): UpdateVersionResult {
+    private suspend fun checkUpdatedVersions(parseResults: List<VersionCatalogParseResult>): UpdateVersionResult {
         val checkGradleUpdate = currentGradleVersion != null
         val updatedVersionsMutex = Mutex()
         var updatedGradleVersion: String? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
-        val nbDependencies = versionCatalog.dependencies.size + if (checkGradleUpdate) 1 else 0
+        val nbDependencies =
+            parseResults.sumOf { it.versionCatalog.dependencies.size } + if (checkGradleUpdate) 1 else 0
         coroutineScope {
-            versionCatalog
-                .dependencies
+            parseResults
                 .asSequence()
-                .map { (key, dep) ->
-                    async {
-                        if (!configuration.isExcluded(key, dep) && !ignores.isExcluded(key, dep)) {
-                            val updatedVersion =
-                                versionResolver.getUpdatedVersion(dep, versionCatalog.versions)
-                            if (updatedVersion != null) {
-                                logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
-                                updatedVersionsMutex.withLock {
-                                    updatedVersions.add(
-                                        DependencyUpdateResult(
-                                            dependencyKey = key,
-                                            dependency = dep,
-                                            repository = updatedVersion.repository,
-                                            currentVersion = updatedVersion.currentVersion,
-                                            updatedVersion = updatedVersion.updatedVersion
-                                        )
+                .flatMap { (versionCatalog, ignores) ->
+                    versionCatalog
+                        .dependencies
+                        .asSequence()
+                        .map { (key, dep) ->
+                            async {
+                                if (
+                                    !configuration.isExcluded(key, dep)
+                                    && !ignores.isExcluded(key, dep)
+                                ) {
+                                    val updatedVersion = versionResolver.getUpdatedVersion(
+                                        dep,
+                                        versionCatalog.versions
                                     )
+                                    if (updatedVersion != null) {
+                                        logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
+                                        updatedVersionsMutex.withLock {
+                                            updatedVersions.add(
+                                                DependencyUpdateResult(
+                                                    dependencyKey = key,
+                                                    dependency = dep,
+                                                    repository = updatedVersion.repository,
+                                                    currentVersion = updatedVersion.currentVersion,
+                                                    updatedVersion = updatedVersion.updatedVersion
+                                                )
+                                            )
+                                        }
+                                    }
                                 }
+                                val percentage = ++completed * 50 / nbDependencies
+                                progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                                    taskName = FINDING_UPDATES_TASK,
+                                    percentage = percentage
+                                )
                             }
                         }
-                        val percentage = ++completed * 50 / nbDependencies
-                        progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
-                            taskName = FINDING_UPDATES_TASK,
-                            percentage = percentage
-                        )
-                    }
                 }
                 .plus(
                     async {
@@ -440,10 +454,10 @@ internal class DefaultDependencyUpdateChecker(
 /**
  * Exception thrown when no version catalog is not found at the specified path.
  *
- * @param path The path to the version catalog.
+ * @param paths The paths to the version catalogs.
  */
-public class NoVersionCatalogException(path: Path) :
-    CaupainException("No version catalog found at $path")
+public class NoVersionCatalogException(paths: Iterable<Path>) :
+    CaupainException("No version catalog found at ${paths.joinToString()}")
 
 /**
  * Exception thrown when multiple policies have the same name.

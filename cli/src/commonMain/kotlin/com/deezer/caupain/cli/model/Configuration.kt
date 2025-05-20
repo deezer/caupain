@@ -26,6 +26,7 @@ package com.deezer.caupain.cli.model
 
 import com.deezer.caupain.cli.serialization.ConfigurationSerializer
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
 import kotlinx.serialization.Serializable
 import okio.Path
@@ -36,6 +37,7 @@ interface Configuration {
     val repositories: List<Repository>?
     val pluginRepositories: List<Repository>?
     val versionCatalogPath: Path?
+    val versionCatalogPaths: Iterable<Path>?
     val excludedKeys: Set<String>?
     val excludedLibraries: List<LibraryExclusion>?
     val excludedPlugins: List<PluginExclusion>?
@@ -46,6 +48,8 @@ interface Configuration {
     val outputPath: Path?
     val gradleWrapperPropertiesPath: Path?
     val onlyCheckStaticVersions: Boolean?
+
+    fun validate(logger: Logger)
 
     fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration
 

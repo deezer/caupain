@@ -40,6 +40,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.io.StringWriter
 import java.util.zip.ZipInputStream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -63,14 +64,6 @@ class DependencyUpdatePluginTest {
         // Create output files
         htmlOutputFile = tempFolder.newFile("output.html")
         markdownOutputFile = tempFolder.newFile("output.md")
-        // Add repository in build file
-        File(tempFolder.root, "build.gradle.kts").writeText(
-            createBuildFile(
-                repositoryUrl = mockWebserverRule.server.url("maven").toString(),
-                forbiddenRepositoryUrl = mockWebserverRule.server.url("maven-forbidden").toString(),
-                gradleUrl = mockWebserverRule.server.url("gradle").toString()
-            )
-        )
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val body = when (request.path) {
@@ -122,54 +115,60 @@ class DependencyUpdatePluginTest {
 
     @Language("kotlin")
     private fun createBuildFile(
-        repositoryUrl: String,
-        forbiddenRepositoryUrl: String,
-        gradleUrl: String
-    ) = """
-    import com.deezer.caupain.model.StabilityLevelPolicy
-    import com.deezer.caupain.plugin.DependenciesUpdateTask
-    import com.deezer.caupain.plugin.Policy
-    import com.deezer.caupain.model.Repository
-
-    // Top-level build file where you can add configuration options common to all sub-projects/modules.
-    plugins {
-        alias(libs.plugins.android.application) apply false
-        alias(libs.plugins.kotlin.android) apply false
-        id("com.deezer.caupain")
-    }
-
-    caupain {
-        repositories {
+        repositoryUrl: String = mockWebserverRule.server.url("maven").toString(),
+        forbiddenRepositoryUrl: String = mockWebserverRule.server.url("maven-forbidden").toString(),
+        gradleUrl: String = mockWebserverRule.server.url("gradle").toString(),
+        supplementaryConfiguration: String = ""
+    ) {
+        File(tempFolder.root, "build.gradle.kts").writeText(
+            """
+            import com.deezer.caupain.model.StabilityLevelPolicy
+            import com.deezer.caupain.plugin.DependenciesUpdateTask
+            import com.deezer.caupain.plugin.Policy
+            import com.deezer.caupain.model.Repository
+        
+            // Top-level build file where you can add configuration options common to all sub-projects/modules.
             plugins {
-                repository("$forbiddenRepositoryUrl") {
-                    exclude("**")
+                alias(libs.plugins.android.application) apply false
+                alias(libs.plugins.kotlin.android) apply false
+                id("com.deezer.caupain")
+            }
+        
+            caupain {
+                repositories {
+                    plugins {
+                        repository("$forbiddenRepositoryUrl") {
+                            exclude("**")
+                        }
+                        repository("$repositoryUrl") 
+                    }
                 }
-                repository("$repositoryUrl") 
+                outputs {
+                    console {
+                        enabled.set(true)
+                    }
+                    html {
+                        enabled.set(true)
+                        outputFile.set(File("${htmlOutputFile.canonicalPath}"))
+                    }
+                    markdown {
+                        enabled.set(true)
+                        outputFile.set(File("${markdownOutputFile.canonicalPath}"))
+                    }   
+                }
+                $supplementaryConfiguration
             }
-        }
-        outputs {
-            console {
-                enabled.set(true)
-            }
-            html {
-                enabled.set(true)
-                outputFile.set(File("${htmlOutputFile.canonicalPath}"))
-            }
-            markdown {
-                enabled.set(true)
-                outputFile.set(File("${markdownOutputFile.canonicalPath}"))
-            }   
-        }   
+        
+            tasks.withType<DependenciesUpdateTask> {
+                selectIf(StabilityLevelPolicy)
+                gradleCurrentVersionUrl.set("$gradleUrl")
+                customFormatter { info ->
+                    println("Infos size : " + info.updateInfos.size)
+                }   
+            }    
+            """.trimIndent()
+        )
     }
-
-    tasks.withType<DependenciesUpdateTask> {
-        selectIf(StabilityLevelPolicy)
-        gradleCurrentVersionUrl.set("$gradleUrl")
-        customFormatter { info ->
-            println("Infos size : " + info.updateInfos.size)
-        }   
-    }    
-    """.trimIndent()
 
     @Language("kotlin")
     private fun createSettingsFile(
@@ -223,6 +222,7 @@ class DependencyUpdatePluginTest {
 
     @Test
     fun testPlugin() {
+        createBuildFile()
         replaceSettings()
         val result = GradleRunner
             .create()
@@ -247,6 +247,7 @@ class DependencyUpdatePluginTest {
 
     @Test
     fun testAssemble() {
+        createBuildFile()
         val result = GradleRunner
             .create()
             .withProjectDir(tempFolder.root)
@@ -255,6 +256,28 @@ class DependencyUpdatePluginTest {
             .withGradleVersion(GRADLE_VERSION)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":app:assembleDebug")?.outcome)
+    }
+
+    @Test
+    fun testMultipleFiles() {
+        createBuildFile(
+            supplementaryConfiguration = """
+            versionCatalogFile = file("gradle/other.versions.toml")
+            versionCatalogFiles.from(file("gradle/libs.versions.toml"))
+            """.trimIndent()
+        )
+        replaceSettings()
+        val errorOutput = StringWriter()
+        val result = GradleRunner
+            .create()
+            .withProjectDir(tempFolder.root)
+            .withArguments(":checkDependencyUpdates", "--no-configuration-cache", "--stacktrace")
+            .withPluginClasspath()
+            .withGradleVersion(GRADLE_VERSION)
+            .forwardStdError(errorOutput)
+            .build()
+        assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
+        assertContains(result.output, "Both versionCatalogFile and versionCatalogFiles are set. versionCatalogFile will be ignored.")
     }
 }
 

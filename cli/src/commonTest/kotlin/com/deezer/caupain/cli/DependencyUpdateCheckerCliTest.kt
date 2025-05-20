@@ -34,6 +34,7 @@ import com.github.ajalt.clikt.command.test
 import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.everySuspend
+import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,6 +86,7 @@ class DependencyUpdateCheckerCliTest {
             every { gradleWrapperPropertiesPath } returns propertiesPath
             every { outputType } returns null
             every { outputPath } returns null
+            every { validate(any()) } returns Unit
         }
     }
 
