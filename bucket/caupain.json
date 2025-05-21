@@ -1,0 +1,17 @@
+{
+  "version": "1.0.1",
+  "description": "CLI tool to manage Gradle version catalog updates",
+  "homepage": "http://github.com/deezer/caupain",
+  "license": {
+    "identifier": "MIT"
+  },
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/deezer/caupain/releases/download/v1.0.1/caupain-1.0.1-windows.zip",
+      "hash": "31b2e2a202dda7495678534eb743024efba22e9184fc9c6d56d5b39ea754cae3"
+    }
+  },
+  "bin": [
+    "caupain.exe"
+  ]
+}
