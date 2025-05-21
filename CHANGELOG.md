@@ -3,14 +3,8 @@
 ## Unreleased
 
 ### Added
-- Dark mode handling for HTML formatter
-- Component filtering for repositories (#12)
-- Mutiple version catalog files handling (#13)
-- Allow `?` character for matches in glob patterns
 
 ### Changed
-- Updated style rules
-- Removed usage of data classes in the core lib
 
 ### Deprecated
 
@@ -19,6 +13,20 @@
 ### Fixed
 
 ### Security
+
+## 1.1.0 - 2025-05-21
+
+### Added
+
+- Dark mode handling for HTML formatter
+- Component filtering for repositories (#12)
+- Mutiple version catalog files handling (#13)
+- Allow `?` character for matches in glob patterns
+
+### Changed
+
+- Updated style rules
+- Removed usage of data classes in the core lib
 
 ## 1.0.1 - 2025-05-15
 
