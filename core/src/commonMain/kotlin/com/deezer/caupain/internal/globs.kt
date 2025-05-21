@@ -51,29 +51,36 @@ internal fun packageGlobToRegularExpression(glob: String): Regex {
     val ln = glob.length
     var idx = 0
     while (idx < ln) {
-        val c = glob[idx]
-        if (c == '*') {
-            regex.appendLiteralGlobSection(glob, nextStart, idx)
-            if (idx + 1 < ln && glob[idx + 1] == '*') {
-                require(idx == 0 || glob[idx - 1] == '.') {
-                    "The \"**\" wildcard must be directly after a \".\" or it must be at the beginning"
-                }
-                if (idx + 2 == ln) {
-                    // Trailing "**"
-                    regex.append(".*")
-                    idx++ // Discard next '*
-                } else {
-                    // "**."
-                    require(idx + 2 < ln && glob[idx + 2] == '.') {
-                        "The \"**\" wildcard must be followed by a \".\" or it must be at the end"
-                    }
-                    regex.append("(.*?\\.)*")
-                    idx += 2 // Discard next '*' and dot
-                }
-            } else {
-                regex.append("[^\\.]*")
+        when (glob[idx]) {
+            '?' -> {
+                regex.appendLiteralGlobSection(glob, nextStart, idx)
+                regex.append("[^\\.]")
+                nextStart = idx + 1
             }
-            nextStart = idx + 1
+
+            '*' -> {
+                regex.appendLiteralGlobSection(glob, nextStart, idx)
+                if (idx + 1 < ln && glob[idx + 1] == '*') {
+                    require(idx == 0 || glob[idx - 1] == '.') {
+                        "The \"**\" wildcard must be directly after a \".\" or it must be at the beginning"
+                    }
+                    if (idx + 2 == ln) {
+                        // Trailing "**"
+                        regex.append(".*")
+                        idx++ // Discard next '*'
+                    } else {
+                        // "**."
+                        require(idx + 2 < ln && glob[idx + 2] == '.') {
+                            "The \"**\" wildcard must be followed by a \".\" or it must be at the end"
+                        }
+                        regex.append("(.*?\\.)*")
+                        idx += 2 // Discard next '*' and dot
+                    }
+                } else {
+                    regex.append("[^\\.]*")
+                }
+                nextStart = idx + 1
+            }
         }
         idx++
     }

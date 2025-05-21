@@ -32,19 +32,21 @@ internal data class PackageSpec(
     val name: String? = null,
 ) : Serializable {
     private val isGlob = '*' in group
+    private val isUniversalGlob = isGlob && group == "**"
     private val groupGlobRegex by lazy { packageGlobToRegularExpression(group) }
 
     fun matches(dependency: Dependency): Boolean {
+        val dependencyGroup = dependency.group
         return when {
-            dependency.group == null -> false
+            dependencyGroup == null -> false
 
-            name == null -> if (isGlob) {
-                groupGlobRegex.matches(dependency.group!!)
-            } else {
-                dependency.group == group
+            name == null -> when {
+                !isGlob -> dependencyGroup == group
+                isUniversalGlob -> true
+                else -> groupGlobRegex.matches(dependencyGroup)
             }
 
-            else -> dependency.group == group && dependency.name == name
+            else -> dependencyGroup == group && dependency.name == name
         }
     }
 

@@ -6,6 +6,7 @@
 - Dark mode handling for HTML formatter
 - Component filtering for repositories (#12)
 - Mutiple version catalog files handling (#13)
+- Allow `?` character for matches in glob patterns
 
 ### Changed
 - Updated style rules

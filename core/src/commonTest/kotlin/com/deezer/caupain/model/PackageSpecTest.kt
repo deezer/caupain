@@ -99,5 +99,10 @@ class PackageSpecTest {
         assertMatching(PackageSpec("com.*.sub.**"), "com.other.sub.subsub:name")
         assertMatching(PackageSpec("com.*.sub.**"), "com.example.sub.otherSub:name")
         assertNotMatching(PackageSpec("com.*.sub.**"), "com.example.otherSub.otherSub:name")
+        assertMatching(PackageSpec("com.ex?mple.*"), "com.example.sub:name")
+        assertMatching(PackageSpec("com.ex?mple.*"), "com.exomple.sub:name")
+        assertNotMatching(PackageSpec("com.ex?mple.*"), "com.other.sub:name")
+        assertNotMatching(PackageSpec("com.ex?mple.*"), "com.other.sub.subsub:name")
+        assertNotMatching(PackageSpec("com.ex?mple.*"), "com.example:name")
     }
 }

@@ -210,6 +210,7 @@ public sealed interface Exclusion<D : Dependency> {
 
 /**
  * Library exclusion info. If name is null, group is used as a glob, with the following rules:
+ * - `?`: Wildcard that matches exactly one character, other than `.`
  * - `*`: wildcard that matches zero, one or multiple characters, other than `.`
  * - `**`: Wildcard that matches zero, one or multiple packages. For example, `**.sub.name` matches
  * `com.example.sub.name`, `com.example.sub.sub.name`. `**` must be either preceded by `.` or be at
