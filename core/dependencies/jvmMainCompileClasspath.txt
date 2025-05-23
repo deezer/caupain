@@ -6,8 +6,8 @@ com.squareup.okhttp3:okhttp-sse:4.12.0
 com.squareup.okhttp3:okhttp:4.12.0
 com.squareup.okio:okio-jvm:3.11.0
 com.squareup.okio:okio:3.11.0
-com.strumenta:antlr-kotlin-runtime-jvm:1.0.3
-com.strumenta:antlr-kotlin-runtime:1.0.3
+com.strumenta:antlr-kotlin-runtime-jvm:1.0.4
+com.strumenta:antlr-kotlin-runtime:1.0.4
 io.github.pdvrieze.xmlutil:core-io-jvm:0.91.1
 io.github.pdvrieze.xmlutil:core-io:0.91.1
 io.github.pdvrieze.xmlutil:core-jvmcommon:0.91.1

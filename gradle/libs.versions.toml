@@ -10,7 +10,7 @@ mordant = "3.0.2"
 okhttp = "5.0.0-alpha.14"
 detekt = "1.23.8"
 clikt = "5.0.3"
-antlr-kotlin = "1.0.3"
+antlr-kotlin = "1.0.4"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -67,7 +67,7 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.27.0"
 dokka = "org.jetbrains.dokka:2.0.0"
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-mokkery = "dev.mokkery:2.7.2"
+mokkery = "dev.mokkery:2.8.0"
 changelog = "org.jetbrains.changelog:2.2.1"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
 binary-compatibility-validator = "org.jetbrains.kotlinx.binary-compatibility-validator:0.17.0"

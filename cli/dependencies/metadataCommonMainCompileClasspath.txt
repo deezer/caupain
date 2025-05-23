@@ -11,7 +11,7 @@ com.github.ajalt.mordant:mordant-coroutines:3.0.2
 com.github.ajalt.mordant:mordant-markdown:3.0.1
 com.github.ajalt.mordant:mordant:3.0.2
 com.squareup.okio:okio:3.11.0
-com.strumenta:antlr-kotlin-runtime:1.0.3
+com.strumenta:antlr-kotlin-runtime:1.0.4
 io.github.pdvrieze.xmlutil:core-io:0.91.1
 io.github.pdvrieze.xmlutil:core:0.91.1
 io.github.pdvrieze.xmlutil:serialization:0.91.1
