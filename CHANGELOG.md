@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- ARM64 support for Linux in CLI
 
 ### Changed
 

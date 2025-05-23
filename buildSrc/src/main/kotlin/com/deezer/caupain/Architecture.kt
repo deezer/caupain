@@ -36,7 +36,8 @@ enum class Architecture(
 ) {
     MACOS_ARM("macos-silicon", "macosArm64", "kexe", null),
     MACOS_X86("macos-intel", "macosX64", "kexe", null),
-    LINUX("linux", "linuxX64", "kexe", null),
+    LINUX_X86("linux", "linuxX64", "kexe", null),
+    LINUX_ARM("linux-arm", "linuxArm64", "kexe", null),
     WINDOWS("windows", "mingwX64", "exe", "exe");
 
     val filePath: String
@@ -68,7 +69,11 @@ val Project.currentArch: Provider<Architecture>
                     Architecture.MACOS_X86
                 }
 
-                osName == "Linux" -> Architecture.LINUX
+                osName == "Linux" -> if (osArch == "aarch64") {
+                    Architecture.LINUX_ARM
+                } else {
+                    Architecture.LINUX_X86
+                }
 
                 osName.startsWith("Windows") -> Architecture.WINDOWS
 

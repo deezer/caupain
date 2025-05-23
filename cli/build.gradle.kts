@@ -11,7 +11,7 @@ import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
 import com.netflix.gradle.plugins.rpm.Rpm
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.redline_rpm.header.Os
 
@@ -24,7 +24,7 @@ plugins {
     alias(libs.plugins.netflix.nebula.ospackage)
 }
 
-fun KotlinNativeTargetWithHostTests.configureTarget() =
+fun KotlinNativeTarget.configureTarget() =
     binaries {
         executable(listOf(NativeBuildType.RELEASE)) {
             entryPoint = "main"
@@ -53,6 +53,7 @@ kotlin {
         macosArm64 { configureTarget() }
         mingwX64 { configureTarget() }
         linuxX64 { configureTarget() }
+        linuxArm64 { configureTarget() }
 
         jvm {
             binaries {
@@ -197,7 +198,8 @@ val zipAndCopyBinaries = tasks.register<MakeBinariesZipTask>("zipAndCopyBinaries
         "macosX64Binaries",
         "macosArm64Binaries",
         "mingwX64Binaries",
-        "linuxX64Binaries"
+        "linuxX64Binaries",
+        "linuxArm64Binaries",
     )
 }
 tasks.register("assembleAll") {
