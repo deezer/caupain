@@ -174,7 +174,7 @@ public sealed interface GradleDependencyVersion {
         private sealed interface Part : Comparable<Part> {
 
             @JvmInline
-            value class Numeric(val value: Int) : Part {
+            value class Numeric(val value: Long) : Part {
                 override fun compareTo(other: Part): Int {
                     return when (other) {
                         is Numeric -> value.compareTo(other.value)
@@ -226,7 +226,7 @@ public sealed interface GradleDependencyVersion {
 
             companion object {
                 fun from(value: String, type: Type) = when (type) {
-                    Type.NUMERIC -> Numeric(value.toInt())
+                    Type.NUMERIC -> Numeric(value.toLong())
                     Type.ALPHABETICAL -> Alphabetical(value)
                 }
             }

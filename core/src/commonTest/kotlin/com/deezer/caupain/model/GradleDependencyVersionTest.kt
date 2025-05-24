@@ -59,7 +59,7 @@ class GradleDependencyVersionTest {
             "1.1",
             "1.1.2",
             "1.1.2-rc",
-            "1.1.2.1",
+            "1.1.2.202505142326",
             "1.1.2-dev",
         )
         val parsedVersions = versions.map { versionText ->
