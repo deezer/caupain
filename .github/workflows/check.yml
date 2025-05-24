@@ -26,7 +26,7 @@ jobs:
             - os: windows-latest
               TEST_TASK: mingwX64Test
             - os: ubuntu-latest
-              TEST_TASK: linuxX64Test jvmTest test detektAll
+              TEST_TASK: check
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
     timeout-minutes: 20
@@ -51,7 +51,7 @@ jobs:
           sarif_file: build/reports/detekt/merged.sarif
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
@@ -60,7 +60,7 @@ jobs:
           ./gradlew :cli:buildDeb --stacktrace --no-configuration-cache
           sudo dpkg -i cli/build/distributions/*.deb
           caupain --version
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
       - name: Test Choco build
         run: |
           ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
@@ -68,7 +68,7 @@ jobs:
           choco pack
           choco install caupain --debug --verbose --source .
           caupain --version
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && github.event_name != 'pull_request'
       - name: Upload reports
         uses: actions/upload-artifact@v4
         if: success() || failure()
