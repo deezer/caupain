@@ -12,6 +12,7 @@
 ### Removed
 
 ### Fixed
+- Version parsing for versions with long numbers (#17, thanks to [@chenxiaolong](https://github.com/chenxiaolong))
 
 ### Security
 
