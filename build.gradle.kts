@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish) apply false
 }
 
-val currentVersion = "1.1.0"
+val currentVersion = "1.1.1"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isCI = System.getenv("CI").toBoolean()

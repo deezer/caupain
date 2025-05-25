@@ -3,7 +3,6 @@
 ## Unreleased
 
 ### Added
-- ARM64 support for Linux in CLI
 
 ### Changed
 
@@ -12,9 +11,18 @@
 ### Removed
 
 ### Fixed
-- Version parsing for versions with long numbers (#17, thanks to [@chenxiaolong](https://github.com/chenxiaolong))
 
 ### Security
+
+## 1.1.1 - 2025-05-25
+
+### Added
+
+- ARM64 support for Linux in CLI
+
+### Fixed
+
+- Version parsing for versions with long numbers (#17, thanks to [@chenxiaolong](https://github.com/chenxiaolong))
 
 ## 1.1.0 - 2025-05-21
 
