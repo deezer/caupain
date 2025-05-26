@@ -61,6 +61,13 @@ jobs:
           sudo dpkg -i cli/build/distributions/*_amd64.deb
           caupain --version
         if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
+      - name: Upload ARM64 DEB
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
+        with:
+          name: caupain-arm64-deb
+          retention-days: 1
+          path: cli/build/distributions/*_arm64.deb
       - name: Test Choco build
         run: |
           ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
@@ -75,6 +82,20 @@ jobs:
         with:
           name: check-results-${{ matrix.os }}
           path: '*/build/test-results/**/TEST-*.xml'
+
+  test-arm64-deb:
+    runs-on: ubuntu-24.04-arm
+    needs: test
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Download ARM64 DEB
+        uses: actions/download-artifact@v4
+        with:
+          name: caupain-arm64-deb
+      - name: Install ARM64 DEB
+        run: |
+          sudo dpkg -i cli/build/distributions/*_arm64.deb
+          caupain --version
 
   merge-reports:
     runs-on: ubuntu-latest
