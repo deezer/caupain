@@ -94,7 +94,7 @@ jobs:
           name: caupain-arm64-deb
       - name: Install ARM64 DEB
         run: |
-          sudo dpkg -i cli/build/distributions/*_arm64.deb
+          sudo dpkg -i *_arm64.deb
           caupain --version
 
   merge-reports:
