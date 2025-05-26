@@ -106,7 +106,7 @@ jobs:
         uses: actions/upload-artifact/merge@v4
         with:
           name: check-results
-          pattern: 'check-results-*.xml'
+          pattern: 'check-results-*'
           delete-merged: true
 
   test-report:
