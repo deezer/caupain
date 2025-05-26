@@ -20,7 +20,7 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build binaries and packages
-        run: ./gradlew :cli:assembleAll :cli:buildDeb --stacktrace --no-configuration-cache
+        run: ./gradlew :cli:assembleAll :cli:buildAllDebs --stacktrace --no-configuration-cache
       - name: Create release notes
         run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > release-notes.md
       - name: Upload release artifacts
@@ -33,27 +33,27 @@ jobs:
             cli/build/distributions/*.deb
             release-notes.md
 
-#  publishChoco:
-#    runs-on: windows-latest
-#    needs: [ buildBinaries ]
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: '17'
-#          distribution: 'temurin'
-#      - name: Setup gradle
-#        uses: gradle/actions/setup-gradle@v4
-#      - name: Build and publish Choco package
-#        run: |
-#          ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
-#          cd cli\build\distributions\chocolatey
-#          choco pack
-#          choco push --source https://push.chocolatey.org/ --api-key $env:CHOCO_API_KEY
-#        env:
-#          CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+  publishChoco:
+    runs-on: windows-latest
+    needs: [ buildBinaries ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build and publish Choco package
+        run: |
+          ./gradlew :cli:buildChoco --stacktrace --no-configuration-cache
+          cd cli\build\distributions\chocolatey
+          choco pack
+          choco push --source https://push.chocolatey.org/ --api-key $env:CHOCO_API_KEY
+        env:
+          CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
 
   publish:
     runs-on: ubuntu-latest

@@ -17,10 +17,11 @@ plugins {
 val currentVersion = "1.1.1"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
+val isRelease = project.findProperty("isRelease")?.toString().toBoolean()
 val isCI = System.getenv("CI").toBoolean()
 version = buildString {
     append(currentVersion)
-    if (isSnapshot || !isCI) append(".0-SNAPSHOT")
+    if (!isRelease && (isSnapshot || !isCI)) append(".0-SNAPSHOT")
 }
 
 changelog {

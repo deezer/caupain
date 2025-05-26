@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import com.deezer.caupain.Architecture
 import com.deezer.caupain.currentArch
 import com.deezer.caupain.rename
 import com.deezer.caupain.tasks.CreateChocolateyFilesTask
@@ -8,7 +9,6 @@ import com.deezer.caupain.tasks.MakeBinariesZipTask
 import com.deezer.caupain.tasks.RenameCurrentBinaryTask
 import com.netflix.gradle.plugins.deb.Deb
 import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
-import com.netflix.gradle.plugins.rpm.Rpm
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -103,31 +103,10 @@ ospackage {
     packageDescription = "CLI tool to manage Gradle version catalog updates"
     url = "https://github.com/deezer/caupain"
     release = "1"
-    archStr = "amd64"
     os = Os.LINUX
 
     into("/usr")
 
-    // Binary
-    from(layout.buildDirectory.dir("bin/linuxX64/releaseExecutable/caupain.kexe")) {
-        into("bin")
-        rename("caupain")
-        filePermissions {
-            user {
-                read = true
-                write = true
-                execute = true
-            }
-            group {
-                read = true
-                execute = true
-            }
-            other {
-                read = true
-                execute = true
-            }
-        }
-    }
     // Bash completion
     from(layout.projectDirectory.file("completions/bash-completion.sh")) {
         into("share/bash-completion/completions")
@@ -160,12 +139,36 @@ fun ProjectPackagingExtension.from(sourcePath: Any, configure: CopySpec.() -> Un
     from(sourcePath, closureOf(configure))
 }
 
-val buildLinuxBinariesTask = tasks.named("linuxX64Binaries")
-tasks.withType<Deb> {
-    dependsOn(buildLinuxBinariesTask)
-}
-tasks.withType<Rpm> {
-    dependsOn(buildLinuxBinariesTask)
+val buildAllDebs = tasks.register("buildAllDebs")
+val linuxArchs = listOf(Architecture.LINUX_X86, Architecture.LINUX_ARM)
+for (arch in linuxArchs) {
+    val buildLinuxBinariesTask = tasks.named("${arch.fullArchName}Binaries")
+    val buildDebTask = tasks.register<Deb>("build${arch.fullArchName}Deb") {
+        dependsOn(buildLinuxBinariesTask)
+        archStr = arch.shortArchName
+        from(layout.buildDirectory.dir("bin/${arch.fullArchName}/releaseExecutable/caupain.kexe")) {
+            into("bin")
+            rename("caupain")
+            filePermissions {
+                user {
+                    read = true
+                    write = true
+                    execute = true
+                }
+                group {
+                    read = true
+                    execute = true
+                }
+                other {
+                    read = true
+                    execute = true
+                }
+            }
+        }
+    }
+    buildAllDebs {
+        dependsOn(buildDebTask)
+    }
 }
 
 val createChocolateyFilesTask = tasks.register<CreateChocolateyFilesTask>("createChocolateyFiles") {
@@ -186,7 +189,7 @@ tasks.register<Copy>("buildChoco") {
 
 val renameCurrentBinaryTask = tasks.register<RenameCurrentBinaryTask>("renameCurrentArchBinary")
 tasks.register("buildCurrentArchBinary") {
-    dependsOn(currentArch.map { "${it.archName}Binaries" }.get())
+    dependsOn(currentArch.map { "${it.fullArchName}Binaries" }.get())
     finalizedBy(renameCurrentBinaryTask)
 }
 

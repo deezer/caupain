@@ -30,18 +30,19 @@ import org.gradle.api.provider.Provider
 
 enum class Architecture(
     val platformName: String,
-    val archName: String,
+    val fullArchName: String,
+    val shortArchName: String,
     private val ext: String,
     private val outExt: String?
 ) {
-    MACOS_ARM("macos-silicon", "macosArm64", "kexe", null),
-    MACOS_X86("macos-intel", "macosX64", "kexe", null),
-    LINUX_X86("linux", "linuxX64", "kexe", null),
-    LINUX_ARM("linux-arm", "linuxArm64", "kexe", null),
-    WINDOWS("windows", "mingwX64", "exe", "exe");
+    MACOS_ARM("macos-silicon", "macosArm64", "arm64", "kexe", null),
+    MACOS_X86("macos-intel", "macosX64", "amd64", "kexe", null),
+    LINUX_X86("linux", "linuxX64", "amd64", "kexe", null),
+    LINUX_ARM("linux-arm", "linuxArm64", "arm64", "kexe", null),
+    WINDOWS("windows", "mingwX64", "amd64", "exe", "exe");
 
     val filePath: String
-        get() = "${archName}/releaseExecutable/caupain.${ext}"
+        get() = "${fullArchName}/releaseExecutable/caupain.${ext}"
 
     val outFileName: String
         get() = buildString {
