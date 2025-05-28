@@ -76,7 +76,7 @@ private class CachingCacheStorage(
             store[url] = delegate.findAll(url)
         }
         val data = store.getValue(url)
-        return data.find {
+        return data.firstOrNull {
             varyKeys.all { (key, value) -> it.varyKeys[key] == value } && varyKeys.size == it.varyKeys.size
         }
     }
@@ -115,7 +115,7 @@ private class FileCacheStorage(
 
     override suspend fun find(url: Url, varyKeys: Map<String, String>): CachedResponseData? {
         val data = readCache(key(url))
-        return data.find {
+        return data.firstOrNull {
             varyKeys.all { (key, value) -> it.varyKeys[key] == value } && varyKeys.size == it.varyKeys.size
         }
     }
