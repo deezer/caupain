@@ -53,7 +53,7 @@ internal val DEFAULT_POLICIES = listOf(
 )
 
 /**
- * This a default implementation for policy, based on stability levels. Basically, this version accept
+ * This is a default policy implementation based on stability levels. Basically, this version accepts
  * an update if the update's stability level (alpha/beta/rc/stable) is greater than or equal to the
  * current stability level.
  */
