@@ -25,6 +25,7 @@
 package com.deezer.caupain.cli.model
 
 import com.deezer.caupain.model.buildComponentFilter
+import com.deezer.caupain.model.withComponentFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.deezer.caupain.model.Repository as ModelRepository

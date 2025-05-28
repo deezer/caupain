@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:JvmName("Repositories")
 
 package com.deezer.caupain.model
 
@@ -34,6 +35,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -43,67 +45,64 @@ import kotlin.jvm.JvmOverloads
  * @property user The username for authentication (optional).
  * @property password The password for authentication (optional).
  */
-public class Repository(
-    public val url: String,
-    public val user: String?,
-    public val password: String?,
-    public val componentFilter: ComponentFilter? = null
-) : Serializable {
-    @JvmOverloads
-    public constructor(
-        url: String,
-        componentFilter: ComponentFilter? = null
-    ) : this(url, null, null, componentFilter)
+public interface Repository : Serializable {
+    public val url: String
+    public val user: String?
+    public val password: String?
 
     /**
      * Checks if the given [Dependency] is accepted by this repository.
      */
-    public operator fun contains(dependency: Dependency): Boolean {
+    public operator fun contains(dependency: Dependency): Boolean
+}
+
+/**
+ * Creates a [Repository] with the given URL, user, password, and optional [ComponentFilter].
+ */
+@JvmOverloads
+public fun Repository(
+    url: String,
+    user: String?,
+    password: String?,
+    componentFilter: ComponentFilter? = null
+): Repository = DefaultRepository(url, user, password, componentFilter)
+
+/**
+ * Creates a [Repository] with the given URL and optional [ComponentFilter].
+ */
+@JvmOverloads
+public fun Repository(
+    url: String,
+    componentFilter: ComponentFilter? = null
+): Repository = Repository(url, null, null, componentFilter)
+
+/**
+ * Returns a repository with the given [ComponentFilter] applied.
+ *
+ * @see ComponentFilterBuilder.includes
+ * @see ComponentFilterBuilder.excludes
+ */
+public inline fun Repository.withComponentFilter(builder: ComponentFilterBuilder.() -> Unit): Repository {
+    return Repository(
+        url = url,
+        user = user,
+        password = password,
+        componentFilter = buildComponentFilter(builder)
+    )
+}
+
+internal data class DefaultRepository(
+    override val url: String,
+    override val user: String?,
+    override val password: String?,
+    private val componentFilter: ComponentFilter? = null
+) : Repository {
+
+    override operator fun contains(dependency: Dependency): Boolean {
         return componentFilter == null || componentFilter.accepts(dependency)
     }
 
-    /**
-     * Returns a repository with the given [ComponentFilter] applied.
-     *
-     * @see ComponentFilterBuilder.includes
-     * @see ComponentFilterBuilder.excludes
-     */
-    public inline fun withComponentFilter(builder: ComponentFilterBuilder.() -> Unit): Repository {
-        return Repository(
-            url = url,
-            user = user,
-            password = password,
-            componentFilter = buildComponentFilter(builder)
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as Repository
-
-        if (url != other.url) return false
-        if (user != other.user) return false
-        if (password != other.password) return false
-        if (componentFilter != other.componentFilter) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = url.hashCode()
-        result = 31 * result + (user?.hashCode() ?: 0)
-        result = 31 * result + (password?.hashCode() ?: 0)
-        result = 31 * result + (componentFilter?.hashCode() ?: 0)
-        return result
-    }
-
-    override fun toString(): String {
-        return "Repository(user=$user, url='$url', password=$password)"
-    }
-
-    public companion object {
+    companion object {
         private const val serialVersionUID = 1L
     }
 }
