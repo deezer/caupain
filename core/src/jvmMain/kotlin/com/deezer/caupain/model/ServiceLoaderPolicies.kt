@@ -33,9 +33,7 @@ import java.util.ServiceLoader
 internal actual fun loadPolicies(paths: Iterable<Path>, logger: Logger): Iterable<Policy> {
     val childClassLoader = URLClassLoader(
         paths
-            .asSequence()
-            .map { it.toNioPath().toUri().toURL() }
-            .toList()
+            .mapTo(mutableListOf()) { it.toNioPath().toUri().toURL() }
             .toTypedArray(),
         Policy::class.java.classLoader
     )
