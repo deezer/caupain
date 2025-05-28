@@ -24,13 +24,17 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.model.Repository
 import com.deezer.caupain.plugin.internal.asOptional
+import com.deezer.caupain.plugin.internal.toRepositories
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.setProperty
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
@@ -41,10 +45,12 @@ import kotlin.jvm.optionals.getOrNull
 open class DependencyUpdatePlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
-        val ext = target.extensions.create<DependenciesUpdateExtension>("caupain")
         require(target == target.rootProject) {
             "Plugin must be applied to the root project"
         }
+        val ext = target.extensions.create<DependenciesUpdateExtension>("caupain")
+        ext.initDefaultRepositories(target)
+
         target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
             description = "Check for dependency updates"
@@ -58,6 +64,31 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             useCache.convention(ext.useCache)
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
         }
+    }
+
+    private fun DependenciesUpdateExtension.initDefaultRepositories(target: Project) {
+        val collectedRepositories = target.objects.setProperty<Repository>()
+        val collectedPluginRepositories = target.objects.setProperty<Repository>()
+
+        // First, collect repositories from settings
+        val settings = (target.gradle as GradleInternal).settings
+        collectedRepositories.addAll(
+            settings.dependencyResolutionManagement.repositories.toRepositories(target.objects)
+        )
+        collectedPluginRepositories.addAll(
+            settings.pluginManagement.repositories.toRepositories(target.objects)
+        )
+        // Then go into projects to gather specific repositories
+        target.allprojects {
+            afterEvaluate {
+                collectedPluginRepositories.addAll(
+                    buildscript.repositories.toRepositories(target.objects)
+                )
+                collectedRepositories.addAll(repositories.toRepositories(target.objects))
+            }
+        }
+
+        repositories.setupConvention(collectedRepositories, collectedPluginRepositories)
     }
 
     private fun DependenciesUpdateExtension.resolveVersionCatalogFiles(project: Project): Provider<Iterable<FileSystemLocation>> {

@@ -87,7 +87,8 @@ my-regular-plugin = { id = "com.example.plugin", version.ref = "my-regular-ref" 
 ### Repositories
 
 By default, the Maven repositories that are used are the ones defined in the the `pluginManagement`
-and `dependencyResolutionManagement` of your `settings.gradle.kts` file. If you want to override these,
+and `dependencyResolutionManagement` of your `settings.gradle.kts` file, plus the ones defined in the 
+`repositories` or `buildScript.repositories` of the projects. If you want to override these,
 you can use the following syntax:
 ```kotlin
 repositories {

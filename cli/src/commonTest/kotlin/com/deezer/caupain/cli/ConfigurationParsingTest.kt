@@ -31,6 +31,7 @@ import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.buildComponentFilter
+import com.deezer.caupain.model.withComponentFilter
 import kotlinx.serialization.decodeFromString
 import okio.Path.Companion.toPath
 import org.intellij.lang.annotations.Language

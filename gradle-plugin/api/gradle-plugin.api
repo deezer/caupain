@@ -125,9 +125,9 @@ public final class com/deezer/caupain/plugin/RepositoryCategoryHandler {
 }
 
 public abstract class com/deezer/caupain/plugin/RepositoryHandler {
-	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/invocation/Gradle;)V
-	public final fun getLibraries ()Lorg/gradle/api/provider/ListProperty;
-	public final fun getPlugins ()Lorg/gradle/api/provider/ListProperty;
+	public fun <init> ()V
+	public abstract fun getLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getPlugins ()Lorg/gradle/api/provider/ListProperty;
 	public final fun libraries (Lorg/gradle/api/Action;)V
 	public final fun plugins (Lorg/gradle/api/Action;)V
 }

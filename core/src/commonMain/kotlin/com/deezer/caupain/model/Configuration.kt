@@ -21,12 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:JvmName("Configurations")
 
 package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
 import okio.Path
 import okio.Path.Companion.toPath
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 
 /**
  * Configuration is a data class that holds the configuration for the dependency update process.
@@ -47,6 +50,7 @@ import okio.Path.Companion.toPath
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
     public val pluginRepositories: List<Repository>
+
     @Deprecated("Use versionCatalogPaths instead")
     public val versionCatalogPath: Path
     public val versionCatalogPaths: Iterable<Path>
@@ -84,6 +88,7 @@ public interface Configuration : Serializable {
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
+@JvmOverloads
 public fun Configuration(
     repositories: List<Repository> = listOf(
         DefaultRepositories.mavenCentral,
@@ -136,6 +141,7 @@ public fun Configuration(
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
+@JvmOverloads
 public fun Configuration(
     repositories: List<Repository> = listOf(
         DefaultRepositories.mavenCentral,
