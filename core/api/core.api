@@ -6,6 +6,7 @@ public abstract class com/deezer/caupain/CaupainException : java/lang/Exception 
 public abstract interface class com/deezer/caupain/DependencyUpdateChecker {
 	public static final field Companion Lcom/deezer/caupain/DependencyUpdateChecker$Companion;
 	public abstract fun checkForUpdates (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getPolicies ()Lkotlin/sequences/Sequence;
 	public abstract fun getProgress ()Lkotlinx/coroutines/flow/Flow;
 }
 
@@ -396,8 +397,13 @@ public final class com/deezer/caupain/model/PluginExclusion : com/deezer/caupain
 }
 
 public abstract interface class com/deezer/caupain/model/Policy {
+	public abstract fun getDescription ()Ljava/lang/String;
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun select (Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
+}
+
+public final class com/deezer/caupain/model/Policy$DefaultImpls {
+	public static fun getDescription (Lcom/deezer/caupain/model/Policy;)Ljava/lang/String;
 }
 
 public final class com/deezer/caupain/model/Repositories {
@@ -420,6 +426,7 @@ public abstract interface class com/deezer/caupain/model/Repository : java/io/Se
 
 public final class com/deezer/caupain/model/StabilityLevelPolicy : com/deezer/caupain/model/Policy {
 	public static final field INSTANCE Lcom/deezer/caupain/model/StabilityLevelPolicy;
+	public fun getDescription ()Ljava/lang/String;
 	public fun getName ()Ljava/lang/String;
 	public fun select (Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
 }

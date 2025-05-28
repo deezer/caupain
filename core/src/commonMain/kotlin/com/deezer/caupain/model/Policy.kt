@@ -37,6 +37,12 @@ public interface Policy {
     public val name: String
 
     /**
+     * The description of the policy. Default returns null.
+     */
+    public val description: String?
+        get() = null
+
+    /**
      * Selects if the updated version can be used as an update for the current version.
      */
     public fun select(
@@ -59,6 +65,9 @@ internal val DEFAULT_POLICIES = listOf(
  */
 public object StabilityLevelPolicy : Policy {
     override val name: String = "stability-level"
+
+    override val description: String = "Policy based on stability levels of versions. " +
+            "It selects updates if the update's stability level is greater than or equal to the current version's stability level."
 
     override fun select(
         dependency: Dependency,
@@ -95,7 +104,7 @@ public object StabilityLevelPolicy : Policy {
             override fun matches(version: String) = true
         };
 
-        protected open fun matches(version: String) = regex?.matches(version) == true
+        open fun matches(version: String) = regex?.matches(version) == true
 
         companion object {
             private val STABLE_KEYWORDS = arrayOf("RELEASE", "FINAL", "GA")

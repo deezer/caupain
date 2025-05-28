@@ -50,6 +50,7 @@ Options:
   -c, --config=<path>           Configuration file (default: caupain.toml)
   --policy-plugin-dir=<path>    Custom policies plugin dir
   -p, --policy=<text>           Update policy
+  --list-policies               List available policies
   -t, --output-type=(console|html|markdown)
                                 Output type (default: console)
   -o, --output=<path>           Report output path

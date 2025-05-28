@@ -29,6 +29,7 @@ import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.UpdateInfo
 import com.github.ajalt.clikt.command.test
 import dev.mokkery.answering.returns
@@ -184,6 +185,37 @@ class DependencyUpdateCheckerCliTest {
         assertEquals(0, result.statusCode)
         assertEquals("", result.output)
         assertEquals(EXPECTED_RESULT, fileSystem.read(outputPath) { readUtf8().trim() })
+    }
+
+    @Test
+    fun testListPolicies() = runTest(testDispatcher) {
+        val mergedConfiguration = mock<Configuration> {
+            every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
+        }
+        every { parsedConfiguration.toConfiguration(any()) } returns mergedConfiguration
+        val policies = listOf(
+            mock<Policy> {
+                every { name } returns "test1"
+                every { description } returns null
+            },
+            mock<Policy> {
+                every { name } returns "test2"
+                every { description } returns "Test policy 2"
+            }
+        )
+        every { checker.policies } returns policies.asSequence()
+        val cli = createCli { conf ->
+            assertEquals(mergedConfiguration, conf)
+        }
+        val result = cli.test(
+            listOf(
+                "--list-policies",
+                "-c",
+                configurationPath.toString(),
+            )
+        )
+        assertEquals(0, result.statusCode)
+        assertEquals("Available policies:\n- test1\n- test2: Test policy 2", result.output.trim())
     }
 }
 

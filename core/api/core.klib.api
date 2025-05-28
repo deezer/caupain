@@ -69,6 +69,8 @@ abstract interface com.deezer.caupain.model/Logger { // com.deezer.caupain.model
 abstract interface com.deezer.caupain.model/Policy { // com.deezer.caupain.model/Policy|null[0]
     abstract val name // com.deezer.caupain.model/Policy.name|{}name[0]
         abstract fun <get-name>(): kotlin/String // com.deezer.caupain.model/Policy.name.<get-name>|<get-name>(){}[0]
+    open val description // com.deezer.caupain.model/Policy.description|{}description[0]
+        open fun <get-description>(): kotlin/String? // com.deezer.caupain.model/Policy.description.<get-description>|<get-description>(){}[0]
 
     abstract fun select(com.deezer.caupain.model/Dependency, com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/Policy.select|select(com.deezer.caupain.model.Dependency;com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
 }
@@ -85,6 +87,8 @@ abstract interface com.deezer.caupain.model/Repository : com.deezer.caupain/Seri
 }
 
 abstract interface com.deezer.caupain/DependencyUpdateChecker { // com.deezer.caupain/DependencyUpdateChecker|null[0]
+    abstract val policies // com.deezer.caupain/DependencyUpdateChecker.policies|{}policies[0]
+        abstract fun <get-policies>(): kotlin.sequences/Sequence<com.deezer.caupain.model/Policy> // com.deezer.caupain/DependencyUpdateChecker.policies.<get-policies>|<get-policies>(){}[0]
     abstract val progress // com.deezer.caupain/DependencyUpdateChecker.progress|{}progress[0]
         abstract fun <get-progress>(): kotlinx.coroutines.flow/Flow<com.deezer.caupain/DependencyUpdateChecker.Progress?> // com.deezer.caupain/DependencyUpdateChecker.progress.<get-progress>|<get-progress>(){}[0]
 
@@ -581,6 +585,8 @@ final object com.deezer.caupain.model/DefaultRepositories { // com.deezer.caupai
 }
 
 final object com.deezer.caupain.model/StabilityLevelPolicy : com.deezer.caupain.model/Policy { // com.deezer.caupain.model/StabilityLevelPolicy|null[0]
+    final val description // com.deezer.caupain.model/StabilityLevelPolicy.description|{}description[0]
+        final fun <get-description>(): kotlin/String // com.deezer.caupain.model/StabilityLevelPolicy.description.<get-description>|<get-description>(){}[0]
     final val name // com.deezer.caupain.model/StabilityLevelPolicy.name|{}name[0]
         final fun <get-name>(): kotlin/String // com.deezer.caupain.model/StabilityLevelPolicy.name.<get-name>|<get-name>(){}[0]
 
