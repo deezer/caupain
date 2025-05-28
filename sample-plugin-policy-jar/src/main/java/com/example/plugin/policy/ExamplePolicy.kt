@@ -9,6 +9,8 @@ class ExamplePolicy : Policy {
 
     override val name: String = "my-custom-policy"
 
+    override val description: String = "Custom policy"
+
     override fun select(
         dependency: Dependency,
         currentVersion: Version.Resolved,

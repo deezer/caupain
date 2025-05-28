@@ -31,6 +31,7 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
@@ -155,6 +156,10 @@ class PluginTest {
 
     @Test
     fun testUpdate() = runTest(testDispatcher) {
+        val policies = checker.policies.toList()
+        assertEquals(2, policies.size)
+        assertEquals(StabilityLevelPolicy.name, policies[0].name)
+        assertEquals("my-custom-policy", policies[1].name)
         assertEquals(
             expected = DependenciesUpdateResult(
                 gradleUpdateInfo = null,

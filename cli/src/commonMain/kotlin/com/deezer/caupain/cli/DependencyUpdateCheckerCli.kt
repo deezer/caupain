@@ -45,6 +45,7 @@ import com.deezer.caupain.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.Abort
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.installMordant
@@ -130,6 +131,9 @@ class DependencyUpdateCheckerCli(
 
     private val policy by option("-p", "--policy", help = "Update policy")
 
+    private val listPolicies by option("--list-policies", help = "List available policies")
+        .flag()
+
     private val outputType by option("-t", "--output-type", help = "Output type")
         .choice(
             CONSOLE_TYPE to ParsedConfiguration.OutputType.CONSOLE,
@@ -199,6 +203,7 @@ class DependencyUpdateCheckerCli(
         if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
             echo("Policy plugins are not supported on this platform", err = true)
         }
+
         val updateChecker =
             createUpdateChecker(
                 finalConfiguration,
@@ -206,6 +211,26 @@ class DependencyUpdateCheckerCli(
                 fileSystem,
                 logger
             )
+
+        if (listPolicies) {
+            throw PrintMessage(
+                statusCode = 0,
+                message = buildString {
+                    appendLine("Available policies:")
+                    for (policy in updateChecker.policies) {
+                        append("- ")
+                        append(policy.name)
+                        if (policy.description.isNullOrEmpty()) {
+                            appendLine()
+                        } else {
+                            append(": ")
+                            appendLine(policy.description)
+                        }
+                    }
+                }
+            )
+        }
+
         val progress = backgroundScope.createProgress(updateChecker.progress)
 
         val updates = try {

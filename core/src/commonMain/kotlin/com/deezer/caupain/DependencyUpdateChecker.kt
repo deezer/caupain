@@ -92,6 +92,11 @@ public interface DependencyUpdateChecker {
     public val progress: Flow<Progress?>
 
     /**
+     * Available policies
+     */
+    public val policies: Sequence<Policy>
+
+    /**
      * Check for updates in the version catalog.
      *
      * @return the result of the update check, containing the updated versions for each dependency
@@ -243,7 +248,7 @@ internal class DefaultDependencyUpdateChecker(
     policies: List<Policy>?,
 ) : DependencyUpdateChecker {
 
-    private val policies = policies?.asSequence() ?: sequence {
+    override val policies = policies?.asSequence() ?: sequence {
         yieldAll(DEFAULT_POLICIES)
         yieldAll(
             configuration
