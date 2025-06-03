@@ -87,7 +87,7 @@ class UpdatedVersionResolverTest {
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
         }
-        resolver = UpdatedVersionResolver(
+        resolver = DefaultUpdatedVersionResolver(
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {
                     xml(DefaultXml, ContentType.Any)

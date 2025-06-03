@@ -34,12 +34,14 @@ import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultXml
 import io.ktor.client.HttpClient
@@ -115,7 +117,8 @@ class DependencyUpdateCheckerTest {
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
             policies = emptyList(),
-            currentGradleVersion = "8.11"
+            currentGradleVersion = "8.11",
+            selfUpdateResolver = FixedSelfUpdateResolver
         )
     }
 
@@ -200,7 +203,8 @@ class DependencyUpdateCheckerTest {
                         )
                     )
                 ),
-                versionCatalog = null
+                versionCatalog = null,
+                selfUpdateInfo = SELF_UPDATE_INFO
             ),
             actual = checker.checkForUpdates()
         )
@@ -413,5 +417,18 @@ class DependencyUpdateCheckerTest {
             "libs.versions.toml".toPath() to VERSION_CATALOG_MAIN,
             "libs-other.versions.toml".toPath() to VERSION_CATALOG_OTHER
         )
+
+        private val SELF_UPDATE_INFO = SelfUpdateInfo(
+            currentVersion = "1.0.0",
+            updatedVersion = "1.1.0",
+            sources = SelfUpdateInfo.Source.entries
+        )
+
+        private object FixedSelfUpdateResolver : SelfUpdateResolver {
+            override suspend fun resolveSelfUpdate(
+                checker: DependencyUpdateChecker,
+                versionCatalogs: List<VersionCatalog>
+            ): SelfUpdateInfo? = SELF_UPDATE_INFO
+        }
     }
 }

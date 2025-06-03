@@ -28,6 +28,7 @@ import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 
 /**
@@ -41,10 +42,26 @@ public class ConsoleFormatter(
             consolePrinter.print(NO_UPDATES)
         } else {
             consolePrinter.print(UPDATES_TITLE)
+            printSelfUpdate(input.selfUpdateInfo)
             printGradleUpdate(input.gradleUpdateInfo)
             printReferenceUpdates(input.versionReferenceInfo)
             printUpdates(LIBRARY_TITLE, input.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
             printUpdates(PLUGIN_TITLE, input.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
+        }
+    }
+
+    private fun printSelfUpdate(selfUpdateInfo: SelfUpdateInfo?) {
+        if (selfUpdateInfo != null) {
+            consolePrinter.print(
+                buildString {
+                    append("Caupain can be updated from version ")
+                    append(selfUpdateInfo.currentVersion)
+                    append(" to version ")
+                    append(selfUpdateInfo.updatedVersion)
+                    append(" via ")
+                    selfUpdateInfo.sources.joinTo(this) { it.description }
+                }
+            )
         }
     }
 

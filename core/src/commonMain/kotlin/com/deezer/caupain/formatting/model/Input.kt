@@ -27,6 +27,7 @@ package com.deezer.caupain.formatting.model
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
@@ -40,6 +41,7 @@ public class Input(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
     public val versionReferenceInfo: List<VersionReferenceInfo>?,
+    public val selfUpdateInfo: SelfUpdateInfo?
 ) {
     /**
      * Returns true if the input is empty, meaning there are no updates to display.
@@ -48,6 +50,7 @@ public class Input(
         get() = updateInfos.isEmpty()
                 && versionReferenceInfo.isNullOrEmpty()
                 && gradleUpdateInfo == null
+                && selfUpdateInfo == null
 
     public constructor(
         updateResult: DependenciesUpdateResult,
@@ -55,6 +58,7 @@ public class Input(
     ) : this(
         gradleUpdateInfo = updateResult.gradleUpdateInfo,
         updateInfos = updateResult.updateInfos,
+        selfUpdateInfo = updateResult.selfUpdateInfo,
         versionReferenceInfo = if (showVersionReferences && updateResult.versionCatalog != null) {
             computeVersionReferenceInfos(updateResult.versionCatalog, updateResult.updateInfos)
         } else {
@@ -71,6 +75,7 @@ public class Input(
         if (gradleUpdateInfo != other.gradleUpdateInfo) return false
         if (updateInfos != other.updateInfos) return false
         if (versionReferenceInfo != other.versionReferenceInfo) return false
+        if (selfUpdateInfo != other.selfUpdateInfo) return false
 
         return true
     }
@@ -79,11 +84,12 @@ public class Input(
         var result = gradleUpdateInfo?.hashCode() ?: 0
         result = 31 * result + updateInfos.hashCode()
         result = 31 * result + (versionReferenceInfo?.hashCode() ?: 0)
+        result = 31 * result + (selfUpdateInfo?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "Input(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, versionReferenceInfo=$versionReferenceInfo)"
+        return "Input(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, versionReferenceInfo=$versionReferenceInfo, selfUpdateInfo=$selfUpdateInfo)"
     }
 }
 

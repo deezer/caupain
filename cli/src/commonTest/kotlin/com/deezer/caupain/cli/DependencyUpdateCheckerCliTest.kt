@@ -31,6 +31,7 @@ import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Policy
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
@@ -112,7 +113,7 @@ class DependencyUpdateCheckerCliTest {
             assertEquals(configurationPath, path)
             parsedConfiguration
         },
-        createUpdateChecker = { config, gradleVersion, _, _ ->
+        createUpdateChecker = { config, gradleVersion, _, _, _ ->
             assertEquals("8.11", gradleVersion)
             checkConfiguration(config)
             checker
@@ -163,6 +164,11 @@ class DependencyUpdateCheckerCliTest {
                         version = "0.45.0-SNAPSHOT".toSimpleVersion()
                     )
                 )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
             )
         )
         everySuspend { checker.checkForUpdates() } returns output
@@ -273,6 +279,15 @@ private val EXPECTED_RESULT = """
   </head>
   <body>
     <h1>Dependency updates</h1>
+    <h2>Self Update</h2>
+    <p>Caupain current version is 1.0.0 whereas last version is 1.1.0.<br>You can update Caupain via :
+      <ul>
+        <li>plugins</li>
+        <li><a href="https://github.com/deezer/caupain/releases">Github releases</a></li>
+        <li>Hombrew</li>
+        <li>apt</li>
+      </ul>
+    </p>
     <h2>Gradle</h2>
     <p>Gradle current version is 8.11 whereas last version is 8.13. See <a href="https://docs.gradle.org/8.13/release-notes.html">release note</a>.</p>
     <h2>Version References</h2>

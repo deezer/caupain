@@ -118,7 +118,8 @@ class PluginTest {
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
             currentGradleVersion = null,
-            policies = null
+            policies = null,
+            selfUpdateResolver = null
         )
     }
 
@@ -176,7 +177,8 @@ class PluginTest {
                     ),
                     UpdateInfo.Type.PLUGIN to emptyList(),
                 ),
-                versionCatalog = VERSION_CATALOG
+                versionCatalog = VERSION_CATALOG,
+                selfUpdateInfo = null
             ),
             actual = checker.checkForUpdates()
         )

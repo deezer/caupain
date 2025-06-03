@@ -28,6 +28,7 @@ import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.toStaticVersion
 import com.deezer.caupain.toSimpleVersion
@@ -71,7 +72,7 @@ class HtmlFormatterTest {
 
     @Test
     fun testEmpty() = runTest(testDispatcher) {
-        formatter.format(Input(null, emptyMap(), null))
+        formatter.format(Input(null, emptyMap(), null, null))
         assertResult(EMPTY_RESULT)
     }
 
@@ -111,6 +112,11 @@ class HtmlFormatterTest {
                     currentVersion = "1.0.0".toSimpleVersion(),
                     updatedVersion = "2.0.0".toStaticVersion(),
                 )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
             )
         )
         formatter.format(updates)
@@ -196,6 +202,15 @@ private const val FULL_RESULT = """
   </head>
   <body>
     <h1>Dependency updates</h1>
+    <h2>Self Update</h2>
+    <p>Caupain current version is 1.0.0 whereas last version is 1.1.0.<br>You can update Caupain via :
+      <ul>
+        <li>plugins</li>
+        <li><a href="https://github.com/deezer/caupain/releases">Github releases</a></li>
+        <li>Hombrew</li>
+        <li>apt</li>
+      </ul>
+    </p>
     <h2>Gradle</h2>
     <p>Gradle current version is 1.0 whereas last version is 1.1. See <a href="https://docs.gradle.org/1.1/release-notes.html">release note</a>.</p>
     <h2>Version References</h2>

@@ -86,11 +86,39 @@ abstract interface com.deezer.caupain.model/Repository : com.deezer.caupain/Seri
     abstract fun contains(com.deezer.caupain.model/Dependency): kotlin/Boolean // com.deezer.caupain.model/Repository.contains|contains(com.deezer.caupain.model.Dependency){}[0]
 }
 
+abstract interface com.deezer.caupain.resolver/SelfUpdateResolver { // com.deezer.caupain.resolver/SelfUpdateResolver|null[0]
+    abstract suspend fun resolveSelfUpdate(com.deezer.caupain/DependencyUpdateChecker, kotlin.collections/List<com.deezer.caupain.model.versionCatalog/VersionCatalog>): com.deezer.caupain.model/SelfUpdateInfo? // com.deezer.caupain.resolver/SelfUpdateResolver.resolveSelfUpdate|resolveSelfUpdate(com.deezer.caupain.DependencyUpdateChecker;kotlin.collections.List<com.deezer.caupain.model.versionCatalog.VersionCatalog>){}[0]
+}
+
+abstract interface com.deezer.caupain.resolver/UpdatedVersionResolver { // com.deezer.caupain.resolver/UpdatedVersionResolver|null[0]
+    abstract suspend fun getUpdatedVersion(com.deezer.caupain.model/Dependency, kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.resolver/UpdatedVersionResolver.Result? // com.deezer.caupain.resolver/UpdatedVersionResolver.getUpdatedVersion|getUpdatedVersion(com.deezer.caupain.model.Dependency;kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
+
+    final class Result : kotlin/Comparable<com.deezer.caupain.resolver/UpdatedVersionResolver.Result> { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result|null[0]
+        constructor <init>(com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static, com.deezer.caupain.model/Repository) // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.<init>|<init>(com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static;com.deezer.caupain.model.Repository){}[0]
+
+        final val currentVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.currentVersion|{}currentVersion[0]
+            final fun <get-currentVersion>(): com.deezer.caupain.model.versionCatalog/Version.Resolved // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
+        final val repository // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.repository|{}repository[0]
+            final fun <get-repository>(): com.deezer.caupain.model/Repository // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.repository.<get-repository>|<get-repository>(){}[0]
+        final val updatedVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.updatedVersion|{}updatedVersion[0]
+            final fun <get-updatedVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Static // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.updatedVersion.<get-updatedVersion>|<get-updatedVersion>(){}[0]
+
+        final fun compareTo(com.deezer.caupain.resolver/UpdatedVersionResolver.Result): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.compareTo|compareTo(com.deezer.caupain.resolver.UpdatedVersionResolver.Result){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.toString|toString(){}[0]
+    }
+}
+
 abstract interface com.deezer.caupain/DependencyUpdateChecker { // com.deezer.caupain/DependencyUpdateChecker|null[0]
+    abstract val httpClient // com.deezer.caupain/DependencyUpdateChecker.httpClient|{}httpClient[0]
+        abstract fun <get-httpClient>(): io.ktor.client/HttpClient // com.deezer.caupain/DependencyUpdateChecker.httpClient.<get-httpClient>|<get-httpClient>(){}[0]
     abstract val policies // com.deezer.caupain/DependencyUpdateChecker.policies|{}policies[0]
         abstract fun <get-policies>(): kotlin.sequences/Sequence<com.deezer.caupain.model/Policy> // com.deezer.caupain/DependencyUpdateChecker.policies.<get-policies>|<get-policies>(){}[0]
     abstract val progress // com.deezer.caupain/DependencyUpdateChecker.progress|{}progress[0]
         abstract fun <get-progress>(): kotlinx.coroutines.flow/Flow<com.deezer.caupain/DependencyUpdateChecker.Progress?> // com.deezer.caupain/DependencyUpdateChecker.progress.<get-progress>|<get-progress>(){}[0]
+    abstract val versionResolver // com.deezer.caupain/DependencyUpdateChecker.versionResolver|{}versionResolver[0]
+        abstract fun <get-versionResolver>(): com.deezer.caupain.resolver/UpdatedVersionResolver // com.deezer.caupain/DependencyUpdateChecker.versionResolver.<get-versionResolver>|<get-versionResolver>(){}[0]
 
     abstract suspend fun checkForUpdates(): com.deezer.caupain.model/DependenciesUpdateResult // com.deezer.caupain/DependencyUpdateChecker.checkForUpdates|checkForUpdates(){}[0]
 
@@ -457,12 +485,14 @@ final class com.deezer.caupain.formatting.markdown/MarkdownFormatter : com.deeze
 
 final class com.deezer.caupain.formatting.model/Input { // com.deezer.caupain.formatting.model/Input|null[0]
     constructor <init>(com.deezer.caupain.model/DependenciesUpdateResult, kotlin/Boolean) // com.deezer.caupain.formatting.model/Input.<init>|<init>(com.deezer.caupain.model.DependenciesUpdateResult;kotlin.Boolean){}[0]
-    constructor <init>(com.deezer.caupain.model/GradleUpdateInfo?, kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>>, kotlin.collections/List<com.deezer.caupain.formatting.model/VersionReferenceInfo>?) // com.deezer.caupain.formatting.model/Input.<init>|<init>(com.deezer.caupain.model.GradleUpdateInfo?;kotlin.collections.Map<com.deezer.caupain.model.UpdateInfo.Type,kotlin.collections.List<com.deezer.caupain.model.UpdateInfo>>;kotlin.collections.List<com.deezer.caupain.formatting.model.VersionReferenceInfo>?){}[0]
+    constructor <init>(com.deezer.caupain.model/GradleUpdateInfo?, kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>>, kotlin.collections/List<com.deezer.caupain.formatting.model/VersionReferenceInfo>?, com.deezer.caupain.model/SelfUpdateInfo?) // com.deezer.caupain.formatting.model/Input.<init>|<init>(com.deezer.caupain.model.GradleUpdateInfo?;kotlin.collections.Map<com.deezer.caupain.model.UpdateInfo.Type,kotlin.collections.List<com.deezer.caupain.model.UpdateInfo>>;kotlin.collections.List<com.deezer.caupain.formatting.model.VersionReferenceInfo>?;com.deezer.caupain.model.SelfUpdateInfo?){}[0]
 
     final val gradleUpdateInfo // com.deezer.caupain.formatting.model/Input.gradleUpdateInfo|{}gradleUpdateInfo[0]
         final fun <get-gradleUpdateInfo>(): com.deezer.caupain.model/GradleUpdateInfo? // com.deezer.caupain.formatting.model/Input.gradleUpdateInfo.<get-gradleUpdateInfo>|<get-gradleUpdateInfo>(){}[0]
     final val isEmpty // com.deezer.caupain.formatting.model/Input.isEmpty|{}isEmpty[0]
         final fun <get-isEmpty>(): kotlin/Boolean // com.deezer.caupain.formatting.model/Input.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val selfUpdateInfo // com.deezer.caupain.formatting.model/Input.selfUpdateInfo|{}selfUpdateInfo[0]
+        final fun <get-selfUpdateInfo>(): com.deezer.caupain.model/SelfUpdateInfo? // com.deezer.caupain.formatting.model/Input.selfUpdateInfo.<get-selfUpdateInfo>|<get-selfUpdateInfo>(){}[0]
     final val updateInfos // com.deezer.caupain.formatting.model/Input.updateInfos|{}updateInfos[0]
         final fun <get-updateInfos>(): kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>> // com.deezer.caupain.formatting.model/Input.updateInfos.<get-updateInfos>|<get-updateInfos>(){}[0]
     final val versionReferenceInfo // com.deezer.caupain.formatting.model/Input.versionReferenceInfo|{}versionReferenceInfo[0]
@@ -565,10 +595,12 @@ final class com.deezer.caupain.model/ComponentFilterBuilder { // com.deezer.caup
 }
 
 final class com.deezer.caupain.model/DependenciesUpdateResult { // com.deezer.caupain.model/DependenciesUpdateResult|null[0]
-    constructor <init>(com.deezer.caupain.model/GradleUpdateInfo?, kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>>, com.deezer.caupain.model.versionCatalog/VersionCatalog?) // com.deezer.caupain.model/DependenciesUpdateResult.<init>|<init>(com.deezer.caupain.model.GradleUpdateInfo?;kotlin.collections.Map<com.deezer.caupain.model.UpdateInfo.Type,kotlin.collections.List<com.deezer.caupain.model.UpdateInfo>>;com.deezer.caupain.model.versionCatalog.VersionCatalog?){}[0]
+    constructor <init>(com.deezer.caupain.model/GradleUpdateInfo?, kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>>, com.deezer.caupain.model/SelfUpdateInfo?, com.deezer.caupain.model.versionCatalog/VersionCatalog?) // com.deezer.caupain.model/DependenciesUpdateResult.<init>|<init>(com.deezer.caupain.model.GradleUpdateInfo?;kotlin.collections.Map<com.deezer.caupain.model.UpdateInfo.Type,kotlin.collections.List<com.deezer.caupain.model.UpdateInfo>>;com.deezer.caupain.model.SelfUpdateInfo?;com.deezer.caupain.model.versionCatalog.VersionCatalog?){}[0]
 
     final val gradleUpdateInfo // com.deezer.caupain.model/DependenciesUpdateResult.gradleUpdateInfo|{}gradleUpdateInfo[0]
         final fun <get-gradleUpdateInfo>(): com.deezer.caupain.model/GradleUpdateInfo? // com.deezer.caupain.model/DependenciesUpdateResult.gradleUpdateInfo.<get-gradleUpdateInfo>|<get-gradleUpdateInfo>(){}[0]
+    final val selfUpdateInfo // com.deezer.caupain.model/DependenciesUpdateResult.selfUpdateInfo|{}selfUpdateInfo[0]
+        final fun <get-selfUpdateInfo>(): com.deezer.caupain.model/SelfUpdateInfo? // com.deezer.caupain.model/DependenciesUpdateResult.selfUpdateInfo.<get-selfUpdateInfo>|<get-selfUpdateInfo>(){}[0]
     final val updateInfos // com.deezer.caupain.model/DependenciesUpdateResult.updateInfos|{}updateInfos[0]
         final fun <get-updateInfos>(): kotlin.collections/Map<com.deezer.caupain.model/UpdateInfo.Type, kotlin.collections/List<com.deezer.caupain.model/UpdateInfo>> // com.deezer.caupain.model/DependenciesUpdateResult.updateInfos.<get-updateInfos>|<get-updateInfos>(){}[0]
     final val versionCatalog // com.deezer.caupain.model/DependenciesUpdateResult.versionCatalog|{}versionCatalog[0]
@@ -658,6 +690,38 @@ final class com.deezer.caupain.model/PluginExclusion : com.deezer.caupain.model/
     final fun toString(): kotlin/String // com.deezer.caupain.model/PluginExclusion.toString|toString(){}[0]
 }
 
+final class com.deezer.caupain.model/SelfUpdateInfo { // com.deezer.caupain.model/SelfUpdateInfo|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin.collections/List<com.deezer.caupain.model/SelfUpdateInfo.Source>) // com.deezer.caupain.model/SelfUpdateInfo.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<com.deezer.caupain.model.SelfUpdateInfo.Source>){}[0]
+
+    final val currentVersion // com.deezer.caupain.model/SelfUpdateInfo.currentVersion|{}currentVersion[0]
+        final fun <get-currentVersion>(): kotlin/String // com.deezer.caupain.model/SelfUpdateInfo.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
+    final val sources // com.deezer.caupain.model/SelfUpdateInfo.sources|{}sources[0]
+        final fun <get-sources>(): kotlin.collections/List<com.deezer.caupain.model/SelfUpdateInfo.Source> // com.deezer.caupain.model/SelfUpdateInfo.sources.<get-sources>|<get-sources>(){}[0]
+    final val updatedVersion // com.deezer.caupain.model/SelfUpdateInfo.updatedVersion|{}updatedVersion[0]
+        final fun <get-updatedVersion>(): kotlin/String // com.deezer.caupain.model/SelfUpdateInfo.updatedVersion.<get-updatedVersion>|<get-updatedVersion>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/SelfUpdateInfo.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/SelfUpdateInfo.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/SelfUpdateInfo.toString|toString(){}[0]
+
+    final enum class Source : kotlin/Enum<com.deezer.caupain.model/SelfUpdateInfo.Source> { // com.deezer.caupain.model/SelfUpdateInfo.Source|null[0]
+        enum entry APT // com.deezer.caupain.model/SelfUpdateInfo.Source.APT|null[0]
+        enum entry BREW // com.deezer.caupain.model/SelfUpdateInfo.Source.BREW|null[0]
+        enum entry GITHUB_RELEASES // com.deezer.caupain.model/SelfUpdateInfo.Source.GITHUB_RELEASES|null[0]
+        enum entry PLUGINS // com.deezer.caupain.model/SelfUpdateInfo.Source.PLUGINS|null[0]
+
+        final val description // com.deezer.caupain.model/SelfUpdateInfo.Source.description|{}description[0]
+            final fun <get-description>(): kotlin/String // com.deezer.caupain.model/SelfUpdateInfo.Source.description.<get-description>|<get-description>(){}[0]
+        final val entries // com.deezer.caupain.model/SelfUpdateInfo.Source.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<com.deezer.caupain.model/SelfUpdateInfo.Source> // com.deezer.caupain.model/SelfUpdateInfo.Source.entries.<get-entries>|<get-entries>#static(){}[0]
+        final val link // com.deezer.caupain.model/SelfUpdateInfo.Source.link|{}link[0]
+            final fun <get-link>(): kotlin/String? // com.deezer.caupain.model/SelfUpdateInfo.Source.link.<get-link>|<get-link>(){}[0]
+
+        final fun valueOf(kotlin/String): com.deezer.caupain.model/SelfUpdateInfo.Source // com.deezer.caupain.model/SelfUpdateInfo.Source.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<com.deezer.caupain.model/SelfUpdateInfo.Source> // com.deezer.caupain.model/SelfUpdateInfo.Source.values|values#static(){}[0]
+    }
+}
+
 final class com.deezer.caupain.model/UpdateInfo { // com.deezer.caupain.model/UpdateInfo|null[0]
     constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/String? = ..., com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static) // com.deezer.caupain.model/UpdateInfo.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.String?;com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
 
@@ -743,6 +807,6 @@ final fun com.deezer.caupain.model/Configuration(kotlin.collections/List<com.dee
 final fun com.deezer.caupain.model/GradleDependencyVersion(kotlin/String): com.deezer.caupain.model/GradleDependencyVersion // com.deezer.caupain.model/GradleDependencyVersion|GradleDependencyVersion(kotlin.String){}[0]
 final fun com.deezer.caupain.model/Repository(kotlin/String, com.deezer.caupain.model/ComponentFilter? = ...): com.deezer.caupain.model/Repository // com.deezer.caupain.model/Repository|Repository(kotlin.String;com.deezer.caupain.model.ComponentFilter?){}[0]
 final fun com.deezer.caupain.model/Repository(kotlin/String, kotlin/String?, kotlin/String?, com.deezer.caupain.model/ComponentFilter? = ...): com.deezer.caupain.model/Repository // com.deezer.caupain.model/Repository|Repository(kotlin.String;kotlin.String?;kotlin.String?;com.deezer.caupain.model.ComponentFilter?){}[0]
-final fun com.deezer.caupain/DependencyUpdateChecker(com.deezer.caupain.model/Configuration, kotlin/String?, com.deezer.caupain.model/Logger = ..., okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ..., kotlin.collections/List<com.deezer.caupain.model/Policy>? = ...): com.deezer.caupain/DependencyUpdateChecker // com.deezer.caupain/DependencyUpdateChecker|DependencyUpdateChecker(com.deezer.caupain.model.Configuration;kotlin.String?;com.deezer.caupain.model.Logger;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher;kotlin.collections.List<com.deezer.caupain.model.Policy>?){}[0]
+final fun com.deezer.caupain/DependencyUpdateChecker(com.deezer.caupain.model/Configuration, kotlin/String?, com.deezer.caupain.model/Logger = ..., com.deezer.caupain.resolver/SelfUpdateResolver? = ..., okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ..., kotlin.collections/List<com.deezer.caupain.model/Policy>? = ...): com.deezer.caupain/DependencyUpdateChecker // com.deezer.caupain/DependencyUpdateChecker|DependencyUpdateChecker(com.deezer.caupain.model.Configuration;kotlin.String?;com.deezer.caupain.model.Logger;com.deezer.caupain.resolver.SelfUpdateResolver?;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher;kotlin.collections.List<com.deezer.caupain.model.Policy>?){}[0]
 final inline fun (com.deezer.caupain.model/Repository).com.deezer.caupain.model/withComponentFilter(kotlin/Function1<com.deezer.caupain.model/ComponentFilterBuilder, kotlin/Unit>): com.deezer.caupain.model/Repository // com.deezer.caupain.model/withComponentFilter|withComponentFilter@com.deezer.caupain.model.Repository(kotlin.Function1<com.deezer.caupain.model.ComponentFilterBuilder,kotlin.Unit>){}[0]
 final inline fun com.deezer.caupain.model/buildComponentFilter(kotlin/Function1<com.deezer.caupain.model/ComponentFilterBuilder, kotlin/Unit>): com.deezer.caupain.model/ComponentFilter // com.deezer.caupain.model/buildComponentFilter|buildComponentFilter(kotlin.Function1<com.deezer.caupain.model.ComponentFilterBuilder,kotlin.Unit>){}[0]

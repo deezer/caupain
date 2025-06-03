@@ -56,6 +56,8 @@ kotlin {
         linuxX64 { configureTarget() }
         linuxArm64 { configureTarget() }
 
+        applyDefaultHierarchyTemplate()
+
         jvm {
             binaries {
                 executable {
@@ -65,7 +67,7 @@ kotlin {
             }
         }
 
-        getByName("commonMain") {
+        commonMain {
             dependencies {
                 implementation(libs.kotlinx.serialization.toml)
                 implementation(libs.bundles.clikt)
@@ -74,14 +76,22 @@ kotlin {
                 implementation(libs.app.dirs)
             }
         }
-        getByName("commonTest") {
+        commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.okio.fake.filesystem)
                 implementation(libs.kotlinx.coroutines.test)
                 compileOnly(libs.jetbrains.annotations)
+                implementation(libs.ktor.client.mock)
+                implementation(libs.ktor.client.content.negociation)
+                implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
+        val nonLinuxOrMacTest by creating {
+            dependsOn(commonTest.get())
+        }
+        jvmTest.get().dependsOn(nonLinuxOrMacTest)
+        mingwTest.get().dependsOn(nonLinuxOrMacTest)
     }
 }
 

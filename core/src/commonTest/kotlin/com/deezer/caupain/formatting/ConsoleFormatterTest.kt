@@ -29,6 +29,7 @@ import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.toStaticVersion
 import com.deezer.caupain.toSimpleVersion
@@ -54,7 +55,7 @@ class ConsoleFormatterTest {
 
     @Test
     fun testEmpty() = runTest {
-        formatter.format(Input(null, emptyMap(), null))
+        formatter.format(Input(null, emptyMap(), null, null))
         advanceUntilIdle()
         assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
         assertEquals(emptyList(), printer.error)
@@ -96,6 +97,11 @@ class ConsoleFormatterTest {
                     currentVersion = "1.0.0".toSimpleVersion(),
                     updatedVersion = "2.0.0".toStaticVersion(),
                 )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
             )
         )
         formatter.format(updates)
@@ -103,6 +109,7 @@ class ConsoleFormatterTest {
         assertEquals(
             listOf(
                 ConsoleFormatter.UPDATES_TITLE,
+                "Caupain can be updated from version 1.0.0 to version 1.1.0 via plugins, Github releases, Hombrew, apt",
                 "Gradle: 1.0 -> 1.1",
                 ConsoleFormatter.VERSIONS_TITLE,
                 "- deezer: 1.0.0 -> 2.0.0 (1/2 libraries updated, 1/2 plugins updated)",

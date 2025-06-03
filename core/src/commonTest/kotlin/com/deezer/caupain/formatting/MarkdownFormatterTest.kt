@@ -28,6 +28,7 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.toStaticVersion
 import com.deezer.caupain.toSimpleVersion
@@ -71,7 +72,7 @@ class MarkdownFormatterTest {
 
     @Test
     fun testEmpty() = runTest(testDispatcher) {
-        formatter.format(Input(null, emptyMap(), null))
+        formatter.format(Input(null, emptyMap(), null, null))
         assertResult(EMPTY_RESULT)
     }
 
@@ -111,6 +112,11 @@ class MarkdownFormatterTest {
                     currentVersion = "1.0.0".toSimpleVersion(),
                     updatedVersion = "2.0.0".toStaticVersion(),
                 )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
             )
         )
         formatter.format(updates)
@@ -130,6 +136,13 @@ private const val EMPTY_RESULT = "# No updates available."
 @Language("Markdown")
 private val FULL_RESULT = """
 # Dependency updates
+## Caupain
+Caupain current version is 1.0.0 whereas last version is 1.1.0
+You can update Caupain via :
+- plugins
+- [Github releases](https://github.com/deezer/caupain/releases)
+- Hombrew
+- apt
 ## Gradle
 Gradle current version is 1.0 whereas last version is 1.1. See [https://docs.gradle.org/1.1/release-notes.html](https://docs.gradle.org/1.1/release-notes.html).
 Version References

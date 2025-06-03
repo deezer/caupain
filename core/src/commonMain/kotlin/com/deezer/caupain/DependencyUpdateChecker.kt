@@ -40,11 +40,14 @@ import com.deezer.caupain.model.KtorLoggerAdapter
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
 import com.deezer.caupain.resolver.GradleVersionResolver
+import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.resolver.UpdateInfoResolver
 import com.deezer.caupain.resolver.UpdatedVersionResolver
 import com.deezer.caupain.serialization.DefaultJson
@@ -76,9 +79,6 @@ import kotlinx.coroutines.sync.withLock
 import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
 
 /**
  * Given a version catalog, this interrogates Maven repositories (specified via [Configuration]), and
@@ -95,6 +95,16 @@ public interface DependencyUpdateChecker {
      * Available policies
      */
     public val policies: Sequence<Policy>
+
+    /**
+     * The version resolver used to find updated versions of dependencies.
+     */
+    public val versionResolver: UpdatedVersionResolver
+
+    /**
+     * The HTTP client used to make requests to repositories and other services.
+     */
+    public val httpClient: HttpClient
 
     /**
      * Check for updates in the version catalog.
@@ -193,6 +203,7 @@ public fun DependencyUpdateChecker(
     configuration: Configuration,
     currentGradleVersion: String?,
     logger: Logger = Logger.EMPTY,
+    selfUpdateResolver: SelfUpdateResolver? = null,
     fileSystem: FileSystem = FileSystem.SYSTEM,
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     policies: List<Policy>? = null,
@@ -233,6 +244,7 @@ public fun DependencyUpdateChecker(
         ioDispatcher = Dispatchers.IO
     ),
     logger = logger,
+    selfUpdateResolver = selfUpdateResolver,
     policies = policies
 )
 
@@ -240,11 +252,12 @@ public fun DependencyUpdateChecker(
 internal class DefaultDependencyUpdateChecker(
     private val configuration: Configuration,
     private val currentGradleVersion: String?,
-    httpClient: HttpClient,
+    override val httpClient: HttpClient,
     private val fileSystem: FileSystem,
     ioDispatcher: CoroutineDispatcher,
     private val versionCatalogParser: VersionCatalogParser,
     private val logger: Logger,
+    private val selfUpdateResolver: SelfUpdateResolver?,
     policies: List<Policy>?,
 ) : DependencyUpdateChecker {
 
@@ -267,7 +280,7 @@ internal class DefaultDependencyUpdateChecker(
         this.policies.firstOrNull { it.name == name }
     }
 
-    private val versionResolver = UpdatedVersionResolver(
+    override val versionResolver = DefaultUpdatedVersionResolver(
         httpClient = httpClient,
         repositories = configuration.repositories,
         pluginRepositories = configuration.pluginRepositories,
@@ -314,17 +327,15 @@ internal class DefaultDependencyUpdateChecker(
         completed = 0
         progressFlow.value =
             DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
-        val (updatedVersions, updatedGradleVersion) = checkUpdatedVersions(
-            versionCatalogParseResults
-        )
+        val updatedVersionsResult = checkUpdatedVersions(versionCatalogParseResults)
         completed = 0
-        val updatesInfos = checkUpdateInfo(updatedVersions)
+        val updatesInfos = checkUpdateInfo(updatedVersionsResult.updatedVersions)
         // Sort and return
         return DependenciesUpdateResult(
-            gradleUpdateInfo = if (updatedGradleVersion != null && currentGradleVersion != null) {
+            gradleUpdateInfo = if (updatedVersionsResult.updatedGradleVersion != null && currentGradleVersion != null) {
                 GradleUpdateInfo(
                     currentVersion = currentGradleVersion,
-                    updatedVersion = updatedGradleVersion
+                    updatedVersion = updatedVersionsResult.updatedGradleVersion
                 )
             } else {
                 null
@@ -334,17 +345,21 @@ internal class DefaultDependencyUpdateChecker(
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
                 }
             },
-            versionCatalog = versionCatalogParseResults.singleOrNull()?.versionCatalog
+            versionCatalog = versionCatalogParseResults.singleOrNull()?.versionCatalog,
+            selfUpdateInfo = updatedVersionsResult.selfUpdateInfo
         )
     }
 
     private suspend fun checkUpdatedVersions(parseResults: List<VersionCatalogParseResult>): UpdateVersionResult {
         val checkGradleUpdate = currentGradleVersion != null
+        val checkSelfUpdate = selfUpdateResolver != null
         val updatedVersionsMutex = Mutex()
         var updatedGradleVersion: String? = null
+        var selfUpdateInfo: SelfUpdateInfo? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
-        val nbDependencies =
-            parseResults.sumOf { it.versionCatalog.dependencies.size } + if (checkGradleUpdate) 1 else 0
+        var nbDependencies = parseResults.sumOf { it.versionCatalog.dependencies.size }
+        if (checkGradleUpdate) nbDependencies++
+        if (checkSelfUpdate) nbDependencies++
         coroutineScope {
             parseResults
                 .asSequence()
@@ -400,12 +415,29 @@ internal class DefaultDependencyUpdateChecker(
                         }
                     }
                 )
+                .plus(
+                    async {
+                        if (selfUpdateResolver != null) {
+                            logger.info("Finding self update info")
+                            selfUpdateInfo = selfUpdateResolver.resolveSelfUpdate(
+                                this@DefaultDependencyUpdateChecker,
+                                parseResults.map { it.versionCatalog }
+                            )
+                            val percentage = ++completed * 50 / nbDependencies
+                            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                                taskName = FINDING_UPDATES_TASK,
+                                percentage = percentage
+                            )
+                        }
+                    }
+                )
                 .toList()
                 .awaitAll()
         }
         return UpdateVersionResult(
             updatedVersions = updatedVersions,
-            updatedGradleVersion = updatedGradleVersion
+            updatedGradleVersion = updatedGradleVersion,
+            selfUpdateInfo = selfUpdateInfo
         )
     }
 
@@ -445,7 +477,8 @@ internal class DefaultDependencyUpdateChecker(
 
     private data class UpdateVersionResult(
         val updatedVersions: List<DependencyUpdateResult>,
-        val updatedGradleVersion: String?
+        val updatedGradleVersion: String?,
+        val selfUpdateInfo: SelfUpdateInfo?
     )
 
     private data class DependencyUpdateResult(

@@ -31,6 +31,7 @@ import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.asAppendable
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -90,6 +91,7 @@ public class HtmlFormatter(
                         h1 { +"No updates available." }
                     } else {
                         h1 { +"Dependency updates" }
+                        appendSelfUpdate(input.selfUpdateInfo)
                         appendGradleUpdate(input.gradleUpdateInfo)
                         appendVersionReferenceUpdates(input.versionReferenceInfo)
                         for ((type, currentUpdates) in input.updateInfos) {
@@ -98,6 +100,38 @@ public class HtmlFormatter(
                     }
                 }
             }
+    }
+
+    private fun FlowContent.appendSelfUpdate(selfUpdateInfo: SelfUpdateInfo?) {
+        if (selfUpdateInfo == null) return
+        h2 { +"Self Update" }
+        p {
+            +"Caupain current version is ${selfUpdateInfo.currentVersion} whereas last version is ${selfUpdateInfo.updatedVersion}."
+            br
+            +"You can update Caupain via"
+            if (selfUpdateInfo.sources.size == 1) {
+                +" "
+                val source = selfUpdateInfo.sources.single()
+                if (source.link == null) {
+                    +source.description
+                } else {
+                    a(href = source.link) { +source.description }
+                }
+            } else {
+                +" :"
+                ul {
+                    for (source in selfUpdateInfo.sources) {
+                        li {
+                            if (source.link == null) {
+                                +source.description
+                            } else {
+                                a(href = source.link) { +source.description }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun FlowContent.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
