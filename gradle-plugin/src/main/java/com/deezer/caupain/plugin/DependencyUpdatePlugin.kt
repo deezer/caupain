@@ -59,6 +59,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             excludedLibraries.convention(ext.excludedLibraries)
             excludedPluginIds.convention(ext.excludedPluginIds)
             formatterOutputs.convention(ext.outputsHandler.outputs)
+            showVersionReferences.convention(ext.showVersionReferences)
             repositories.convention(ext.repositories.libraries)
             pluginRepositories.convention(ext.repositories.plugins)
             useCache.convention(ext.useCache)

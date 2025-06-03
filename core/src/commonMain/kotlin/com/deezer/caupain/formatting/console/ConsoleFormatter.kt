@@ -25,7 +25,8 @@
 package com.deezer.caupain.formatting.console
 
 import com.deezer.caupain.formatting.Formatter
-import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 
@@ -35,20 +36,61 @@ import com.deezer.caupain.model.UpdateInfo
 public class ConsoleFormatter(
     private val consolePrinter: ConsolePrinter
 ) : Formatter {
-    override suspend fun format(updates: DependenciesUpdateResult) {
-        if (updates.isEmpty()) {
+    override suspend fun format(input: Input) {
+        if (input.isEmpty) {
             consolePrinter.print(NO_UPDATES)
         } else {
             consolePrinter.print(UPDATES_TITLE)
-            printGradleUpdate(updates.gradleUpdateInfo)
-            printUpdates(LIBRARY_TITLE, updates.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
-            printUpdates(PLUGIN_TITLE, updates.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
+            printGradleUpdate(input.gradleUpdateInfo)
+            printReferenceUpdates(input.versionReferenceInfo)
+            printUpdates(LIBRARY_TITLE, input.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
+            printUpdates(PLUGIN_TITLE, input.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
         }
     }
 
     private fun printGradleUpdate(updateInfo: GradleUpdateInfo?) {
         if (updateInfo != null) {
             consolePrinter.print("Gradle: ${updateInfo.currentVersion} -> ${updateInfo.updatedVersion}")
+        }
+    }
+
+    private fun printReferenceUpdates(updates: List<VersionReferenceInfo>?) {
+        if (!updates.isNullOrEmpty()) {
+            consolePrinter.print(VERSIONS_TITLE)
+            for (update in updates) {
+                consolePrinter.print(
+                    buildString {
+                        append("- ")
+                        append(update.id)
+                        append(": ")
+                        append(update.currentVersion)
+                        append(" -> ")
+                        append(update.updatedVersion)
+                        if (!update.isFullyUpdated) {
+                            var hasContent = false
+                            if (update.libraryKeys.isNotEmpty()) {
+                                hasContent = true
+                                append(" (")
+                                append(update.nbFullyUpdatedLibraries)
+                                append('/')
+                                append(update.libraryKeys.size)
+                                append(" libraries updated")
+                            } else {
+                                append(" (")
+                            }
+                            if (update.pluginKeys.isNotEmpty()) {
+                                if (hasContent) append(", ")
+                                append(update.nbFullyUpdatedPlugins)
+                                append('/')
+                                append(update.libraryKeys.size)
+                                append(" plugins updated)")
+                            } else {
+                                append(')')
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 
@@ -68,5 +110,6 @@ public class ConsoleFormatter(
         const val UPDATES_TITLE = "Updates are available"
         const val LIBRARY_TITLE = "Library updates:"
         const val PLUGIN_TITLE = "Plugin updates:"
+        const val VERSIONS_TITLE = "Versions updates:"
     }
 }

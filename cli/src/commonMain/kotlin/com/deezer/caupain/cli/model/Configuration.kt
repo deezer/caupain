@@ -44,6 +44,7 @@ interface Configuration {
     val policy: String?
     val policyPluginDir: Path?
     val cacheDir: Path?
+    val showVersionReferences: Boolean?
     val outputType: OutputType?
     val outputPath: Path?
     val gradleWrapperPropertiesPath: Path?

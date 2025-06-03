@@ -54,6 +54,8 @@ Options:
   -t, --output-type=(console|html|markdown)
                                 Output type (default: console)
   -o, --output=<path>           Report output path
+  --show-version-references     Show versions references update summary in the
+                                report
   --cache-dir=<path>            Cache directory. This is not used if --no-cache
                                 is set (default: user cache dir)
   --no--cache                   Disable HTTP cache
@@ -123,6 +125,10 @@ cacheDir = "path/to/cache/dir"
 outputType = "html"
 # Output path, for HTML and Markdown output types. Default is build/reports/dependencies-update.(html|md)
 outputPath = "path/to/output/file.html"
+# Whether or not to show a block in the report that summarizes the updates from the version block in
+# the version catalog. This allows to quickly see what to update if you use the versions block heavily.
+# Default is false.
+showVersionsReferences = true
 # Path to the Gradle wrapper properties file. This is used to check for an update in the Gradle wrapper. 
 # Default is "gradle/wrapper/gradle-wrapper.properties".
 gradleWrapperPropertiesPath = "/path/to/properties/file"

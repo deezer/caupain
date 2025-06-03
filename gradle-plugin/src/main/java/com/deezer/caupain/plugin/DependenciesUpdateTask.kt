@@ -29,6 +29,7 @@ import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
+import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -97,6 +98,9 @@ open class DependenciesUpdateTask : DefaultTask() {
     internal val formatterOutputs = project.objects.listProperty<OutputsHandler.Output>()
 
     private val customFormatter = project.objects.property<Formatter>()
+
+    @get:Internal
+    internal val showVersionReferences = project.objects.property<Boolean>()
 
     @get:OutputFiles
     internal val outputFiles: Provider<List<Provider<RegularFile>>> =
@@ -167,7 +171,12 @@ open class DependenciesUpdateTask : DefaultTask() {
         runBlocking {
             val updates = checker.checkForUpdates()
             for (formatter in formatters) {
-                formatter.format(updates)
+                formatter.format(
+                    Input(
+                        updateResult = updates,
+                        showVersionReferences = showVersionReferences.get()
+                    )
+                )
             }
         }
     }

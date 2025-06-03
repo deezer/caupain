@@ -35,6 +35,8 @@ import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.serialization.DefaultXml
+import com.deezer.caupain.toStaticVersion
+import com.deezer.caupain.toSimpleVersion
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -115,8 +117,8 @@ class UpdateInfoResolverTest {
                     dependencyId = "com.example:classic",
                     name = CLASSIC_INFO.name,
                     url = CLASSIC_INFO.url,
-                    currentVersion = "0.9",
-                    updatedVersion = "1.0"
+                    currentVersion = "0.9".toSimpleVersion(),
+                    updatedVersion = "1.0".toStaticVersion()
                 )
             ),
             actual = resolver.getUpdateInfo(
@@ -142,8 +144,8 @@ class UpdateInfoResolverTest {
                     dependencyId = "com.github.ben-manes.versions",
                     name = RESOLVED_VERSIONS_INFO.name,
                     url = RESOLVED_VERSIONS_INFO.url,
-                    currentVersion = "0.9",
-                    updatedVersion = "1.0.0"
+                    currentVersion = "0.9".toSimpleVersion(),
+                    updatedVersion = "1.0.0".toStaticVersion()
                 )
             ),
             actual = resolver.getUpdateInfo(
@@ -169,8 +171,8 @@ class UpdateInfoResolverTest {
                     dependencyId = "com.example:snapshot",
                     name = SNAPSHOT_INFO.name,
                     url = SNAPSHOT_INFO.url,
-                    currentVersion = "0.9",
-                    updatedVersion = "4.0.0-beta-2-SNAPSHOT"
+                    currentVersion = "0.9".toSimpleVersion(),
+                    updatedVersion = "4.0.0-beta-2-SNAPSHOT".toStaticVersion()
                 )
             ),
             actual = resolver.getUpdateInfo(

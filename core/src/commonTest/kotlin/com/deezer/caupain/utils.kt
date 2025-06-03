@@ -22,22 +22,11 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.formatting
+package com.deezer.caupain
 
-import com.deezer.caupain.formatting.console.ConsoleFormatter
-import com.deezer.caupain.formatting.html.HtmlFormatter
-import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.versionCatalog.Version
 
-/**
- * Formatter is an interface for formatting dependency updates.
- *
- * @see [ConsoleFormatter]
- * @see [HtmlFormatter]
- */
-public fun interface Formatter {
-    /**
-     * Formats the update result to the desired output format.
-     */
-    public suspend fun format(input: Input)
-}
+internal fun String.toStaticVersion() = GradleDependencyVersion(this) as GradleDependencyVersion.Static
 
+internal fun String.toSimpleVersion() = Version.Simple(toStaticVersion())

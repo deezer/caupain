@@ -24,15 +24,20 @@
 
 package com.deezer.caupain.model
 
+import com.deezer.caupain.model.versionCatalog.VersionCatalog
+
 /**
  * This is the result of the dependency update process.
  *
  * @property gradleUpdateInfo Information about the Gradle update.
  * @property updateInfos Informations about the dependencies updates.
+ * @property versionCatalog The parsed version catalog. Only available if there was only one version
+ * catalog file specified.
  */
 public class DependenciesUpdateResult(
     public val gradleUpdateInfo: GradleUpdateInfo?,
-    public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>
+    public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
+    public val versionCatalog: VersionCatalog?,
 ) {
     /**
      * Returns true if there are no updates available.
@@ -48,6 +53,7 @@ public class DependenciesUpdateResult(
 
         if (gradleUpdateInfo != other.gradleUpdateInfo) return false
         if (updateInfos != other.updateInfos) return false
+        if (versionCatalog != other.versionCatalog) return false
 
         return true
     }
@@ -55,10 +61,11 @@ public class DependenciesUpdateResult(
     override fun hashCode(): Int {
         var result = gradleUpdateInfo?.hashCode() ?: 0
         result = 31 * result + updateInfos.hashCode()
+        result = 31 * result + (versionCatalog?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "DependencyUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos)"
+        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos)"
     }
 }

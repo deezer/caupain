@@ -25,9 +25,12 @@
 package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.html.HtmlFormatter
-import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.toStaticVersion
+import com.deezer.caupain.toSimpleVersion
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -68,21 +71,45 @@ class HtmlFormatterTest {
 
     @Test
     fun testEmpty() = runTest(testDispatcher) {
-        val updates = DependenciesUpdateResult(null, emptyMap())
-        formatter.format(updates)
+        formatter.format(Input(null, emptyMap(), null))
         assertResult(EMPTY_RESULT)
     }
 
     @Test
     fun testFormat() = runTest(testDispatcher) {
-        val updates = DependenciesUpdateResult(
+        val updates = Input(
             gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
             updateInfos = mapOf(
                 UpdateInfo.Type.LIBRARY to listOf(
-                    UpdateInfo("library", "com.deezer:library", null, null, "1.0.0", "2.0.0")
+                    UpdateInfo(
+                        "library",
+                        "com.deezer:library",
+                        null,
+                        null,
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
                 ),
                 UpdateInfo.Type.PLUGIN to listOf(
-                    UpdateInfo("plugin", "com.deezer:plugin", null, null, "1.0.0", "2.0.0")
+                    UpdateInfo(
+                        "plugin",
+                        "com.deezer:plugin",
+                        null,
+                        null,
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                )
+            ),
+            versionReferenceInfo = listOf(
+                VersionReferenceInfo(
+                    id = "deezer",
+                    libraryKeys = listOf("library", "other-library"),
+                    updatedLibraries = mapOf("library" to "2.0.0".toStaticVersion()),
+                    pluginKeys = listOf("plugin"),
+                    updatedPlugins = mapOf("plugin" to "2.0.0".toStaticVersion()),
+                    currentVersion = "1.0.0".toSimpleVersion(),
+                    updatedVersion = "2.0.0".toStaticVersion(),
                 )
             )
         )
@@ -171,6 +198,27 @@ private const val FULL_RESULT = """
     <h1>Dependency updates</h1>
     <h2>Gradle</h2>
     <p>Gradle current version is 1.0 whereas last version is 1.1. See <a href="https://docs.gradle.org/1.1/release-notes.html">release note</a>.</p>
+    <h2>Version References</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+          <th>Details</th>
+        </tr>
+        <tr>
+          <td>deezer</td>
+          <td>1.0.0</td>
+          <td>2.0.0</td>
+          <td>Libraries: <a href="#update_LIBRARY_library">library</a><br>Plugins: <a href="#update_PLUGIN_plugin">plugin</a><br>Updates for these dependency using the reference were not found for the updated version:
+            <ul>
+              <li>other-library: (no update found)</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </p>
     <h2>Libraries</h2>
     <p>
       <table>
@@ -181,7 +229,7 @@ private const val FULL_RESULT = """
           <th>Updated version</th>
           <th>URL</th>
         </tr>
-        <tr>
+        <tr id="update_LIBRARY_library">
           <td>com.deezer:library</td>
           <td></td>
           <td>1.0.0</td>
@@ -200,7 +248,7 @@ private const val FULL_RESULT = """
           <th>Updated version</th>
           <th>URL</th>
         </tr>
-        <tr>
+        <tr id="update_PLUGIN_plugin">
           <td>com.deezer:plugin</td>
           <td></td>
           <td>1.0.0</td>

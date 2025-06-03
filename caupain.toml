@@ -4,3 +4,4 @@ policy = "stability-level"
 cacheDir = "build/cache/caupain"
 outputType = "markdown"
 outputPath = "build/reports/dependency-updates.md"
+showVersionReferences = true

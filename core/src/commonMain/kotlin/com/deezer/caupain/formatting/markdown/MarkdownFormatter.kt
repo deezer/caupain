@@ -26,8 +26,9 @@ package com.deezer.caupain.formatting.markdown
 
 import com.deezer.caupain.formatting.FileFormatter
 import com.deezer.caupain.formatting.Formatter
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.asAppendable
-import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
@@ -51,16 +52,17 @@ public class MarkdownFormatter(
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : FileFormatter(path, fileSystem, ioDispatcher) {
 
-    override suspend fun BufferedSink.writeUpdates(updates: DependenciesUpdateResult) {
+    override suspend fun BufferedSink.writeUpdates(input: Input) {
         this
             .asAppendable()
             .apply {
-                if (updates.isEmpty()) {
+                if (input.isEmpty) {
                     appendLine("# No updates available.")
                 } else {
                     appendLine("# Dependency updates")
-                    appendGradleUpdate(updates.gradleUpdateInfo)
-                    for ((type, currentUpdates) in updates.updateInfos) {
+                    appendGradleUpdate(input.gradleUpdateInfo)
+                    appendVersionReferenceUpdates(input.versionReferenceInfo)
+                    for ((type, currentUpdates) in input.updateInfos) {
                         appendDependencyUpdates(type, currentUpdates)
                     }
                 }
@@ -81,6 +83,63 @@ public class MarkdownFormatter(
         appendLine(").")
     }
 
+    private fun Appendable.appendVersionReferenceUpdates(updates: List<VersionReferenceInfo>?) {
+        if (updates.isNullOrEmpty()) return
+        appendLine("Version References")
+        appendTable(
+            headers = listOf("Id", "Current version", "Updated version", "Details"),
+            rows = updates.map { update ->
+                listOf(
+                    update.id,
+                    update.currentVersion.toString(),
+                    update.updatedVersion.toString(),
+                    createVersionReferencesDetails(update)
+                )
+            }
+        )
+    }
+
+    private fun createVersionReferencesDetails(update: VersionReferenceInfo) = buildString {
+        var hasContent = false
+        if (update.fullyUpdatedLibraries.isNotEmpty()) {
+            hasContent = true
+            append("Libraries: ")
+            update.fullyUpdatedLibraries.joinTo(this)
+        }
+        if (update.fullyUpdatedPlugins.isNotEmpty()) {
+            if (hasContent) append("<br/>")
+            hasContent = true
+            append("Plugins: ")
+            update.fullyUpdatedPlugins.joinTo(this)
+        }
+        if (!update.isFullyUpdated) {
+            if (hasContent) append("<br/>")
+            append("Updates for these dependency using the reference were not found for the updated version:")
+            append("<ul>")
+            for (key in update.libraryKeys) {
+                val updatedVersion = update.updatedLibraries[key]
+                if (updatedVersion != update.updatedVersion) {
+                    append("<li>")
+                    append(key)
+                    append(": ")
+                    append(updatedVersion?.toString() ?: "(no update found)")
+                    append("</li>")
+                }
+            }
+            for (key in update.pluginKeys) {
+                val updatedVersion = update.updatedPlugins[key]
+                if (updatedVersion != update.updatedVersion) {
+                    append("<li>")
+                    append(key)
+                    append(": ")
+                    append(updatedVersion?.toString() ?: "(no update found)")
+                    append("</li>")
+                }
+            }
+            append("</ul>")
+        }
+    }
+
     private fun Appendable.appendDependencyUpdates(
         type: UpdateInfo.Type,
         updates: List<UpdateInfo>
@@ -94,8 +153,8 @@ public class MarkdownFormatter(
                 listOf(
                     update.dependencyId,
                     update.name.orEmpty(),
-                    update.currentVersion,
-                    update.updatedVersion,
+                    update.currentVersion.toString(),
+                    update.updatedVersion.toString(),
                     buildString {
                         if (update.url != null) {
                             append("[")

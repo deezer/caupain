@@ -66,8 +66,8 @@ internal class UpdateInfoResolver(
                 dependencyId = dependency.moduleId,
                 name = mavenInfo?.name,
                 url = mavenInfo?.url,
-                currentVersion = currentVersion.toString(),
-                updatedVersion = updatedVersion.toString()
+                currentVersion = currentVersion,
+                updatedVersion = updatedVersion
             )
         )
     }
