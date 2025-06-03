@@ -28,9 +28,12 @@ import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.github.ajalt.clikt.command.test
 import dev.mokkery.answering.returns
 import dev.mokkery.every
@@ -88,6 +91,7 @@ class DependencyUpdateCheckerCliTest {
             every { outputType } returns null
             every { outputPath } returns null
             every { validate(any()) } returns Unit
+            every { showVersionReferences } returns true
         }
     }
 
@@ -125,8 +129,8 @@ class DependencyUpdateCheckerCliTest {
                         dependencyId = "org.codehaus.groovy:groovy",
                         name = "Groovy core",
                         url = "https://groovy-lang.org/",
-                        currentVersion = "3.0.5-alpha-1",
-                        updatedVersion = "3.0.6"
+                        currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                        updatedVersion = "3.0.6".toStaticVersion()
                     )
                 ),
                 UpdateInfo.Type.PLUGIN to listOf(
@@ -135,14 +139,30 @@ class DependencyUpdateCheckerCliTest {
                         dependencyId = "com.github.ben-manes.versions",
                         name = "Resolved plugin",
                         url = "http://www.example.com/resolved",
-                        currentVersion = "0.45.0-SNAPSHOT",
-                        updatedVersion = "1.0.0"
+                        currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
+                        updatedVersion = "1.0.0".toStaticVersion()
                     )
                 )
             ),
             gradleUpdateInfo = GradleUpdateInfo(
                 currentVersion = "8.11",
                 updatedVersion = "8.13"
+            ),
+            versionCatalog = VersionCatalog(
+                versions = mapOf("groovy" to "3.0.5-alpha-1".toSimpleVersion()),
+                libraries = mapOf(
+                    "groovy-core" to Dependency.Library(
+                        group = "org.codehaus.groovy",
+                        name = "groovy",
+                        version = Version.Reference("groovy"),
+                    )
+                ),
+                plugins = mapOf(
+                    "versions" to Dependency.Plugin(
+                        id = "com.github.ben-manes.versions",
+                        version = "0.45.0-SNAPSHOT".toSimpleVersion()
+                    )
+                )
             )
         )
         everySuspend { checker.checkForUpdates() } returns output
@@ -255,6 +275,23 @@ private val EXPECTED_RESULT = """
     <h1>Dependency updates</h1>
     <h2>Gradle</h2>
     <p>Gradle current version is 8.11 whereas last version is 8.13. See <a href="https://docs.gradle.org/8.13/release-notes.html">release note</a>.</p>
+    <h2>Version References</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+          <th>Details</th>
+        </tr>
+        <tr>
+          <td>groovy</td>
+          <td>3.0.5-alpha-1</td>
+          <td>3.0.6</td>
+          <td>Libraries: <a href="#update_LIBRARY_groovy-core">groovy-core</a></td>
+        </tr>
+      </table>
+    </p>
     <h2>Libraries</h2>
     <p>
       <table>
@@ -265,7 +302,7 @@ private val EXPECTED_RESULT = """
           <th>Updated version</th>
           <th>URL</th>
         </tr>
-        <tr>
+        <tr id="update_LIBRARY_groovy-core">
           <td>org.codehaus.groovy:groovy</td>
           <td>Groovy core</td>
           <td>3.0.5-alpha-1</td>
@@ -284,7 +321,7 @@ private val EXPECTED_RESULT = """
           <th>Updated version</th>
           <th>URL</th>
         </tr>
-        <tr>
+        <tr id="update_PLUGIN_versions">
           <td>com.github.ben-manes.versions</td>
           <td>Resolved plugin</td>
           <td>0.45.0-SNAPSHOT</td>

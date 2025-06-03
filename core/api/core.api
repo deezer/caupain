@@ -51,16 +51,16 @@ public final class com/deezer/caupain/SamePolicyNameException : com/deezer/caupa
 public abstract class com/deezer/caupain/formatting/FileFormatter : com/deezer/caupain/formatting/Formatter {
 	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
 	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun format (Lcom/deezer/caupain/model/DependenciesUpdateResult;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	protected final fun getFileSystem ()Lokio/FileSystem;
 	protected final fun getIoDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
 	public fun getOutputPath ()Ljava/lang/String;
 	protected final fun getPath ()Lokio/Path;
-	protected abstract fun writeUpdates (Lokio/BufferedSink;Lcom/deezer/caupain/model/DependenciesUpdateResult;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected abstract fun writeUpdates (Lokio/BufferedSink;Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/deezer/caupain/formatting/Formatter {
-	public abstract fun format (Lcom/deezer/caupain/model/DependenciesUpdateResult;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/deezer/caupain/formatting/console/ConsoleFormatter : com/deezer/caupain/formatting/Formatter {
@@ -68,8 +68,9 @@ public final class com/deezer/caupain/formatting/console/ConsoleFormatter : com/
 	public static final field NO_UPDATES Ljava/lang/String;
 	public static final field PLUGIN_TITLE Ljava/lang/String;
 	public static final field UPDATES_TITLE Ljava/lang/String;
+	public static final field VERSIONS_TITLE Ljava/lang/String;
 	public fun <init> (Lcom/deezer/caupain/formatting/console/ConsolePrinter;)V
-	public fun format (Lcom/deezer/caupain/model/DependenciesUpdateResult;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class com/deezer/caupain/formatting/console/ConsolePrinter {
@@ -85,6 +86,32 @@ public final class com/deezer/caupain/formatting/html/HtmlFormatter : com/deezer
 public final class com/deezer/caupain/formatting/markdown/MarkdownFormatter : com/deezer/caupain/formatting/FileFormatter {
 	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
 	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class com/deezer/caupain/formatting/model/Input {
+	public fun <init> (Lcom/deezer/caupain/model/DependenciesUpdateResult;Z)V
+	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Ljava/util/List;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGradleUpdateInfo ()Lcom/deezer/caupain/model/GradleUpdateInfo;
+	public final fun getUpdateInfos ()Ljava/util/Map;
+	public final fun getVersionReferenceInfo ()Ljava/util/List;
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/formatting/model/VersionReferenceInfo {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/Map;Ljava/util/List;Ljava/util/Map;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLibraryKeys ()Ljava/util/List;
+	public final fun getPluginKeys ()Ljava/util/List;
+	public final fun getUpdatedLibraries ()Ljava/util/Map;
+	public final fun getUpdatedPlugins ()Ljava/util/Map;
+	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class com/deezer/caupain/model/ComponentFilter : java/io/Serializable {
@@ -162,10 +189,11 @@ public final class com/deezer/caupain/model/DefaultRepositories {
 }
 
 public final class com/deezer/caupain/model/DependenciesUpdateResult {
-	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;)V
+	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getGradleUpdateInfo ()Lcom/deezer/caupain/model/GradleUpdateInfo;
 	public final fun getUpdateInfos ()Ljava/util/Map;
+	public final fun getVersionCatalog ()Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;
 	public fun hashCode ()I
 	public final fun isEmpty ()Z
 	public fun toString ()Ljava/lang/String;
@@ -432,14 +460,14 @@ public final class com/deezer/caupain/model/StabilityLevelPolicy : com/deezer/ca
 }
 
 public final class com/deezer/caupain/model/UpdateInfo {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCurrentVersion ()Ljava/lang/String;
+	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
 	public final fun getDependency ()Ljava/lang/String;
 	public final fun getDependencyId ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
-	public final fun getUpdatedVersion ()Ljava/lang/String;
+	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
 	public final fun getUrl ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -547,5 +575,32 @@ public final class com/deezer/caupain/model/versionCatalog/Version$Simple : com/
 	public fun isUpdate (Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
 	public fun resolve (Ljava/util/Map;)Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/model/versionCatalog/VersionCatalog {
+	public static final field Companion Lcom/deezer/caupain/model/versionCatalog/VersionCatalog$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLibraries ()Ljava/util/Map;
+	public final fun getPlugins ()Ljava/util/Map;
+	public final fun getVersions ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class com/deezer/caupain/model/versionCatalog/VersionCatalog$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/versionCatalog/VersionCatalog$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class com/deezer/caupain/model/versionCatalog/VersionCatalog$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

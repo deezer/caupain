@@ -170,12 +170,13 @@ class PluginTest {
                             dependencyId = "org.codehaus.groovy:groovy",
                             name = "Groovy core",
                             url = "https://groovy-lang.org/",
-                            currentVersion = "1.0.0",
-                            updatedVersion = "1.0.1"
+                            currentVersion = "1.0.0".toSimpleVersion(),
+                            updatedVersion = "1.0.1".toStaticVersion()
                         ),
                     ),
                     UpdateInfo.Type.PLUGIN to emptyList(),
-                )
+                ),
+                versionCatalog = VERSION_CATALOG
             ),
             actual = checker.checkForUpdates()
         )

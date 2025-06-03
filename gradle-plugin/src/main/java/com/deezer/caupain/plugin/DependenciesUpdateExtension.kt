@@ -77,6 +77,11 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
     abstract val outputsHandler: OutputsHandler
 
     /**
+     * Whether or not to show a version references block in the output. Default is false.
+     */
+    val showVersionReferences: Property<Boolean> = objects.property<Boolean>().convention(false)
+
+    /**
      * Whether to use an HTTP cache for the update check. Default is true.
      */
     val useCache: Property<Boolean> = objects.property<Boolean>().convention(true)

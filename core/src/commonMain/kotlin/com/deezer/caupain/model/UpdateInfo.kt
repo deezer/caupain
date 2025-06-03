@@ -24,6 +24,8 @@
 
 package com.deezer.caupain.model
 
+import com.deezer.caupain.model.versionCatalog.Version
+
 /**
  * UpdateInfo is a data class that holds information about a dependency update.
  *
@@ -39,8 +41,8 @@ public class UpdateInfo(
     public val dependencyId: String,
     public val name: String? = null,
     public val url: String? = null,
-    public val currentVersion: String,
-    public val updatedVersion: String
+    public val currentVersion: Version.Resolved,
+    public val updatedVersion: GradleDependencyVersion.Static
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

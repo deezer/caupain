@@ -26,9 +26,12 @@ package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
-import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.toStaticVersion
+import com.deezer.caupain.toSimpleVersion
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -51,8 +54,7 @@ class ConsoleFormatterTest {
 
     @Test
     fun testEmpty() = runTest {
-        val updates = DependenciesUpdateResult(null, emptyMap())
-        formatter.format(updates)
+        formatter.format(Input(null, emptyMap(), null))
         advanceUntilIdle()
         assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
         assertEquals(emptyList(), printer.error)
@@ -60,14 +62,39 @@ class ConsoleFormatterTest {
 
     @Test
     fun testFormat() = runTest {
-        val updates = DependenciesUpdateResult(
+        val updates = Input(
             gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
             updateInfos = mapOf(
                 UpdateInfo.Type.LIBRARY to listOf(
-                    UpdateInfo("library", "com.deezer:library", null, null, "1.0.0", "2.0.0")
+                    UpdateInfo(
+                        "library",
+                        "com.deezer:library",
+                        null,
+                        null,
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
                 ),
                 UpdateInfo.Type.PLUGIN to listOf(
-                    UpdateInfo("plugin", "com.deezer:plugin", null, null, "1.0.0", "2.0.0")
+                    UpdateInfo(
+                        "plugin",
+                        "com.deezer:plugin",
+                        null,
+                        null,
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                )
+            ),
+            versionReferenceInfo = listOf(
+                VersionReferenceInfo(
+                    id = "deezer",
+                    libraryKeys = listOf("library", "other-library"),
+                    updatedLibraries = mapOf("library" to "2.0.0".toStaticVersion()),
+                    pluginKeys = listOf("plugin"),
+                    updatedPlugins = mapOf("plugin" to "2.0.0".toStaticVersion()),
+                    currentVersion = "1.0.0".toSimpleVersion(),
+                    updatedVersion = "2.0.0".toStaticVersion(),
                 )
             )
         )
@@ -77,6 +104,8 @@ class ConsoleFormatterTest {
             listOf(
                 ConsoleFormatter.UPDATES_TITLE,
                 "Gradle: 1.0 -> 1.1",
+                ConsoleFormatter.VERSIONS_TITLE,
+                "- deezer: 1.0.0 -> 2.0.0 (1/2 libraries updated, 1/2 plugins updated)",
                 ConsoleFormatter.LIBRARY_TITLE,
                 "- com.deezer:library: 1.0.0 -> 2.0.0",
                 ConsoleFormatter.PLUGIN_TITLE,

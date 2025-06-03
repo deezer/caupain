@@ -156,6 +156,7 @@ class DependencyUpdatePluginTest {
                         outputFile.set(File("${markdownOutputFile.canonicalPath}"))
                     }   
                 }
+                showVersionReferences.set(true)
                 $supplementaryConfiguration
             }
         
@@ -1015,6 +1016,29 @@ private val EXPECTED_HTML_RESULT = """
     <h1>Dependency updates</h1>
     <h2>Gradle</h2>
     <p>Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
+    <h2>Version References</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+          <th>Details</th>
+        </tr>
+        <tr>
+          <td>coreKtx</td>
+          <td>1.16.0</td>
+          <td>1.17.0</td>
+          <td>Libraries: <a href="#update_LIBRARY_androidx-core-ktx">androidx-core-ktx</a></td>
+        </tr>
+        <tr>
+          <td>kotlin</td>
+          <td>2.0.21</td>
+          <td>2.1.20</td>
+          <td>Plugins: <a href="#update_PLUGIN_kotlin-android">kotlin-android</a></td>
+        </tr>
+      </table>
+    </p>
     <h2>Libraries</h2>
     <p>
       <table>
@@ -1025,7 +1049,7 @@ private val EXPECTED_HTML_RESULT = """
           <th>Updated version</th>
           <th>URL</th>
         </tr>
-        <tr>
+        <tr id="update_LIBRARY_androidx-core-ktx">
           <td>androidx.core:core-ktx</td>
           <td>Core Kotlin Extensions</td>
           <td>1.16.0</td>
@@ -1044,7 +1068,7 @@ private val EXPECTED_HTML_RESULT = """
           <th>Updated version</th>
           <th>URL</th>
         </tr>
-        <tr>
+        <tr id="update_PLUGIN_kotlin-android">
           <td>org.jetbrains.kotlin.android</td>
           <td>Kotlin Gradle Plugin</td>
           <td>2.0.21</td>
@@ -1060,6 +1084,9 @@ private val EXPECTED_HTML_RESULT = """
 private val EXPECTED_CONSOLE_RESULT = """
 Updates are available
 Gradle: $GRADLE_VERSION -> 99.0.0
+Versions updates:
+- coreKtx: 1.16.0 -> 1.17.0
+- kotlin: 2.0.21 -> 2.1.20
 Library updates:
 - androidx.core:core-ktx: 1.16.0 -> 1.17.0
 Plugin updates:
@@ -1071,6 +1098,11 @@ private val EXPECTED_MARKDOWN_RESULT = """
 # Dependency updates
 ## Gradle
 Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
+Version References
+| Id      | Current version | Updated version | Details                      |
+| ------- | --------------- | --------------- | ---------------------------- |
+| coreKtx | 1.16.0          | 1.17.0          | Libraries: androidx-core-ktx |
+| kotlin  | 2.0.21          | 2.1.20          | Plugins: kotlin-android      |
 ## Libraries
 | Id                     | Name                   | Current version | Updated version | URL                                                                                                                                        |
 | ---------------------- | ---------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |

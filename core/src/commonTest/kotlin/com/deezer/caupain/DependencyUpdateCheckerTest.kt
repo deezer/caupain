@@ -177,16 +177,16 @@ class DependencyUpdateCheckerTest {
                             dependencyId = "org.codehaus.groovy:groovy",
                             name = "Groovy core",
                             url = "https://groovy-lang.org/",
-                            currentVersion = "3.0.5-alpha-1",
-                            updatedVersion = "3.0.6"
+                            currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                            updatedVersion = "3.0.6".toStaticVersion()
                         ),
                         UpdateInfo(
                             dependency = "groovy-nio",
                             dependencyId = "org.codehaus.groovy:groovy-nio",
                             name = "Groovy NIO",
                             url = "https://groovy-lang.org/",
-                            currentVersion = "3.0.5-alpha-1",
-                            updatedVersion = "3.0.5"
+                            currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                            updatedVersion = "3.0.5".toStaticVersion()
                         )
                     ),
                     UpdateInfo.Type.PLUGIN to listOf(
@@ -195,11 +195,12 @@ class DependencyUpdateCheckerTest {
                             dependencyId = "com.github.ben-manes.versions",
                             name = "Resolved plugin",
                             url = "http://www.example.com/resolved",
-                            currentVersion = "0.45.0-SNAPSHOT",
-                            updatedVersion = "1.0.0"
+                            currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
+                            updatedVersion = "1.0.0".toStaticVersion()
                         )
                     )
-                )
+                ),
+                versionCatalog = null
             ),
             actual = checker.checkForUpdates()
         )

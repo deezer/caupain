@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.gradle.plugin.publish)
+    alias(libs.plugins.dependency.guard)
 }
 
 compatPatrouille {

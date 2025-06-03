@@ -79,6 +79,4 @@ subprojects {
             mustRunAfter(fixKMPMetadata)
         }
     }
-
-    apply(plugin = "com.dropbox.dependency-guard")
 }

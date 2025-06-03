@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.compat.patrouille)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.netflix.nebula.ospackage)
+    alias(libs.plugins.dependency.guard)
 }
 
 fun KotlinNativeTarget.configureTarget() =

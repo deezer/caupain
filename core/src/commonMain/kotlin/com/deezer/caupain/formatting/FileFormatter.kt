@@ -24,7 +24,7 @@
 
 package com.deezer.caupain.formatting
 
-import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.formatting.model.Input
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -53,11 +53,11 @@ public abstract class FileFormatter(
     public open val outputPath: String
         get() = fileSystem.canonicalize(path).toString()
 
-    override suspend fun format(updates: DependenciesUpdateResult) {
+    override suspend fun format(input: Input) {
         path.parent?.let(fileSystem::createDirectories)
         withContext(ioDispatcher) {
             fileSystem.write(path) {
-                writeUpdates(updates)
+                writeUpdates(input)
             }
         }
     }
@@ -65,5 +65,5 @@ public abstract class FileFormatter(
     /**
      * Writes the formatted output to the given [BufferedSink].
      */
-    protected abstract suspend fun BufferedSink.writeUpdates(updates: DependenciesUpdateResult)
+    protected abstract suspend fun BufferedSink.writeUpdates(input: Input)
 }

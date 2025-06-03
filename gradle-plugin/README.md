@@ -193,6 +193,18 @@ outputs {
 }
 ```
 
+#### Versions references block
+By default, the plugin will show all dependencies atomically, but will not provide a summary block 
+based on the content of the `versions` block in the version catalog. If you heavily use this block and
+want a quick summary to easily update what's needed, you can enable the `showVersionsReferences` switch
+in the configuration block like so:
+```kotlin
+caupain {
+    // Other configuration...
+    showVersionsReferences = true
+}
+```
+
 #### Custom formatter
 If needed, you can also create a custom formatter by providing your custom implementation in the task
 configuration like so:

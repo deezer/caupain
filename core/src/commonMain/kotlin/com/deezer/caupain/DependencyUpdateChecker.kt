@@ -333,7 +333,8 @@ internal class DefaultDependencyUpdateChecker(
                 for (type in UpdateInfo.Type.entries) {
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
                 }
-            }
+            },
+            versionCatalog = versionCatalogParseResults.singleOrNull()?.versionCatalog
         )
     }
 

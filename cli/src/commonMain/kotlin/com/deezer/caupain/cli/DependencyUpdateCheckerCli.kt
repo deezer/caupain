@@ -40,6 +40,7 @@ import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
+import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
@@ -148,6 +149,9 @@ class DependencyUpdateCheckerCli(
     private val outputPath by option("-o", "--output", help = "Report output path")
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
+    private val showVersionReferences by option(help = "Show versions references update summary in the report")
+        .flag()
+
     private val cacheDir by option(help = "Cache directory. This is not used if --no-cache is set")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
         .default(
@@ -245,7 +249,13 @@ class DependencyUpdateCheckerCli(
             progress?.clear()
             backgroundScope.cancel()
         }
-        formatter.format(updates)
+        formatter.format(
+            Input(
+                updateResult = updates,
+                showVersionReferences = configuration?.showVersionReferences
+                    ?: showVersionReferences
+            )
+        )
         if (formatter !is ConsoleFormatter) {
             progress?.clear()
             backgroundScope.cancel()

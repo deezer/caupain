@@ -26,20 +26,26 @@ package com.deezer.caupain.formatting.html
 
 import com.deezer.caupain.formatting.FileFormatter
 import com.deezer.caupain.formatting.Formatter
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.asAppendable
-import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.html.FlowContent
+import kotlinx.html.UL
 import kotlinx.html.a
 import kotlinx.html.body
+import kotlinx.html.br
 import kotlinx.html.h1
 import kotlinx.html.h2
 import kotlinx.html.head
 import kotlinx.html.html
+import kotlinx.html.id
+import kotlinx.html.li
 import kotlinx.html.p
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.style
@@ -47,6 +53,7 @@ import kotlinx.html.table
 import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.tr
+import kotlinx.html.ul
 import kotlinx.html.unsafe
 import okio.BufferedSink
 import okio.FileSystem
@@ -66,7 +73,7 @@ public class HtmlFormatter(
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : FileFormatter(path, fileSystem, ioDispatcher) {
 
-    override suspend fun BufferedSink.writeUpdates(updates: DependenciesUpdateResult) {
+    override suspend fun BufferedSink.writeUpdates(input: Input) {
         this
             .asAppendable()
             .appendHTML()
@@ -79,12 +86,13 @@ public class HtmlFormatter(
                     }
                 }
                 body {
-                    if (updates.isEmpty()) {
+                    if (input.isEmpty) {
                         h1 { +"No updates available." }
                     } else {
                         h1 { +"Dependency updates" }
-                        appendGradleUpdate(updates.gradleUpdateInfo)
-                        for ((type, currentUpdates) in updates.updateInfos) {
+                        appendGradleUpdate(input.gradleUpdateInfo)
+                        appendVersionReferenceUpdates(input.versionReferenceInfo)
+                        for ((type, currentUpdates) in input.updateInfos) {
                             appendDependencyUpdates(type, currentUpdates)
                         }
                     }
@@ -100,6 +108,100 @@ public class HtmlFormatter(
             +" See "
             a(href = updateInfo.url) { +"release note" }
             +"."
+        }
+    }
+
+    private fun getUpdateKey(type: UpdateInfo.Type, id: String): String {
+        return "update_${type}_${id}"
+    }
+
+    private fun FlowContent.appendVersionReferenceUpdates(updates: List<VersionReferenceInfo>?) {
+        if (updates.isNullOrEmpty()) return
+        h2 { +"Version References" }
+        p {
+            table {
+                tr {
+                    th { +"Id" }
+                    th { +"Current version" }
+                    th { +"Updated version" }
+                    th { +"Details" }
+                }
+                for (update in updates) {
+                    tr {
+                        td { +update.id }
+                        td { +update.currentVersion.toString() }
+                        td { +update.updatedVersion.toString() }
+                        td { appendVersionReferencesDetails(update) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun FlowContent.appendVersionReferencesDetails(update: VersionReferenceInfo) {
+        var hasContent = false
+        if (update.fullyUpdatedLibraries.isNotEmpty()) {
+            hasContent = true
+            +"Libraries: "
+            update.fullyUpdatedLibraries.forEachIndexed { index, key ->
+                if (index > 0) +", "
+                a(href = "#${getUpdateKey(UpdateInfo.Type.LIBRARY, key)}") {
+                    +key
+                }
+            }
+        }
+        if (update.fullyUpdatedPlugins.isNotEmpty()) {
+            if (hasContent) br
+            hasContent = true
+            +"Plugins: "
+            update.fullyUpdatedPlugins.forEachIndexed { index, key ->
+                if (index > 0) +", "
+                a(href = "#${getUpdateKey(UpdateInfo.Type.PLUGIN, key)}") {
+                    +key
+                }
+            }
+        }
+        if (!update.isFullyUpdated) {
+            if (hasContent) br
+            +"Updates for these dependency using the reference were not found for the updated version:"
+            ul {
+                appendIncompletelyUpdatedDependencies(
+                    type = UpdateInfo.Type.LIBRARY,
+                    updatedVersion = update.updatedVersion,
+                    keys = update.libraryKeys,
+                    updates = update.updatedLibraries
+                )
+                appendIncompletelyUpdatedDependencies(
+                    type = UpdateInfo.Type.PLUGIN,
+                    updatedVersion = update.updatedVersion,
+                    keys = update.pluginKeys,
+                    updates = update.updatedPlugins
+                )
+            }
+        }
+    }
+
+    private fun UL.appendIncompletelyUpdatedDependencies(
+        type: UpdateInfo.Type,
+        updatedVersion: GradleDependencyVersion.Static,
+        keys: List<String>,
+        updates: Map<String, GradleDependencyVersion.Static>,
+    ) {
+        for (key in keys) {
+            val cUpdatedVersion = updates[key]
+            if (cUpdatedVersion != updatedVersion) {
+                li {
+                    if (cUpdatedVersion == null) {
+                        +key
+                    } else {
+                        a(href = "#${getUpdateKey(type, key)}") {
+                            +key
+                        }
+                    }
+                    +": "
+                    +(cUpdatedVersion?.toString() ?: "(no update found)")
+                }
+            }
         }
     }
 
@@ -120,10 +222,11 @@ public class HtmlFormatter(
                 }
                 for (update in updates) {
                     tr {
+                        id = getUpdateKey(type, update.dependency)
                         td { +update.dependencyId }
                         td { +update.name.orEmpty() }
-                        td { +update.currentVersion }
-                        td { +update.updatedVersion }
+                        td { +update.currentVersion.toString() }
+                        td { +update.updatedVersion.toString() }
                         td {
                             update
                                 .url
