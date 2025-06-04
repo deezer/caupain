@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.gradle_plugin.BuildConfig
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -1044,7 +1045,7 @@ private val EXPECTED_HTML_RESULT = """
   <body>
     <h1>Dependency updates</h1>
     <h2>Self Update</h2>
-    <p>Caupain current version is 1.1.1.0-SNAPSHOT whereas last version is 999999.99999.9999.<br>You can update Caupain via plugins</p>
+    <p>Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999.99999.9999.<br>You can update Caupain via plugins</p>
     <h2>Gradle</h2>
     <p>Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
     <h2>Version References</h2>
@@ -1114,7 +1115,7 @@ private val EXPECTED_HTML_RESULT = """
 
 private val EXPECTED_CONSOLE_RESULT = """
 Updates are available
-Caupain can be updated from version 1.1.1.0-SNAPSHOT to version 999999.99999.9999 via plugins
+Caupain can be updated from version ${BuildConfig.VERSION} to version 999999.99999.9999 via plugins
 Gradle: $GRADLE_VERSION -> 99.0.0
 Versions updates:
 - coreKtx: 1.16.0 -> 1.17.0
@@ -1129,7 +1130,7 @@ Plugin updates:
 private val EXPECTED_MARKDOWN_RESULT = """
 # Dependency updates
 ## Caupain
-Caupain current version is 1.1.1.0-SNAPSHOT whereas last version is 999999.99999.9999
+Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999.99999.9999
 You can update Caupain via plugins
 ## Gradle
 Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
