@@ -72,9 +72,11 @@ public abstract class com/deezer/caupain/plugin/OutputsHandler {
 	public final fun console (Lorg/gradle/api/Action;)V
 	public final fun getConsole ()Lcom/deezer/caupain/plugin/ConsoleOutputHandler;
 	public final fun getHtml ()Lcom/deezer/caupain/plugin/FileOutputHandler;
+	public final fun getJson ()Lcom/deezer/caupain/plugin/FileOutputHandler;
 	public final fun getMarkdown ()Lcom/deezer/caupain/plugin/FileOutputHandler;
 	public final fun getOutputs ()Lorg/gradle/api/provider/Provider;
 	public final fun html (Lorg/gradle/api/Action;)V
+	public final fun json (Lorg/gradle/api/Action;)V
 	public final fun markdown (Lorg/gradle/api/Action;)V
 }
 
@@ -87,6 +89,7 @@ public final class com/deezer/caupain/plugin/OutputsHandler$Output$Console : com
 }
 
 public abstract interface class com/deezer/caupain/plugin/OutputsHandler$Output$File : com/deezer/caupain/plugin/OutputsHandler$Output {
+	public abstract fun createFormatter ()Lcom/deezer/caupain/formatting/FileFormatter;
 	public abstract fun getFile ()Lorg/gradle/api/provider/Provider;
 }
 
@@ -95,6 +98,21 @@ public final class com/deezer/caupain/plugin/OutputsHandler$Output$Html : com/de
 	public final fun component1 ()Lorg/gradle/api/provider/Provider;
 	public final fun copy (Lorg/gradle/api/provider/Provider;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Html;
 	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/OutputsHandler$Output$Html;Lorg/gradle/api/provider/Provider;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Html;
+	public synthetic fun createFormatter ()Lcom/deezer/caupain/formatting/FileFormatter;
+	public fun createFormatter ()Lcom/deezer/caupain/formatting/html/HtmlFormatter;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getFile ()Lorg/gradle/api/provider/Provider;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/plugin/OutputsHandler$Output$Json : com/deezer/caupain/plugin/OutputsHandler$Output$File {
+	public fun <init> (Lorg/gradle/api/provider/Provider;)V
+	public final fun component1 ()Lorg/gradle/api/provider/Provider;
+	public final fun copy (Lorg/gradle/api/provider/Provider;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Json;
+	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/OutputsHandler$Output$Json;Lorg/gradle/api/provider/Provider;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Json;
+	public synthetic fun createFormatter ()Lcom/deezer/caupain/formatting/FileFormatter;
+	public fun createFormatter ()Lcom/deezer/caupain/formatting/json/JsonFormatter;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getFile ()Lorg/gradle/api/provider/Provider;
 	public fun hashCode ()I
@@ -106,6 +124,8 @@ public final class com/deezer/caupain/plugin/OutputsHandler$Output$Markdown : co
 	public final fun component1 ()Lorg/gradle/api/provider/Provider;
 	public final fun copy (Lorg/gradle/api/provider/Provider;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Markdown;
 	public static synthetic fun copy$default (Lcom/deezer/caupain/plugin/OutputsHandler$Output$Markdown;Lorg/gradle/api/provider/Provider;ILjava/lang/Object;)Lcom/deezer/caupain/plugin/OutputsHandler$Output$Markdown;
+	public synthetic fun createFormatter ()Lcom/deezer/caupain/formatting/FileFormatter;
+	public fun createFormatter ()Lcom/deezer/caupain/formatting/markdown/MarkdownFormatter;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getFile ()Lorg/gradle/api/provider/Provider;
 	public fun hashCode ()I

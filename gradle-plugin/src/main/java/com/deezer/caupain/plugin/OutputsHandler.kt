@@ -24,6 +24,11 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.formatting.FileFormatter
+import com.deezer.caupain.formatting.html.HtmlFormatter
+import com.deezer.caupain.formatting.json.JsonFormatter
+import com.deezer.caupain.formatting.markdown.MarkdownFormatter
+import okio.Path.Companion.toOkioPath
 import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
@@ -31,6 +36,7 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import java.io.Serializable
 import java.util.Optional
@@ -48,13 +54,19 @@ abstract class OutputsHandler @Inject constructor(
 
     val markdown = FileOutputHandler(Type.Markdown, objects, layout)
 
-    val outputs: Provider<List<Output>> = console.output.flatMap { console ->
-        html.output.flatMap { html ->
-            markdown.output.map { markdown ->
-                listOfNotNull(console.getOrNull(), html.getOrNull(), markdown.getOrNull())
-            }
+    val json = FileOutputHandler(Type.Json, objects, layout)
+
+    val outputs: Provider<List<Output>> = objects
+        .listProperty<Optional<Output>>()
+        .apply {
+            add(console.output)
+            add(html.output)
+            add(markdown.output)
+            add(json.output)
         }
-    }
+        .map { optionalOutputs ->
+            optionalOutputs.mapNotNull { it.getOrNull() }
+        }
 
     fun console(action: Action<ConsoleOutputHandler>) {
         action.execute(console)
@@ -68,6 +80,10 @@ abstract class OutputsHandler @Inject constructor(
         action.execute(markdown)
     }
 
+    fun json(action: Action<FileOutputHandler>) {
+        action.execute(json)
+    }
+
     sealed interface Output : Serializable {
         object Console : Output {
             private fun readResolve(): Any = Console
@@ -77,11 +93,21 @@ abstract class OutputsHandler @Inject constructor(
 
         sealed interface File : Output {
             val file: Provider<RegularFile>
+
+            fun createFormatter(): FileFormatter
         }
 
-        data class Html(override val file: Provider<RegularFile>) : File
+        data class Html(override val file: Provider<RegularFile>) : File {
+            override fun createFormatter() = HtmlFormatter(file.get().asFile.toOkioPath())
+        }
 
-        data class Markdown(override val file: Provider<RegularFile>) : File
+        data class Markdown(override val file: Provider<RegularFile>) : File {
+            override fun createFormatter() = MarkdownFormatter(file.get().asFile.toOkioPath())
+        }
+
+        data class Json(override val file: Provider<RegularFile>) : File {
+            override fun createFormatter() = JsonFormatter(file.get().asFile.toOkioPath())
+        }
     }
 
     internal sealed class Type(val enabledByDefault: Boolean) {
@@ -96,6 +122,8 @@ abstract class OutputsHandler @Inject constructor(
         object Html : File(true, "html")
 
         object Markdown : File(false, "md")
+
+        object Json : File(false, "json")
     }
 }
 
@@ -128,6 +156,7 @@ open class FileOutputHandler internal constructor(
                 when (type) {
                     OutputsHandler.Type.Html -> OutputsHandler.Output.Html(outputFile)
                     OutputsHandler.Type.Markdown -> OutputsHandler.Output.Markdown(outputFile)
+                    OutputsHandler.Type.Json -> OutputsHandler.Output.Json(outputFile)
                 }
             )
         } else {

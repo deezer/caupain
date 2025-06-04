@@ -11,12 +11,15 @@ okhttp = "5.0.0-alpha.16"
 detekt = "1.23.8"
 clikt = "5.0.3"
 antlr-kotlin = "1.0.5"
+kotlinx-serialization = "1.8.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xml-serialization" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
 xmlutil-core-io = { module = "io.github.pdvrieze.xmlutil:core-io", version.ref = "xml-serialization" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fake-filesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }

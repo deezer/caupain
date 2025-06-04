@@ -56,6 +56,7 @@ class DependencyUpdatePluginTest {
 
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
+    private lateinit var jsonOutputFile: File
 
     @Before
     fun setup() {
@@ -64,6 +65,7 @@ class DependencyUpdatePluginTest {
         // Create output files
         htmlOutputFile = tempFolder.newFile("output.html")
         markdownOutputFile = tempFolder.newFile("output.md")
+        jsonOutputFile = tempFolder.newFile("output.json")
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val body = when (request.path) {
@@ -154,7 +156,11 @@ class DependencyUpdatePluginTest {
                     markdown {
                         enabled.set(true)
                         outputFile.set(File("${markdownOutputFile.canonicalPath}"))
-                    }   
+                    }
+                    json {
+                        enabled.set(true)
+                        outputFile.set(File("${jsonOutputFile.canonicalPath}"))
+                    }
                 }
                 showVersionReferences.set(true)
                 $supplementaryConfiguration
@@ -242,6 +248,10 @@ class DependencyUpdatePluginTest {
         assertEquals(
             expected = EXPECTED_MARKDOWN_RESULT,
             actual = markdownOutputFile.readText().trim()
+        )
+        assertEquals(
+            expected = EXPECTED_JSON_RESULT,
+            actual = jsonOutputFile.readText().trim()
         )
         assertEquals(8, mockWebserverRule.server.requestCount)
     }
@@ -1111,4 +1121,64 @@ Version References
 | Id                           | Name                 | Current version | Updated version | URL                                                |
 | ---------------------------- | -------------------- | --------------- | --------------- | -------------------------------------------------- |
 | org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21          | 2.1.20          | [https://kotlinlang.org/](https://kotlinlang.org/) |
+""".trimIndent().trim()
+
+@Language("JSON")
+private val EXPECTED_JSON_RESULT = """
+{
+    "gradleUpdateInfo": {
+        "currentVersion": "8.14.1",
+        "updatedVersion": "99.0.0"
+    },
+    "updateInfos": {
+        "libraries": [
+            {
+                "dependency": "androidx-core-ktx",
+                "dependencyId": "androidx.core:core-ktx",
+                "name": "Core Kotlin Extensions",
+                "url": "https://developer.android.com/jetpack/androidx/releases/core#1.17.0",
+                "currentVersion": "1.16.0",
+                "updatedVersion": "1.17.0"
+            }
+        ],
+        "plugins": [
+            {
+                "dependency": "kotlin-android",
+                "dependencyId": "org.jetbrains.kotlin.android",
+                "name": "Kotlin Gradle Plugin",
+                "url": "https://kotlinlang.org/",
+                "currentVersion": "2.0.21",
+                "updatedVersion": "2.1.20"
+            }
+        ]
+    },
+    "versionReferenceInfo": [
+        {
+            "id": "coreKtx",
+            "libraryKeys": [
+                "androidx-core-ktx"
+            ],
+            "updatedLibraries": {
+                "androidx-core-ktx": "1.17.0"
+            },
+            "pluginKeys": [],
+            "updatedPlugins": {},
+            "currentVersion": "1.16.0",
+            "updatedVersion": "1.17.0"
+        },
+        {
+            "id": "kotlin",
+            "libraryKeys": [],
+            "updatedLibraries": {},
+            "pluginKeys": [
+                "kotlin-android"
+            ],
+            "updatedPlugins": {
+                "kotlin-android": "2.1.20"
+            },
+            "currentVersion": "2.0.21",
+            "updatedVersion": "2.1.20"
+        }
+    ]
+}    
 """.trimIndent().trim()

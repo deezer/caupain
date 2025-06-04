@@ -27,8 +27,6 @@ package com.deezer.caupain.plugin
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
-import com.deezer.caupain.formatting.html.HtmlFormatter
-import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Dependency
@@ -153,11 +151,7 @@ open class DependenciesUpdateTask : DefaultTask() {
                     is OutputsHandler.Output.Console ->
                         ConsoleFormatter(ConsolePrinterAdapter(logger))
 
-                    is OutputsHandler.Output.Html ->
-                        HtmlFormatter(output.file.get().toOkioPath())
-
-                    is OutputsHandler.Output.Markdown ->
-                        MarkdownFormatter(output.file.get().toOkioPath())
+                    is OutputsHandler.Output.File -> output.createFormatter()
                 }
             }
             if (customFormatter.isPresent) add(customFormatter.get())

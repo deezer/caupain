@@ -32,7 +32,7 @@ internal val DefaultJson: Json =
         isLenient = true
         allowSpecialFloatingPointValues = true
         allowStructuredMapKeys = true
-        prettyPrint = false
+        prettyPrint = true
         useArrayPolymorphism = false
         ignoreUnknownKeys = true
     }

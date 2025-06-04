@@ -58,6 +58,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Interface for versions representing a static version.
      */
+    @Serializable(GradleDependencyVersionStaticSerializer::class)
     public sealed interface Static : GradleDependencyVersion, Comparable<Static> {
 
         override val isStatic: Boolean
@@ -574,6 +575,20 @@ internal class GradleDependencyVersionSerializer : KSerializer<GradleDependencyV
     }
 
     override fun serialize(encoder: Encoder, value: GradleDependencyVersion) {
+        encoder.encodeString(value.text)
+    }
+}
+
+internal class GradleDependencyVersionStaticSerializer : KSerializer<GradleDependencyVersion.Static> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("GradleDependencyVersion.Static", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): GradleDependencyVersion.Static {
+        return GradleDependencyVersion(decoder.decodeString()) as GradleDependencyVersion.Static
+    }
+
+    override fun serialize(encoder: Encoder, value: GradleDependencyVersion.Static) {
         encoder.encodeString(value.text)
     }
 }
