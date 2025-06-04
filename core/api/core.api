@@ -6,8 +6,10 @@ public abstract class com/deezer/caupain/CaupainException : java/lang/Exception 
 public abstract interface class com/deezer/caupain/DependencyUpdateChecker {
 	public static final field Companion Lcom/deezer/caupain/DependencyUpdateChecker$Companion;
 	public abstract fun checkForUpdates (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getHttpClient ()Lio/ktor/client/HttpClient;
 	public abstract fun getPolicies ()Lkotlin/sequences/Sequence;
 	public abstract fun getProgress ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun getVersionResolver ()Lcom/deezer/caupain/resolver/UpdatedVersionResolver;
 }
 
 public final class com/deezer/caupain/DependencyUpdateChecker$Companion {
@@ -36,8 +38,8 @@ public final class com/deezer/caupain/DependencyUpdateChecker$Progress$Indetermi
 }
 
 public final class com/deezer/caupain/DependencyUpdateCheckerKt {
-	public static final fun DependencyUpdateChecker (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;)Lcom/deezer/caupain/DependencyUpdateChecker;
-	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
+	public static final fun DependencyUpdateChecker (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;)Lcom/deezer/caupain/DependencyUpdateChecker;
+	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
 }
 
 public final class com/deezer/caupain/NoVersionCatalogException : com/deezer/caupain/CaupainException {
@@ -96,9 +98,10 @@ public final class com/deezer/caupain/formatting/markdown/MarkdownFormatter : co
 public final class com/deezer/caupain/formatting/model/Input {
 	public static final field Companion Lcom/deezer/caupain/formatting/model/Input$Companion;
 	public fun <init> (Lcom/deezer/caupain/model/DependenciesUpdateResult;Z)V
-	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Ljava/util/List;)V
+	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Ljava/util/List;Lcom/deezer/caupain/model/SelfUpdateInfo;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getGradleUpdateInfo ()Lcom/deezer/caupain/model/GradleUpdateInfo;
+	public final fun getSelfUpdateInfo ()Lcom/deezer/caupain/model/SelfUpdateInfo;
 	public final fun getUpdateInfos ()Ljava/util/Map;
 	public final fun getVersionReferenceInfo ()Ljava/util/List;
 	public fun hashCode ()I
@@ -224,9 +227,10 @@ public final class com/deezer/caupain/model/DefaultRepositories {
 }
 
 public final class com/deezer/caupain/model/DependenciesUpdateResult {
-	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;)V
+	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Lcom/deezer/caupain/model/SelfUpdateInfo;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getGradleUpdateInfo ()Lcom/deezer/caupain/model/GradleUpdateInfo;
+	public final fun getSelfUpdateInfo ()Lcom/deezer/caupain/model/SelfUpdateInfo;
 	public final fun getUpdateInfos ()Ljava/util/Map;
 	public final fun getVersionCatalog ()Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;
 	public fun hashCode ()I
@@ -507,6 +511,48 @@ public abstract interface class com/deezer/caupain/model/Repository : java/io/Se
 	public abstract fun getUser ()Ljava/lang/String;
 }
 
+public final class com/deezer/caupain/model/SelfUpdateInfo {
+	public static final field Companion Lcom/deezer/caupain/model/SelfUpdateInfo$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentVersion ()Ljava/lang/String;
+	public final fun getSources ()Ljava/util/List;
+	public final fun getUpdatedVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public synthetic class com/deezer/caupain/model/SelfUpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/SelfUpdateInfo$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/SelfUpdateInfo;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/SelfUpdateInfo;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class com/deezer/caupain/model/SelfUpdateInfo$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/SelfUpdateInfo$Source : java/lang/Enum {
+	public static final field APT Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+	public static final field BREW Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+	public static final field Companion Lcom/deezer/caupain/model/SelfUpdateInfo$Source$Companion;
+	public static final field GITHUB_RELEASES Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+	public static final field PLUGINS Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+	public final fun getDescription ()Ljava/lang/String;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getLink ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+	public static fun values ()[Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+}
+
+public final class com/deezer/caupain/model/SelfUpdateInfo$Source$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class com/deezer/caupain/model/StabilityLevelPolicy : com/deezer/caupain/model/Policy {
 	public static final field INSTANCE Lcom/deezer/caupain/model/StabilityLevelPolicy;
 	public fun getDescription ()Ljava/lang/String;
@@ -677,5 +723,25 @@ public synthetic class com/deezer/caupain/model/versionCatalog/VersionCatalog$$s
 
 public final class com/deezer/caupain/model/versionCatalog/VersionCatalog$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract interface class com/deezer/caupain/resolver/SelfUpdateResolver {
+	public abstract fun resolveSelfUpdate (Lcom/deezer/caupain/DependencyUpdateChecker;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class com/deezer/caupain/resolver/UpdatedVersionResolver {
+	public abstract fun getUpdatedVersion (Lcom/deezer/caupain/model/Dependency;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/deezer/caupain/resolver/UpdatedVersionResolver$Result : java/lang/Comparable {
+	public fun <init> (Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;Lcom/deezer/caupain/model/Repository;)V
+	public fun compareTo (Lcom/deezer/caupain/resolver/UpdatedVersionResolver$Result;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public final fun getRepository ()Lcom/deezer/caupain/model/Repository;
+	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Static;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 

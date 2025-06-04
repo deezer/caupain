@@ -45,7 +45,62 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
 
-internal class UpdatedVersionResolver(
+/**
+ * This checks Maven repositories for updated versions of a dependency.
+ */
+public interface UpdatedVersionResolver {
+
+    /**
+     * Query the repositories for an updated version of the given dependency.
+     */
+    public suspend fun getUpdatedVersion(
+        dependency: Dependency,
+        versionReferences: Map<String, Version.Resolved>,
+    ): Result?
+
+    /**
+     * Dependency update result.
+     *
+     * @property currentVersion The current version of the dependency.
+     * @property updatedVersion The updated version of the dependency.
+     * @property repository The repository where the updated version was found.
+     */
+    public class Result(
+        public val currentVersion: Version.Resolved,
+        public val updatedVersion: GradleDependencyVersion.Static,
+        public val repository: Repository
+    ) : Comparable<Result> {
+        override fun compareTo(other: Result): Int {
+            return updatedVersion.compareTo(other.updatedVersion)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Result
+
+            if (currentVersion != other.currentVersion) return false
+            if (updatedVersion != other.updatedVersion) return false
+            if (repository != other.repository) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = currentVersion.hashCode()
+            result = 31 * result + updatedVersion.hashCode()
+            result = 31 * result + repository.hashCode()
+            return result
+        }
+
+        override fun toString(): String {
+            return "Result(currentVersion=$currentVersion, updatedVersion=$updatedVersion, repository=$repository)"
+        }
+    }
+}
+
+internal class DefaultUpdatedVersionResolver(
     private val httpClient: HttpClient,
     private val repositories: List<Repository>,
     private val pluginRepositories: List<Repository>,
@@ -53,11 +108,11 @@ internal class UpdatedVersionResolver(
     private val onlyCheckStaticVersions: Boolean,
     private val policy: Policy?,
     private val ioDispatcher: CoroutineDispatcher
-) {
-    suspend fun getUpdatedVersion(
+) : UpdatedVersionResolver {
+    override suspend fun getUpdatedVersion(
         dependency: Dependency,
         versionReferences: Map<String, Version.Resolved>,
-    ): Result? {
+    ): UpdatedVersionResolver.Result? {
         logger.info("Finding updated version for ${dependency.moduleId}")
         val currentVersion = dependency.version?.resolve(versionReferences)
         if (currentVersion == null || onlyCheckStaticVersions && !currentVersion.isStatic) {
@@ -75,7 +130,7 @@ internal class UpdatedVersionResolver(
                     dependency = dependency,
                     versionReferences = versionReferences,
                     repository = repository
-                )?.let { Result(currentVersion, it, repository) }
+                )?.let { UpdatedVersionResolver.Result(currentVersion, it, repository) }
             }
             .firstOrNull()
     }
@@ -105,15 +160,5 @@ internal class UpdatedVersionResolver(
             .filter { version.isUpdate(it) }
             .filterNot { policy?.select(dependency, version, it) == false }
             .maxOrNull()
-    }
-
-    data class Result(
-        val currentVersion: Version.Resolved,
-        val updatedVersion: GradleDependencyVersion.Static,
-        val repository: Repository
-    ) : Comparable<Result> {
-        override fun compareTo(other: Result): Int {
-            return updatedVersion.compareTo(other.updatedVersion)
-        }
     }
 }

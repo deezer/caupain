@@ -10,11 +10,17 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.gradle.plugin.publish)
     alias(libs.plugins.dependency.guard)
+    alias(libs.plugins.build.config)
 }
 
 compatPatrouille {
     java(17)
     kotlin(libs.versions.kotlin.get())
+}
+
+buildConfig {
+    buildConfigField("VERSION", version.toString())
+    useKotlinOutput()
 }
 
 dependencies {

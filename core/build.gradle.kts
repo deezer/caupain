@@ -54,6 +54,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.toml)
                 api(libs.okio)
                 implementation(libs.bundles.ktor)
+                api(libs.ktor.client.core)
                 implementation(libs.bundles.ktor.serialization)
                 implementation(libs.xmlutil.core.io)
                 implementation(libs.kotlinx.io.okio)

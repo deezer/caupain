@@ -28,6 +28,7 @@ import com.deezer.caupain.formatting.json.JsonFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.toSimpleVersion
 import com.deezer.caupain.toStaticVersion
@@ -71,7 +72,7 @@ class JsonFormatterTest {
 
     @Test
     fun testEmpty() = runTest(testDispatcher) {
-        val updates = Input(null, emptyMap(), null)
+        val updates = Input(null, emptyMap(), null, null)
         formatter.format(updates)
         assertResult(EMPTY_RESULT)
     }
@@ -112,6 +113,11 @@ class JsonFormatterTest {
                     currentVersion = "1.0.0".toSimpleVersion(),
                     updatedVersion = "2.0.0".toStaticVersion(),
                 )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
             )
         )
         formatter.format(updates)
@@ -130,7 +136,8 @@ class JsonFormatterTest {
             {
                 "gradleUpdateInfo": null,
                 "updateInfos": {},
-                "versionReferenceInfo": null
+                "versionReferenceInfo": null,
+                "selfUpdateInfo": null
             }
         """.trimIndent()
 
@@ -182,7 +189,17 @@ class JsonFormatterTest {
                         "currentVersion": "1.0.0",
                         "updatedVersion": "2.0.0"
                     }
-                ]
+                ],
+                "selfUpdateInfo": {
+                    "currentVersion": "1.0.0",
+                    "updatedVersion": "1.1.0",
+                    "sources": [
+                        "plugins",
+                        "githubReleases",
+                        "brew",
+                        "apt"
+                    ]
+                }
             }
         """.trimIndent()
     }

@@ -30,6 +30,7 @@ import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.asAppendable
 import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +61,7 @@ public class MarkdownFormatter(
                     appendLine("# No updates available.")
                 } else {
                     appendLine("# Dependency updates")
+                    appendSelfUpdate(input.selfUpdateInfo)
                     appendGradleUpdate(input.gradleUpdateInfo)
                     appendVersionReferenceUpdates(input.versionReferenceInfo)
                     for ((type, currentUpdates) in input.updateInfos) {
@@ -67,6 +69,43 @@ public class MarkdownFormatter(
                     }
                 }
             }
+    }
+
+    private fun Appendable.appendSelfUpdate(selfUpdateInfo: SelfUpdateInfo?) {
+        if (selfUpdateInfo == null) return
+        appendLine("## Caupain")
+        append("Caupain current version is ")
+        append(selfUpdateInfo.currentVersion)
+        append(" whereas last version is ")
+        appendLine(selfUpdateInfo.updatedVersion)
+        append("You can update Caupain via")
+        if (selfUpdateInfo.sources.size == 1) {
+            append(' ')
+            val source = selfUpdateInfo.sources.single()
+            if (source.link == null) {
+                appendLine(source.description)
+            } else {
+                append('[')
+                append(source.description)
+                append("](")
+                append(source.link)
+                appendLine(')')
+            }
+        } else {
+            appendLine(" :")
+            for (source in selfUpdateInfo.sources) {
+                append("- ")
+                if (source.link == null) {
+                    appendLine(source.description)
+                } else {
+                    append('[')
+                    append(source.description)
+                    append("](")
+                    append(source.link)
+                    appendLine(')')
+                }
+            }
+        }
     }
 
     private fun Appendable.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {

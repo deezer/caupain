@@ -5,6 +5,7 @@
 ### Added
 - Option to see the list of available policies in CLI (#23)
 - Versions references block in output (#25)
+- Self-update check (#28)
 
 ### Changed
 - Gradle plugin now pulls default repositories from project build files in addition to setting files (#22)

@@ -31,6 +31,7 @@ import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.model.GradleWrapperProperties
+import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
 import com.deezer.caupain.cli.serialization.DefaultToml
 import com.deezer.caupain.cli.serialization.decodeFromPath
 import com.deezer.caupain.cli.serialization.decodeFromProperties
@@ -44,6 +45,7 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
+import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.Abort
@@ -93,12 +95,13 @@ class DependencyUpdateCheckerCli(
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
     },
-    private val createUpdateChecker: (Configuration, String?, FileSystem, Logger) -> DependencyUpdateChecker = { config, gradleVersion, fs, logger ->
+    private val createUpdateChecker: (Configuration, String?, FileSystem, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
             currentGradleVersion = gradleVersion,
             fileSystem = fs,
-            logger = logger
+            logger = logger,
+            selfUpdateResolver = selfUpdateResolver
         )
     }
 ) : SuspendingCliktCommand(name = "caupain") {
@@ -215,7 +218,8 @@ class DependencyUpdateCheckerCli(
                 finalConfiguration,
                 loadGradleVersion(configuration),
                 fileSystem,
-                logger
+                logger,
+                CLISelfUpdateResolver(ioDispatcher, fileSystem)
             )
 
         if (listPolicies) {

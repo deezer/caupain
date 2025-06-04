@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.gradle_plugin.BuildConfig
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -74,6 +75,7 @@ class DependencyUpdatePluginTest {
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
                     "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
                     "/maven/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
+                    "/maven/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
                     "/gradle" -> return MockResponse(
                         code = 200,
                         body = GRADLE_VERSION_JSON,
@@ -253,7 +255,7 @@ class DependencyUpdatePluginTest {
             expected = EXPECTED_JSON_RESULT,
             actual = jsonOutputFile.readText().trim()
         )
-        assertEquals(8, mockWebserverRule.server.requestCount)
+        assertEquals(9, mockWebserverRule.server.requestCount)
     }
 
     @Test
@@ -971,6 +973,24 @@ private val ANDROID_KOTLIN_PLUGIN_REAL_POM = """
 </project>    
 """.trimIndent()
 
+@Language("XML")
+private val CAUPAIN_METADATA = """
+    <?xml version='1.0' encoding='US-ASCII'?>
+    <metadata>
+      <groupId>com.deezer.caupain</groupId>
+      <artifactId>com.deezer.caupain.gradle.plugin</artifactId>
+      <version>999999.99999.9999</version>
+      <versioning>
+        <latest>999999.99999.9999</latest>
+        <release>999999.99999.9999</release>
+        <versions>
+          <version>1.0.0</version><version>1.0.1</version><version>1.1.0</version><version>999999.99999.9999</version>
+        </versions>
+        <lastUpdated>20250525142626</lastUpdated>
+      </versioning>
+    </metadata>    
+""".trimIndent()
+
 @Language("JSON")
 private val GRADLE_VERSION_JSON = """
 {
@@ -1024,6 +1044,8 @@ private val EXPECTED_HTML_RESULT = """
   </head>
   <body>
     <h1>Dependency updates</h1>
+    <h2>Self Update</h2>
+    <p>Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999.99999.9999.<br>You can update Caupain via plugins</p>
     <h2>Gradle</h2>
     <p>Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
     <h2>Version References</h2>
@@ -1093,6 +1115,7 @@ private val EXPECTED_HTML_RESULT = """
 
 private val EXPECTED_CONSOLE_RESULT = """
 Updates are available
+Caupain can be updated from version ${BuildConfig.VERSION} to version 999999.99999.9999 via plugins
 Gradle: $GRADLE_VERSION -> 99.0.0
 Versions updates:
 - coreKtx: 1.16.0 -> 1.17.0
@@ -1106,6 +1129,9 @@ Plugin updates:
 @Language("Markdown")
 private val EXPECTED_MARKDOWN_RESULT = """
 # Dependency updates
+## Caupain
+Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999.99999.9999
+You can update Caupain via plugins
 ## Gradle
 Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
 Version References
@@ -1179,6 +1205,13 @@ private val EXPECTED_JSON_RESULT = """
             "currentVersion": "2.0.21",
             "updatedVersion": "2.1.20"
         }
-    ]
+    ],
+    "selfUpdateInfo": {
+        "currentVersion": "${BuildConfig.VERSION}",
+        "updatedVersion": "999999.99999.9999",
+        "sources": [
+            "plugins"
+        ]
+    }
 }    
 """.trimIndent().trim()

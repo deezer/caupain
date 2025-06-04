@@ -159,6 +159,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         val checker = DependencyUpdateChecker(
             configuration = configuration,
             logger = LoggerAdapter(logger),
+            selfUpdateResolver = PluginUpdateResolver,
             policies = policy?.let { listOf(it) },
             currentGradleVersion = GradleVersion.current().version,
         )

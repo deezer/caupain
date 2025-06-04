@@ -31,12 +31,14 @@ import com.deezer.caupain.model.versionCatalog.VersionCatalog
  *
  * @property gradleUpdateInfo Information about the Gradle update.
  * @property updateInfos Informations about the dependencies updates.
+ * @property selfUpdateInfo Information about the update to Caupain itself.
  * @property versionCatalog The parsed version catalog. Only available if there was only one version
  * catalog file specified.
  */
 public class DependenciesUpdateResult(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
+    public val selfUpdateInfo: SelfUpdateInfo?,
     public val versionCatalog: VersionCatalog?,
 ) {
     /**
@@ -44,6 +46,7 @@ public class DependenciesUpdateResult(
      */
     public fun isEmpty(): Boolean = gradleUpdateInfo == null
             && (updateInfos.isEmpty() || updateInfos.all { it.value.isEmpty() })
+            && selfUpdateInfo == null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -53,6 +56,7 @@ public class DependenciesUpdateResult(
 
         if (gradleUpdateInfo != other.gradleUpdateInfo) return false
         if (updateInfos != other.updateInfos) return false
+        if (selfUpdateInfo != other.selfUpdateInfo) return false
         if (versionCatalog != other.versionCatalog) return false
 
         return true
@@ -61,11 +65,12 @@ public class DependenciesUpdateResult(
     override fun hashCode(): Int {
         var result = gradleUpdateInfo?.hashCode() ?: 0
         result = 31 * result + updateInfos.hashCode()
+        result = 31 * result + (selfUpdateInfo?.hashCode() ?: 0)
         result = 31 * result + (versionCatalog?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos)"
+        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, selfUpdateInfo=$selfUpdateInfo)"
     }
 }
