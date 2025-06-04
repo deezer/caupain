@@ -133,6 +133,7 @@ public class GradleUpdateInfo(
  * @property updatedVersion The version to which Caupain can be updated.
  * @param sources The sources from which the update can be fetched.
  */
+@Serializable
 public class SelfUpdateInfo(
     public val currentVersion: String,
     public val updatedVersion: String,
@@ -165,10 +166,11 @@ public class SelfUpdateInfo(
     /**
      * Update source.
      */
+    @Serializable
     public enum class Source(public val description: String, public val link: String? = null) {
-        PLUGINS("plugins"),
-        GITHUB_RELEASES("Github releases", "https://github.com/deezer/caupain/releases"),
-        BREW("Hombrew"),
-        APT("apt")
+        @SerialName("plugins") PLUGINS("plugins"),
+        @SerialName("githubReleases") GITHUB_RELEASES("Github releases", "https://github.com/deezer/caupain/releases"),
+        @SerialName("brew") BREW("Hombrew"),
+        @SerialName("apt") APT("apt")
     }
 }

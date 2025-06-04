@@ -512,6 +512,7 @@ public abstract interface class com/deezer/caupain/model/Repository : java/io/Se
 }
 
 public final class com/deezer/caupain/model/SelfUpdateInfo {
+	public static final field Companion Lcom/deezer/caupain/model/SelfUpdateInfo$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCurrentVersion ()Ljava/lang/String;
@@ -521,9 +522,24 @@ public final class com/deezer/caupain/model/SelfUpdateInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
+public synthetic class com/deezer/caupain/model/SelfUpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/SelfUpdateInfo$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/SelfUpdateInfo;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/SelfUpdateInfo;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+}
+
+public final class com/deezer/caupain/model/SelfUpdateInfo$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class com/deezer/caupain/model/SelfUpdateInfo$Source : java/lang/Enum {
 	public static final field APT Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
 	public static final field BREW Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+	public static final field Companion Lcom/deezer/caupain/model/SelfUpdateInfo$Source$Companion;
 	public static final field GITHUB_RELEASES Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
 	public static final field PLUGINS Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
 	public final fun getDescription ()Ljava/lang/String;
@@ -531,6 +547,10 @@ public final class com/deezer/caupain/model/SelfUpdateInfo$Source : java/lang/En
 	public final fun getLink ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
 	public static fun values ()[Lcom/deezer/caupain/model/SelfUpdateInfo$Source;
+}
+
+public final class com/deezer/caupain/model/SelfUpdateInfo$Source$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/StabilityLevelPolicy : com/deezer/caupain/model/Policy {

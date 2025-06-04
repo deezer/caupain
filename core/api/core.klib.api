@@ -719,6 +719,26 @@ final class com.deezer.caupain.model/SelfUpdateInfo { // com.deezer.caupain.mode
 
         final fun valueOf(kotlin/String): com.deezer.caupain.model/SelfUpdateInfo.Source // com.deezer.caupain.model/SelfUpdateInfo.Source.valueOf|valueOf#static(kotlin.String){}[0]
         final fun values(): kotlin/Array<com.deezer.caupain.model/SelfUpdateInfo.Source> // com.deezer.caupain.model/SelfUpdateInfo.Source.values|values#static(){}[0]
+
+        final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model/SelfUpdateInfo.Source.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/SelfUpdateInfo.Source> // com.deezer.caupain.model/SelfUpdateInfo.Source.Companion.serializer|serializer(){}[0]
+            final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model/SelfUpdateInfo.Source.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+        }
+    }
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.model/SelfUpdateInfo> { // com.deezer.caupain.model/SelfUpdateInfo.$serializer|null[0]
+        final val descriptor // com.deezer.caupain.model/SelfUpdateInfo.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.model/SelfUpdateInfo.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.model/SelfUpdateInfo.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.model/SelfUpdateInfo // com.deezer.caupain.model/SelfUpdateInfo.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.model/SelfUpdateInfo) // com.deezer.caupain.model/SelfUpdateInfo.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.model.SelfUpdateInfo){}[0]
+    }
+
+    final object Companion { // com.deezer.caupain.model/SelfUpdateInfo.Companion|null[0]
+        final val $childSerializers // com.deezer.caupain.model/SelfUpdateInfo.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/SelfUpdateInfo> // com.deezer.caupain.model/SelfUpdateInfo.Companion.serializer|serializer(){}[0]
     }
 }
 

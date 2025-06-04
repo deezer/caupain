@@ -1205,6 +1205,13 @@ private val EXPECTED_JSON_RESULT = """
             "currentVersion": "2.0.21",
             "updatedVersion": "2.1.20"
         }
-    ]
+    ],
+    "selfUpdateInfo": {
+        "currentVersion": "${BuildConfig.VERSION}",
+        "updatedVersion": "999999.99999.9999",
+        "sources": [
+            "plugins"
+        ]
+    }
 }    
 """.trimIndent().trim()
