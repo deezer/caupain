@@ -51,7 +51,7 @@ Options:
   --policy-plugin-dir=<path>    Custom policies plugin dir
   -p, --policy=<text>           Update policy
   --list-policies               List available policies
-  -t, --output-type=(console|html|markdown)
+  -t, --output-type=(console|html|markdown|json)
                                 Output type (default: console)
   -o, --output=<path>           Report output path
   --show-version-references     Show versions references update summary in the
@@ -121,9 +121,9 @@ policyPluginDir = "path/to/policy/plugin/dir"
 # Cache directory. This is the directory where the HTTP cache is stored. Defaults to the user cache
 # directory.
 cacheDir = "path/to/cache/dir"
-# Output type. Can be "console", "html" or "markdown". Default is "console".
+# Output type. Can be "console", "html", "markdown" or "json". Default is "console".
 outputType = "html"
-# Output path, for HTML and Markdown output types. Default is build/reports/dependencies-update.(html|md)
+# Output path, for HTML, Markdown and JSON output types. Default is build/reports/dependencies-update.(html|md|json)
 outputPath = "path/to/output/file.html"
 # Whether or not to show a block in the report that summarizes the updates from the version block in
 # the version catalog. This allows to quickly see what to update if you use the versions block heavily.

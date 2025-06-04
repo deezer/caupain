@@ -46,6 +46,7 @@ very repository actually uses it for its own dependencies updates
 ![Markdown report](demo_md.png)
 - **Console**: a simple console report listing the updates.
 ![Console report](demo_console.png)
+- **JSON**: a JSON report that you can use in your own scripts or tools.
 
 ## Why the name ?
 

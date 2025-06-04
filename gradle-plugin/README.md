@@ -190,6 +190,11 @@ outputs {
         enabled = true
         outputFile = file("path/to/output.md")
     }
+    // JSON output. Disabled by default. Default output file is "build/reports/dependency-updates.json"
+    json {
+        enabled = true
+        outputFile = file("path/to/output.json")
+    }
 }
 ```
 
