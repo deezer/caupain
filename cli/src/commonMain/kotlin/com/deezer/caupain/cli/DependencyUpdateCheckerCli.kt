@@ -134,7 +134,7 @@ class DependencyUpdateCheckerCli(
         hidden = !CAN_USE_PLUGINS
     ).path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
-    private val policy by option("-p", "--policy", help = "Update policy")
+    private val policy by option("-p", "--policy", help = "Update policy (default: update to the latest version available)")
 
     private val listPolicies by option("--list-policies", help = "List available policies")
         .flag()
@@ -227,6 +227,7 @@ class DependencyUpdateCheckerCli(
                 statusCode = 0,
                 message = buildString {
                     appendLine("Available policies:")
+                    appendLine("- <no-policy>: Built-in default to update to the latest version available")
                     for (policy in updateChecker.policies) {
                         append("- ")
                         append(policy.name)

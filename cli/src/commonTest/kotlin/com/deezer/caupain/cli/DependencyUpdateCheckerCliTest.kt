@@ -241,7 +241,12 @@ class DependencyUpdateCheckerCliTest {
             )
         )
         assertEquals(0, result.statusCode)
-        assertEquals("Available policies:\n- test1\n- test2: Test policy 2", result.output.trim())
+        assertEquals("""
+            Available policies:
+            - <no-policy>: Built-in default to update to the latest version available
+            - test1
+            - test2: Test policy 2
+        """.trimIndent(), result.output.trim())
     }
 }
 
