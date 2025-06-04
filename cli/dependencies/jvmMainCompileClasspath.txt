@@ -16,8 +16,8 @@ com.github.ajalt.mordant:mordant-jvm:3.0.2
 com.github.ajalt.mordant:mordant-markdown-jvm:3.0.1
 com.github.ajalt.mordant:mordant-markdown:3.0.1
 com.github.ajalt.mordant:mordant:3.0.2
-com.squareup.okio:okio-jvm:3.11.0
-com.squareup.okio:okio:3.11.0
+com.squareup.okio:okio-jvm:3.12.0
+com.squareup.okio:okio:3.12.0
 net.peanuuutz.tomlkt:tomlkt-jvm:0.4.0
 net.peanuuutz.tomlkt:tomlkt:0.4.0
 org.jetbrains.kotlin:kotlin-stdlib-common:2.1.21

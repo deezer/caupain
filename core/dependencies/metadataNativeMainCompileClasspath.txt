@@ -1,8 +1,8 @@
 co.touchlab:stately-concurrency:2.1.0
 co.touchlab:stately-concurrent-collections:2.1.0
 co.touchlab:stately-strict:2.1.0
-com.squareup.okio:okio:3.11.0
-com.strumenta:antlr-kotlin-runtime:1.0.4
+com.squareup.okio:okio:3.12.0
+com.strumenta:antlr-kotlin-runtime:1.0.5
 io.github.pdvrieze.xmlutil:core-io:0.91.1
 io.github.pdvrieze.xmlutil:core:0.91.1
 io.github.pdvrieze.xmlutil:serialization:0.91.1
