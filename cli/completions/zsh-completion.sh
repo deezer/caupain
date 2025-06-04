@@ -78,6 +78,11 @@ _caupain() {
           [[ ${i} -gt COMP_CWORD ]] && in_param='--policy' || in_param=''
           continue
           ;;
+        --list-policies)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
         -t|--output-type)
           __skip_opt_eq
           (( i = i + 1 ))
@@ -88,6 +93,11 @@ _caupain() {
           __skip_opt_eq
           (( i = i + 1 ))
           [[ ${i} -gt COMP_CWORD ]] && in_param='--output' || in_param=''
+          continue
+          ;;
+        --show-version-references)
+          __skip_opt_eq
+          in_param=''
           continue
           ;;
         --cache-dir)
@@ -143,7 +153,7 @@ _caupain() {
   done
   local word="${COMP_WORDS[$COMP_CWORD]}"
   if [[ "${word}" =~ ^[-] ]]; then
-    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy -t --output-type -o --output --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
+    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies -t --output-type -o --output --show-version-references --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
     return
   fi
 
@@ -169,11 +179,15 @@ _caupain() {
       ;;
     "--policy")
       ;;
+    "--list-policies")
+      ;;
     "--output-type")
-      COMPREPLY=($(compgen -W 'console html markdown' -- "${word}"))
+      COMPREPLY=($(compgen -W 'console html markdown json' -- "${word}"))
       ;;
     "--output")
        __complete_files "${word}"
+      ;;
+    "--show-version-references")
       ;;
     "--cache-dir")
        __complete_files "${word}"
