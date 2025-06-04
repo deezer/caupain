@@ -3,14 +3,8 @@
 ## Unreleased
 
 ### Added
-- Option to see the list of available policies in CLI (#23)
-- Versions references block in output (#25)
-- Self-update check (#28)
 
 ### Changed
-- Gradle plugin now pulls default repositories from project build files in addition to setting files (#22)
-- `Repository` is now an interface, and some creation methods have been moved to a specific Java namespace
-- Formatter input has changed. This is a breaking change, but should only affect you if you used a custom formatter.
 
 ### Deprecated
 
@@ -19,6 +13,20 @@
 ### Fixed
 
 ### Security
+
+## 1.2.0 - 2025-06-04
+
+### Added
+
+- Option to see the list of available policies in CLI (#23)
+- Versions references block in output (#25)
+- Self-update check (#28)
+
+### Changed
+
+- Gradle plugin now pulls default repositories from project build files in addition to setting files (#22)
+- `Repository` is now an interface, and some creation methods have been moved to a specific Java namespace
+- Formatter input has changed. This is a breaking change, but should only affect you if you used a custom formatter.
 
 ## 1.1.1 - 2025-05-25
 
