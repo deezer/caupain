@@ -39,6 +39,7 @@ import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
+import com.deezer.caupain.formatting.json.JsonFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
@@ -139,7 +140,8 @@ class DependencyUpdateCheckerCli(
         .choice(
             CONSOLE_TYPE to ParsedConfiguration.OutputType.CONSOLE,
             HTML_TYPE to ParsedConfiguration.OutputType.HTML,
-            MARKDOWN_TYPE to ParsedConfiguration.OutputType.MARKDOWN
+            MARKDOWN_TYPE to ParsedConfiguration.OutputType.MARKDOWN,
+            JSON_TYPE to ParsedConfiguration.OutputType.JSON
         )
         .default(
             value = ParsedConfiguration.OutputType.CONSOLE,
@@ -372,6 +374,14 @@ class DependencyUpdateCheckerCli(
                     ?: outputPath
                     ?: "build/reports/dependencies-update.md".toPath()
             )
+
+            ParsedConfiguration.OutputType.JSON -> JsonFormatter(
+                fileSystem = fileSystem,
+                ioDispatcher = ioDispatcher,
+                path = configuration?.outputPath
+                    ?: outputPath
+                    ?: "build/reports/dependencies-update.json".toPath()
+            )
         }
     }
 
@@ -435,6 +445,7 @@ class DependencyUpdateCheckerCli(
         private const val CONSOLE_TYPE = "console"
         private const val HTML_TYPE = "html"
         private const val MARKDOWN_TYPE = "markdown"
+        private const val JSON_TYPE = "json"
         private val GRADLE_URL_REGEX =
             Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
     }

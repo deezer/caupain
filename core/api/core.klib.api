@@ -294,6 +294,11 @@ sealed interface com.deezer.caupain.model/GradleDependencyVersion { // com.deeze
             abstract fun <get-exactVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Exact // com.deezer.caupain.model/GradleDependencyVersion.Static.exactVersion.<get-exactVersion>|<get-exactVersion>(){}[0]
         open val isStatic // com.deezer.caupain.model/GradleDependencyVersion.Static.isStatic|{}isStatic[0]
             open fun <get-isStatic>(): kotlin/Boolean // com.deezer.caupain.model/GradleDependencyVersion.Static.isStatic.<get-isStatic>|<get-isStatic>(){}[0]
+
+        final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model/GradleDependencyVersion.Static.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/GradleDependencyVersion.Static> // com.deezer.caupain.model/GradleDependencyVersion.Static.Companion.serializer|serializer(){}[0]
+            final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model/GradleDependencyVersion.Static.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+        }
     }
 
     final class Exact : com.deezer.caupain.model/GradleDependencyVersion.Static { // com.deezer.caupain.model/GradleDependencyVersion.Exact|null[0]
@@ -442,6 +447,10 @@ final class com.deezer.caupain.formatting.html/HtmlFormatter : com.deezer.caupai
     constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.html/HtmlFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
 }
 
+final class com.deezer.caupain.formatting.json/JsonFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.json/JsonFormatter|null[0]
+    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.json/JsonFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+}
+
 final class com.deezer.caupain.formatting.markdown/MarkdownFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.markdown/MarkdownFormatter|null[0]
     constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.markdown/MarkdownFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
 }
@@ -462,6 +471,21 @@ final class com.deezer.caupain.formatting.model/Input { // com.deezer.caupain.fo
     final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.formatting.model/Input.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.deezer.caupain.formatting.model/Input.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.formatting.model/Input.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.formatting.model/Input> { // com.deezer.caupain.formatting.model/Input.$serializer|null[0]
+        final val descriptor // com.deezer.caupain.formatting.model/Input.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.formatting.model/Input.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.formatting.model/Input.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.formatting.model/Input // com.deezer.caupain.formatting.model/Input.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting.model/Input.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.formatting.model.Input){}[0]
+    }
+
+    final object Companion { // com.deezer.caupain.formatting.model/Input.Companion|null[0]
+        final val $childSerializers // com.deezer.caupain.formatting.model/Input.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.formatting.model/Input> // com.deezer.caupain.formatting.model/Input.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class com.deezer.caupain.formatting.model/VersionReferenceInfo { // com.deezer.caupain.formatting.model/VersionReferenceInfo|null[0]
@@ -485,6 +509,21 @@ final class com.deezer.caupain.formatting.model/VersionReferenceInfo { // com.de
     final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.formatting.model/VersionReferenceInfo.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.deezer.caupain.formatting.model/VersionReferenceInfo.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.formatting.model/VersionReferenceInfo.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.formatting.model/VersionReferenceInfo> { // com.deezer.caupain.formatting.model/VersionReferenceInfo.$serializer|null[0]
+        final val descriptor // com.deezer.caupain.formatting.model/VersionReferenceInfo.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.formatting.model/VersionReferenceInfo.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.formatting.model/VersionReferenceInfo.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.formatting.model/VersionReferenceInfo // com.deezer.caupain.formatting.model/VersionReferenceInfo.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.formatting.model/VersionReferenceInfo) // com.deezer.caupain.formatting.model/VersionReferenceInfo.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.formatting.model.VersionReferenceInfo){}[0]
+    }
+
+    final object Companion { // com.deezer.caupain.formatting.model/VersionReferenceInfo.Companion|null[0]
+        final val $childSerializers // com.deezer.caupain.formatting.model/VersionReferenceInfo.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.formatting.model/VersionReferenceInfo> // com.deezer.caupain.formatting.model/VersionReferenceInfo.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class com.deezer.caupain.model.versionCatalog/VersionCatalog { // com.deezer.caupain.model.versionCatalog/VersionCatalog|null[0]
@@ -554,6 +593,19 @@ final class com.deezer.caupain.model/GradleUpdateInfo { // com.deezer.caupain.mo
     final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/GradleUpdateInfo.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // com.deezer.caupain.model/GradleUpdateInfo.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.model/GradleUpdateInfo.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.model/GradleUpdateInfo> { // com.deezer.caupain.model/GradleUpdateInfo.$serializer|null[0]
+        final val descriptor // com.deezer.caupain.model/GradleUpdateInfo.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.model/GradleUpdateInfo.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.model/GradleUpdateInfo.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.model/GradleUpdateInfo // com.deezer.caupain.model/GradleUpdateInfo.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.model/GradleUpdateInfo) // com.deezer.caupain.model/GradleUpdateInfo.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.model.GradleUpdateInfo){}[0]
+    }
+
+    final object Companion { // com.deezer.caupain.model/GradleUpdateInfo.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/GradleUpdateInfo> // com.deezer.caupain.model/GradleUpdateInfo.Companion.serializer|serializer(){}[0]
+    }
 }
 
 final class com.deezer.caupain.model/GradleVersion { // com.deezer.caupain.model/GradleVersion|null[0]
@@ -637,6 +689,26 @@ final class com.deezer.caupain.model/UpdateInfo { // com.deezer.caupain.model/Up
 
         final fun valueOf(kotlin/String): com.deezer.caupain.model/UpdateInfo.Type // com.deezer.caupain.model/UpdateInfo.Type.valueOf|valueOf#static(kotlin.String){}[0]
         final fun values(): kotlin/Array<com.deezer.caupain.model/UpdateInfo.Type> // com.deezer.caupain.model/UpdateInfo.Type.values|values#static(){}[0]
+
+        final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model/UpdateInfo.Type.Companion|null[0]
+            final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/UpdateInfo.Type> // com.deezer.caupain.model/UpdateInfo.Type.Companion.serializer|serializer(){}[0]
+            final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model/UpdateInfo.Type.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
+        }
+    }
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<com.deezer.caupain.model/UpdateInfo> { // com.deezer.caupain.model/UpdateInfo.$serializer|null[0]
+        final val descriptor // com.deezer.caupain.model/UpdateInfo.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // com.deezer.caupain.model/UpdateInfo.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // com.deezer.caupain.model/UpdateInfo.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): com.deezer.caupain.model/UpdateInfo // com.deezer.caupain.model/UpdateInfo.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, com.deezer.caupain.model/UpdateInfo) // com.deezer.caupain.model/UpdateInfo.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;com.deezer.caupain.model.UpdateInfo){}[0]
+    }
+
+    final object Companion { // com.deezer.caupain.model/UpdateInfo.Companion|null[0]
+        final val $childSerializers // com.deezer.caupain.model/UpdateInfo.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model/UpdateInfo> // com.deezer.caupain.model/UpdateInfo.Companion.serializer|serializer(){}[0]
     }
 }
 

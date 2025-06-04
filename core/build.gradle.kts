@@ -62,6 +62,8 @@ kotlin {
                 implementation(libs.stately.concurrent.collections)
                 implementation(libs.semver)
                 implementation(libs.antlr.kotlin.runtime)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.serialization.json.okio)
             }
         }
         getByName("commonTest") {

@@ -26,6 +26,10 @@ package com.deezer.caupain.model
 
 import com.deezer.caupain.model.versionCatalog.Version
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
 /**
  * UpdateInfo is a data class that holds information about a dependency update.
  *
@@ -36,6 +40,7 @@ import com.deezer.caupain.model.versionCatalog.Version
  * @property currentVersion The current version of the dependency.
  * @property updatedVersion The updated version of the dependency.
  */
+@Serializable
 public class UpdateInfo(
     public val dependency: String,
     public val dependencyId: String,
@@ -77,8 +82,10 @@ public class UpdateInfo(
     /**
      * Update info type (library or plugin).
      */
+    @Serializable
     public enum class Type(public val title: String) {
-        LIBRARY("Libraries"), PLUGIN("Plugins")
+        @SerialName("libraries") LIBRARY("Libraries"),
+        @SerialName("plugins") PLUGIN("Plugins")
     }
 }
 
@@ -88,11 +95,14 @@ public class UpdateInfo(
  * @property currentVersion The current Gradle version.
  * @property updatedVersion The updated Gradle version
  */
+@Serializable
 public class GradleUpdateInfo(
     public val currentVersion: String,
     public val updatedVersion: String
 ) {
+    @Transient
     public val url: String = "https://docs.gradle.org/$updatedVersion/release-notes.html"
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

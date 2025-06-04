@@ -30,10 +30,12 @@ import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import kotlinx.serialization.Serializable
 
 /**
  * Formatter input
  */
+@Serializable
 public class Input(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
@@ -157,6 +159,7 @@ internal fun computeVersionReferenceInfos(
 /**
  * Information about updates for a specific references in the versions block.
  */
+@Serializable
 public class VersionReferenceInfo(
     public val id: String,
     public val libraryKeys: List<String>,
