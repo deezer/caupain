@@ -26,26 +26,16 @@ package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
-import com.deezer.caupain.formatting.model.Input
-import com.deezer.caupain.formatting.model.VersionReferenceInfo
-import com.deezer.caupain.model.GradleUpdateInfo
-import com.deezer.caupain.model.SelfUpdateInfo
-import com.deezer.caupain.model.UpdateInfo
-import com.deezer.caupain.toStaticVersion
-import com.deezer.caupain.toSimpleVersion
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ConsoleFormatterTest {
+class ConsoleFormatterTest : AbstractFormatterTest() {
 
     private lateinit var printer: TestConsolePrinter
 
-    private lateinit var formatter: ConsoleFormatter
+    override lateinit var formatter: ConsoleFormatter
 
     @BeforeTest
     fun setup() {
@@ -53,59 +43,12 @@ class ConsoleFormatterTest {
         formatter = ConsoleFormatter(printer)
     }
 
-    @Test
-    fun testEmpty() = runTest {
-        formatter.format(Input(null, emptyMap(), null, null))
-        advanceUntilIdle()
+    override fun checkEmptyOutput(isMapEmpty: Boolean) {
         assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
         assertEquals(emptyList(), printer.error)
     }
 
-    @Test
-    fun testFormat() = runTest {
-        val updates = Input(
-            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
-            updateInfos = mapOf(
-                UpdateInfo.Type.LIBRARY to listOf(
-                    UpdateInfo(
-                        "library",
-                        "com.deezer:library",
-                        null,
-                        null,
-                        "1.0.0".toSimpleVersion(),
-                        "2.0.0".toStaticVersion()
-                    )
-                ),
-                UpdateInfo.Type.PLUGIN to listOf(
-                    UpdateInfo(
-                        "plugin",
-                        "com.deezer:plugin",
-                        null,
-                        null,
-                        "1.0.0".toSimpleVersion(),
-                        "2.0.0".toStaticVersion()
-                    )
-                )
-            ),
-            versionReferenceInfo = listOf(
-                VersionReferenceInfo(
-                    id = "deezer",
-                    libraryKeys = listOf("library", "other-library"),
-                    updatedLibraries = mapOf("library" to "2.0.0".toStaticVersion()),
-                    pluginKeys = listOf("plugin"),
-                    updatedPlugins = mapOf("plugin" to "2.0.0".toStaticVersion()),
-                    currentVersion = "1.0.0".toSimpleVersion(),
-                    updatedVersion = "2.0.0".toStaticVersion(),
-                )
-            ),
-            selfUpdateInfo = SelfUpdateInfo(
-                currentVersion = "1.0.0",
-                updatedVersion = "1.1.0",
-                sources = SelfUpdateInfo.Source.entries
-            )
-        )
-        formatter.format(updates)
-        advanceUntilIdle()
+    override fun checkStandardOutput() {
         assertEquals(
             listOf(
                 ConsoleFormatter.UPDATES_TITLE,

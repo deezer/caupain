@@ -25,109 +25,28 @@
 package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
-import com.deezer.caupain.formatting.model.Input
-import com.deezer.caupain.formatting.model.VersionReferenceInfo
-import com.deezer.caupain.model.GradleUpdateInfo
-import com.deezer.caupain.model.SelfUpdateInfo
-import com.deezer.caupain.model.UpdateInfo
-import com.deezer.caupain.toStaticVersion
-import com.deezer.caupain.toSimpleVersion
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import okio.Path.Companion.toPath
-import okio.fakefilesystem.FakeFileSystem
+import okio.FileSystem
+import okio.Path
 import org.intellij.lang.annotations.Language
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MarkdownFormatterTest {
+class MarkdownFormatterTest : FileFormatterTest() {
 
-    private lateinit var fileSystem: FakeFileSystem
+    override val extension: String = "md"
 
-    private val path = "output.md".toPath()
+    override val emptyResult: String
+        get() = EMPTY_RESULT
 
-    private val testDispatcher = UnconfinedTestDispatcher()
+    override val fullResult: String
+        get() = FULL_RESULT
 
-    private lateinit var formatter: MarkdownFormatter
-
-    @BeforeTest
-    fun setup() {
-        fileSystem = FakeFileSystem()
-        formatter = MarkdownFormatter(
-            path = path,
-            fileSystem = fileSystem,
-            ioDispatcher = testDispatcher
-        )
-    }
-
-    private fun assertResult(result: String) {
-        fileSystem.read(path) {
-            assertEquals(result.trim(), readUtf8().trim())
-        }
-    }
-
-    @Test
-    fun testEmpty() = runTest(testDispatcher) {
-        formatter.format(Input(null, emptyMap(), null, null))
-        assertResult(EMPTY_RESULT)
-    }
-
-    @Test
-    fun testFormat() = runTest(testDispatcher) {
-        val updates = Input(
-            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
-            updateInfos = mapOf(
-                UpdateInfo.Type.LIBRARY to listOf(
-                    UpdateInfo(
-                        "library",
-                        "com.deezer:library",
-                        null,
-                        null,
-                        "1.0.0".toSimpleVersion(),
-                        "2.0.0".toStaticVersion()
-                    )
-                ),
-                UpdateInfo.Type.PLUGIN to listOf(
-                    UpdateInfo(
-                        "plugin",
-                        "com.deezer:plugin",
-                        null,
-                        null,
-                        "1.0.0".toSimpleVersion(),
-                        "2.0.0".toStaticVersion()
-                    )
-                )
-            ),
-            versionReferenceInfo = listOf(
-                VersionReferenceInfo(
-                    id = "deezer",
-                    libraryKeys = listOf("library", "other-library"),
-                    updatedLibraries = mapOf("library" to "2.0.0".toStaticVersion()),
-                    pluginKeys = listOf("plugin"),
-                    updatedPlugins = mapOf("plugin" to "2.0.0".toStaticVersion()),
-                    currentVersion = "1.0.0".toSimpleVersion(),
-                    updatedVersion = "2.0.0".toStaticVersion(),
-                )
-            ),
-            selfUpdateInfo = SelfUpdateInfo(
-                currentVersion = "1.0.0",
-                updatedVersion = "1.1.0",
-                sources = SelfUpdateInfo.Source.entries
-            )
-        )
-        formatter.format(updates)
-        assertResult(FULL_RESULT)
-    }
-
-    @AfterTest
-    fun teardown() {
-        fileSystem.checkNoOpenFiles()
-        fileSystem.close()
-    }
+    override fun createFormatter(
+        fileSystem: FileSystem,
+        path: Path,
+        ioDispatcher: CoroutineDispatcher
+    ): FileFormatter = MarkdownFormatter(path, fileSystem, ioDispatcher)
 }
 
 @Language("Markdown")

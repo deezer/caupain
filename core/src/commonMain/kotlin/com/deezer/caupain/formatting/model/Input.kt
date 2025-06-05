@@ -47,7 +47,7 @@ public class Input(
      * Returns true if the input is empty, meaning there are no updates to display.
      */
     public val isEmpty: Boolean
-        get() = updateInfos.isEmpty()
+        get() = (updateInfos.isEmpty() || updateInfos.values.all { it.isEmpty() })
                 && versionReferenceInfo.isNullOrEmpty()
                 && gradleUpdateInfo == null
                 && selfUpdateInfo == null

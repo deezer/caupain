@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Format output when no updates are available
 
 ### Security
 
