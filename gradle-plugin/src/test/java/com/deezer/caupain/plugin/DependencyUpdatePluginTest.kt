@@ -1153,7 +1153,7 @@ Version References
 private val EXPECTED_JSON_RESULT = """
 {
     "gradleUpdateInfo": {
-        "currentVersion": "8.14.1",
+        "currentVersion": "$GRADLE_VERSION",
         "updatedVersion": "99.0.0"
     },
     "updateInfos": {
