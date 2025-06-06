@@ -29,6 +29,7 @@ import com.deezer.caupain.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.GATHERING_INFO_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.PARSING_TASK
 import com.deezer.caupain.internal.FileStorage
+import com.deezer.caupain.internal.configureKtorEngine
 import com.deezer.caupain.internal.extension
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DEFAULT_POLICIES
@@ -212,6 +213,9 @@ public fun DependencyUpdateChecker(
     currentGradleVersion = currentGradleVersion,
     fileSystem = fileSystem,
     httpClient = HttpClient {
+        engine {
+            configureKtorEngine()
+        }
         install(ContentNegotiation) {
             json(DefaultJson)
             xml(DefaultXml, ContentType.Any)

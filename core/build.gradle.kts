@@ -45,7 +45,9 @@ kotlin {
         linuxArm64()
         jvm()
 
-        getByName("commonMain") {
+        applyDefaultHierarchyTemplate()
+
+        commonMain {
             kotlin {
                 srcDir(layout.buildDirectory.dir("generated-src/antlr"))
             }
@@ -67,7 +69,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json.okio)
             }
         }
-        getByName("commonTest") {
+        commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.okio.fake.filesystem)
@@ -78,33 +80,40 @@ kotlin {
                 implementation(libs.ktor.client.cio)
             }
         }
-        getByName("jvmMain") {
+        val nonLinuxArm64Main by creating {
+            dependsOn(commonMain.get())
+        }
+        jvmMain {
+            dependsOn(nonLinuxArm64Main)
             dependencies {
                 implementation(libs.slf4j.nop)
                 implementation(libs.ktor.client.okhttp)
             }
         }
-        getByName("jvmTest") {
+        jvmTest {
             dependencies {
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit)
             }
         }
-        create("macosMain") {
+        macosMain {
+            dependsOn(nonLinuxArm64Main)
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
         }
-        create("mingwMain") {
+        mingwMain {
+            dependsOn(nonLinuxArm64Main)
             dependencies {
                 implementation(libs.ktor.client.winhttp)
             }
         }
-        create("linuxMain") {
+        linuxMain {
             dependencies {
                 implementation(libs.ktor.client.curl)
             }
         }
+        linuxX64Main.get().dependsOn(nonLinuxArm64Main)
     }
 }
 
