@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Explanation on the update policies, (#31, thanks to [@sschuberth](https://github.com/sschuberth))
 
 ### Changed
 
@@ -12,6 +13,7 @@
 
 ### Fixed
 - Format output when no updates are available
+- CA certificate path for Linux ARM64 (#31)
 
 ### Security
 
