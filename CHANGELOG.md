@@ -3,7 +3,6 @@
 ## Unreleased
 
 ### Added
-- Explanation on the update policies, (#31, thanks to [@sschuberth](https://github.com/sschuberth))
 
 ### Changed
 
@@ -12,10 +11,19 @@
 ### Removed
 
 ### Fixed
-- Format output when no updates are available
-- CA certificate path for Linux ARM64 (#31)
 
 ### Security
+
+## 1.2.1 - 2025-06-06
+
+### Added
+
+- Explanation on the update policies, (#31, thanks to [@sschuberth](https://github.com/sschuberth))
+
+### Fixed
+
+- Format output when no updates are available
+- CA certificate path for Linux ARM64 (#31)
 
 ## 1.2.0 - 2025-06-04
 
