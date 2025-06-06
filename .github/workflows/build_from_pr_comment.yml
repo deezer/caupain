@@ -58,3 +58,6 @@ jobs:
       - name: Update summary
         run: |
           echo "[Binaries](${{ steps.upload_artifact.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
