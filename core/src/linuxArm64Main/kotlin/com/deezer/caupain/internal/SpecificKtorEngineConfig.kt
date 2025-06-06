@@ -30,6 +30,6 @@ import io.ktor.client.engine.curl.CurlClientEngineConfig
 internal actual fun HttpClientEngineConfig.configureKtorEngine() {
     if (this is CurlClientEngineConfig) {
         // Set up the CA path for Curl because of https://youtrack.jetbrains.com/issue/KTOR-8339
-        caPath = caPath ?: "/etc/ssl/certs"
+        caPath = "/etc/ssl/certs"
     }
 }
