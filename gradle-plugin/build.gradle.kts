@@ -32,6 +32,7 @@ dependencies {
     testImplementation(libs.mockwebserver)
     testImplementation(libs.mockwebserver.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.test.parameter.injector)
 }
 
 dependencyGuard {

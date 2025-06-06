@@ -240,3 +240,11 @@ useCache = true
 // Default is true.
 onlyCheckStaticVersions = true
 ```
+
+### Minimum Gradle version
+
+The minimum Gradle versions for the plugin depending on the version of the plugin are as follows:
+
+| Plugin version | Minimum Gradle version |
+|----------------|------------------------|
+| 1.2.0          | 8.8                    |

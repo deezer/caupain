@@ -25,6 +25,9 @@
 package com.deezer.caupain.plugin
 
 import com.deezer.caupain.gradle_plugin.BuildConfig
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -40,6 +43,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
 import java.io.File
 import java.io.StringWriter
 import java.util.zip.ZipInputStream
@@ -47,6 +51,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalOkHttpApi::class)
+@RunWith(TestParameterInjector::class)
 class DependencyUpdatePluginTest {
 
     @get:Rule
@@ -54,6 +59,9 @@ class DependencyUpdatePluginTest {
 
     @get:Rule
     val mockWebserverRule = MockWebServerRule()
+
+    @TestParameter(valuesProvider = GradleVersionProvider::class)
+    private lateinit var versions: Versions
 
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
@@ -63,6 +71,10 @@ class DependencyUpdatePluginTest {
     fun setup() {
         // Unzip project
         unzipProject()
+        // Create version catalog file
+        File(tempFolder.root, "gradle/libs.versions.toml").writeText(
+            createVersionCatalogFile(agpVersion = versions.agp)
+        )
         // Create output files
         htmlOutputFile = tempFolder.newFile("output.html")
         markdownOutputFile = tempFolder.newFile("output.md")
@@ -220,6 +232,22 @@ class DependencyUpdatePluginTest {
     include(":app")
     """.trimIndent()
 
+    private fun createVersionCatalogFile(agpVersion: String) = """
+    [versions]
+    agp = "$agpVersion"
+    kotlin = "2.0.21"
+    coreKtx = "1.16.0"
+    activityKtx = "1.10.1"
+    
+    [libraries]
+    androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+    androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+    
+    [plugins]
+    android-application = { id = "com.android.application", version.ref = "agp" }
+    kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }    
+    """.trimIndent()
+
     private fun replaceSettings() {
         File(tempFolder.root, "settings.gradle.kts").writeText(
             createSettingsFile(
@@ -238,21 +266,21 @@ class DependencyUpdatePluginTest {
             .withProjectDir(tempFolder.root)
             .withArguments(":checkDependencyUpdates", "--no-configuration-cache", "--stacktrace")
             .withPluginClasspath()
-            .withGradleVersion(GRADLE_VERSION)
+            .withGradleVersion(versions.gradle)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
-        assertContains(result.output, EXPECTED_CONSOLE_RESULT)
+        assertContains(result.output, expectedConsoleResult(versions.gradle))
         assertContains(result.output, "Infos size : 2")
         assertEquals(
-            expected = EXPECTED_HTML_RESULT,
+            expected = expectedHtmlResult(versions.gradle),
             actual = htmlOutputFile.readText().trim()
         )
         assertEquals(
-            expected = EXPECTED_MARKDOWN_RESULT,
+            expected = expectedMarkdownResult(versions.gradle),
             actual = markdownOutputFile.readText().trim()
         )
         assertEquals(
-            expected = EXPECTED_JSON_RESULT,
+            expected = expectedJsonResult(versions.gradle),
             actual = jsonOutputFile.readText().trim()
         )
         assertEquals(9, mockWebserverRule.server.requestCount)
@@ -266,7 +294,7 @@ class DependencyUpdatePluginTest {
             .withProjectDir(tempFolder.root)
             .withArguments(":app:assembleDebug", "--stacktrace", "--refresh-dependencies")
             .withPluginClasspath()
-            .withGradleVersion(GRADLE_VERSION)
+            .withGradleVersion(versions.gradle)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":app:assembleDebug")?.outcome)
     }
@@ -275,7 +303,7 @@ class DependencyUpdatePluginTest {
     fun testMultipleFiles() {
         createBuildFile(
             supplementaryConfiguration = """
-            versionCatalogFile = file("gradle/other.versions.toml")
+            versionCatalogFile.set(file("gradle/other.versions.toml"))
             versionCatalogFiles.from(file("gradle/libs.versions.toml"))
             """.trimIndent()
         )
@@ -286,15 +314,25 @@ class DependencyUpdatePluginTest {
             .withProjectDir(tempFolder.root)
             .withArguments(":checkDependencyUpdates", "--no-configuration-cache", "--stacktrace")
             .withPluginClasspath()
-            .withGradleVersion(GRADLE_VERSION)
+            .withGradleVersion(versions.gradle)
             .forwardStdError(errorOutput)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertContains(result.output, "Both versionCatalogFile and versionCatalogFiles are set. versionCatalogFile will be ignored.")
     }
-}
 
-private val GRADLE_VERSION = GradleVersion.current().version
+    private data class Versions(
+        val gradle: String,
+        val agp: String
+    )
+
+    private class GradleVersionProvider : TestParameterValuesProvider() {
+        override fun provideValues(context: Context?): List<Versions> = listOf(
+            Versions(GradleVersion.current().version, "8.9.1"),
+            Versions("8.8", "8.6.0")
+        )
+    }
+}
 
 @Language("XML")
 private val CORE_KTX_METADATA = """
@@ -1011,7 +1049,7 @@ private val GRADLE_VERSION_JSON = """
 """.trimIndent()
 
 @Language("HTML")
-private val EXPECTED_HTML_RESULT = """
+private fun expectedHtmlResult(gradleVersion: String) = """
 <html>
   <head>
     <style>
@@ -1047,7 +1085,7 @@ private val EXPECTED_HTML_RESULT = """
     <h2>Self Update</h2>
     <p>Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999.99999.9999.<br>You can update Caupain via plugins</p>
     <h2>Gradle</h2>
-    <p>Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
+    <p>Gradle current version is $gradleVersion whereas last version is 99.0.0. See <a href="https://docs.gradle.org/99.0.0/release-notes.html">release note</a>.</p>
     <h2>Version References</h2>
     <p>
       <table>
@@ -1113,10 +1151,10 @@ private val EXPECTED_HTML_RESULT = """
 </html>    
 """.trimIndent().trim()
 
-private val EXPECTED_CONSOLE_RESULT = """
+private fun expectedConsoleResult(gradleVersion: String) = """
 Updates are available
 Caupain can be updated from version ${BuildConfig.VERSION} to version 999999.99999.9999 via plugins
-Gradle: $GRADLE_VERSION -> 99.0.0
+Gradle: $gradleVersion -> 99.0.0
 Versions updates:
 - coreKtx: 1.16.0 -> 1.17.0
 - kotlin: 2.0.21 -> 2.1.20
@@ -1127,13 +1165,13 @@ Plugin updates:
 """.trimIndent().trim()
 
 @Language("Markdown")
-private val EXPECTED_MARKDOWN_RESULT = """
+private fun expectedMarkdownResult(gradleVersion: String) = """
 # Dependency updates
 ## Caupain
 Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999.99999.9999
 You can update Caupain via plugins
 ## Gradle
-Gradle current version is $GRADLE_VERSION whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
+Gradle current version is $gradleVersion whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
 Version References
 | Id      | Current version | Updated version | Details                      |
 | ------- | --------------- | --------------- | ---------------------------- |
@@ -1150,10 +1188,10 @@ Version References
 """.trimIndent().trim()
 
 @Language("JSON")
-private val EXPECTED_JSON_RESULT = """
+private fun expectedJsonResult(gradleVersion: String) = """
 {
     "gradleUpdateInfo": {
-        "currentVersion": "$GRADLE_VERSION",
+        "currentVersion": "$gradleVersion",
         "updatedVersion": "99.0.0"
     },
     "updateInfos": {
