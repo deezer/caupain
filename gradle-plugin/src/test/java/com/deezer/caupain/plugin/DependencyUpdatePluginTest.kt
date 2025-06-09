@@ -329,7 +329,8 @@ class DependencyUpdatePluginTest {
     private class GradleVersionProvider : TestParameterValuesProvider() {
         override fun provideValues(context: Context?): List<Versions> = listOf(
             Versions(GradleVersion.current().version, "8.9.1"),
-            Versions("8.8", "8.6.0")
+            Versions("8.14.2", "8.9.1"),
+            Versions("8.11.1", "8.9.1"),
         )
     }
 }
