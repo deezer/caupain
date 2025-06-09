@@ -49,6 +49,14 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: build/reports/detekt/merged.sarif
+      - name: Compute test coverage
+        if: matrix.os == 'ubuntu-latest'
+        run: ./gradlew :core:koverXmlReport --stacktrace --no-configuration-cache
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest'
+        uses: coverallsapp/github-action@v2
+        with:
+          file: core/build/reports/kover/xml/report.xml
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
