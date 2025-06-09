@@ -56,7 +56,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: coverallsapp/github-action@v2
         with:
-          file: core/build/reports/kover/xml/report.xml
+          file: core/build/reports/kover/report.xml
       - name: Test publication
         run: ./gradlew publishToMavenLocal --stacktrace --no-configuration-cache
         if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
