@@ -15,7 +15,7 @@ to use, and provides a simple report to help you know what dependencies you need
 
 ## Another one ?
 
-Yeah, I know, there's [Dependabot](https://github.com/dependabot), [Renovate](https://www.mend.io/renovate/), 
+Yeah, we know, there's [Dependabot](https://github.com/dependabot), [Renovate](https://www.mend.io/renovate/), 
 [refreshVersions](https://splitties.github.io/refreshVersions/) or [gradle-version-plugins](https://github.com/ben-manes/gradle-versions-plugin)
 (and probably many more), but Caupain aims to be simple, fast, and not too opinionated.
 
