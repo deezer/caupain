@@ -18,10 +18,13 @@ val currentVersion = "1.2.1"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isRelease = project.findProperty("isRelease")?.toString().toBoolean()
+val versionSuffix = project.findProperty("versionSuffix")?.toString()
 val isCI = System.getenv("CI").toBoolean()
 version = buildString {
     append(currentVersion)
-    if (!isRelease && (isSnapshot || !isCI)) append(".0-SNAPSHOT")
+    if (!isRelease && (isSnapshot || !isCI)) append(".0")
+    if (!versionSuffix.isNullOrBlank()) append("-$versionSuffix")
+    if (!isRelease && (isSnapshot || !isCI)) append("-SNAPSHOT")
 }
 
 changelog {
