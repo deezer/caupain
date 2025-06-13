@@ -33,6 +33,8 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.api.credentials.Credentials
+import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.api.internal.artifacts.repositories.ArtifactResolutionDetails
 import org.gradle.api.internal.artifacts.repositories.ContentFilteringRepository
 import org.gradle.api.model.ObjectFactory
@@ -40,6 +42,9 @@ import org.gradle.api.provider.Provider
 import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal
 import org.gradle.kotlin.dsl.listProperty
 import kotlin.jvm.optionals.getOrNull
+import com.deezer.caupain.model.Credentials as ModelCredentials
+import com.deezer.caupain.model.HeaderCredentials as ModelHeaderCredentials
+import com.deezer.caupain.model.PasswordCredentials as ModelPasswordCredentials
 
 private val ACCEPTED_SCHEMES = setOf("http", "https")
 
@@ -58,7 +63,7 @@ internal fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<
                         .map { optionalCredentials ->
                             RepositoryDelegate(
                                 delegate = repository,
-                                credentials = optionalCredentials.getOrNull() as? PasswordCredentials
+                                credentials = optionalCredentials.getOrNull()
                             )
                         }
                 )
@@ -68,21 +73,16 @@ internal fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<
     return repositoriesProvider
 }
 
-private data class RepositoryDelegate(
-    private val delegate: MavenArtifactRepository,
-    private val credentials: PasswordCredentials? = null,
+private class RepositoryDelegate(
+    delegate: MavenArtifactRepository,
+    credentials: Credentials? = null,
 ) : Repository {
 
-    private val filterAction by lazy { (delegate as? ContentFilteringRepository)?.contentFilter }
+    private val filterAction = (delegate as? ContentFilteringRepository)?.contentFilter
 
-    override val url: String
-        get() = delegate.url.toString()
+    override val url: String = delegate.url.toString()
 
-    override val user: String?
-        get() = credentials?.username
-
-    override val password: String?
-        get() = credentials?.password
+    override val credentials = credentials?.toModelCredentials()
 
     override fun contains(dependency: Dependency): Boolean {
         val action = filterAction ?: return true
@@ -98,11 +98,36 @@ private data class RepositoryDelegate(
 
         other as RepositoryDelegate
 
-        return delegate == other.delegate
+        if (filterAction != other.filterAction) return false
+        if (url != other.url) return false
+        if (credentials != other.credentials) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
-        return delegate.hashCode()
+        var result = filterAction?.hashCode() ?: 0
+        result = 31 * result + url.hashCode()
+        result = 31 * result + (credentials?.hashCode() ?: 0)
+        return result
+    }
+}
+
+private fun Credentials.toModelCredentials(): ModelCredentials? {
+    return when (this) {
+        is PasswordCredentials -> {
+            val user = username ?: return null
+            val password = password ?: return null
+            ModelPasswordCredentials(user, password)
+        }
+
+        is HttpHeaderCredentials -> {
+            val name = name ?: return null
+            val value = value ?: return null
+            ModelHeaderCredentials(name, value)
+        }
+
+        else -> null
     }
 }
 

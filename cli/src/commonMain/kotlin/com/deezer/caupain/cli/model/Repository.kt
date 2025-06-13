@@ -24,6 +24,8 @@
 
 package com.deezer.caupain.cli.model
 
+import com.deezer.caupain.model.HeaderCredentials
+import com.deezer.caupain.model.PasswordCredentials
 import com.deezer.caupain.model.buildComponentFilter
 import com.deezer.caupain.model.withComponentFilter
 import kotlinx.serialization.SerialName
@@ -56,14 +58,22 @@ sealed interface Repository {
         val url: String,
         val user: String? = null,
         val password: String? = null,
+        val authHeaderName: String? = null,
+        val authHeaderValue: String? = null,
         val includes: List<PackageSpec>? = null,
         val excludes: List<PackageSpec>? = null
     ) : Repository {
         override fun toModel(): ModelRepository {
             return ModelRepository(
                 url = url,
-                user = user,
-                password = password,
+                credentials = when {
+                    user != null && password != null -> PasswordCredentials(user, password)
+
+                    authHeaderName != null && authHeaderValue != null ->
+                        HeaderCredentials(authHeaderName, authHeaderValue)
+
+                    else -> null
+                },
                 componentFilter = if (includes == null && excludes == null) {
                     null
                 } else {

@@ -27,35 +27,44 @@
 package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.ComponentFilterBuilder
+import com.deezer.caupain.model.HeaderCredentials
+import com.deezer.caupain.model.PasswordCredentials
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.buildComponentFilter
 import com.deezer.caupain.model.withComponentFilter
 import org.gradle.api.Action
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.property
+import javax.inject.Inject
 
 /**
  * Repository handler for easy configuration
  */
-@Suppress("UnnecessaryAbstractClass") // Needed by Gradle
-abstract class RepositoryHandler {
+open class RepositoryHandler @Inject constructor(
+    private val objects: ObjectFactory,
+    private val providers: ProviderFactory,
+) {
 
     /**
      * Libraries repositories to check for updates.
      */
-    abstract val libraries: ListProperty<Repository>
+    val libraries: ListProperty<Repository> = objects.listProperty()
 
     /**
      * Plugin repositories
      */
-    abstract val plugins: ListProperty<Repository>
+    val plugins: ListProperty<Repository> = objects.listProperty()
 
     fun libraries(action: Action<RepositoryCategoryHandler>) {
-        action.execute(RepositoryCategoryHandler(libraries))
+        action.execute(RepositoryCategoryHandler(objects, providers, libraries))
     }
 
     fun plugins(action: Action<RepositoryCategoryHandler>) {
-        action.execute(RepositoryCategoryHandler(plugins))
+        action.execute(RepositoryCategoryHandler(objects, providers, plugins))
     }
 
     internal fun setupConvention(
@@ -67,7 +76,11 @@ abstract class RepositoryHandler {
     }
 }
 
-class RepositoryCategoryHandler internal constructor(private val listProperty: ListProperty<Repository>) {
+class RepositoryCategoryHandler internal constructor(
+    private val objects: ObjectFactory,
+    private val providers: ProviderFactory,
+    private val listProperty: ListProperty<Repository>
+) {
 
     fun repository(repository: Repository) {
         listProperty.add(repository)
@@ -80,27 +93,18 @@ class RepositoryCategoryHandler internal constructor(private val listProperty: L
         listProperty.add(repository.withComponentFilter { configureComponentFilter.execute(this) })
     }
 
-    /**
-     * Adds a repository
-     */
     fun repository(url: String) {
         listProperty.add(Repository(url))
     }
 
-    fun repository(url: String, configureComponentFilter: Action<ComponentFilterBuilder>) {
+    fun repository(url: String, configure: Action<RepositoryConfigurationHandler>) {
         listProperty.add(
-            Repository(
-                url = url,
-                componentFilter = buildComponentFilter {
-                    configureComponentFilter.execute(this)
-                }
-            )
+            RepositoryConfigurationHandler(objects, providers)
+                .apply { configure.execute(this) }
+                .toRepository(url)
         )
     }
 
-    /**
-     * Adds a repository with authentication
-     */
     fun repository(url: String, user: String, password: String) {
         listProperty.add(Repository(url, user, password))
     }
@@ -121,5 +125,75 @@ class RepositoryCategoryHandler internal constructor(private val listProperty: L
                 }
             )
         )
+    }
+}
+
+open class RepositoryConfigurationHandler internal constructor(
+    private val objects: ObjectFactory,
+    private val providers: ProviderFactory,
+) {
+
+    private val filterBuilder = ComponentFilterBuilder()
+
+    private var credentialsHandler: CredentialsHandler? = null
+
+    private var headerCredentialsHandler: HeaderCredentialsHandler? = null
+
+    fun credentials(action: Action<CredentialsHandler>) {
+        CredentialsHandler(objects)
+            .apply { action.execute(this) }
+            .also { credentialsHandler = it }
+    }
+
+    fun headerCredentials(action: Action<HeaderCredentialsHandler>) {
+        HeaderCredentialsHandler(objects)
+            .apply { action.execute(this) }
+            .also { headerCredentialsHandler = it }
+    }
+
+    @JvmOverloads
+    fun exclude(group: String, name: String? = null) {
+        filterBuilder.exclude(group, name)
+    }
+
+    @JvmOverloads
+    fun include(group: String, name: String? = null) {
+        filterBuilder.include(group, name)
+    }
+
+    fun toRepository(url: String): Provider<Repository> {
+        val credentialsProvider = credentialsHandler?.toCredentials()
+            ?: headerCredentialsHandler?.toCredentials()
+        return credentialsProvider
+            ?.map { credentials ->
+                Repository(
+                    url = url,
+                    credentials = credentials,
+                    componentFilter = filterBuilder.build()
+                )
+            }
+            ?: providers.provider { Repository(url, filterBuilder.build()) }
+    }
+}
+
+open class CredentialsHandler internal constructor(objects: ObjectFactory) {
+    val user = objects.property<String>()
+    val password = objects.property<String>()
+
+    internal fun toCredentials(): Provider<PasswordCredentials> = user.flatMap { user ->
+        password.map { password ->
+            PasswordCredentials(user, password)
+        }
+    }
+}
+
+open class HeaderCredentialsHandler internal constructor(objects: ObjectFactory) {
+    val name = objects.property<String>()
+    val value = objects.property<String>()
+
+    internal fun toCredentials(): Provider<HeaderCredentials> = name.flatMap { name ->
+        value.map { value ->
+            HeaderCredentials(name, value)
+        }
     }
 }

@@ -28,6 +28,7 @@ import com.deezer.caupain.gradle_plugin.BuildConfig
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
+import io.ktor.http.HttpHeaders
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
@@ -81,13 +82,30 @@ class DependencyUpdatePluginTest {
         jsonOutputFile = tempFolder.newFile("output.json")
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
+                when {
+                    request.path?.startsWith("/maven-androidx/") == true ->
+                        if (request.headers[HttpHeaders.Authorization] != "Basic dXNlcjpwYXNzd29yZA==") {
+                            return MockResponse(code = 404)
+                        }
+
+                    request.path?.startsWith("/maven/") == true ->
+                        if (request.headers["X-Specific-Header"] != "value") {
+                            return MockResponse(code = 404)
+                        }
+
+                    request.path?.startsWith("/maven-plugins/") == true ->
+                        if (request.headers["X-Plugin-Header"] != "value") {
+                            return MockResponse(code = 404)
+                        }
+                }
+
                 val body = when (request.path) {
                     "/maven-androidx/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
                     "/maven-androidx/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM
-                    "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
-                    "/maven/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
-                    "/maven/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
-                    "/maven/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
+                    "/maven-plugins/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
+                    "/maven-plugins/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
+                    "/maven-plugins/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
+                    "/maven-plugins/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
                     "/gradle" -> return MockResponse(
                         code = 200,
                         body = GRADLE_VERSION_JSON,
@@ -131,7 +149,7 @@ class DependencyUpdatePluginTest {
 
     @Language("kotlin")
     private fun createBuildFile(
-        repositoryUrl: String = mockWebserverRule.server.url("maven").toString(),
+        repositoryUrl: String = mockWebserverRule.server.url("maven-plugins").toString(),
         forbiddenRepositoryUrl: String = mockWebserverRule.server.url("maven-forbidden").toString(),
         gradleUrl: String = mockWebserverRule.server.url("gradle").toString(),
         supplementaryConfiguration: String = ""
@@ -156,7 +174,12 @@ class DependencyUpdatePluginTest {
                         repository("$forbiddenRepositoryUrl") {
                             exclude("**")
                         }
-                        repository("$repositoryUrl") 
+                        repository("$repositoryUrl") {
+                            headerCredentials {
+                                name = "X-Plugin-Header"
+                                value = "value"
+                            }
+                        }
                     }
                 }
                 outputs {
@@ -219,10 +242,18 @@ class DependencyUpdatePluginTest {
                 content { 
                     includeGroupAndSubgroups("androidx.core")
                 }
+                credentials {
+                    username = "user"
+                    password = "password"
+                }
                 isAllowInsecureProtocol = true
             }
             maven {
                 setUrl("$fallbackRepositoryUrl")
+                credentials(HttpHeaderCredentials::class) { 
+                    name = "X-Specific-Header"
+                    value = "value"
+                }
                 isAllowInsecureProtocol = true
             }
         }
@@ -318,7 +349,10 @@ class DependencyUpdatePluginTest {
             .forwardStdError(errorOutput)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
-        assertContains(result.output, "Both versionCatalogFile and versionCatalogFiles are set. versionCatalogFile will be ignored.")
+        assertContains(
+            result.output,
+            "Both versionCatalogFile and versionCatalogFiles are set. versionCatalogFile will be ignored."
+        )
     }
 
     private data class Versions(
