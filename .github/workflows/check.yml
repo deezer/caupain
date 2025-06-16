@@ -29,7 +29,7 @@ jobs:
               TEST_TASK: check
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
-    timeout-minutes: 20
+    timeout-minutes: 40
     permissions:
       contents: read
       security-events: write
