@@ -26,7 +26,7 @@ You can launch the update check by running the following command in your termina
 
 ### Snapshots
 
-![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fdeezer%2Fcaupain%2Fgradle-plugin%2Fmaven-metadata.xml)
+![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fcom%2Fdeezer%2Fcaupain%2Fcom.deezer.caupain.gradle.plugin%2Fmaven-metadata.xml&versionSuffix=.0-SNAPSHOT)
 
 You can use the latest snapshot version by using the version in the badge above and adding the following
 repository to your `settings.gradle.kts` file:
