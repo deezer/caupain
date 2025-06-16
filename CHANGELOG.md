@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+- Enhance repository configuration (#37)
 
 ### Deprecated
 

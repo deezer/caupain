@@ -19,8 +19,10 @@ plugins {
 }
 ```
 
-This will add a task named `checkDependencyUpdates` to your root project, which when launched will start 
-the update check.
+You can launch the update check by running the following command in your terminal:
+```bash
+./gradlew checkDependencyUpdates --no-configuration-cache
+```
 
 ### Snapshots
 
@@ -98,8 +100,15 @@ repositories {
         repository(DefaultRepositories.google)
         // You can also specify a custom repository
         repository("https://www.example.com/maven2")
-        // With optional credentials
+        // With optional password credentials
         repository("https://www.example.com/maven2", "user", "password")
+        // Or with header credentials
+        repository("https://www.example.com/maven2") {
+            headerCredentials {
+                name = "headerName"
+                value = "headerValue"
+            }
+        }
     }
     // Defines the repositories for the plugins
     plugins {

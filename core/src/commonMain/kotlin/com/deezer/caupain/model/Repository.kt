@@ -27,6 +27,7 @@ package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
 import io.ktor.client.HttpClient
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
@@ -42,19 +43,126 @@ import kotlin.jvm.JvmOverloads
  * Maven repository
  *
  * @property url The URL of the repository.
- * @property user The username for authentication (optional).
- * @property password The password for authentication (optional).
+ * @property credentials The credentials to use for authentication with the repository.
  */
 public interface Repository : Serializable {
     public val url: String
+    public val credentials: Credentials?
+    @Deprecated("Use credentials instead")
     public val user: String?
+        get() = (credentials as? PasswordCredentials)?.user
+    @Deprecated("Use credentials instead")
     public val password: String?
+        get() = (credentials as? PasswordCredentials)?.password
 
     /**
      * Checks if the given [Dependency] is accepted by this repository.
      */
     public operator fun contains(dependency: Dependency): Boolean
 }
+
+/**
+ * Represents credentials for accessing a repository.
+ * Implementations should provide a way to configure the HTTP request with the necessary authentication headers.
+ */
+public interface Credentials : Serializable {
+    /**
+     * Configures the HTTP request with the necessary authentication headers.
+     *
+     * @receiver the [HttpRequestBuilder] to configure.
+     */
+    public fun HttpRequestBuilder.configureAuthentication()
+}
+
+/**
+ * Represents credentials for accessing a repository using a username and password.
+ * The credentials are encoded in Base64 and added to the HTTP request as a Basic Authentication header.
+ *
+ * @property user The username for authentication.
+ * @property password The password for authentication.
+ */
+@OptIn(ExperimentalEncodingApi::class)
+public class PasswordCredentials(
+    public val user: String,
+    public val password: String
+) : Credentials {
+    override fun HttpRequestBuilder.configureAuthentication() {
+        header(
+            HttpHeaders.Authorization,
+            "Basic ${Base64.encode("$user:$password".encodeToByteArray())}"
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as PasswordCredentials
+
+        if (user != other.user) return false
+        if (password != other.password) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = user.hashCode()
+        result = 31 * result + password.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "PasswordCredentials(user='$user', password='$password')"
+    }
+}
+
+/**
+ * Represents credentials for accessing a repository using a custom header.
+ * The header is added to the HTTP request as a key-value pair.
+ *
+ * @property name The name of the header.
+ * @property value The value of the header.
+ */
+public class HeaderCredentials(
+    public val name: String,
+    public val value: String
+) : Credentials {
+    override fun HttpRequestBuilder.configureAuthentication() {
+        header(name, value)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as HeaderCredentials
+
+        if (name != other.name) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + value.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "HeaderCredentials(name='$name', value='$value')"
+    }
+}
+
+/**
+ * Creates a [Repository] with the given URL, user, password, and optional [ComponentFilter].
+ */
+@JvmOverloads
+public fun Repository(
+    url: String,
+    credentials: Credentials?,
+    componentFilter: ComponentFilter? = null
+): Repository = DefaultRepository(url, credentials, componentFilter)
 
 /**
  * Creates a [Repository] with the given URL, user, password, and optional [ComponentFilter].
@@ -65,7 +173,11 @@ public fun Repository(
     user: String?,
     password: String?,
     componentFilter: ComponentFilter? = null
-): Repository = DefaultRepository(url, user, password, componentFilter)
+): Repository = Repository(
+    url = url,
+    credentials = if (user == null || password == null) null else PasswordCredentials(user, password),
+    componentFilter = componentFilter
+)
 
 /**
  * Creates a [Repository] with the given URL and optional [ComponentFilter].
@@ -74,7 +186,7 @@ public fun Repository(
 public fun Repository(
     url: String,
     componentFilter: ComponentFilter? = null
-): Repository = Repository(url, null, null, componentFilter)
+): Repository = Repository(url, null, componentFilter)
 
 /**
  * Returns a repository with the given [ComponentFilter] applied.
@@ -85,16 +197,14 @@ public fun Repository(
 public inline fun Repository.withComponentFilter(builder: ComponentFilterBuilder.() -> Unit): Repository {
     return Repository(
         url = url,
-        user = user,
-        password = password,
+        credentials = credentials,
         componentFilter = buildComponentFilter(builder)
     )
 }
 
 internal data class DefaultRepository(
     override val url: String,
-    override val user: String?,
-    override val password: String?,
+    override val credentials: Credentials?,
     private val componentFilter: ComponentFilter? = null
 ) : Repository {
 
@@ -205,12 +315,7 @@ internal suspend fun HttpClient.executeRepositoryRequest(
     urlBuilder: URLBuilder.() -> Unit = {}
 ): HttpResponse = get(repository.url) {
     url(urlBuilder)
-    if (repository.user != null && repository.password != null) {
-        header(
-            HttpHeaders.Authorization,
-            "Basic ${Base64.encode("${repository.user}:${repository.password}".encodeToByteArray())}"
-        )
-    }
+    repository.credentials?.run { configureAuthentication() }
 }
 
 /**

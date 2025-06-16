@@ -3,6 +3,11 @@ public class com/deezer/caupain/plugin/ConsoleOutputHandler : com/deezer/caupain
 	public fun getOutput ()Lorg/gradle/api/provider/Provider;
 }
 
+public class com/deezer/caupain/plugin/CredentialsHandler {
+	public final fun getPassword ()Lorg/gradle/api/provider/Property;
+	public final fun getUser ()Lorg/gradle/api/provider/Property;
+}
+
 public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun excludeKeys ([Ljava/lang/String;)V
 	public final fun excludeLibraries ([Lcom/deezer/caupain/model/LibraryExclusion;)V
@@ -60,6 +65,11 @@ public class com/deezer/caupain/plugin/FileOutputHandler : com/deezer/caupain/pl
 }
 
 public abstract interface class com/deezer/caupain/plugin/Formatter : com/deezer/caupain/formatting/Formatter, java/io/Serializable {
+}
+
+public class com/deezer/caupain/plugin/HeaderCredentialsHandler {
+	public final fun getName ()Lorg/gradle/api/provider/Property;
+	public final fun getValue ()Lorg/gradle/api/provider/Property;
 }
 
 public abstract interface class com/deezer/caupain/plugin/OutputHandler {
@@ -145,10 +155,22 @@ public final class com/deezer/caupain/plugin/RepositoryCategoryHandler {
 	public final fun repository (Ljava/lang/String;Lorg/gradle/api/Action;)V
 }
 
-public abstract class com/deezer/caupain/plugin/RepositoryHandler {
-	public fun <init> ()V
-	public abstract fun getLibraries ()Lorg/gradle/api/provider/ListProperty;
-	public abstract fun getPlugins ()Lorg/gradle/api/provider/ListProperty;
+public class com/deezer/caupain/plugin/RepositoryConfigurationHandler {
+	public final fun credentials (Lorg/gradle/api/Action;)V
+	public final fun exclude (Ljava/lang/String;)V
+	public final fun exclude (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun exclude$default (Lcom/deezer/caupain/plugin/RepositoryConfigurationHandler;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun headerCredentials (Lorg/gradle/api/Action;)V
+	public final fun include (Ljava/lang/String;)V
+	public final fun include (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun include$default (Lcom/deezer/caupain/plugin/RepositoryConfigurationHandler;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun toRepository (Ljava/lang/String;)Lorg/gradle/api/provider/Provider;
+}
+
+public class com/deezer/caupain/plugin/RepositoryHandler {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;Lorg/gradle/api/provider/ProviderFactory;)V
+	public final fun getLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getPlugins ()Lorg/gradle/api/provider/ListProperty;
 	public final fun libraries (Lorg/gradle/api/Action;)V
 	public final fun plugins (Lorg/gradle/api/Action;)V
 }

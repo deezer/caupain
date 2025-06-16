@@ -87,7 +87,8 @@ If present, configuration in the file will override command line options.
 repositories = [ 
     "mavenCentral", # Default repositories "google", "mavenCentral" and "gradlePluginPortal" are provided as shortcuts
     { url = "http://www.your.repo/maven" }, # You can also specify a custom repository
-    { url = "http://www.your.secure.repo/maven", user = "my-user", password = "my-password" } # You can also specify credentials
+    { url = "http://www.your.secure.repo/maven", user = "my-user", password = "my-password" }, # You can also specify password credentials
+    { url = "http://www.your.secure.repo/maven", authHeaderName = "my-header-name", authHeaderValue = "my-header-value" } # Or header credentials
 ]
 # Configures the Maven repositories where the plugins are hosted.
 # If none are specified, the default repositories "gradlePluginPortal", "google" and "mavenCentral" are used.
@@ -171,6 +172,11 @@ excludes = [
 [[ repositories ]]
 # This can also be done for custom repositories
 url = "http://www.example.com/repo"
+# The credentials can be specified in the same way as for the repositories key
+user = "my-user"
+password = "my-password"
+authHeaderName = "my-header-name"
+authHeaderValue = "my-header-value"
 includes = [
     { group = "com.example", name = "example-lib" },
     { group = "com.example2.**" }
