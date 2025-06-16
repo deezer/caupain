@@ -36,6 +36,7 @@ import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -63,7 +64,8 @@ private data class ConfigurationImpl(
     @Serializable(OutputTypeSerializer::class) override val outputType: Configuration.OutputType? = Configuration.OutputType.CONSOLE,
     override val outputPath: Path?,
     override val gradleWrapperPropertiesPath: Path?,
-    override val onlyCheckStaticVersions: Boolean?
+    override val onlyCheckStaticVersions: Boolean?,
+    override val gradleStabilityLevel: GradleStabilityLevel?
 ) : Configuration {
 
     override fun validate(logger: Logger) {
@@ -88,7 +90,8 @@ private data class ConfigurationImpl(
             policyPluginsDir = policyPluginDir ?: baseConfiguration.policyPluginsDir,
             cacheDir = cacheDir ?: baseConfiguration.cacheDir,
             onlyCheckStaticVersions = onlyCheckStaticVersions
-                ?: baseConfiguration.onlyCheckStaticVersions
+                ?: baseConfiguration.onlyCheckStaticVersions,
+            gradleStabilityLevel = gradleStabilityLevel ?: baseConfiguration.gradleStabilityLevel
         )
     }
 }

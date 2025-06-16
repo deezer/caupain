@@ -22,29 +22,34 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.model
+package com.deezer.caupain.resolver
 
-import kotlinx.serialization.Serializable
+import com.deezer.caupain.model.GradleDependencyVersion
+import io.ktor.client.HttpClient
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 
-/**
- * Gradle wrapper version
- */
-@Serializable
-public class GradleVersion(public val version: String) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+internal abstract class AbstractVersionResolver<T : Any>(
+    private val httpClient: HttpClient,
+    private val ioDispatcher: CoroutineDispatcher
+) {
+    protected abstract fun T.isUpdatedVersion(version: GradleDependencyVersion.Static): Boolean
 
-        other as GradleVersion
+    protected abstract suspend fun HttpClient.getAvailableVersions(item: T): Sequence<GradleDependencyVersion>
 
-        return version == other.version
-    }
+    protected abstract fun canSelectVersion(
+        item: T,
+        version: GradleDependencyVersion.Static
+    ): Boolean
 
-    override fun hashCode(): Int {
-        return version.hashCode()
-    }
-
-    override fun toString(): String {
-        return "GradleVersion(version=$version)"
+    suspend fun findUpdatedVersion(item: T): GradleDependencyVersion.Static? {
+        val versions = withContext(ioDispatcher) {
+            httpClient.getAvailableVersions(item)
+        }
+        return versions
+            .filterIsInstance<GradleDependencyVersion.Static>()
+            .filter { item.isUpdatedVersion(it) }
+            .filter { canSelectVersion(item, it) }
+            .maxOrNull()
     }
 }

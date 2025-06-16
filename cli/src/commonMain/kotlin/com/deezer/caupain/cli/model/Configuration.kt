@@ -28,6 +28,7 @@ import com.deezer.caupain.cli.serialization.ConfigurationSerializer
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import kotlinx.serialization.Serializable
 import okio.Path
 import com.deezer.caupain.model.Configuration as ModelConfiguration
@@ -49,6 +50,7 @@ interface Configuration {
     val outputPath: Path?
     val gradleWrapperPropertiesPath: Path?
     val onlyCheckStaticVersions: Boolean?
+    val gradleStabilityLevel: GradleStabilityLevel?
 
     fun validate(logger: Logger)
 

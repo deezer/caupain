@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.withContext
 
 /**
  * This checks Maven repositories for updated versions of a dependency.
@@ -101,14 +100,50 @@ public interface UpdatedVersionResolver {
 }
 
 internal class DefaultUpdatedVersionResolver(
-    private val httpClient: HttpClient,
+    httpClient: HttpClient,
     private val repositories: List<Repository>,
     private val pluginRepositories: List<Repository>,
     private val logger: Logger,
     private val onlyCheckStaticVersions: Boolean,
     private val policy: Policy?,
-    private val ioDispatcher: CoroutineDispatcher
+    ioDispatcher: CoroutineDispatcher
 ) : UpdatedVersionResolver {
+
+    private val versionResolver = object : AbstractVersionResolver<DependencyRequestInfo>(
+        httpClient = httpClient,
+        ioDispatcher = ioDispatcher
+    ) {
+        override fun DependencyRequestInfo.isUpdatedVersion(
+            version: GradleDependencyVersion.Static
+        ): Boolean = dependency.version?.resolve(versionReferences)?.isUpdate(version) == true
+
+        override suspend fun HttpClient.getAvailableVersions(item: DependencyRequestInfo): Sequence<GradleDependencyVersion> {
+            val group = item.dependency.group ?: return emptySequence()
+            val name = item.dependency.name ?: return emptySequence()
+            val versioning = executeRepositoryRequest(item.repository) {
+                appendPathSegments(group.split('.'))
+                appendPathSegments(name, "maven-metadata.xml")
+            }
+                .takeIf { it.status.isSuccess() }
+                ?.body<Metadata>()
+                ?.versioning
+                ?: return emptySequence()
+            return sequenceOf(versioning.release, versioning.latest)
+                .plus(versioning.versions.asSequence().map { it.version })
+                .filterNotNull()
+        }
+
+        override fun canSelectVersion(
+            item: DependencyRequestInfo,
+            version: GradleDependencyVersion.Static
+        ): Boolean {
+            val policy = this@DefaultUpdatedVersionResolver.policy ?: return true
+            val dependencyVersion = item.dependency.version?.resolve(item.versionReferences)
+                ?: return false
+            return policy.select(item.dependency, dependencyVersion, version)
+        }
+    }
+
     override suspend fun getUpdatedVersion(
         dependency: Dependency,
         versionReferences: Map<String, Version.Resolved>,
@@ -126,39 +161,20 @@ internal class DefaultUpdatedVersionResolver(
             .asFlow()
             .filter { dependency in it }
             .mapNotNull { repository ->
-                findUpdatedVersion(
-                    dependency = dependency,
-                    versionReferences = versionReferences,
-                    repository = repository
+                versionResolver.findUpdatedVersion(
+                    DependencyRequestInfo(
+                        dependency = dependency,
+                        versionReferences = versionReferences,
+                        repository = repository
+                    )
                 )?.let { UpdatedVersionResolver.Result(currentVersion, it, repository) }
             }
             .firstOrNull()
     }
 
-    private suspend fun findUpdatedVersion(
-        dependency: Dependency,
-        versionReferences: Map<String, Version.Resolved>,
-        repository: Repository
-    ): GradleDependencyVersion.Static? {
-        val version = dependency.version?.resolve(versionReferences) ?: return null
-        val group = dependency.group ?: return null
-        val name = dependency.name ?: return null
-        val versioning = withContext(ioDispatcher) {
-            httpClient
-                .executeRepositoryRequest(repository) {
-                    appendPathSegments(group.split('.'))
-                    appendPathSegments(name, "maven-metadata.xml")
-                }
-                .takeIf { it.status.isSuccess() }
-                ?.body<Metadata>()
-                ?.versioning
-        } ?: return null
-        return sequenceOf(versioning.release, versioning.latest)
-            .plus(versioning.versions.asSequence().map { it.version })
-            .filterNotNull()
-            .filterIsInstance<GradleDependencyVersion.Static>()
-            .filter { version.isUpdate(it) }
-            .filterNot { policy?.select(dependency, version, it) == false }
-            .maxOrNull()
-    }
+    private data class DependencyRequestInfo(
+        val dependency: Dependency,
+        val versionReferences: Map<String, Version.Resolved>,
+        val repository: Repository,
+    )
 }

@@ -43,6 +43,7 @@ import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.versionCatalog.Version
@@ -208,6 +209,7 @@ public fun DependencyUpdateChecker(
     fileSystem: FileSystem = FileSystem.SYSTEM,
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     policies: List<Policy>? = null,
+    gradleVersionsUrl: String = GradleConstants.DEFAULT_GRADLE_VERSIONS_URL,
 ): DependencyUpdateChecker = DefaultDependencyUpdateChecker(
     configuration = configuration,
     currentGradleVersion = currentGradleVersion,
@@ -249,7 +251,8 @@ public fun DependencyUpdateChecker(
     ),
     logger = logger,
     selfUpdateResolver = selfUpdateResolver,
-    policies = policies
+    policies = policies,
+    gradleVersionsUrl = gradleVersionsUrl
 )
 
 @Suppress("LongParameterList") // Needed to reflect parameters
@@ -263,6 +266,7 @@ internal class DefaultDependencyUpdateChecker(
     private val logger: Logger,
     private val selfUpdateResolver: SelfUpdateResolver?,
     policies: List<Policy>?,
+    gradleVersionsUrl: String = GradleConstants.DEFAULT_GRADLE_VERSIONS_URL,
 ) : DependencyUpdateChecker {
 
     override val policies = policies?.asSequence() ?: sequence {
@@ -296,7 +300,8 @@ internal class DefaultDependencyUpdateChecker(
 
     private val gradleVersionResolver = GradleVersionResolver(
         httpClient = httpClient,
-        gradleCurrentVersionUrl = configuration.gradleCurrentVersionUrl,
+        gradleVersionsUrl = gradleVersionsUrl,
+        stabilityLevel = configuration.gradleStabilityLevel,
         ioDispatcher = ioDispatcher
     )
 

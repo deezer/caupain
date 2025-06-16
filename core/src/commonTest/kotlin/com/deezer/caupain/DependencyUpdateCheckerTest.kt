@@ -29,18 +29,20 @@ import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
-import com.deezer.caupain.model.GradleVersion
 import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import com.deezer.caupain.resolver.GradleVersionResolver
+import com.deezer.caupain.resolver.GradleVersionResolverTest
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultXml
@@ -150,7 +152,7 @@ class DependencyUpdateCheckerTest {
             RESOLVED_VERSIONS_INFO_URL -> scope.respondElement(RESOLVED_VERSIONS_INFO)
 
             GRADLE_VERSION_URL -> scope.respond(
-                content = DefaultJson.encodeToString(GradleVersion("8.13")),
+                content = GradleVersionResolverTest.GRADLE_RELEASES,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
             )
 
@@ -171,7 +173,7 @@ class DependencyUpdateCheckerTest {
             expected = DependenciesUpdateResult(
                 gradleUpdateInfo = GradleUpdateInfo(
                     currentVersion = "8.11",
-                    updatedVersion = "8.13",
+                    updatedVersion = "8.14.2",
                 ),
                 updateInfos = mapOf(
                     UpdateInfo.Type.LIBRARY to listOf(
@@ -364,7 +366,7 @@ class DependencyUpdateCheckerTest {
             )
             .build()
 
-        private val GRADLE_VERSION_URL = Url(Configuration.DEFAULT_GRADLE_VERSION_URL)
+        private val GRADLE_VERSION_URL = Url(GradleConstants.DEFAULT_GRADLE_VERSIONS_URL)
 
         private val VERSION_CATALOG_MAIN = VersionCatalog(
             versions = mapOf(

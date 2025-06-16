@@ -34,6 +34,8 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.gradle.GradleConstants
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.plugin.internal.toOkioPath
 import kotlinx.coroutines.runBlocking
@@ -43,7 +45,6 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.logging.Logger
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
@@ -119,6 +120,12 @@ open class DependenciesUpdateTask : DefaultTask() {
     val onlyCheckStaticVersions = project.objects.property<Boolean>()
 
     /**
+     * @see DependenciesUpdateExtension.gradleStabilityLevel
+     */
+    @get:Internal
+    val gradleStabilityLevel = project.objects.property<GradleStabilityLevel>()
+
+    /**
      * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
      */
     @get:Internal
@@ -128,10 +135,11 @@ open class DependenciesUpdateTask : DefaultTask() {
         .convention(project.layout.buildDirectory.dir("cache/dependency-updates"))
 
     @get:Internal
-    val gradleCurrentVersionUrl: Property<String> = project
-        .objects
-        .property<String>()
-        .convention(Configuration.DEFAULT_GRADLE_VERSION_URL)
+    private val gradleVersionsUrl = project
+        .findProperty("caupain.gradleVersionsUrl")
+        ?.toString()
+        ?: GradleConstants.DEFAULT_GRADLE_VERSIONS_URL
+
 
     private var policy: Policy? = null
 
@@ -162,6 +170,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             selfUpdateResolver = PluginUpdateResolver,
             policies = policy?.let { listOf(it) },
             currentGradleVersion = GradleVersion.current().version,
+            gradleVersionsUrl = gradleVersionsUrl
         )
         runBlocking {
             val updates = checker.checkForUpdates()
@@ -215,8 +224,8 @@ open class DependenciesUpdateTask : DefaultTask() {
             policy = policyId,
             cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
             debugHttpCalls = true,
-            gradleCurrentVersionUrl = gradleCurrentVersionUrl.get(),
-            onlyCheckStaticVersions = onlyCheckStaticVersions.get()
+            onlyCheckStaticVersions = onlyCheckStaticVersions.get(),
+            gradleStabilityLevel = gradleStabilityLevel.get()
         )
     }
 

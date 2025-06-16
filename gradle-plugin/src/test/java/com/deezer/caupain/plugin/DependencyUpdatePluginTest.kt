@@ -151,7 +151,6 @@ class DependencyUpdatePluginTest {
     private fun createBuildFile(
         repositoryUrl: String = mockWebserverRule.server.url("maven-plugins").toString(),
         forbiddenRepositoryUrl: String = mockWebserverRule.server.url("maven-forbidden").toString(),
-        gradleUrl: String = mockWebserverRule.server.url("gradle").toString(),
         supplementaryConfiguration: String = ""
     ) {
         File(tempFolder.root, "build.gradle.kts").writeText(
@@ -205,7 +204,6 @@ class DependencyUpdatePluginTest {
         
             tasks.withType<DependenciesUpdateTask> {
                 selectIf(StabilityLevelPolicy)
-                gradleCurrentVersionUrl.set("$gradleUrl")
                 customFormatter { info ->
                     println("Infos size : " + info.updateInfos.size)
                 }   
@@ -295,7 +293,12 @@ class DependencyUpdatePluginTest {
         val result = GradleRunner
             .create()
             .withProjectDir(tempFolder.root)
-            .withArguments(":checkDependencyUpdates", "--no-configuration-cache", "--stacktrace")
+            .withArguments(
+                ":checkDependencyUpdates",
+                "--no-configuration-cache",
+                "--stacktrace",
+                "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            )
             .withPluginClasspath()
             .withGradleVersion(versions.gradle)
             .build()
@@ -343,7 +346,12 @@ class DependencyUpdatePluginTest {
         val result = GradleRunner
             .create()
             .withProjectDir(tempFolder.root)
-            .withArguments(":checkDependencyUpdates", "--no-configuration-cache", "--stacktrace")
+            .withArguments(
+                ":checkDependencyUpdates",
+                "--no-configuration-cache",
+                "--stacktrace",
+                "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            )
             .withPluginClasspath()
             .withGradleVersion(versions.gradle)
             .forwardStdError(errorOutput)
@@ -1066,7 +1074,7 @@ private val CAUPAIN_METADATA = """
 
 @Language("JSON")
 private val GRADLE_VERSION_JSON = """
-{
+[{
   "version" : "99.0.0",
   "buildTime" : "20250225092214+0000",
   "current" : true,
@@ -1080,7 +1088,7 @@ private val GRADLE_VERSION_JSON = """
   "downloadUrl" : "https://services.gradle.org/distributions/gradle-8.13-bin.zip",
   "checksumUrl" : "https://services.gradle.org/distributions/gradle-8.13-bin.zip.sha256",
   "wrapperChecksumUrl" : "https://services.gradle.org/distributions/gradle-8.13-wrapper.jar.sha256"
-}    
+}]    
 """.trimIndent()
 
 @Language("HTML")

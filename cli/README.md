@@ -49,8 +49,11 @@ Options:
   -e, --excluded=<text>         Excluded keys
   -c, --config=<path>           Configuration file (default: caupain.toml)
   --policy-plugin-dir=<path>    Custom policies plugin dir
-  -p, --policy=<text>           Update policy
+  -p, --policy=<text>           Update policy (default: update to the latest
+                                version available)
   --list-policies               List available policies
+  --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)
+                                Gradle stability level (default: stable)
   -t, --output-type=(console|html|markdown|json)
                                 Output type (default: console)
   -o, --output=<path>           Report output path
@@ -142,6 +145,9 @@ gradleWrapperPropertiesPath = "/path/to/properties/file"
 # try to resolve the exact dependency that is used.
 # Default is true.
 onlyCheckStaticVersions = false
+# The stability level to use for Gradle version checks. Default is stable. Possible values are: stable,
+# rc, milestone, releaseNightly, nightly.
+gradleStabilityLevel = "stable"
 ```
 
 #### Repository component filtering

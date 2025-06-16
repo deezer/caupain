@@ -38,8 +38,8 @@ public final class com/deezer/caupain/DependencyUpdateChecker$Progress$Indetermi
 }
 
 public final class com/deezer/caupain/DependencyUpdateCheckerKt {
-	public static final fun DependencyUpdateChecker (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;)Lcom/deezer/caupain/DependencyUpdateChecker;
-	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
+	public static final fun DependencyUpdateChecker (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;Ljava/lang/String;)Lcom/deezer/caupain/DependencyUpdateChecker;
+	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
 }
 
 public final class com/deezer/caupain/NoVersionCatalogException : com/deezer/caupain/CaupainException {
@@ -169,13 +169,12 @@ public final class com/deezer/caupain/model/ComponentFilterBuilder {
 
 public abstract interface class com/deezer/caupain/model/Configuration : java/io/Serializable {
 	public static final field Companion Lcom/deezer/caupain/model/Configuration$Companion;
-	public static final field DEFAULT_GRADLE_VERSION_URL Ljava/lang/String;
 	public abstract fun getCacheDir ()Lokio/Path;
 	public abstract fun getDebugHttpCalls ()Z
 	public abstract fun getExcludedKeys ()Ljava/util/Set;
 	public abstract fun getExcludedLibraries ()Ljava/util/List;
 	public abstract fun getExcludedPlugins ()Ljava/util/List;
-	public abstract fun getGradleCurrentVersionUrl ()Ljava/lang/String;
+	public abstract fun getGradleStabilityLevel ()Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
 	public abstract fun getOnlyCheckStaticVersions ()Z
 	public abstract fun getPluginRepositories ()Ljava/util/List;
 	public abstract fun getPolicy ()Ljava/lang/String;
@@ -186,7 +185,6 @@ public abstract interface class com/deezer/caupain/model/Configuration : java/io
 }
 
 public final class com/deezer/caupain/model/Configuration$Companion {
-	public static final field DEFAULT_GRADLE_VERSION_URL Ljava/lang/String;
 }
 
 public final class com/deezer/caupain/model/Configurations {
@@ -201,8 +199,8 @@ public final class com/deezer/caupain/model/Configurations {
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;Z)Lcom/deezer/caupain/model/Configuration;
-	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;)Lcom/deezer/caupain/model/Configuration;
-	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;Z)Lcom/deezer/caupain/model/Configuration;
+	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZZ)Lcom/deezer/caupain/model/Configuration;
+	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZZLcom/deezer/caupain/model/gradle/GradleStabilityLevel;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;)Lcom/deezer/caupain/model/Configuration;
@@ -211,12 +209,12 @@ public final class com/deezer/caupain/model/Configurations {
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;Z)Lcom/deezer/caupain/model/Configuration;
-	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;)Lcom/deezer/caupain/model/Configuration;
-	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;Z)Lcom/deezer/caupain/model/Configuration;
+	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZZ)Lcom/deezer/caupain/model/Configuration;
+	public static final fun Configuration (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZZLcom/deezer/caupain/model/gradle/GradleStabilityLevel;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Ljava/util/List;Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
 	public static final fun Configuration (Lokio/Path;)Lcom/deezer/caupain/model/Configuration;
-	public static synthetic fun Configuration$default (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;ZILjava/lang/Object;)Lcom/deezer/caupain/model/Configuration;
-	public static synthetic fun Configuration$default (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZLjava/lang/String;ZILjava/lang/Object;)Lcom/deezer/caupain/model/Configuration;
+	public static synthetic fun Configuration$default (Ljava/util/List;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZZLcom/deezer/caupain/model/gradle/GradleStabilityLevel;ILjava/lang/Object;)Lcom/deezer/caupain/model/Configuration;
+	public static synthetic fun Configuration$default (Ljava/util/List;Ljava/util/List;Lokio/Path;Ljava/util/Set;Ljava/util/List;Ljava/util/List;Ljava/lang/String;Lokio/Path;Lokio/Path;ZZLcom/deezer/caupain/model/gradle/GradleStabilityLevel;ILjava/lang/Object;)Lcom/deezer/caupain/model/Configuration;
 }
 
 public abstract interface class com/deezer/caupain/model/Credentials : java/io/Serializable {
@@ -424,29 +422,6 @@ public final class com/deezer/caupain/model/GradleUpdateInfo$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class com/deezer/caupain/model/GradleVersion {
-	public static final field Companion Lcom/deezer/caupain/model/GradleVersion$Companion;
-	public fun <init> (Ljava/lang/String;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getVersion ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public synthetic class com/deezer/caupain/model/GradleVersion$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
-	public static final field INSTANCE Lcom/deezer/caupain/model/GradleVersion$$serializer;
-	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
-	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/GradleVersion;
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/GradleVersion;)V
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-}
-
-public final class com/deezer/caupain/model/GradleVersion$Companion {
-	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
 public final class com/deezer/caupain/model/HeaderCredentials : com/deezer/caupain/model/Credentials {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public fun configureAuthentication (Lio/ktor/client/request/HttpRequestBuilder;)V
@@ -633,6 +608,27 @@ public final class com/deezer/caupain/model/UpdateInfo$Type : java/lang/Enum {
 }
 
 public final class com/deezer/caupain/model/UpdateInfo$Type$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/gradle/GradleConstants {
+	public static final field DEFAULT_GRADLE_VERSIONS_URL Ljava/lang/String;
+	public static final field INSTANCE Lcom/deezer/caupain/model/gradle/GradleConstants;
+}
+
+public final class com/deezer/caupain/model/gradle/GradleStabilityLevel : java/lang/Enum {
+	public static final field Companion Lcom/deezer/caupain/model/gradle/GradleStabilityLevel$Companion;
+	public static final field MILESTONE Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+	public static final field NIGHTLY Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+	public static final field RC Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+	public static final field RELEASE_NIGHTLY Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+	public static final field STABLE Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+	public static fun values ()[Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
+}
+
+public final class com/deezer/caupain/model/gradle/GradleStabilityLevel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
