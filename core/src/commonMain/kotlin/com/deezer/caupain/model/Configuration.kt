@@ -26,6 +26,7 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.jvm.JvmName
@@ -44,8 +45,8 @@ import kotlin.jvm.JvmOverloads
  * @property policyPluginsDir The directory for the policy plugins.
  * @property cacheDir The directory for the HTTP cache.
  * @property debugHttpCalls Whether or not to enable debug logging for HTTP calls.
- * @property gradleCurrentVersionUrl The URL to check for the current version of Gradle.
  * @property onlyCheckStaticVersions Whether to only check updates for direct versions or all versions.
+ * @property gradleStabilityLevel The desired stability level of the Gradle version.
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -61,13 +62,11 @@ public interface Configuration : Serializable {
     public val policyPluginsDir: Path?
     public val cacheDir: Path?
     public val debugHttpCalls: Boolean
-    public val gradleCurrentVersionUrl: String
     public val onlyCheckStaticVersions: Boolean
+    public val gradleStabilityLevel: GradleStabilityLevel
 
     public companion object {
         private const val serialVersionUID = 1L
-        public const val DEFAULT_GRADLE_VERSION_URL: String =
-            "https://services.gradle.org/versions/current"
     }
 }
 
@@ -84,8 +83,8 @@ public interface Configuration : Serializable {
  * @param policyPluginsDir The directory for the policy plugins.
  * @param cacheDir The directory for the HTTP cache.
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
- * @param gradleCurrentVersionUrl The URL to check for the current version of Gradle.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
+ * @param gradleStabilityLevel The desired stability level of the Gradle version.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -107,8 +106,8 @@ public fun Configuration(
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
     debugHttpCalls: Boolean = false,
-    gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
     onlyCheckStaticVersions: Boolean = true,
+    gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
 ): Configuration = Configuration(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -120,8 +119,8 @@ public fun Configuration(
     policyPluginsDir = policyPluginsDir,
     cacheDir = cacheDir,
     debugHttpCalls = debugHttpCalls,
-    gradleCurrentVersionUrl = gradleCurrentVersionUrl,
-    onlyCheckStaticVersions = onlyCheckStaticVersions
+    onlyCheckStaticVersions = onlyCheckStaticVersions,
+    gradleStabilityLevel = gradleStabilityLevel
 )
 
 /**
@@ -137,8 +136,8 @@ public fun Configuration(
  * @param policyPluginsDir The directory for the policy plugins.
  * @param cacheDir The directory for the HTTP cache.
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
- * @param gradleCurrentVersionUrl The URL to check for the current version of Gradle.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
+ * @param gradleStabilityLevel The desired stability level of the Gradle version.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -160,8 +159,8 @@ public fun Configuration(
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
     debugHttpCalls: Boolean = false,
-    gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
     onlyCheckStaticVersions: Boolean = true,
+    gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -173,8 +172,8 @@ public fun Configuration(
     policyPluginsDir = policyPluginsDir,
     cacheDir = cacheDir,
     debugHttpCalls = debugHttpCalls,
-    gradleCurrentVersionUrl = gradleCurrentVersionUrl,
-    onlyCheckStaticVersions = onlyCheckStaticVersions
+    onlyCheckStaticVersions = onlyCheckStaticVersions,
+    gradleStabilityLevel = gradleStabilityLevel
 )
 
 internal data class ConfigurationImpl(
@@ -195,8 +194,8 @@ internal data class ConfigurationImpl(
     override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
     override val debugHttpCalls: Boolean = false,
-    override val gradleCurrentVersionUrl: String = Configuration.DEFAULT_GRADLE_VERSION_URL,
     override val onlyCheckStaticVersions: Boolean = true,
+    override val gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
 ) : Configuration {
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path

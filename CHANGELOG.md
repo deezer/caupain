@@ -6,6 +6,8 @@
 
 ### Changed
 - Enhance repository configuration (#37)
+- Enhance Gradle updates configuration
+- Removed gradle versions url configuration, which was only used by tests
 
 ### Deprecated
 

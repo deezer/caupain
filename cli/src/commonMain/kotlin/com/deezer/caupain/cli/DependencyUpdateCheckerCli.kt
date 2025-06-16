@@ -45,6 +45,7 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.completion.completionOption
@@ -138,6 +139,19 @@ class DependencyUpdateCheckerCli(
 
     private val listPolicies by option("--list-policies", help = "List available policies")
         .flag()
+
+    private val gradleStabilityLevel by option(help = "Gradle stability level")
+        .choice(
+            "stable" to GradleStabilityLevel.STABLE,
+            "rc" to GradleStabilityLevel.RC,
+            "milestone" to GradleStabilityLevel.MILESTONE,
+            "release-nightly" to GradleStabilityLevel.RELEASE_NIGHTLY,
+            "nightly" to GradleStabilityLevel.NIGHTLY
+        )
+        .default(
+            value = GradleStabilityLevel.STABLE,
+            defaultForHelp = "stable"
+        )
 
     private val outputType by option("-t", "--output-type", help = "Output type")
         .choice(
@@ -334,6 +348,7 @@ class DependencyUpdateCheckerCli(
             policy = policy,
             cacheDir = if (doNotCache) null else cacheDir,
             debugHttpCalls = debugHttpCalls,
+            gradleStabilityLevel = gradleStabilityLevel,
         )
         return parsedConfiguration?.toConfiguration(baseConfiguration) ?: baseConfiguration
     }

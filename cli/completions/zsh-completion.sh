@@ -83,6 +83,12 @@ _caupain() {
           in_param=''
           continue
           ;;
+        --gradle-stability-level)
+          __skip_opt_eq
+          (( i = i + 1 ))
+          [[ ${i} -gt COMP_CWORD ]] && in_param='--gradle-stability-level' || in_param=''
+          continue
+          ;;
         -t|--output-type)
           __skip_opt_eq
           (( i = i + 1 ))
@@ -153,7 +159,7 @@ _caupain() {
   done
   local word="${COMP_WORDS[$COMP_CWORD]}"
   if [[ "${word}" =~ ^[-] ]]; then
-    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies -t --output-type -o --output --show-version-references --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
+    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --show-version-references --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
     return
   fi
 
@@ -180,6 +186,9 @@ _caupain() {
     "--policy")
       ;;
     "--list-policies")
+      ;;
+    "--gradle-stability-level")
+      COMPREPLY=($(compgen -W 'stable rc milestone release-nightly nightly' -- "${word}"))
       ;;
     "--output-type")
       COMPREPLY=($(compgen -W 'console html markdown json' -- "${word}"))

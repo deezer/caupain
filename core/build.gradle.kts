@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.kotlinx.kover)
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.dependency.guard)
+    alias(libs.plugins.cashapp.burst)
 }
 
 dependencies {

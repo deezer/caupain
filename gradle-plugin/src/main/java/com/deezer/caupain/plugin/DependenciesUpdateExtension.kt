@@ -25,6 +25,7 @@
 package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import org.gradle.api.Action
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -91,6 +92,13 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      * dynamic versions (e.g., 1.+). Default is true.
      */
     val onlyCheckStaticVersions: Property<Boolean> = objects.property<Boolean>().convention(true)
+
+    /**
+     * The desired Gradle stability level to use for the update check.
+     */
+    val gradleStabilityLevel: Property<GradleStabilityLevel> = objects
+        .property<GradleStabilityLevel>()
+        .convention(GradleStabilityLevel.STABLE)
 
     /**
      * Configure repositories

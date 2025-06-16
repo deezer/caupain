@@ -248,6 +248,8 @@ useCache = true
 // try to resolve the exact dependency that is used.
 // Default is true.
 onlyCheckStaticVersions = true
+// The stability level to use for Gradle version checks. Default is STABLE.
+gradleStabilityLevel = GradleStabilityLevel.STABLE
 ```
 
 ### Minimum Gradle version

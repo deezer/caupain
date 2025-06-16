@@ -24,44 +24,46 @@
 
 package com.deezer.caupain.resolver
 
-import com.deezer.caupain.model.GradleVersion
-import io.github.z4kn4fein.semver.Version
-import io.github.z4kn4fein.semver.VersionFormatException
+import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
+import com.deezer.caupain.model.gradle.GradleToolVersion
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
-import kotlinx.io.IOException
 
 internal class GradleVersionResolver(
-    private val httpClient: HttpClient,
-    private val gradleCurrentVersionUrl: String,
-    private val ioDispatcher: CoroutineDispatcher
+    httpClient: HttpClient,
+    private val gradleVersionsUrl: String,
+    private val stabilityLevel: GradleStabilityLevel,
+    ioDispatcher: CoroutineDispatcher
 ) {
-    suspend fun getUpdatedVersion(currentGradleVersion: String): String? {
-        return try {
-            val currentVersion = Version.parse(currentGradleVersion, strict = false)
-            val updatedVersionString = withContext(ioDispatcher) {
-                try {
-                    httpClient
-                        .get(gradleCurrentVersionUrl)
-                        .takeIf { it.status.isSuccess() }
-                        ?.body<GradleVersion>()
-                        ?.version
-                } catch (ignored: IOException) {
-                    null
-                }
-            }
-            val updatedVersion = updatedVersionString?.let { Version.parse(it, strict = false) }
-            return if (updatedVersion == null || updatedVersion <= currentVersion) {
-                null
-            } else {
-                updatedVersionString
-            }
-        } catch (ignored: VersionFormatException) {
-            null
+    private val versionResolver = object : AbstractVersionResolver<GradleDependencyVersion>(
+        httpClient = httpClient,
+        ioDispatcher = ioDispatcher
+    ) {
+        override fun GradleDependencyVersion.isUpdatedVersion(version: GradleDependencyVersion.Static): Boolean =
+            isUpdate(version)
+
+        override suspend fun HttpClient.getAvailableVersions(item: GradleDependencyVersion): Sequence<GradleDependencyVersion> {
+            return get(gradleVersionsUrl)
+                .takeIf { it.status.isSuccess() }
+                ?.body<List<GradleToolVersion>>()
+                ?.asSequence()
+                ?.filter { it.level <= stabilityLevel }
+                ?.map { it.version }
+                .orEmpty()
         }
+
+        override fun canSelectVersion(
+            item: GradleDependencyVersion,
+            version: GradleDependencyVersion.Static
+        ): Boolean = true
     }
+
+
+    suspend fun getUpdatedVersion(currentGradleVersion: String): String? = versionResolver
+        .findUpdatedVersion(GradleDependencyVersion(currentGradleVersion))
+        ?.toString()
 }

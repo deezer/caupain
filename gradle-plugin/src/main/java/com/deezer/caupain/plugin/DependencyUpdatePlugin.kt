@@ -64,6 +64,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             pluginRepositories.convention(ext.repositories.plugins)
             useCache.convention(ext.useCache)
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
+            gradleStabilityLevel.convention(ext.gradleStabilityLevel)
         }
     }
 
