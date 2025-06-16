@@ -87,8 +87,22 @@ private class CachingCacheStorage(
         }
         return store.getValue(url)
     }
+
+    override suspend fun remove(
+        url: Url,
+        varyKeys: Map<String, String>
+    ) {
+        delegate.remove(url, varyKeys)
+        store[url] = delegate.findAll(url)
+    }
+
+    override suspend fun removeAll(url: Url) {
+        delegate.removeAll(url)
+        store.remove(url)
+    }
 }
 
+@Suppress("TooManyFunctions")
 private class FileCacheStorage(
     private val fileSystem: FileSystem,
     private val directory: Path,
@@ -104,8 +118,9 @@ private class FileCacheStorage(
     override suspend fun store(url: Url, data: CachedResponseData) {
         withContext(dispatcher) {
             val urlHex = key(url)
-            val caches = readCache(urlHex).filterNot { it.varyKeys == data.varyKeys } + data
-            writeCache(urlHex, caches)
+            updateCache(urlHex) { caches ->
+                caches.filterNot { it.varyKeys == data.varyKeys } + data
+            }
         }
     }
 
@@ -120,45 +135,84 @@ private class FileCacheStorage(
         }
     }
 
+    override suspend fun remove(url: Url, varyKeys: Map<String, String>) {
+        val urlHex = key(url)
+        updateCache(urlHex) { caches ->
+            caches.filterNot { it.varyKeys == varyKeys }
+        }
+    }
+
+    override suspend fun removeAll(url: Url) {
+        val urlHex = key(url)
+        deleteCache(urlHex)
+    }
+
     private fun key(url: Url): String = url.toString().toSHA256Hex()
 
-    private suspend fun writeCache(urlHex: String, caches: List<CachedResponseData>) {
+    private suspend fun readCache(urlHex: String): Set<CachedResponseData> {
+        val mutex = mutexes.computeIfAbsent(urlHex) { Mutex() }
+        return mutex.withLock { readCacheUnsafe(urlHex) }
+    }
+
+    private suspend inline fun updateCache(
+        urlHex: String,
+        transform: (Set<CachedResponseData>) -> List<CachedResponseData>
+    ) {
         val mutex = mutexes.computeIfAbsent(urlHex) { Mutex() }
         mutex.withLock {
+            val caches = readCacheUnsafe(urlHex)
+            writeCacheUnsafe(urlHex, transform(caches))
+        }
+    }
+
+    private suspend fun deleteCache(urlHex: String) {
+        val mutex = mutexes.computeIfAbsent(urlHex) { Mutex() }
+        mutex.withLock {
+            val file = directory / urlHex
+            if (!fileSystem.exists(file)) return@withLock
+
             try {
                 withContext(dispatcher) {
-                    val file = directory / urlHex
-                    fileSystem.write(file) {
-                        writeInt(caches.size)
-                        for (cache in caches) writeCache(cache)
-                    }
+                    fileSystem.delete(file)
                 }
             } catch (ignored: Exception) {
-                LOGGER.trace("Exception during saving a cache to a file: ${ignored.stackTraceToString()}")
+                LOGGER.trace("Exception during cache deletion in a file: ${ignored.stackTraceToString()}")
             }
         }
     }
 
-    private suspend fun readCache(urlHex: String): Set<CachedResponseData> {
-        val mutex = mutexes.computeIfAbsent(urlHex) { Mutex() }
-        mutex.withLock {
-            val file = directory / urlHex
-            if (!fileSystem.exists(file)) return emptySet()
-
-            try {
-                return withContext(dispatcher) {
-                    fileSystem.read(file) {
-                        val requestsCount = readInt()
-                        val caches = mutableSetOf<CachedResponseData>()
-                        repeat(requestsCount) { caches.add(readCache()) }
-                        readByteString()
-                        caches
-                    }
+    private suspend fun writeCacheUnsafe(urlHex: String, caches: List<CachedResponseData>) {
+        try {
+            withContext(dispatcher) {
+                val file = directory / urlHex
+                fileSystem.write(file) {
+                    writeInt(caches.size)
+                    for (cache in caches) writeCache(cache)
                 }
-            } catch (ignored: Exception) {
-                LOGGER.trace("Exception during cache lookup in a file: ${ignored.stackTraceToString()}")
-                return emptySet()
             }
+        } catch (ignored: Exception) {
+            LOGGER.trace("Exception during saving a cache to a file: ${ignored.stackTraceToString()}")
+        }
+    }
+
+
+    private suspend fun readCacheUnsafe(urlHex: String): Set<CachedResponseData> {
+        val file = directory / urlHex
+        if (!fileSystem.exists(file)) return emptySet()
+
+        try {
+            return withContext(dispatcher) {
+                fileSystem.read(file) {
+                    val requestsCount = readInt()
+                    val caches = mutableSetOf<CachedResponseData>()
+                    repeat(requestsCount) { caches.add(readCache()) }
+                    readByteString()
+                    caches
+                }
+            }
+        } catch (ignored: Exception) {
+            LOGGER.trace("Exception during cache lookup in a file: ${ignored.stackTraceToString()}")
+            return emptySet()
         }
     }
 
