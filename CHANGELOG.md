@@ -5,9 +5,6 @@
 ### Added
 
 ### Changed
-- Enhance repository configuration (#37)
-- Enhance Gradle updates configuration
-- Removed gradle versions url configuration, which was only used by tests
 
 ### Deprecated
 
@@ -16,6 +13,14 @@
 ### Fixed
 
 ### Security
+
+## 1.3.0 - 2025-06-17
+
+### Changed
+
+- Enhance repository configuration (#37)
+- Enhance Gradle updates configuration (#38)
+- Removed gradle versions url configuration, which was only used by tests
 
 ## 1.2.1 - 2025-06-06
 
