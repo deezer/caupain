@@ -221,7 +221,7 @@ internal object LibrarySerializer : KSerializer<Library> {
     override fun deserialize(decoder: Decoder): Library {
         val tomlDecoder = decoder.asTomlDecoder()
         return when (val element = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> Library(element.content)
+            is TomlLiteral -> Library(library = element.content)
 
             is TomlTable -> tomlDecoder
                 .toml

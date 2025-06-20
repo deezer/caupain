@@ -91,12 +91,20 @@ class VersionCatalogParserTest {
                                 strictly = GradleDependencyVersion.Range("[3.8, 4.0["),
                                 prefer = GradleDependencyVersion.Exact("3.9")
                             )
+                        ),
+                        "commons-text" to Dependency.Library(
+                            module = "org.apache.commons:commons-text",
+                            version = Version.Simple(GradleDependencyVersion.Exact("1.13.1"))
                         )
                     ),
                     plugins = mapOf(
                         "versions" to Dependency.Plugin(
                             id = "com.github.ben-manes.versions",
                             version = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT"))
+                        ),
+                        "dokka" to Dependency.Plugin(
+                            id = "org.jetbrains.dokka",
+                            version = Version.Simple(GradleDependencyVersion.Exact("2.0.0"))
                         )
                     )
                 ),
@@ -118,10 +126,12 @@ groovy-core = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 groovy-json = { module = "org.codehaus.groovy:groovy-json", version.ref = "groovy" }
 groovy-nio = { module = "org.codehaus.groovy:groovy-nio", version.ref = "groovy" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version = { strictly = "[3.8, 4.0[", prefer="3.9" } }
+commons-text = "org.apache.commons:commons-text:1.13.1"
 
 [bundles]
 groovy = ["groovy-core", "groovy-json", "groovy-nio"]
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.45.0-SNAPSHOT" }
+dokka = "org.jetbrains.dokka:2.0.0"
 """
