@@ -35,7 +35,10 @@ compatPatrouille {
 
 kotlin {
     explicitApi()
-    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+    compilerOptions.freeCompilerArgs.addAll(
+        "-Xexpect-actual-classes",
+        "-Xwhen-guards"
+    )
 
     sourceSets {
         macosX64()

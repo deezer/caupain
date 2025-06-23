@@ -188,23 +188,25 @@ public sealed interface GradleDependencyVersion {
                 override fun compareTo(other: Part): Int {
                     return when (other) {
                         is Numeric -> -1
-                        is Alphabetical -> when {
-                            value == other.value -> 0
-                            value == DEV -> -1
-                            other.value == DEV -> 1
-                            else -> {
-                                val specialValuesIndex = value.specialValuesIndex()
-                                val otherSpecialValuesIndex = other.value.specialValuesIndex()
-                                when {
-                                    specialValuesIndex < 0 && otherSpecialValuesIndex < 0 ->
-                                        value.compareTo(other.value)
 
-                                    specialValuesIndex >= 0 && otherSpecialValuesIndex < 0 -> 1
+                        is Alphabetical if value == other.value -> 0
 
-                                    specialValuesIndex < 0 && otherSpecialValuesIndex >= 0 -> -1
+                        is Alphabetical if value == DEV -> -1
 
-                                    else -> specialValuesIndex.compareTo(otherSpecialValuesIndex)
-                                }
+                        is Alphabetical if other.value == DEV -> 1
+
+                        is Alphabetical -> {
+                            val specialValuesIndex = value.specialValuesIndex()
+                            val otherSpecialValuesIndex = other.value.specialValuesIndex()
+                            when {
+                                specialValuesIndex < 0 && otherSpecialValuesIndex < 0 ->
+                                    value.compareTo(other.value)
+
+                                specialValuesIndex >= 0 && otherSpecialValuesIndex < 0 -> 1
+
+                                specialValuesIndex < 0 && otherSpecialValuesIndex >= 0 -> -1
+
+                                else -> specialValuesIndex.compareTo(otherSpecialValuesIndex)
                             }
                         }
                     }
@@ -320,9 +322,9 @@ public sealed interface GradleDependencyVersion {
         }
 
         override fun isUpdate(version: Static): Boolean {
-            return when {
-                contains(version) -> false
-                version == upperBound?.value -> upperBound.isExclusive
+            return when (version) {
+                in this -> false
+                upperBound?.value -> upperBound.isExclusive
                 else -> upperBound?.value?.isUpdate(version) == true
             }
         }
@@ -579,7 +581,8 @@ internal class GradleDependencyVersionSerializer : KSerializer<GradleDependencyV
     }
 }
 
-internal class GradleDependencyVersionStaticSerializer : KSerializer<GradleDependencyVersion.Static> {
+internal class GradleDependencyVersionStaticSerializer :
+    KSerializer<GradleDependencyVersion.Static> {
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("GradleDependencyVersion.Static", PrimitiveKind.STRING)
