@@ -143,6 +143,14 @@ class DependencyUpdateCheckerCliTest {
                         currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
                         updatedVersion = "1.0.0".toStaticVersion()
                     )
+                ),
+                UpdateInfo.Type.VERSION_CATALOG to listOf(
+                    UpdateInfo(
+                        dependency = "",
+                        dependencyId = "io.ktor:ktor-version-catalog",
+                        currentVersion = "3.1.0".toSimpleVersion(),
+                        updatedVersion = "3.2.0".toStaticVersion()
+                    )
                 )
             ),
             gradleUpdateInfo = GradleUpdateInfo(
@@ -347,6 +355,25 @@ private val EXPECTED_RESULT = """
           <td>0.45.0-SNAPSHOT</td>
           <td>1.0.0</td>
           <td><a href="http://www.example.com/resolved">http://www.example.com/resolved</a></td>
+        </tr>
+      </table>
+    </p>
+    <h2>Version Catalogs</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+          <th>URL</th>
+        </tr>
+        <tr id="update_VERSION_CATALOG_">
+          <td>io.ktor:ktor-version-catalog</td>
+          <td></td>
+          <td>3.1.0</td>
+          <td>3.2.0</td>
+          <td></td>
         </tr>
       </table>
     </p>

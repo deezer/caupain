@@ -76,4 +76,8 @@ Version References
 | Id                | Name | Current version | Updated version | URL |
 | ----------------- | ---- | --------------- | --------------- | --- |
 | com.deezer:plugin |      | 1.0.0           | 2.0.0           |     |
+## Version Catalogs
+| Id                         | Name | Current version | Updated version | URL |
+| -------------------------- | ---- | --------------- | --------------- | --- |
+| com.deezer:version-catalog |      | 1.0.0           | 2.0.0           |     |
 """.trimIndent()

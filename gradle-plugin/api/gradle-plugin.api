@@ -17,6 +17,7 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getExtraVersionCatalogs ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getGradleStabilityLevel ()Lorg/gradle/api/provider/Property;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public abstract fun getOutputsHandler ()Lcom/deezer/caupain/plugin/OutputsHandler;
@@ -37,6 +38,7 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getExtraVersionCatalogs ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getGradleStabilityLevel ()Lorg/gradle/api/provider/Property;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public final fun getPluginRepositories ()Lorg/gradle/api/provider/ListProperty;

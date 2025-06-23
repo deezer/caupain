@@ -191,6 +191,25 @@ private const val FULL_RESULT = """
         </tr>
       </table>
     </p>
+    <h2>Version Catalogs</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+          <th>URL</th>
+        </tr>
+        <tr id="update_VERSION_CATALOG_">
+          <td>com.deezer:version-catalog</td>
+          <td></td>
+          <td>1.0.0</td>
+          <td>2.0.0</td>
+          <td></td>
+        </tr>
+      </table>
+    </p>
   </body>
 </html>    
 """

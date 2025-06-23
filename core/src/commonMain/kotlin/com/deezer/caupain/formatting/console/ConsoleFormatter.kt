@@ -47,6 +47,7 @@ public class ConsoleFormatter(
             printReferenceUpdates(input.versionReferenceInfo)
             printUpdates(LIBRARY_TITLE, input.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
             printUpdates(PLUGIN_TITLE, input.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
+            printUpdates(VERSION_CATALOGS_TITLE, input.updateInfos[UpdateInfo.Type.VERSION_CATALOG].orEmpty())
         }
     }
 
@@ -127,6 +128,7 @@ public class ConsoleFormatter(
         const val UPDATES_TITLE = "Updates are available"
         const val LIBRARY_TITLE = "Library updates:"
         const val PLUGIN_TITLE = "Plugin updates:"
+        const val VERSION_CATALOGS_TITLE = "Version catalogs updates:"
         const val VERSIONS_TITLE = "Versions updates:"
     }
 }

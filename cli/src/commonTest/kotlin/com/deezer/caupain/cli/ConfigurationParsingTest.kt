@@ -27,6 +27,7 @@ package com.deezer.caupain.cli
 import com.deezer.caupain.cli.serialization.DefaultToml
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DefaultRepositories
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
@@ -77,6 +78,10 @@ class ConfigurationParsingTest {
                 excludedPlugins = listOf(
                     PluginExclusion("com.first"),
                     PluginExclusion("com.second")
+                ),
+                supplementaryVersionCatalogs = listOf(
+                    Dependency.Library(group = "com.example", name = "version-catalog", version = "1.0.0".toSimpleVersion()),
+                    Dependency.Library(group = "com.example2", name = "version-catalog2", version = "2.0.0".toSimpleVersion()),
                 )
             ),
             actual = DefaultToml
@@ -96,6 +101,10 @@ policy = "stability-level"
 cacheDir = "build/cache/caupain"
 outputType = "markdown"
 outputPath = "build/reports/dependency-updates.md"    
+extraVersionCatalogs = [
+    "com.example:version-catalog:1.0.0",
+    { group = "com.example2", name = "version-catalog2", version = "2.0.0" }
+]
 excludedKeys = ["test"]
 excludedLibraries = [
     { group = "com.example", name = "example-lib" },

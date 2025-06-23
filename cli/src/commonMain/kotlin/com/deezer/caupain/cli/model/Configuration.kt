@@ -25,6 +25,7 @@
 package com.deezer.caupain.cli.model
 
 import com.deezer.caupain.cli.serialization.ConfigurationSerializer
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
@@ -39,6 +40,7 @@ interface Configuration {
     val pluginRepositories: List<Repository>?
     val versionCatalogPath: Path?
     val versionCatalogPaths: Iterable<Path>?
+    val extraVersionCatalogs: List<Dependency.Library>?
     val excludedKeys: Set<String>?
     val excludedLibraries: List<LibraryExclusion>?
     val excludedPlugins: List<PluginExclusion>?

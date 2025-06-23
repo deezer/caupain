@@ -129,7 +129,8 @@ class UpdateInfoResolverTest {
                 ),
                 repository = BASE_REPOSITORY,
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("0.9")),
-                updatedVersion = GradleDependencyVersion.Exact("1.0")
+                updatedVersion = GradleDependencyVersion.Exact("1.0"),
+                isVersionCatalog = false
             )
         )
     }
@@ -156,7 +157,8 @@ class UpdateInfoResolverTest {
                 ),
                 repository = BASE_REPOSITORY,
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("0.9")),
-                updatedVersion = GradleDependencyVersion.Exact("1.0.0")
+                updatedVersion = GradleDependencyVersion.Exact("1.0.0"),
+                isVersionCatalog = false
             )
         )
     }
@@ -183,7 +185,8 @@ class UpdateInfoResolverTest {
                 ),
                 repository = BASE_REPOSITORY,
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("0.9")),
-                updatedVersion = GradleDependencyVersion.Snapshot("4.0.0-beta-2-SNAPSHOT")
+                updatedVersion = GradleDependencyVersion.Snapshot("4.0.0-beta-2-SNAPSHOT"),
+                isVersionCatalog = false
             )
         )
     }

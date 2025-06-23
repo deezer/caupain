@@ -41,7 +41,6 @@ import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
-import com.deezer.caupain.resolver.GradleVersionResolver
 import com.deezer.caupain.resolver.GradleVersionResolverTest
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.serialization.DefaultJson
@@ -97,7 +96,10 @@ class DependencyUpdateCheckerTest {
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             excludedKeys = setOf("groovy-json"),
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
-            versionCatalogPaths = VERSION_CATALOGS.keys
+            versionCatalogPaths = VERSION_CATALOGS.keys,
+            supplementaryVersionCatalogs = listOf(
+                Dependency.Library("io.ktor:ktor-version-catalog:3.1.0")
+            )
         )
         for (versionCatalogPath in VERSION_CATALOGS.keys) {
             fileSystem.write(versionCatalogPath) {}
@@ -151,6 +153,10 @@ class DependencyUpdateCheckerTest {
 
             RESOLVED_VERSIONS_INFO_URL -> scope.respondElement(RESOLVED_VERSIONS_INFO)
 
+            VERSION_CATALOG_METADATA_URL -> scope.respondElement(VERSION_CATALOG_METADATA)
+
+            VERSION_CATALOG_INFO_URL -> scope.respondElement(VERSION_CATALOG_INFO)
+
             GRADLE_VERSION_URL -> scope.respond(
                 content = GradleVersionResolverTest.GRADLE_RELEASES,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
@@ -202,6 +208,16 @@ class DependencyUpdateCheckerTest {
                             url = "http://www.example.com/resolved",
                             currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
                             updatedVersion = "1.0.0".toStaticVersion()
+                        )
+                    ),
+                    UpdateInfo.Type.VERSION_CATALOG to listOf(
+                        UpdateInfo(
+                            dependency = "",
+                            dependencyId = "io.ktor:ktor-version-catalog",
+                            name = "Ktor Version Catalog",
+                            url = "https://github.com/ktorio/ktor",
+                            currentVersion = "3.1.0".toSimpleVersion(),
+                            updatedVersion = "3.2.0".toStaticVersion()
                         )
                     )
                 ),
@@ -363,6 +379,30 @@ class DependencyUpdateCheckerTest {
                 "plugin",
                 "1.0",
                 "plugin-1.0.pom"
+            )
+            .build()
+
+        private val VERSION_CATALOG_METADATA = metadata(
+            latest = "3.2.0",
+            versions = listOf("3.2.0", "3.1.0", "3.0.6")
+        )
+        private val VERSION_CATALOG_METADATA_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("io", "ktor", "ktor-version-catalog", "maven-metadata.xml")
+            .build()
+
+        private val VERSION_CATALOG_INFO = info(
+            name = "Ktor Version Catalog",
+            url = "https://github.com/ktorio/ktor"
+        )
+        private val VERSION_CATALOG_INFO_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments(
+                "io",
+                "ktor",
+                "ktor-version-catalog",
+                "3.2.0",
+                "ktor-version-catalog-3.2.0.pom"
             )
             .build()
 

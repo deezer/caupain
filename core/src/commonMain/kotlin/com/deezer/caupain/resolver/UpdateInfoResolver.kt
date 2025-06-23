@@ -50,13 +50,19 @@ internal class UpdateInfoResolver(
     suspend fun getUpdateInfo(
         key: String,
         dependency: Dependency,
+        isVersionCatalog: Boolean,
         repository: Repository,
         currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Static
     ): Result {
         val mavenInfo = getMavenInfo(dependency, repository, updatedVersion)
         val type = when (dependency) {
-            is Dependency.Library -> UpdateInfo.Type.LIBRARY
+            is Dependency.Library -> if (isVersionCatalog) {
+                UpdateInfo.Type.VERSION_CATALOG
+            } else {
+                UpdateInfo.Type.LIBRARY
+            }
+
             is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
         }
         return Result(

@@ -59,7 +59,9 @@ class ConsoleFormatterTest : AbstractFormatterTest() {
                 ConsoleFormatter.LIBRARY_TITLE,
                 "- com.deezer:library: 1.0.0 -> 2.0.0",
                 ConsoleFormatter.PLUGIN_TITLE,
-                "- com.deezer:plugin: 1.0.0 -> 2.0.0"
+                "- com.deezer:plugin: 1.0.0 -> 2.0.0",
+                ConsoleFormatter.VERSION_CATALOGS_TITLE,
+                "- com.deezer:version-catalog: 1.0.0 -> 2.0.0"
             ),
             printer.output
         )

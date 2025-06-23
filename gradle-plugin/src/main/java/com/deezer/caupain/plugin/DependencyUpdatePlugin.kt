@@ -55,6 +55,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             group = "verification"
             description = "Check for dependency updates"
             versionCatalogFiles.convention(ext.resolveVersionCatalogFiles(target))
+            extraVersionCatalogs.convention(ext.extraVersionCatalogs)
             excludedKeys.convention(ext.excludedKeys)
             excludedLibraries.convention(ext.excludedLibraries)
             excludedPluginIds.convention(ext.excludedPluginIds)

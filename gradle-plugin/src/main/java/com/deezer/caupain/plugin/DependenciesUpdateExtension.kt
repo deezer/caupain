@@ -58,6 +58,12 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
     val versionCatalogFiles: ConfigurableFileCollection = objects.fileCollection()
 
     /**
+     * Dependency information for version catalogs used that have been created via the
+     * [Version Catalog Plugin](https://docs.gradle.org/current/userguide/version_catalogs.html#sec:version-catalog-plugin)
+     */
+    val extraVersionCatalogs: ListProperty<String> = objects.listProperty()
+
+    /**
      * The set of keys in the version catalog for which updates should be ignored. Default is empty.
      */
     val excludedKeys: SetProperty<String> = objects.setProperty<String>().convention(emptySet())

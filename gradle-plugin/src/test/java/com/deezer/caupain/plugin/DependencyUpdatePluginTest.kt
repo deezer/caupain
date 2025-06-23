@@ -24,10 +24,9 @@
 
 package com.deezer.caupain.plugin
 
+import app.cash.burst.Burst
+import app.cash.burst.burstValues
 import com.deezer.caupain.gradle_plugin.BuildConfig
-import com.google.testing.junit.testparameterinjector.TestParameter
-import com.google.testing.junit.testparameterinjector.TestParameterInjector
-import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import io.ktor.http.HttpHeaders
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
@@ -44,25 +43,29 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.junit.runner.RunWith
 import java.io.File
 import java.io.StringWriter
 import java.util.zip.ZipInputStream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
+@Suppress("JUnitMalformedDeclaration")
 @OptIn(ExperimentalOkHttpApi::class)
-@RunWith(TestParameterInjector::class)
-class DependencyUpdatePluginTest {
+@Burst
+class DependencyUpdatePluginTest(
+    private val versions: Versions = burstValues(
+        Versions(GradleVersion.current().version, "8.9.1"),
+        Versions("8.14.2", "8.9.1"),
+        Versions("8.11.1", "8.9.1"),
+    )
+) {
 
     @get:Rule
     val tempFolder = TemporaryFolder()
 
     @get:Rule
     val mockWebserverRule = MockWebServerRule()
-
-    @TestParameter(valuesProvider = GradleVersionProvider::class)
-    private lateinit var versions: Versions
 
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
@@ -106,6 +109,8 @@ class DependencyUpdatePluginTest {
                     "/maven-plugins/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
                     "/maven-plugins/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
                     "/maven-plugins/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
+                    "/maven/io/ktor/ktor-version-catalog/maven-metadata.xml" -> KTOR_VERSION_CATALOG_METADATA
+                    "/maven/io/ktor/ktor-version-catalog/3.2.0/ktor-version-catalog-3.2.0.pom" -> KTOR_VERSION_CATALOG_POM
                     "/gradle" -> return MockResponse(
                         code = 200,
                         body = GRADLE_VERSION_JSON,
@@ -199,6 +204,7 @@ class DependencyUpdatePluginTest {
                     }
                 }
                 showVersionReferences.set(true)
+                extraVersionCatalogs.add("io.ktor:ktor-version-catalog:3.1.0")
                 $supplementaryConfiguration
             }
         
@@ -303,8 +309,15 @@ class DependencyUpdatePluginTest {
             .withGradleVersion(versions.gradle)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
-        assertContains(result.output, expectedConsoleResult(versions.gradle))
-        assertContains(result.output, "Infos size : 2")
+        val outputLines = result.output.lines()
+        val customResultLineIndex = outputLines.indexOf("Infos size : 3")
+        assertNotEquals(-1, customResultLineIndex, "Custom result line not found in output")
+        assertEquals(
+            expected = expectedConsoleResult(versions.gradle),
+            actual = outputLines
+                .subList(2, customResultLineIndex)
+                .joinToString("\n")
+        )
         assertEquals(
             expected = expectedHtmlResult(versions.gradle),
             actual = htmlOutputFile.readText().trim()
@@ -317,7 +330,7 @@ class DependencyUpdatePluginTest {
             expected = expectedJsonResult(versions.gradle),
             actual = jsonOutputFile.readText().trim()
         )
-        assertEquals(9, mockWebserverRule.server.requestCount)
+        assertEquals(11, mockWebserverRule.server.requestCount)
     }
 
     @Test
@@ -363,18 +376,10 @@ class DependencyUpdatePluginTest {
         )
     }
 
-    private data class Versions(
+    data class Versions(
         val gradle: String,
         val agp: String
     )
-
-    private class GradleVersionProvider : TestParameterValuesProvider() {
-        override fun provideValues(context: Context?): List<Versions> = listOf(
-            Versions(GradleVersion.current().version, "8.9.1"),
-            Versions("8.14.2", "8.9.1"),
-            Versions("8.11.1", "8.9.1"),
-        )
-    }
 }
 
 @Language("XML")
@@ -1072,6 +1077,62 @@ private val CAUPAIN_METADATA = """
     </metadata>    
 """.trimIndent()
 
+@Language("XML")
+private val KTOR_VERSION_CATALOG_METADATA = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <metadata>
+      <groupId>io.ktor</groupId>
+      <artifactId>ktor-version-catalog</artifactId>
+      <versioning>
+        <latest>3.2.0</latest>
+        <release>3.2.0</release>
+        <versions>
+          <version>3.2.0</version>
+        </versions>
+        <lastUpdated>20250612173932</lastUpdated>
+      </versioning>
+    </metadata>
+""".trimIndent()
+
+@Language("XML")
+private val KTOR_VERSION_CATALOG_POM = """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <!-- This module was also published with a richer model, Gradle metadata,  -->
+      <!-- which should be used instead. Do not delete the following line which  -->
+      <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+      <!-- that they should prefer consuming it instead. -->
+      <!-- do_not_remove: published-with-gradle-metadata -->
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>io.ktor</groupId>
+      <artifactId>ktor-version-catalog</artifactId>
+      <version>3.2.0</version>
+      <packaging>toml</packaging>
+      <name>ktor-version-catalog</name>
+      <description>Ktor is a framework for quickly creating web applications in Kotlin with minimal effort.</description>
+      <url>https://github.com/ktorio/ktor</url>
+      <licenses>
+        <license>
+          <name>The Apache Software License, Version 2.0</name>
+          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <developers>
+        <developer>
+          <id>JetBrains</id>
+          <name>Jetbrains Team</name>
+          <organization>JetBrains</organization>
+          <organizationUrl>https://www.jetbrains.com</organizationUrl>
+        </developer>
+      </developers>
+      <scm>
+        <url>https://github.com/ktorio/ktor.git</url>
+      </scm>
+    </project>
+""".trimIndent()
+
 @Language("JSON")
 private val GRADLE_VERSION_JSON = """
 [{
@@ -1190,6 +1251,25 @@ private fun expectedHtmlResult(gradleVersion: String) = """
         </tr>
       </table>
     </p>
+    <h2>Version Catalogs</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+          <th>URL</th>
+        </tr>
+        <tr id="update_VERSION_CATALOG_">
+          <td>io.ktor:ktor-version-catalog</td>
+          <td>ktor-version-catalog</td>
+          <td>3.1.0</td>
+          <td>3.2.0</td>
+          <td><a href="https://github.com/ktorio/ktor">https://github.com/ktorio/ktor</a></td>
+        </tr>
+      </table>
+    </p>
   </body>
 </html>    
 """.trimIndent().trim()
@@ -1204,7 +1284,9 @@ Versions updates:
 Library updates:
 - androidx.core:core-ktx: 1.16.0 -> 1.17.0
 Plugin updates:
-- org.jetbrains.kotlin.android: 2.0.21 -> 2.1.20    
+- org.jetbrains.kotlin.android: 2.0.21 -> 2.1.20
+Version catalogs updates:
+- io.ktor:ktor-version-catalog: 3.1.0 -> 3.2.0
 """.trimIndent().trim()
 
 @Language("Markdown")
@@ -1228,6 +1310,10 @@ Version References
 | Id                           | Name                 | Current version | Updated version | URL                                                |
 | ---------------------------- | -------------------- | --------------- | --------------- | -------------------------------------------------- |
 | org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21          | 2.1.20          | [https://kotlinlang.org/](https://kotlinlang.org/) |
+## Version Catalogs
+| Id                           | Name                 | Current version | Updated version | URL                                                              |
+| ---------------------------- | -------------------- | --------------- | --------------- | ---------------------------------------------------------------- |
+| io.ktor:ktor-version-catalog | ktor-version-catalog | 3.1.0           | 3.2.0           | [https://github.com/ktorio/ktor](https://github.com/ktorio/ktor) |
 """.trimIndent().trim()
 
 @Language("JSON")
@@ -1256,6 +1342,16 @@ private fun expectedJsonResult(gradleVersion: String) = """
                 "url": "https://kotlinlang.org/",
                 "currentVersion": "2.0.21",
                 "updatedVersion": "2.1.20"
+            }
+        ],
+        "versionCatalogs": [
+            {
+                "dependency": "",
+                "dependencyId": "io.ktor:ktor-version-catalog",
+                "name": "ktor-version-catalog",
+                "url": "https://github.com/ktorio/ktor",
+                "currentVersion": "3.1.0",
+                "updatedVersion": "3.2.0"
             }
         ]
     },

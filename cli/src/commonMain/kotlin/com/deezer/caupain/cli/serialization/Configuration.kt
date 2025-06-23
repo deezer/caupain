@@ -33,6 +33,7 @@ package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
@@ -54,6 +55,7 @@ private data class ConfigurationImpl(
     override val pluginRepositories: List<Repository>? = null,
     override val versionCatalogPath: Path? = null,
     override val versionCatalogPaths: Iterable<Path>? = null,
+    override val extraVersionCatalogs: List<Dependency.Library>?,
     override val excludedKeys: Set<String>? = null,
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
@@ -83,6 +85,8 @@ private data class ConfigurationImpl(
             versionCatalogPaths = versionCatalogPaths
                 ?: versionCatalogPath?.let(::listOf)
                 ?: baseConfiguration.versionCatalogPaths,
+            supplementaryVersionCatalogs = extraVersionCatalogs
+                ?: baseConfiguration.supplementaryVersionCatalogs,
             excludedKeys = excludedKeys ?: baseConfiguration.excludedKeys,
             excludedLibraries = excludedLibraries ?: baseConfiguration.excludedLibraries,
             excludedPlugins = excludedPlugins ?: baseConfiguration.excludedPlugins,

@@ -85,7 +85,8 @@ public class UpdateInfo(
     @Serializable
     public enum class Type(public val title: String) {
         @SerialName("libraries") LIBRARY("Libraries"),
-        @SerialName("plugins") PLUGIN("Plugins")
+        @SerialName("plugins") PLUGIN("Plugins"),
+        @SerialName("versionCatalogs") VERSION_CATALOG("Version Catalogs"),
     }
 }
 

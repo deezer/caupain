@@ -119,6 +119,13 @@ public sealed interface Dependency {
         override fun toString(): String {
             return "Library(group=$group, name=$name, version=$version)"
         }
+
+        public companion object {
+            /**
+             * Parses a library string in the format "group:name:version"
+             */
+            public fun parse(libraryString: String): Library = Library(library = libraryString)
+        }
     }
 
     /**

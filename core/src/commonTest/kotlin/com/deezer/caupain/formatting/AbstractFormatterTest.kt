@@ -56,7 +56,8 @@ abstract class AbstractFormatterTest {
                 gradleUpdateInfo = null,
                 updateInfos = mapOf(
                     UpdateInfo.Type.LIBRARY to emptyList(),
-                    UpdateInfo.Type.PLUGIN to emptyList()
+                    UpdateInfo.Type.PLUGIN to emptyList(),
+                    UpdateInfo.Type.VERSION_CATALOG to emptyList()
                 ),
                 versionReferenceInfo = null,
                 selfUpdateInfo = null
@@ -91,7 +92,17 @@ abstract class AbstractFormatterTest {
                         "1.0.0".toSimpleVersion(),
                         "2.0.0".toStaticVersion()
                     )
-                )
+                ),
+                UpdateInfo.Type.VERSION_CATALOG to listOf(
+                    UpdateInfo(
+                        "",
+                        "com.deezer:version-catalog",
+                        null,
+                        null,
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                ),
             ),
             versionReferenceInfo = listOf(
                 VersionReferenceInfo(

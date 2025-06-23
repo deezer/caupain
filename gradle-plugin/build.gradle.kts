@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.gradle.plugin.publish)
     alias(libs.plugins.dependency.guard)
     alias(libs.plugins.build.config)
+    alias(libs.plugins.cashapp.burst)
 }
 
 compatPatrouille {
@@ -32,7 +33,6 @@ dependencies {
     testImplementation(libs.mockwebserver)
     testImplementation(libs.mockwebserver.junit)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.test.parameter.injector)
 }
 
 dependencyGuard {

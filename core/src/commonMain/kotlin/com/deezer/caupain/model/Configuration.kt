@@ -38,6 +38,8 @@ import kotlin.jvm.JvmOverloads
  * @property repositories A list of repositories to search for dependencies.
  * @property pluginRepositories A list of repositories to search for plugin updates.
  * @property versionCatalogPaths The paths to the version catalog files.
+ * @property supplementaryVersionCatalogs Dependency information for version catalogs used that have
+ * been created via the [Version Catalog Plugin](https://docs.gradle.org/current/userguide/version_catalogs.html#sec:version-catalog-plugin)
  * @property excludedKeys A set of keys to exclude from the update process.
  * @property excludedLibraries A list of libraries to exclude from the update process.
  * @property excludedPlugins A list of plugins to exclude from the update process.
@@ -55,6 +57,7 @@ public interface Configuration : Serializable {
     @Deprecated("Use versionCatalogPaths instead")
     public val versionCatalogPath: Path
     public val versionCatalogPaths: Iterable<Path>
+    public val supplementaryVersionCatalogs: Iterable<Dependency.Library>
     public val excludedKeys: Set<String>
     public val excludedLibraries: List<LibraryExclusion>
     public val excludedPlugins: List<PluginExclusion>
@@ -129,6 +132,8 @@ public fun Configuration(
  * @param repositories A list of repositories to search for dependencies.
  * @param pluginRepositories A list of repositories to search for plugin updates.
  * @param versionCatalogPaths The paths to the version catalog files.
+ * @param supplementaryVersionCatalogs Dependency information for version catalogs used that have
+ * been created via the [Version Catalog Plugin](https://docs.gradle.org/current/userguide/version_catalogs.html#sec:version-catalog-plugin)
  * @param excludedKeys A set of keys to exclude from the update process.
  * @param excludedLibraries A list of libraries to exclude from the update process.
  * @param excludedPlugins A list of plugins to exclude from the update process.
@@ -152,6 +157,7 @@ public fun Configuration(
         DefaultRepositories.google,
     ),
     versionCatalogPaths: Iterable<Path> = listOf("gradle/libs.versions.toml".toPath()),
+    supplementaryVersionCatalogs: Iterable<Dependency.Library> = emptyList(),
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
@@ -165,6 +171,7 @@ public fun Configuration(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
     versionCatalogPaths = versionCatalogPaths,
+    supplementaryVersionCatalogs = supplementaryVersionCatalogs,
     excludedKeys = excludedKeys,
     excludedLibraries = excludedLibraries,
     excludedPlugins = excludedPlugins,
@@ -187,6 +194,7 @@ internal data class ConfigurationImpl(
         DefaultRepositories.google,
     ),
     override val versionCatalogPaths: Iterable<Path> = listOf("gradle/libs.versions.toml".toPath()),
+    override val supplementaryVersionCatalogs: Iterable<Dependency.Library> = emptyList(),
     override val excludedKeys: Set<String> = emptySet(),
     override val excludedLibraries: List<LibraryExclusion> = emptyList(),
     override val excludedPlugins: List<PluginExclusion> = emptyList(),

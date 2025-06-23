@@ -68,7 +68,8 @@ class JsonFormatterTest : FileFormatterTest() {
                 "gradleUpdateInfo": null,
                 "updateInfos": {
                     "libraries": [],
-                    "plugins": []
+                    "plugins": [],
+                    "versionCatalogs": []
                 },
                 "versionReferenceInfo": null,
                 "selfUpdateInfo": null
@@ -97,6 +98,16 @@ class JsonFormatterTest : FileFormatterTest() {
                         {
                             "dependency": "plugin",
                             "dependencyId": "com.deezer:plugin",
+                            "name": null,
+                            "url": null,
+                            "currentVersion": "1.0.0",
+                            "updatedVersion": "2.0.0"
+                        }
+                    ],
+                    "versionCatalogs": [
+                        {
+                            "dependency": "",
+                            "dependencyId": "com.deezer:version-catalog",
                             "name": null,
                             "url": null,
                             "currentVersion": "1.0.0",

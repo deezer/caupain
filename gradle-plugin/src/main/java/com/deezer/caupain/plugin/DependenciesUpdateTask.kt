@@ -45,6 +45,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.logging.Logger
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
@@ -74,6 +75,9 @@ open class DependenciesUpdateTask : DefaultTask() {
      */
     @get:Internal
     val versionCatalogFiles: ConfigurableFileCollection = project.objects.fileCollection()
+
+    @get:Internal
+    val extraVersionCatalogs: ListProperty<String> = project.objects.listProperty()
 
     /**
      * @see DependenciesUpdateExtension.excludedKeys
@@ -218,6 +222,9 @@ open class DependenciesUpdateTask : DefaultTask() {
             repositories = repositories.get(),
             pluginRepositories = pluginRepositories.get(),
             versionCatalogPaths = versionCatalogFiles.map { it.toOkioPath() },
+            supplementaryVersionCatalogs = extraVersionCatalogs
+                .get()
+                .map { Dependency.Library.parse(it) },
             excludedKeys = excludedKeys.get(),
             excludedLibraries = excludedLibraries.get(),
             excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },

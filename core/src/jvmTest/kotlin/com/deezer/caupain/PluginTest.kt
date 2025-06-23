@@ -176,6 +176,7 @@ class PluginTest {
                         ),
                     ),
                     UpdateInfo.Type.PLUGIN to emptyList(),
+                    UpdateInfo.Type.VERSION_CATALOG to emptyList()
                 ),
                 versionCatalog = VERSION_CATALOG,
                 selfUpdateInfo = null
