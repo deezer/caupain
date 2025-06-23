@@ -1,5 +1,5 @@
-ca.gosyer:kotlin-multiplatform-appdirs-jvm:1.2.0
-ca.gosyer:kotlin-multiplatform-appdirs:1.2.0
+ca.gosyer:kotlin-multiplatform-appdirs-jvm:2.0.0
+ca.gosyer:kotlin-multiplatform-appdirs:2.0.0
 com.fasterxml.jackson.core:jackson-annotations:2.12.7
 com.fasterxml.jackson.core:jackson-core:2.12.7
 com.fasterxml.jackson.core:jackson-databind:2.12.7.1
@@ -27,8 +27,8 @@ com.github.ajalt.mordant:mordant-jvm:3.0.2
 com.github.ajalt.mordant:mordant-markdown-jvm:3.0.1
 com.github.ajalt.mordant:mordant-markdown:3.0.1
 com.github.ajalt.mordant:mordant:3.0.2
-net.java.dev.jna:jna-platform:5.12.1
-net.java.dev.jna:jna:5.14.0
+net.java.dev.jna:jna-platform:5.17.0
+net.java.dev.jna:jna:5.17.0
 net.peanuuutz.tomlkt:tomlkt-jvm:0.4.0
 net.peanuuutz.tomlkt:tomlkt:0.4.0
 org.freemarker:freemarker:2.3.32

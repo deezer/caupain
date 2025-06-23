@@ -3,7 +3,6 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.SonatypeHost
 import io.gitlab.arturbosch.detekt.Detekt
 import kotlinx.validation.ExperimentalBCVApi
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
@@ -187,7 +186,7 @@ mavenPublishing {
             sourcesJar = true
         )
     )
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     pom {
         name = "Caupain core library"

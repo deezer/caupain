@@ -1,5 +1,5 @@
-ca.gosyer:kotlin-multiplatform-appdirs-jvm:1.2.0
-ca.gosyer:kotlin-multiplatform-appdirs:1.2.0
+ca.gosyer:kotlin-multiplatform-appdirs-jvm:2.0.0
+ca.gosyer:kotlin-multiplatform-appdirs:2.0.0
 com.github.ajalt.clikt:clikt-core-jvm:5.0.3
 com.github.ajalt.clikt:clikt-core:5.0.3
 com.github.ajalt.clikt:clikt-jvm:5.0.3

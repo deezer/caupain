@@ -107,7 +107,9 @@ class DependencyUpdateCheckerCli(
     }
 ) : SuspendingCliktCommand(name = "caupain") {
 
-    private val appDirs = AppDirs("caupain")
+    private val appDirs = AppDirs {
+        appName = "caupain"
+    }
 
     private val versionCatalogPaths by
     option(

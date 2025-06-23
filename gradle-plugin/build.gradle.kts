@@ -1,5 +1,4 @@
 import com.vanniktech.maven.publish.GradlePublishPlugin
-import com.vanniktech.maven.publish.SonatypeHost
 import io.gitlab.arturbosch.detekt.Detekt
 
 plugins {
@@ -57,7 +56,7 @@ mavenPublishing {
     configure(GradlePublishPlugin())
     if (version.toString().endsWith("-SNAPSHOT")) {
         // Publish snapshots to Maven Central
-        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+        publishToMavenCentral(automaticRelease = true)
         signAllPublications()
         pom {
             name = "Caupain Gradle plugin"

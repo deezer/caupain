@@ -1,4 +1,4 @@
-ca.gosyer:kotlin-multiplatform-appdirs:1.2.0
+ca.gosyer:kotlin-multiplatform-appdirs:2.0.0
 co.touchlab:stately-concurrency:2.1.0
 co.touchlab:stately-concurrent-collections:2.1.0
 co.touchlab:stately-strict:2.1.0
