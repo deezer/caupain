@@ -109,7 +109,7 @@ public final class com/deezer/caupain/formatting/model/Input {
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/formatting/model/Input$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/formatting/model/Input$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/formatting/model/Input$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/formatting/model/Input;
@@ -117,6 +117,7 @@ public synthetic class com/deezer/caupain/formatting/model/Input$$serializer : k
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/formatting/model/Input;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/formatting/model/Input$Companion {
@@ -138,7 +139,7 @@ public final class com/deezer/caupain/formatting/model/VersionReferenceInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/formatting/model/VersionReferenceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/formatting/model/VersionReferenceInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/formatting/model/VersionReferenceInfo$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/formatting/model/VersionReferenceInfo;
@@ -146,6 +147,7 @@ public synthetic class com/deezer/caupain/formatting/model/VersionReferenceInfo$
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/formatting/model/VersionReferenceInfo;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/formatting/model/VersionReferenceInfo$Companion {
@@ -371,7 +373,7 @@ public final class com/deezer/caupain/model/GradleDependencyVersion$Snapshot : c
 public abstract interface class com/deezer/caupain/model/GradleDependencyVersion$Static : com/deezer/caupain/model/GradleDependencyVersion, java/lang/Comparable {
 	public static final field Companion Lcom/deezer/caupain/model/GradleDependencyVersion$Static$Companion;
 	public abstract fun getExactVersion ()Lcom/deezer/caupain/model/GradleDependencyVersion$Exact;
-	public abstract fun isStatic ()Z
+	public fun isStatic ()Z
 }
 
 public final class com/deezer/caupain/model/GradleDependencyVersion$Static$Companion {
@@ -408,7 +410,7 @@ public final class com/deezer/caupain/model/GradleUpdateInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/model/GradleUpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/model/GradleUpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/model/GradleUpdateInfo$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/GradleUpdateInfo;
@@ -416,6 +418,7 @@ public synthetic class com/deezer/caupain/model/GradleUpdateInfo$$serializer : k
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/GradleUpdateInfo;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/GradleUpdateInfo$Companion {
@@ -448,9 +451,11 @@ public abstract interface class com/deezer/caupain/model/Logger {
 	public static final field Companion Lcom/deezer/caupain/model/Logger$Companion;
 	public abstract fun debug (Ljava/lang/String;)V
 	public abstract fun error (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public static synthetic fun error$default (Lcom/deezer/caupain/model/Logger;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
 	public abstract fun info (Ljava/lang/String;)V
 	public abstract fun lifecycle (Ljava/lang/String;)V
 	public abstract fun warn (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public static synthetic fun warn$default (Lcom/deezer/caupain/model/Logger;Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
 }
 
 public final class com/deezer/caupain/model/Logger$Companion {
@@ -483,7 +488,7 @@ public final class com/deezer/caupain/model/PluginExclusion : com/deezer/caupain
 }
 
 public abstract interface class com/deezer/caupain/model/Policy {
-	public abstract fun getDescription ()Ljava/lang/String;
+	public fun getDescription ()Ljava/lang/String;
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun select (Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
 }
@@ -509,9 +514,9 @@ public final class com/deezer/caupain/model/Repositories {
 public abstract interface class com/deezer/caupain/model/Repository : java/io/Serializable {
 	public abstract fun contains (Lcom/deezer/caupain/model/Dependency;)Z
 	public abstract fun getCredentials ()Lcom/deezer/caupain/model/Credentials;
-	public abstract fun getPassword ()Ljava/lang/String;
+	public fun getPassword ()Ljava/lang/String;
 	public abstract fun getUrl ()Ljava/lang/String;
-	public abstract fun getUser ()Ljava/lang/String;
+	public fun getUser ()Ljava/lang/String;
 }
 
 public final class com/deezer/caupain/model/Repository$DefaultImpls {
@@ -530,7 +535,7 @@ public final class com/deezer/caupain/model/SelfUpdateInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/model/SelfUpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/model/SelfUpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/model/SelfUpdateInfo$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/SelfUpdateInfo;
@@ -538,6 +543,7 @@ public synthetic class com/deezer/caupain/model/SelfUpdateInfo$$serializer : kot
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/SelfUpdateInfo;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/SelfUpdateInfo$Companion {
@@ -583,7 +589,7 @@ public final class com/deezer/caupain/model/UpdateInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/model/UpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/model/UpdateInfo$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/model/UpdateInfo$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/UpdateInfo;
@@ -591,6 +597,7 @@ public synthetic class com/deezer/caupain/model/UpdateInfo$$serializer : kotlinx
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/UpdateInfo;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/UpdateInfo$Companion {
@@ -634,7 +641,7 @@ public final class com/deezer/caupain/model/gradle/GradleStabilityLevel$Companio
 
 public abstract interface class com/deezer/caupain/model/versionCatalog/Version {
 	public static final field Companion Lcom/deezer/caupain/model/versionCatalog/Version$Companion;
-	public abstract fun resolve (Ljava/util/Map;)Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
+	public fun resolve (Ljava/util/Map;)Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
 }
 
 public final class com/deezer/caupain/model/versionCatalog/Version$Companion {
@@ -655,7 +662,7 @@ public final class com/deezer/caupain/model/versionCatalog/Version$Reference : c
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/model/versionCatalog/Version$Reference$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/model/versionCatalog/Version$Reference$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/model/versionCatalog/Version$Reference$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/versionCatalog/Version$Reference;
@@ -663,6 +670,7 @@ public synthetic class com/deezer/caupain/model/versionCatalog/Version$Reference
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/versionCatalog/Version$Reference;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/versionCatalog/Version$Reference$Companion {
@@ -702,7 +710,7 @@ public final class com/deezer/caupain/model/versionCatalog/Version$Rich : com/de
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/model/versionCatalog/Version$Rich$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/model/versionCatalog/Version$Rich$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/model/versionCatalog/Version$Rich$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/versionCatalog/Version$Rich;
@@ -710,6 +718,7 @@ public synthetic class com/deezer/caupain/model/versionCatalog/Version$Rich$$ser
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/versionCatalog/Version$Rich;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/versionCatalog/Version$Rich$Companion {
@@ -740,7 +749,7 @@ public final class com/deezer/caupain/model/versionCatalog/VersionCatalog {
 	public fun toString ()Ljava/lang/String;
 }
 
-public synthetic class com/deezer/caupain/model/versionCatalog/VersionCatalog$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+public final synthetic class com/deezer/caupain/model/versionCatalog/VersionCatalog$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
 	public static final field INSTANCE Lcom/deezer/caupain/model/versionCatalog/VersionCatalog$$serializer;
 	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
 	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;
@@ -748,6 +757,7 @@ public synthetic class com/deezer/caupain/model/versionCatalog/VersionCatalog$$s
 	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
 	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;)V
 	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/versionCatalog/VersionCatalog$Companion {
