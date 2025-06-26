@@ -74,7 +74,7 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 mokkery = "dev.mokkery:2.9.0"
 changelog = "org.jetbrains.changelog:2.2.1"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
-binary-compatibility-validator = "org.jetbrains.kotlinx.binary-compatibility-validator:0.18.0"
+binary-compatibility-validator = "org.jetbrains.kotlinx.binary-compatibility-validator:0.17.0" #ignoreUpdates
 compat-patrouille = "com.gradleup.compat.patrouille:0.0.0"
 buildkonfig = "com.codingfeline.buildkonfig:0.17.1"
 build-config = "com.github.gmazzo.buildconfig:5.6.7"

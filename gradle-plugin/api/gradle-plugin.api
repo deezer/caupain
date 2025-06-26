@@ -54,6 +54,11 @@ public class com/deezer/caupain/plugin/DependencyUpdatePlugin : org/gradle/api/P
 	public fun apply (Lorg/gradle/api/Project;)V
 }
 
+public final class com/deezer/caupain/plugin/DependencyUpdatePlugin$inlined$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final synthetic fun execute (Ljava/lang/Object;)V
+}
+
 public class com/deezer/caupain/plugin/FileOutputHandler : com/deezer/caupain/plugin/OutputHandler {
 	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
 	public fun getOutput ()Lorg/gradle/api/provider/Provider;
