@@ -31,7 +31,7 @@ org.jetbrains.kotlinx:kotlinx-html:0.12.0
 org.jetbrains.kotlinx:kotlinx-io-bytestring:0.8.0
 org.jetbrains.kotlinx:kotlinx-io-core:0.8.0
 org.jetbrains.kotlinx:kotlinx-io-okio:0.8.0
-org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1
+org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0
 org.jetbrains.kotlinx:kotlinx-serialization-json-io:1.8.1
-org.jetbrains.kotlinx:kotlinx-serialization-json-okio:1.8.1
-org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1
+org.jetbrains.kotlinx:kotlinx-serialization-json-okio:1.9.0
+org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0
