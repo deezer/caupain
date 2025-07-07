@@ -2,6 +2,7 @@
 
 [![Homebrew](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdeezer%2Fhomebrew-repo%2Frefs%2Fheads%2Fmain%2FInfo%2Fcaupain.json&query=%24.versions.stable&label=homebrew)](https://github.com/deezer/homebrew-repo)
 [![Debian](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fresearch.deezer.com%2Fdebian-repo%2Fdists%2Fstable%2Fmain%2Fbinary-amd64%2FPackages&search=%5EVersion%3A%20(.*)%24&replace=%241&flags=m&label=debian)](https://github.com/deezer/debian-repo)
+![Chocolatey](https://img.shields.io/chocolatey/v/caupain)
 
 This is the command-line version of the tool. It is available as a single executable file for Linux,
 MacOS (Intel and Silicon), Windows, and as a JAR file alongside its launch script.
@@ -28,6 +29,13 @@ sudo apt update
 You can then install Caupain with the following command:
 ```bash
 sudo apt install caupain
+```
+
+### Windows
+
+You can install Caupain via Chocolatey by running the following command:
+```pwsh
+choco install caupain
 ```
 
 ### Other
