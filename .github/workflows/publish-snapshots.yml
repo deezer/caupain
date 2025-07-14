@@ -8,6 +8,9 @@ on:
       - '*.md'
       - '*/*.md'
 
+concurrency:
+  group: ${{ github.workflow }}
+
 jobs:
   publish:
     runs-on: ubuntu-latest
