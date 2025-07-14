@@ -70,10 +70,12 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlinx.serialization.toml)
+                implementation(libs.kotlinx.serialization.properties)
                 implementation(libs.bundles.clikt)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(projects.core)
                 implementation(libs.app.dirs)
+                implementation(libs.kotlinx.io.okio)
             }
         }
         commonTest {

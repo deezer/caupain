@@ -20,6 +20,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xml-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-properties = "io.github.bishiboosh:properties-serializer:1.0.0"
 xmlutil-core-io = { module = "io.github.pdvrieze.xmlutil:core-io", version.ref = "xml-serialization" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fake-filesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }

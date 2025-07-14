@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+- Use https://github.com/bishiboosh/properties-serializer for Gradle wrapper properties parsing
 
 ### Deprecated
 
