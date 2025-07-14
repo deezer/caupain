@@ -33,8 +33,8 @@ io.github.bishiboosh:properties-serializer-jvm:1.0.0
 io.github.bishiboosh:properties-serializer:1.0.0
 net.java.dev.jna:jna-platform:5.17.0
 net.java.dev.jna:jna:5.17.0
-net.peanuuutz.tomlkt:tomlkt-jvm:0.4.0
-net.peanuuutz.tomlkt:tomlkt:0.4.0
+net.peanuuutz.tomlkt:tomlkt-jvm:0.5.0
+net.peanuuutz.tomlkt:tomlkt:0.5.0
 org.freemarker:freemarker:2.3.32
 org.jetbrains.dokka:all-modules-page-plugin:2.0.0
 org.jetbrains.dokka:analysis-markdown:2.0.0

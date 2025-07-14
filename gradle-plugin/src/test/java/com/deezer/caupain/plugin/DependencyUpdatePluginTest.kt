@@ -33,7 +33,6 @@ import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
 import mockwebserver3.junit4.MockWebServerRule
-import okhttp3.ExperimentalOkHttpApi
 import okhttp3.Headers
 import okio.use
 import org.gradle.testkit.runner.GradleRunner
@@ -51,7 +50,6 @@ import java.util.zip.ZipInputStream
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalOkHttpApi::class)
 @RunWith(TestParameterInjector::class)
 class DependencyUpdatePluginTest {
 
@@ -82,24 +80,25 @@ class DependencyUpdatePluginTest {
         jsonOutputFile = tempFolder.newFile("output.json")
         mockWebserverRule.server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = request.url.encodedPath
                 when {
-                    request.path?.startsWith("/maven-androidx/") == true ->
+                    path.startsWith("/maven-androidx/") == true ->
                         if (request.headers[HttpHeaders.Authorization] != "Basic dXNlcjpwYXNzd29yZA==") {
                             return MockResponse(code = 404)
                         }
 
-                    request.path?.startsWith("/maven/") == true ->
+                    path.startsWith("/maven/") == true ->
                         if (request.headers["X-Specific-Header"] != "value") {
                             return MockResponse(code = 404)
                         }
 
-                    request.path?.startsWith("/maven-plugins/") == true ->
+                    path.startsWith("/maven-plugins/") == true ->
                         if (request.headers["X-Plugin-Header"] != "value") {
                             return MockResponse(code = 404)
                         }
                 }
 
-                val body = when (request.path) {
+                val body = when (path) {
                     "/maven-androidx/androidx/core/core-ktx/maven-metadata.xml" -> CORE_KTX_METADATA
                     "/maven-androidx/androidx/core/core-ktx/1.17.0/core-ktx-1.17.0.pom" -> CORE_KTX_POM
                     "/maven-plugins/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml" -> ANDROID_KOTLIN_PLUGIN_METADATA
