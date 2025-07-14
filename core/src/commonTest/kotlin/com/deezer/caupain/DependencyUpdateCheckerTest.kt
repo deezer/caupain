@@ -41,7 +41,6 @@ import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
-import com.deezer.caupain.resolver.GradleVersionResolver
 import com.deezer.caupain.resolver.GradleVersionResolverTest
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.serialization.DefaultJson
@@ -214,6 +213,35 @@ class DependencyUpdateCheckerTest {
             engine.requestHistory.any { it.url.toString().contains("groovy-other") },
             "Unexpected request for groovy-other"
         )
+    }
+
+    @Test
+    fun testUnknownPolicy() = runTest(testDispatcher) {
+        val configuration = Configuration(
+            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
+            excludedKeys = setOf("groovy-json"),
+            excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
+            versionCatalogPaths = VERSION_CATALOGS.keys,
+            policy = "unknown-policy"
+        )
+        checker = DefaultDependencyUpdateChecker(
+            configuration = configuration,
+            fileSystem = fileSystem,
+            httpClient = HttpClient(engine) {
+                install(ContentNegotiation) {
+                    json(DefaultJson)
+                    xml(DefaultXml, ContentType.Any)
+                }
+            },
+            ioDispatcher = testDispatcher,
+            versionCatalogParser = FixedVersionCatalogParser,
+            logger = Logger.EMPTY,
+            policies = emptyList(),
+            currentGradleVersion = "8.11",
+            selfUpdateResolver = FixedSelfUpdateResolver
+        )
+        assertThrows<UnknownPolicyException> { checker.checkForUpdates() }
     }
 
     companion object {

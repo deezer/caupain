@@ -50,6 +50,10 @@ public final class com/deezer/caupain/SamePolicyNameException : com/deezer/caupa
 	public fun <init> (Ljava/lang/String;)V
 }
 
+public final class com/deezer/caupain/UnknownPolicyException : com/deezer/caupain/CaupainException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
 public abstract class com/deezer/caupain/formatting/FileFormatter : com/deezer/caupain/formatting/Formatter {
 	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
 	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

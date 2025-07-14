@@ -830,6 +830,10 @@ final class com.deezer.caupain/SamePolicyNameException : com.deezer.caupain/Caup
     constructor <init>(kotlin/String) // com.deezer.caupain/SamePolicyNameException.<init>|<init>(kotlin.String){}[0]
 }
 
+final class com.deezer.caupain/UnknownPolicyException : com.deezer.caupain/CaupainException { // com.deezer.caupain/UnknownPolicyException|null[0]
+    constructor <init>(kotlin/String) // com.deezer.caupain/UnknownPolicyException.<init>|<init>(kotlin.String){}[0]
+}
+
 final object com.deezer.caupain.model.gradle/GradleConstants { // com.deezer.caupain.model.gradle/GradleConstants|null[0]
     final const val DEFAULT_GRADLE_VERSIONS_URL // com.deezer.caupain.model.gradle/GradleConstants.DEFAULT_GRADLE_VERSIONS_URL|{}DEFAULT_GRADLE_VERSIONS_URL[0]
         final fun <get-DEFAULT_GRADLE_VERSIONS_URL>(): kotlin/String // com.deezer.caupain.model.gradle/GradleConstants.DEFAULT_GRADLE_VERSIONS_URL.<get-DEFAULT_GRADLE_VERSIONS_URL>|<get-DEFAULT_GRADLE_VERSIONS_URL>(){}[0]

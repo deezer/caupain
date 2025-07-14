@@ -284,19 +284,26 @@ internal class DefaultDependencyUpdateChecker(
         )
     }
 
-    private val policy = configuration.policy?.let { name ->
-        this.policies.firstOrNull { it.name == name }
+    private val policy by lazy {
+        configuration.policy?.let { name ->
+            this
+                .policies
+                .firstOrNull { it.name == name }
+                ?: throw UnknownPolicyException(name)
+        }
     }
 
-    override val versionResolver = DefaultUpdatedVersionResolver(
-        httpClient = httpClient,
-        repositories = configuration.repositories,
-        pluginRepositories = configuration.pluginRepositories,
-        logger = logger,
-        onlyCheckStaticVersions = configuration.onlyCheckStaticVersions,
-        policy = policy,
-        ioDispatcher = ioDispatcher
-    )
+    override val versionResolver by lazy {
+        DefaultUpdatedVersionResolver(
+            httpClient = httpClient,
+            repositories = configuration.repositories,
+            pluginRepositories = configuration.pluginRepositories,
+            logger = logger,
+            onlyCheckStaticVersions = configuration.onlyCheckStaticVersions,
+            policy = policy,
+            ioDispatcher = ioDispatcher
+        )
+    }
 
     private val gradleVersionResolver = GradleVersionResolver(
         httpClient = httpClient,
@@ -512,3 +519,9 @@ public class NoVersionCatalogException(paths: Iterable<Path>) :
  */
 public class SamePolicyNameException(name: String) :
     CaupainException("Policy name conflict: multiple polices have the same name $name")
+
+/**
+ * Exception thrown when an unknown policy is specified in the configuration.
+ */
+public class UnknownPolicyException(name: String) :
+    CaupainException("Unknown policy: $name")
