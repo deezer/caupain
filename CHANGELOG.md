@@ -6,6 +6,7 @@
 
 ### Changed
 - Use https://github.com/bishiboosh/properties-serializer for Gradle wrapper properties parsing
+- Error on unknown policy in configuration (#41)
 
 ### Deprecated
 

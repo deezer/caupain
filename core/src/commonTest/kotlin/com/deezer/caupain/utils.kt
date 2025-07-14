@@ -26,7 +26,18 @@ package com.deezer.caupain
 
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.versionCatalog.Version
+import kotlin.test.assertIs
+import kotlin.test.fail
 
 internal fun String.toStaticVersion() = GradleDependencyVersion(this) as GradleDependencyVersion.Static
 
 internal fun String.toSimpleVersion() = Version.Simple(toStaticVersion())
+
+inline fun <reified E : Throwable> assertThrows(block: () -> Unit) {
+    try {
+        block()
+        fail("Expected a ${E::class.simpleName} to be thrown")
+    } catch (e: Throwable) {
+        assertIs<E>(e)
+    }
+}
