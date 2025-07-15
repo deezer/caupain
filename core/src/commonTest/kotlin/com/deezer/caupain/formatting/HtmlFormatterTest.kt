@@ -191,6 +191,21 @@ private const val FULL_RESULT = """
         </tr>
       </table>
     </p>
+    <h2>Ignored</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+        </tr>
+        <tr>
+          <td>com.deezer:ignored-library</td>
+          <td>1.0.0</td>
+          <td>2.0.0</td>
+        </tr>
+      </table>
+    </p>
   </body>
 </html>    
 """

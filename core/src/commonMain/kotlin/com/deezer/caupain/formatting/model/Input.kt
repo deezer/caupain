@@ -40,6 +40,7 @@ import kotlinx.serialization.Serializable
 public class Input(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
+    public val ignoredUpdateInfos: List<UpdateInfo>,
     public val versionReferenceInfo: List<VersionReferenceInfo>?,
     public val selfUpdateInfo: SelfUpdateInfo?
 ) {
@@ -48,6 +49,7 @@ public class Input(
      */
     public val isEmpty: Boolean
         get() = (updateInfos.isEmpty() || updateInfos.values.all { it.isEmpty() })
+                && ignoredUpdateInfos.isEmpty()
                 && versionReferenceInfo.isNullOrEmpty()
                 && gradleUpdateInfo == null
                 && selfUpdateInfo == null
@@ -58,6 +60,7 @@ public class Input(
     ) : this(
         gradleUpdateInfo = updateResult.gradleUpdateInfo,
         updateInfos = updateResult.updateInfos,
+        ignoredUpdateInfos = updateResult.ignoredUpdateInfos,
         selfUpdateInfo = updateResult.selfUpdateInfo,
         versionReferenceInfo = if (showVersionReferences && updateResult.versionCatalog != null) {
             computeVersionReferenceInfos(updateResult.versionCatalog, updateResult.updateInfos)
@@ -74,6 +77,7 @@ public class Input(
 
         if (gradleUpdateInfo != other.gradleUpdateInfo) return false
         if (updateInfos != other.updateInfos) return false
+        if (ignoredUpdateInfos != other.ignoredUpdateInfos) return false
         if (versionReferenceInfo != other.versionReferenceInfo) return false
         if (selfUpdateInfo != other.selfUpdateInfo) return false
 
@@ -83,13 +87,14 @@ public class Input(
     override fun hashCode(): Int {
         var result = gradleUpdateInfo?.hashCode() ?: 0
         result = 31 * result + updateInfos.hashCode()
+        result = 31 * result + ignoredUpdateInfos.hashCode()
         result = 31 * result + (versionReferenceInfo?.hashCode() ?: 0)
         result = 31 * result + (selfUpdateInfo?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "Input(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, versionReferenceInfo=$versionReferenceInfo, selfUpdateInfo=$selfUpdateInfo)"
+        return "Input(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, ignoredUpdateInfos=$ignoredUpdateInfos, versionReferenceInfo=$versionReferenceInfo, selfUpdateInfo=$selfUpdateInfo)"
     }
 }
 

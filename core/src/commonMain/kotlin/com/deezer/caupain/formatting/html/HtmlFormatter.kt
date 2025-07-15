@@ -97,6 +97,7 @@ public class HtmlFormatter(
                         for ((type, currentUpdates) in input.updateInfos) {
                             appendDependencyUpdates(type, currentUpdates)
                         }
+                        appendIgnoredUpdates(input.ignoredUpdateInfos)
                     }
                 }
             }
@@ -155,9 +156,9 @@ public class HtmlFormatter(
         p {
             table {
                 tr {
-                    th { +"Id" }
-                    th { +"Current version" }
-                    th { +"Updated version" }
+                    th { +ID_TITLE }
+                    th { +CURRENT_VERSION_TITLE }
+                    th { +UPDATED_VERSION_TITLE }
                     th { +"Details" }
                 }
                 for (update in updates) {
@@ -248,10 +249,10 @@ public class HtmlFormatter(
         p {
             table {
                 tr {
-                    th { +"Id" }
+                    th { +ID_TITLE }
                     th { +"Name" }
-                    th { +"Current version" }
-                    th { +"Updated version" }
+                    th { +CURRENT_VERSION_TITLE }
+                    th { +UPDATED_VERSION_TITLE }
                     th { +"URL" }
                 }
                 for (update in updates) {
@@ -275,7 +276,32 @@ public class HtmlFormatter(
         }
     }
 
+    private fun FlowContent.appendIgnoredUpdates(updates: List<UpdateInfo>) {
+        if (updates.isEmpty()) return
+        h2 { +"Ignored" }
+        p {
+            table {
+                tr {
+                    th { +ID_TITLE }
+                    th { +CURRENT_VERSION_TITLE }
+                    th { +UPDATED_VERSION_TITLE }
+                }
+                for (update in updates) {
+                    tr {
+                        td { +update.dependencyId }
+                        td { +update.currentVersion.toString() }
+                        td { +update.updatedVersion.toString() }
+                    }
+                }
+            }
+        }
+    }
+
     private companion object {
+        private const val ID_TITLE = "Id"
+        private const val CURRENT_VERSION_TITLE = "Current version"
+        private const val UPDATED_VERSION_TITLE = "Updated version"
+
         private const val STYLE = """
         body {
           background-color: Canvas;

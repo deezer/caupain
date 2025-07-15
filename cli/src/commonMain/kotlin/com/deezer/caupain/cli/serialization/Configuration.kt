@@ -65,7 +65,8 @@ private data class ConfigurationImpl(
     override val outputPath: Path?,
     override val gradleWrapperPropertiesPath: Path?,
     override val onlyCheckStaticVersions: Boolean?,
-    override val gradleStabilityLevel: GradleStabilityLevel?
+    override val gradleStabilityLevel: GradleStabilityLevel?,
+    override val checkIgnored: Boolean?
 ) : Configuration {
 
     override fun validate(logger: Logger) {
@@ -91,7 +92,8 @@ private data class ConfigurationImpl(
             cacheDir = cacheDir ?: baseConfiguration.cacheDir,
             onlyCheckStaticVersions = onlyCheckStaticVersions
                 ?: baseConfiguration.onlyCheckStaticVersions,
-            gradleStabilityLevel = gradleStabilityLevel ?: baseConfiguration.gradleStabilityLevel
+            gradleStabilityLevel = gradleStabilityLevel ?: baseConfiguration.gradleStabilityLevel,
+            checkIgnored = checkIgnored ?: baseConfiguration.checkIgnored
         )
     }
 }

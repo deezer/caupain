@@ -1258,6 +1258,7 @@ private fun expectedJsonResult(gradleVersion: String) = """
             }
         ]
     },
+    "ignoredUpdateInfos": [],
     "versionReferenceInfo": [
         {
             "id": "coreKtx",

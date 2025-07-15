@@ -28,15 +28,12 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.serialization.DefaultXml
-import com.deezer.caupain.toStaticVersion
-import com.deezer.caupain.toSimpleVersion
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -63,12 +60,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class UpdateInfoResolverTest {
+class MavenInfoResolverTest {
     private lateinit var engine: MockEngine
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private lateinit var resolver: UpdateInfoResolver
+    private lateinit var resolver: MavenInfoResolver
 
     @BeforeTest
     fun setup() {
@@ -76,7 +73,7 @@ class UpdateInfoResolverTest {
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
         }
-        resolver = UpdateInfoResolver(
+        resolver = MavenInfoResolver(
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {
                     xml(DefaultXml, ContentType.Any)
@@ -110,25 +107,16 @@ class UpdateInfoResolverTest {
     @Test
     fun testClassic() = runTest(testDispatcher) {
         assertEquals(
-            expected = UpdateInfoResolver.Result(
-                type = UpdateInfo.Type.LIBRARY,
-                info = UpdateInfo(
-                    dependency = "classic",
-                    dependencyId = "com.example:classic",
-                    name = CLASSIC_INFO.name,
-                    url = CLASSIC_INFO.url,
-                    currentVersion = "0.9".toSimpleVersion(),
-                    updatedVersion = "1.0".toStaticVersion()
-                )
+            expected = MavenInfo(
+                name = CLASSIC_INFO.name,
+                url = CLASSIC_INFO.url
             ),
-            actual = resolver.getUpdateInfo(
-                key = "classic",
+            actual = resolver.getMavenInfo(
                 dependency = Dependency.Library(
                     module = "com.example:classic",
                     version = Version.Simple(GradleDependencyVersion.Exact("0.9"))
                 ),
                 repository = BASE_REPOSITORY,
-                currentVersion = Version.Simple(GradleDependencyVersion.Exact("0.9")),
                 updatedVersion = GradleDependencyVersion.Exact("1.0")
             )
         )
@@ -137,25 +125,16 @@ class UpdateInfoResolverTest {
     @Test
     fun testPlugin() = runTest(testDispatcher) {
         assertEquals(
-            expected = UpdateInfoResolver.Result(
-                type = UpdateInfo.Type.PLUGIN,
-                info = UpdateInfo(
-                    dependency = "plugin",
-                    dependencyId = "com.github.ben-manes.versions",
-                    name = RESOLVED_VERSIONS_INFO.name,
-                    url = RESOLVED_VERSIONS_INFO.url,
-                    currentVersion = "0.9".toSimpleVersion(),
-                    updatedVersion = "1.0.0".toStaticVersion()
-                )
+            expected = MavenInfo(
+                name = RESOLVED_VERSIONS_INFO.name,
+                url = RESOLVED_VERSIONS_INFO.url
             ),
-            actual = resolver.getUpdateInfo(
-                key = "plugin",
+            actual = resolver.getMavenInfo(
                 dependency = Dependency.Plugin(
                     id = "com.github.ben-manes.versions",
                     version = Version.Simple(GradleDependencyVersion.Exact("0.9"))
                 ),
                 repository = BASE_REPOSITORY,
-                currentVersion = Version.Simple(GradleDependencyVersion.Exact("0.9")),
                 updatedVersion = GradleDependencyVersion.Exact("1.0.0")
             )
         )
@@ -164,31 +143,22 @@ class UpdateInfoResolverTest {
     @Test
     fun testSnapshot() = runTest(testDispatcher) {
         assertEquals(
-            expected = UpdateInfoResolver.Result(
-                type = UpdateInfo.Type.LIBRARY,
-                info = UpdateInfo(
-                    dependency = "snapshot",
-                    dependencyId = "com.example:snapshot",
-                    name = SNAPSHOT_INFO.name,
-                    url = SNAPSHOT_INFO.url,
-                    currentVersion = "0.9".toSimpleVersion(),
-                    updatedVersion = "4.0.0-beta-2-SNAPSHOT".toStaticVersion()
-                )
+            expected = MavenInfo(
+                name = SNAPSHOT_INFO.name,
+                url = SNAPSHOT_INFO.url,
             ),
-            actual = resolver.getUpdateInfo(
-                key = "snapshot",
+            actual = resolver.getMavenInfo(
                 dependency = Dependency.Library(
                     module = "com.example:snapshot",
                     version = Version.Simple(GradleDependencyVersion.Exact("0.9"))
                 ),
                 repository = BASE_REPOSITORY,
-                currentVersion = Version.Simple(GradleDependencyVersion.Exact("0.9")),
                 updatedVersion = GradleDependencyVersion.Snapshot("4.0.0-beta-2-SNAPSHOT")
             )
         )
     }
 
-    companion object {
+    companion object Companion {
         private inline fun <reified T> MockRequestHandleScope.respondElement(element: T): HttpResponseData {
             return respond(
                 content = DefaultXml.encodeToString(element),

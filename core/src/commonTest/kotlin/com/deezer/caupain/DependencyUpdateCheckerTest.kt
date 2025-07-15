@@ -74,6 +74,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import com.deezer.caupain.model.maven.Dependency as MavenDependency
 import com.deezer.caupain.model.maven.Version as MavenVersion
 
@@ -140,6 +141,8 @@ class DependencyUpdateCheckerTest {
 
             GROOVY_CORE_INFO_URL -> scope.respondElement(GROOVY_CORE_INFO)
 
+            GROOVY_JSON_METADATA_URL -> scope.respondElement(GROOVY_JSON_METADATA)
+
             GROOVY_NIO_METADATA_URL -> scope.respondElement(GROOVY_NIO_METADATA)
 
             GROOVY_NIO_INFO_URL -> scope.respondElement(GROOVY_NIO_INFO)
@@ -204,6 +207,7 @@ class DependencyUpdateCheckerTest {
                         )
                     )
                 ),
+                ignoredUpdateInfos = emptyList(),
                 versionCatalog = null,
                 selfUpdateInfo = SELF_UPDATE_INFO
             ),
@@ -213,17 +217,21 @@ class DependencyUpdateCheckerTest {
             engine.requestHistory.any { it.url.toString().contains("groovy-other") },
             "Unexpected request for groovy-other"
         )
+        assertFalse(
+            engine.requestHistory.any { it.url.toString().contains("groovy-json") },
+            "Unexpected request for groovy-json"
+        )
     }
 
     @Test
-    fun testUnknownPolicy() = runTest(testDispatcher) {
+    fun testIgnore() = runTest(testDispatcher) {
         val configuration = Configuration(
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             excludedKeys = setOf("groovy-json"),
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
             versionCatalogPaths = VERSION_CATALOGS.keys,
-            policy = "unknown-policy"
+            checkIgnored = true
         )
         checker = DefaultDependencyUpdateChecker(
             configuration = configuration,
@@ -241,7 +249,22 @@ class DependencyUpdateCheckerTest {
             currentGradleVersion = "8.11",
             selfUpdateResolver = FixedSelfUpdateResolver
         )
-        assertThrows<UnknownPolicyException> { checker.checkForUpdates() }
+        val result = checker.checkForUpdates()
+        assertEquals(
+            expected = listOf(
+                UpdateInfo(
+                    dependency = "groovy-json",
+                    dependencyId = "org.codehaus.groovy:groovy-json",
+                    currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                    updatedVersion = "3.0.6".toStaticVersion()
+                )
+            ),
+            actual = result.ignoredUpdateInfos
+        )
+        assertTrue(
+            engine.requestHistory.any { it.url.toString().contains("groovy-json") },
+            "No request found for groovy-json"
+        )
     }
 
     companion object {
@@ -320,6 +343,15 @@ class DependencyUpdateCheckerTest {
         private val GROOVY_CORE_INFO_URL = URLBuilder()
             .takeFrom(BASE_URL)
             .appendPathSegments("org", "codehaus", "groovy", "groovy", "3.0.6", "groovy-3.0.6.pom")
+            .build()
+
+        private val GROOVY_JSON_METADATA = metadata(
+            latest = "3.0.6",
+            versions = listOf("3.0.5", "3.0.5-alpha-1", "3.0.6")
+        )
+        private val GROOVY_JSON_METADATA_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("org", "codehaus", "groovy", "groovy-json", "maven-metadata.xml")
             .build()
 
         private val GROOVY_NIO_METADATA = metadata(

@@ -51,6 +51,7 @@ interface Configuration {
     val gradleWrapperPropertiesPath: Path?
     val onlyCheckStaticVersions: Boolean?
     val gradleStabilityLevel: GradleStabilityLevel?
+    val checkIgnored: Boolean?
 
     fun validate(logger: Logger)
 

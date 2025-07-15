@@ -47,6 +47,7 @@ public class ConsoleFormatter(
             printReferenceUpdates(input.versionReferenceInfo)
             printUpdates(LIBRARY_TITLE, input.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
             printUpdates(PLUGIN_TITLE, input.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
+            printUpdates(IGNORED_TITLE, input.ignoredUpdateInfos)
         }
     }
 
@@ -128,5 +129,6 @@ public class ConsoleFormatter(
         const val LIBRARY_TITLE = "Library updates:"
         const val PLUGIN_TITLE = "Plugin updates:"
         const val VERSIONS_TITLE = "Versions updates:"
+        const val IGNORED_TITLE = "Ignored updates:"
     }
 }
