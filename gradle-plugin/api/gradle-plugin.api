@@ -14,6 +14,7 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun excludeLibrary (Ljava/lang/String;Ljava/lang/String;)V
 	public static synthetic fun excludeLibrary$default (Lcom/deezer/caupain/plugin/DependenciesUpdateExtension;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun excludePluginIds ([Ljava/lang/String;)V
+	public final fun getCheckIgnored ()Lorg/gradle/api/provider/Property;
 	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;

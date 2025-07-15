@@ -101,6 +101,11 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
         .convention(GradleStabilityLevel.STABLE)
 
     /**
+     * Whether to check ignored dependencies. If true, it will check for updates on ignored
+     */
+    val checkIgnored: Property<Boolean> = objects.property<Boolean>().convention(false)
+
+    /**
      * Configure repositories
      */
     fun repositories(action: Action<RepositoryHandler>) {

@@ -45,7 +45,7 @@ abstract class AbstractFormatterTest {
 
     @Test
     fun testEmpty() = runTest(testDispatcher) {
-        formatter.format(Input(null, emptyMap(), null, null))
+        formatter.format(Input(null, emptyMap(), emptyList(), null, null))
         checkEmptyOutput(isMapEmpty = true)
     }
 
@@ -58,6 +58,7 @@ abstract class AbstractFormatterTest {
                     UpdateInfo.Type.LIBRARY to emptyList(),
                     UpdateInfo.Type.PLUGIN to emptyList()
                 ),
+                ignoredUpdateInfos = emptyList(),
                 versionReferenceInfo = null,
                 selfUpdateInfo = null
             )
@@ -91,6 +92,16 @@ abstract class AbstractFormatterTest {
                         "1.0.0".toSimpleVersion(),
                         "2.0.0".toStaticVersion()
                     )
+                )
+            ),
+            ignoredUpdateInfos = listOf(
+                UpdateInfo(
+                    "ignored-library",
+                    "com.deezer:ignored-library",
+                    null,
+                    null,
+                    "1.0.0".toSimpleVersion(),
+                    "2.0.0".toStaticVersion()
                 )
             ),
             versionReferenceInfo = listOf(

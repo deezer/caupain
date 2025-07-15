@@ -47,6 +47,8 @@ import kotlin.jvm.JvmOverloads
  * @property debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @property onlyCheckStaticVersions Whether to only check updates for direct versions or all versions.
  * @property gradleStabilityLevel The desired stability level of the Gradle version.
+ * @property checkIgnored Whether to check ignored dependencies or not (they will be placed in a specific
+ * property in the result to eventually display).
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -64,6 +66,7 @@ public interface Configuration : Serializable {
     public val debugHttpCalls: Boolean
     public val onlyCheckStaticVersions: Boolean
     public val gradleStabilityLevel: GradleStabilityLevel
+    public val checkIgnored: Boolean
 
     public companion object {
         private const val serialVersionUID = 1L
@@ -85,6 +88,8 @@ public interface Configuration : Serializable {
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  * @param gradleStabilityLevel The desired stability level of the Gradle version.
+ * @param checkIgnored Whether to check ignored dependencies or not (they will be placed in a specific
+ * property in the result to eventually display).
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -108,6 +113,7 @@ public fun Configuration(
     debugHttpCalls: Boolean = false,
     onlyCheckStaticVersions: Boolean = true,
     gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
+    checkIgnored: Boolean = false,
 ): Configuration = Configuration(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -120,7 +126,8 @@ public fun Configuration(
     cacheDir = cacheDir,
     debugHttpCalls = debugHttpCalls,
     onlyCheckStaticVersions = onlyCheckStaticVersions,
-    gradleStabilityLevel = gradleStabilityLevel
+    gradleStabilityLevel = gradleStabilityLevel,
+    checkIgnored = checkIgnored
 )
 
 /**
@@ -138,6 +145,8 @@ public fun Configuration(
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  * @param gradleStabilityLevel The desired stability level of the Gradle version.
+ * @param checkIgnored Whether to check ignored dependencies or not (they will be placed in a specific
+ * property in the result to eventually display).
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -161,6 +170,7 @@ public fun Configuration(
     debugHttpCalls: Boolean = false,
     onlyCheckStaticVersions: Boolean = true,
     gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
+    checkIgnored: Boolean = false,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -173,7 +183,8 @@ public fun Configuration(
     cacheDir = cacheDir,
     debugHttpCalls = debugHttpCalls,
     onlyCheckStaticVersions = onlyCheckStaticVersions,
-    gradleStabilityLevel = gradleStabilityLevel
+    gradleStabilityLevel = gradleStabilityLevel,
+    checkIgnored = checkIgnored
 )
 
 internal data class ConfigurationImpl(
@@ -196,6 +207,7 @@ internal data class ConfigurationImpl(
     override val debugHttpCalls: Boolean = false,
     override val onlyCheckStaticVersions: Boolean = true,
     override val gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
+    override val checkIgnored: Boolean = false,
 ) : Configuration {
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path

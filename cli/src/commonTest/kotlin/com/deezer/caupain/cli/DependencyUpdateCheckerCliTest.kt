@@ -165,6 +165,7 @@ class DependencyUpdateCheckerCliTest {
                     )
                 )
             ),
+            ignoredUpdateInfos = emptyList(),
             selfUpdateInfo = SelfUpdateInfo(
                 currentVersion = "1.0.0",
                 updatedVersion = "1.1.0",

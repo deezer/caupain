@@ -34,7 +34,6 @@ import com.deezer.caupain.model.group
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.name
-import com.deezer.caupain.model.versionCatalog.Version
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.http.appendPathSegments
@@ -42,37 +41,12 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-internal class UpdateInfoResolver(
+internal class MavenInfoResolver(
     private val httpClient: HttpClient,
     private val ioDispatcher: CoroutineDispatcher,
     private val logger: Logger
 ) {
-    suspend fun getUpdateInfo(
-        key: String,
-        dependency: Dependency,
-        repository: Repository,
-        currentVersion: Version.Resolved,
-        updatedVersion: GradleDependencyVersion.Static
-    ): Result {
-        val mavenInfo = getMavenInfo(dependency, repository, updatedVersion)
-        val type = when (dependency) {
-            is Dependency.Library -> UpdateInfo.Type.LIBRARY
-            is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
-        }
-        return Result(
-            type = type,
-            info = UpdateInfo(
-                dependency = key,
-                dependencyId = dependency.moduleId,
-                name = mavenInfo?.name,
-                url = mavenInfo?.url,
-                currentVersion = currentVersion,
-                updatedVersion = updatedVersion
-            )
-        )
-    }
-
-    private suspend fun getMavenInfo(
+    suspend fun getMavenInfo(
         dependency: Dependency,
         repository: Repository,
         updatedVersion: GradleDependencyVersion.Static
@@ -87,7 +61,11 @@ internal class UpdateInfoResolver(
         val mavenInfo = withContext(ioDispatcher) {
             httpClient.executeRepositoryRequest(repository) {
                 appendPathSegments(group.split('.'))
-                appendPathSegments(name, updatedVersion.toString(), "$name-$resolvedUpdatedVersion.pom")
+                appendPathSegments(
+                    name,
+                    updatedVersion.toString(),
+                    "$name-$resolvedUpdatedVersion.pom"
+                )
             }.takeIf { it.status.isSuccess() }?.body<MavenInfo>()
         }
         // If this is a plugin, we need to find the real maven info by following the dependency

@@ -31,6 +31,7 @@ import com.deezer.caupain.model.versionCatalog.VersionCatalog
  *
  * @property gradleUpdateInfo Information about the Gradle update.
  * @property updateInfos Informations about the dependencies updates.
+ * @property ignoredUpdateInfos Information about the possible updates for updated dependencies.
  * @property selfUpdateInfo Information about the update to Caupain itself.
  * @property versionCatalog The parsed version catalog. Only available if there was only one version
  * catalog file specified.
@@ -38,6 +39,7 @@ import com.deezer.caupain.model.versionCatalog.VersionCatalog
 public class DependenciesUpdateResult(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
+    public val ignoredUpdateInfos: List<UpdateInfo>,
     public val selfUpdateInfo: SelfUpdateInfo?,
     public val versionCatalog: VersionCatalog?,
 ) {
@@ -46,6 +48,7 @@ public class DependenciesUpdateResult(
      */
     public fun isEmpty(): Boolean = gradleUpdateInfo == null
             && (updateInfos.isEmpty() || updateInfos.all { it.value.isEmpty() })
+            && ignoredUpdateInfos.isEmpty()
             && selfUpdateInfo == null
 
     override fun equals(other: Any?): Boolean {
@@ -56,6 +59,7 @@ public class DependenciesUpdateResult(
 
         if (gradleUpdateInfo != other.gradleUpdateInfo) return false
         if (updateInfos != other.updateInfos) return false
+        if (ignoredUpdateInfos != other.ignoredUpdateInfos) return false
         if (selfUpdateInfo != other.selfUpdateInfo) return false
         if (versionCatalog != other.versionCatalog) return false
 
@@ -65,12 +69,13 @@ public class DependenciesUpdateResult(
     override fun hashCode(): Int {
         var result = gradleUpdateInfo?.hashCode() ?: 0
         result = 31 * result + updateInfos.hashCode()
+        result = 31 * result + ignoredUpdateInfos.hashCode()
         result = 31 * result + (selfUpdateInfo?.hashCode() ?: 0)
         result = 31 * result + (versionCatalog?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, selfUpdateInfo=$selfUpdateInfo)"
+        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, ignoredUpdateInfos=$ignoredUpdateInfos, selfUpdateInfo=$selfUpdateInfo, versionCatalog=$versionCatalog)"
     }
 }

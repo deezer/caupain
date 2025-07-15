@@ -57,6 +57,7 @@ class JsonFormatterTest : FileFormatterTest() {
             {
                 "gradleUpdateInfo": null,
                 "updateInfos": {},
+                "ignoredUpdateInfos": [],
                 "versionReferenceInfo": null,
                 "selfUpdateInfo": null
             }
@@ -70,6 +71,7 @@ class JsonFormatterTest : FileFormatterTest() {
                     "libraries": [],
                     "plugins": []
                 },
+                "ignoredUpdateInfos": [],
                 "versionReferenceInfo": null,
                 "selfUpdateInfo": null
             }
@@ -104,6 +106,16 @@ class JsonFormatterTest : FileFormatterTest() {
                         }
                     ]
                 },
+                "ignoredUpdateInfos": [
+                    {
+                        "dependency": "ignored-library",
+                        "dependencyId": "com.deezer:ignored-library",
+                        "name": null,
+                        "url": null,
+                        "currentVersion": "1.0.0",
+                        "updatedVersion": "2.0.0"
+                    }
+                ],
                 "versionReferenceInfo": [
                     {
                         "id": "deezer",

@@ -67,6 +67,7 @@ public class MarkdownFormatter(
                     for ((type, currentUpdates) in input.updateInfos) {
                         appendDependencyUpdates(type, currentUpdates)
                     }
+                    appendIgnoredUpdates(input.ignoredUpdateInfos)
                 }
             }
     }
@@ -126,7 +127,7 @@ public class MarkdownFormatter(
         if (updates.isNullOrEmpty()) return
         appendLine("Version References")
         appendTable(
-            headers = listOf("Id", "Current version", "Updated version", "Details"),
+            headers = listOf(ID_TITLE, CURRENT_VERSION_TITLE, UPDATED_VERSION_TITLE, "Details"),
             rows = updates.map { update ->
                 listOf(
                     update.id,
@@ -187,7 +188,7 @@ public class MarkdownFormatter(
         append("## ")
         appendLine(type.title)
         appendTable(
-            headers = listOf("Id", "Name", "Current version", "Updated version", "URL"),
+            headers = listOf(ID_TITLE, "Name", CURRENT_VERSION_TITLE, UPDATED_VERSION_TITLE, "URL"),
             rows = updates.map { update ->
                 listOf(
                     update.dependencyId,
@@ -203,6 +204,22 @@ public class MarkdownFormatter(
                             append(')')
                         }
                     }
+                )
+            }
+        )
+    }
+
+    private fun Appendable.appendIgnoredUpdates(updates: List<UpdateInfo>) {
+        if (updates.isEmpty()) return
+        append("## ")
+        appendLine("Ignored")
+        appendTable(
+            headers = listOf(ID_TITLE, CURRENT_VERSION_TITLE, UPDATED_VERSION_TITLE),
+            rows = updates.map { update ->
+                listOf(
+                    update.dependencyId,
+                    update.currentVersion.toString(),
+                    update.updatedVersion.toString()
                 )
             }
         )
@@ -241,5 +258,11 @@ public class MarkdownFormatter(
     private fun Appendable.appendPadded(value: String, width: Int) {
         append(value)
         repeat(width - value.length) { append(' ') }
+    }
+
+    private companion object {
+        private const val ID_TITLE = "Id"
+        private const val CURRENT_VERSION_TITLE = "Current version"
+        private const val UPDATED_VERSION_TITLE = "Updated version"
     }
 }
