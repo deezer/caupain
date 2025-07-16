@@ -1214,7 +1214,7 @@ Caupain current version is ${BuildConfig.VERSION} whereas last version is 999999
 You can update Caupain via plugins
 ## Gradle
 Gradle current version is $gradleVersion whereas last version is 99.0.0. See [https://docs.gradle.org/99.0.0/release-notes.html](https://docs.gradle.org/99.0.0/release-notes.html).
-Version References
+## Version References
 | Id      | Current version | Updated version | Details                      |
 | ------- | --------------- | --------------- | ---------------------------- |
 | coreKtx | 1.16.0          | 1.17.0          | Libraries: androidx-core-ktx |

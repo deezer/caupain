@@ -64,7 +64,7 @@ You can update Caupain via :
 - apt
 ## Gradle
 Gradle current version is 1.0 whereas last version is 1.1. See [https://docs.gradle.org/1.1/release-notes.html](https://docs.gradle.org/1.1/release-notes.html).
-Version References
+## Version References
 | Id     | Current version | Updated version | Details                                                                                                                                                                               |
 | ------ | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | deezer | 1.0.0           | 2.0.0           | Libraries: library<br/>Plugins: plugin<br/>Updates for these dependency using the reference were not found for the updated version:<ul><li>other-library: (no update found)</li></ul> |

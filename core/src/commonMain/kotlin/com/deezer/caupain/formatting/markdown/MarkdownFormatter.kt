@@ -125,7 +125,7 @@ public class MarkdownFormatter(
 
     private fun Appendable.appendVersionReferenceUpdates(updates: List<VersionReferenceInfo>?) {
         if (updates.isNullOrEmpty()) return
-        appendLine("Version References")
+        appendLine("## Version References")
         appendTable(
             headers = listOf(ID_TITLE, CURRENT_VERSION_TITLE, UPDATED_VERSION_TITLE, "Details"),
             rows = updates.map { update ->
