@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Add possibility to display updates for ignored dependencies (#42)
 
 ### Changed
 - Use https://github.com/bishiboosh/properties-serializer for Gradle wrapper properties parsing
