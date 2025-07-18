@@ -3,11 +3,8 @@
 ## Unreleased
 
 ### Added
-- Add possibility to display updates for ignored dependencies (#42)
 
 ### Changed
-- Use https://github.com/bishiboosh/properties-serializer for Gradle wrapper properties parsing
-- Error on unknown policy in configuration (#41)
 
 ### Deprecated
 
@@ -16,6 +13,17 @@
 ### Fixed
 
 ### Security
+
+## 1.4.0 - 2025-07-18
+
+### Added
+
+- Add possibility to display updates for ignored dependencies (#42)
+
+### Changed
+
+- Use https://github.com/bishiboosh/properties-serializer for Gradle wrapper properties parsing
+- Error on unknown policy in configuration (#41)
 
 ## 1.3.0 - 2025-06-17
 
