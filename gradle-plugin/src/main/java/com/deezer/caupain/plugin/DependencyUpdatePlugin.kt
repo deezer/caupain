@@ -26,15 +26,15 @@ package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.plugin.internal.asOptional
+import com.deezer.caupain.plugin.internal.create
+import com.deezer.caupain.plugin.internal.register
+import com.deezer.caupain.plugin.internal.setProperty
 import com.deezer.caupain.plugin.internal.toRepositories
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.setProperty
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
@@ -81,12 +81,19 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             settings.pluginManagement.repositories.toRepositories(target.objects)
         )
         // Then go into projects to gather specific repositories
-        target.allprojects {
-            afterEvaluate {
+        target.allprojects { project ->
+            project.afterEvaluate { evaluatedProject ->
                 collectedPluginRepositories.addAll(
-                    buildscript.repositories.toRepositories(target.objects)
+                    evaluatedProject
+                        .buildscript
+                        .repositories
+                        .toRepositories(target.objects)
                 )
-                collectedRepositories.addAll(repositories.toRepositories(target.objects))
+                collectedRepositories.addAll(
+                    evaluatedProject
+                        .repositories
+                        .toRepositories(target.objects)
+                )
             }
         }
 

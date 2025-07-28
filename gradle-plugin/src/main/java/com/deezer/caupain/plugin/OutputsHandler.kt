@@ -28,6 +28,8 @@ import com.deezer.caupain.formatting.FileFormatter
 import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.json.JsonFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
+import com.deezer.caupain.plugin.internal.listProperty
+import com.deezer.caupain.plugin.internal.property
 import okio.Path.Companion.toOkioPath
 import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
@@ -36,8 +38,6 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.listProperty
-import org.gradle.kotlin.dsl.property
 import java.io.Serializable
 import java.util.Optional
 import javax.inject.Inject

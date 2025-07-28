@@ -39,32 +39,34 @@ subprojects {
     group = "com.deezer.caupain"
     version = rootProject.version
 
-    apply(plugin = "io.gitlab.arturbosch.detekt")
+    if (name != "core-compat") {
+        apply(plugin = "io.gitlab.arturbosch.detekt")
 
-    extensions.configure<DetektExtension> {
-        config.from(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
-        basePath = rootDir.absolutePath
-        buildUponDefaultConfig = true
-    }
-    val detektAll = tasks.register("detektAll") {
-        group = "verification"
-        description = "Run detekt analysis for all targets"
-    }
-    tasks.withType<Detekt> {
-        if (!name.contains("test", ignoreCase = true)) {
-            detektAll {
-                dependsOn(this@withType)
-            }
-            mergeDetektReports {
-                input.from(this@withType.sarifReportFile)
-            }
-            finalizedBy(mergeDetektReports)
+        extensions.configure<DetektExtension> {
+            config.from(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
+            basePath = rootDir.absolutePath
+            buildUponDefaultConfig = true
         }
-        reports.sarif.required = true
-    }
-    afterEvaluate {
-        tasks.named("check") {
-            dependsOn(detektAll)
+        val detektAll = tasks.register("detektAll") {
+            group = "verification"
+            description = "Run detekt analysis for all targets"
+        }
+        tasks.withType<Detekt> {
+            if (!name.contains("test", ignoreCase = true)) {
+                detektAll {
+                    dependsOn(this@withType)
+                }
+                mergeDetektReports {
+                    input.from(this@withType.sarifReportFile)
+                }
+                finalizedBy(mergeDetektReports)
+            }
+            reports.sarif.required = true
+        }
+        afterEvaluate {
+            tasks.named("check") {
+                dependsOn(detektAll)
+            }
         }
     }
 

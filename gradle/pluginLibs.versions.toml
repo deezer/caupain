@@ -1,0 +1,13 @@
+[versions]
+kotlin = "2.0.21"
+kotlinx-io = "0.7.0"
+kotlinx-serialization = "1.8.1"
+
+[libraries]
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-toml = "net.peanuuutz.tomlkt:tomlkt:0.4.0"
+kotlinx-io-okio = { module = "org.jetbrains.kotlinx:kotlinx-io-okio", version.ref = "kotlinx-io" }

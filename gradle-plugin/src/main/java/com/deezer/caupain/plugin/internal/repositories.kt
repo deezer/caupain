@@ -40,7 +40,6 @@ import org.gradle.api.internal.artifacts.repositories.ContentFilteringRepository
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal
-import org.gradle.kotlin.dsl.listProperty
 import kotlin.jvm.optionals.getOrNull
 import com.deezer.caupain.model.Credentials as ModelCredentials
 import com.deezer.caupain.model.HeaderCredentials as ModelHeaderCredentials

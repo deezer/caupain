@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Compatability issue with Gradle < 9.0 (#46)
 
 ### Security
 

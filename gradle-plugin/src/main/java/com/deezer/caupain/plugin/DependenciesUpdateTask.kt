@@ -37,6 +37,9 @@ import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.plugin.internal.listProperty
+import com.deezer.caupain.plugin.internal.property
+import com.deezer.caupain.plugin.internal.setProperty
 import com.deezer.caupain.plugin.internal.toOkioPath
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toOkioPath
@@ -49,9 +52,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.listProperty
-import org.gradle.kotlin.dsl.property
-import org.gradle.kotlin.dsl.setProperty
 import org.gradle.util.GradleVersion
 import org.gradle.work.DisableCachingByDefault
 import java.util.UUID
@@ -196,14 +196,14 @@ open class DependenciesUpdateTask : DefaultTask() {
      * Sets the update policy to use for the task.
      */
     fun selectIf(policy: com.deezer.caupain.model.Policy) {
-        selectIf(Policy { policy.select(dependency, currentVersion, updatedVersion) })
+        selectIf(Policy { policy.select(it.dependency, it.currentVersion, it.updatedVersion) })
     }
 
     /**
      * Sets the update policy to use for the task.
      */
     fun selectIf(policy: VersionUpdateInfo.() -> Boolean) {
-        selectIf(Policy { policy() })
+        selectIf(Policy { it.policy() })
     }
 
     /**

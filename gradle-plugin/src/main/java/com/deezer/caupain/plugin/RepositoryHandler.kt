@@ -32,13 +32,13 @@ import com.deezer.caupain.model.PasswordCredentials
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.buildComponentFilter
 import com.deezer.caupain.model.withComponentFilter
+import com.deezer.caupain.plugin.internal.listProperty
+import com.deezer.caupain.plugin.internal.property
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
-import org.gradle.kotlin.dsl.listProperty
-import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
 /**
