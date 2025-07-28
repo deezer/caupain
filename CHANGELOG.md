@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Ignored dependencies switch not taken into account in Gradle plugin (#47)
 
 ### Security
 
