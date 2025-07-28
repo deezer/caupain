@@ -29,6 +29,7 @@ version = buildString {
 
 changelog {
     version.set(currentVersion)
+    outputFile.set(layout.buildDirectory.file("release-notes.md"))
 }
 
 val mergeDetektReports = tasks.register<ReportMergeTask>("mergeDetektReports") {

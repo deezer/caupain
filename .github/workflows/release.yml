@@ -22,7 +22,7 @@ jobs:
       - name: Build binaries and packages
         run: ./gradlew :cli:assembleAll :cli:buildAllDebs :cli:buildChoco --stacktrace --no-configuration-cache
       - name: Create release notes
-        run: ./gradlew getChangelog --console=plain -q --no-header --no-summary > release-notes.md
+        run: ./gradlew getChangelog --no-header --no-summary
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
