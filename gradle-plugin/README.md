@@ -259,3 +259,4 @@ The minimum Gradle versions for the plugin depending on the version of the plugi
 | Plugin version | Minimum Gradle version |
 |----------------|------------------------|
 | 1.2.0          | 8.8                    |
+| 1.4.1          | 8.12.0                 |
