@@ -156,6 +156,8 @@ onlyCheckStaticVersions = false
 # The stability level to use for Gradle version checks. Default is stable. Possible values are: stable,
 # rc, milestone, releaseNightly, nightly.
 gradleStabilityLevel = "stable"
+# Whether or not to show a section in the report about the ignored available updates. Default is false.
+checkIgnored = true
 ```
 
 #### Repository component filtering
