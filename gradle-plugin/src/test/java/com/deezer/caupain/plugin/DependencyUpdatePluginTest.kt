@@ -82,17 +82,17 @@ class DependencyUpdatePluginTest {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val path = request.url.encodedPath
                 when {
-                    path.startsWith("/maven-androidx/") == true ->
+                    path.startsWith("/maven-androidx/") ->
                         if (request.headers[HttpHeaders.Authorization] != "Basic dXNlcjpwYXNzd29yZA==") {
                             return MockResponse(code = 404)
                         }
 
-                    path.startsWith("/maven/") == true ->
+                    path.startsWith("/maven/") ->
                         if (request.headers["X-Specific-Header"] != "value") {
                             return MockResponse(code = 404)
                         }
 
-                    path.startsWith("/maven-plugins/") == true ->
+                    path.startsWith("/maven-plugins/") ->
                         if (request.headers["X-Plugin-Header"] != "value") {
                             return MockResponse(code = 404)
                         }
@@ -105,6 +105,7 @@ class DependencyUpdatePluginTest {
                     "/maven-plugins/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/2.1.20/org.jetbrains.kotlin.android.gradle.plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_POM
                     "/maven-plugins/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
                     "/maven-plugins/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
+                    "/maven/com/example/ignored/maven-metadata.xml" -> IGNORED_METADATA
                     "/gradle" -> return MockResponse(
                         code = 200,
                         body = GRADLE_VERSION_JSON,
@@ -198,6 +199,7 @@ class DependencyUpdatePluginTest {
                     }
                 }
                 showVersionReferences.set(true)
+                checkIgnored.set(true)
                 $supplementaryConfiguration
             }
         
@@ -266,10 +268,12 @@ class DependencyUpdatePluginTest {
     kotlin = "2.0.21"
     coreKtx = "1.16.0"
     activityKtx = "1.10.1"
+    ignored = "1.0.0" #ignoreUpdates
     
     [libraries]
     androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
     androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+    ignored = { group = "com.example", name = "ignored", version.ref = "ignored" }
     
     [plugins]
     android-application = { id = "com.android.application", version.ref = "agp" }
@@ -316,7 +320,7 @@ class DependencyUpdatePluginTest {
             expected = expectedJsonResult(versions.gradle),
             actual = jsonOutputFile.readText().trim()
         )
-        assertEquals(9, mockWebserverRule.server.requestCount)
+        assertEquals(10, mockWebserverRule.server.requestCount)
     }
 
     @Test
@@ -1054,6 +1058,24 @@ private val ANDROID_KOTLIN_PLUGIN_REAL_POM = """
 """.trimIndent()
 
 @Language("XML")
+private val IGNORED_METADATA = """
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>
+  <groupId>com.example</groupId>
+  <artifactId>ignored</artifactId>
+  <versioning>
+    <latest>1.1.0</latest>
+    <release>1.1.0</release>
+    <versions>
+      <version>1.0.0</version>
+      <version>1.1.0</version>
+    </versions>
+    <lastUpdated>20250409170101</lastUpdated>
+  </versioning>
+</metadata>
+""".trimIndent()
+
+@Language("XML")
 private val CAUPAIN_METADATA = """
     <?xml version='1.0' encoding='US-ASCII'?>
     <metadata>
@@ -1189,6 +1211,21 @@ private fun expectedHtmlResult(gradleVersion: String) = """
         </tr>
       </table>
     </p>
+    <h2>Ignored</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Current version</th>
+          <th>Updated version</th>
+        </tr>
+        <tr>
+          <td>com.example:ignored</td>
+          <td>1.0.0</td>
+          <td>1.1.0</td>
+        </tr>
+      </table>
+    </p>
   </body>
 </html>    
 """.trimIndent().trim()
@@ -1227,6 +1264,10 @@ Gradle current version is $gradleVersion whereas last version is 99.0.0. See [ht
 | Id                           | Name                 | Current version | Updated version | URL                                                |
 | ---------------------------- | -------------------- | --------------- | --------------- | -------------------------------------------------- |
 | org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21          | 2.1.20          | [https://kotlinlang.org/](https://kotlinlang.org/) |
+## Ignored
+| Id                  | Current version | Updated version |
+| ------------------- | --------------- | --------------- |
+| com.example:ignored | 1.0.0           | 1.1.0           |
 """.trimIndent().trim()
 
 @Language("JSON")
@@ -1258,7 +1299,16 @@ private fun expectedJsonResult(gradleVersion: String) = """
             }
         ]
     },
-    "ignoredUpdateInfos": [],
+    "ignoredUpdateInfos": [
+        {
+            "dependency": "ignored",
+            "dependencyId": "com.example:ignored",
+            "name": null,
+            "url": null,
+            "currentVersion": "1.0.0",
+            "updatedVersion": "1.1.0"
+        }
+    ],
     "versionReferenceInfo": [
         {
             "id": "coreKtx",
