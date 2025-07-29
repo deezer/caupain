@@ -25,14 +25,28 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.versionCatalog.Version
+import org.antlr.v4.kotlinruntime.ast.Position
 
-internal data class Ignores(
-    val refs: Set<String> = emptySet(),
-    val libraryKeys: Set<String> = emptySet(),
-    val pluginKeys: Set<String> = emptySet()
-)
+internal data class VersionCatalogInfo(
+    val ignores: Ignores,
+    val versionRefsPositions: Map<String, VersionPosition> = emptyMap(),
+    val libraryVersionPositions: Map<String, VersionPosition> = emptyMap(),
+    val pluginVersionPositions: Map<String, VersionPosition> = emptyMap()
+) {
 
-internal fun Ignores.isExcluded(key: String, dependency: Dependency): Boolean {
+    internal data class Ignores(
+        val refs: Set<String> = emptySet(),
+        val libraryKeys: Set<String> = emptySet(),
+        val pluginKeys: Set<String> = emptySet()
+    )
+
+    data class VersionPosition(
+        val position: Position,
+        val valueText: String
+    )
+}
+
+internal fun VersionCatalogInfo.Ignores.isExcluded(key: String, dependency: Dependency): Boolean {
     return when {
         dependency.version is Version.Reference ->
             (dependency.version as? Version.Reference)?.ref in refs

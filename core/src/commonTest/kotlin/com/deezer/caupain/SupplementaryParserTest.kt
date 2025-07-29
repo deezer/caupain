@@ -24,13 +24,14 @@
 
 package com.deezer.caupain
 
-import com.deezer.caupain.model.Ignores
-import com.deezer.caupain.toml.IgnoreParser
+import com.deezer.caupain.model.VersionCatalogInfo
+import com.deezer.caupain.toml.SupplementaryParser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
+import org.antlr.v4.kotlinruntime.ast.Position
 import org.intellij.lang.annotations.Language
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -38,7 +39,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class IgnoreParserTest {
+class SupplementaryParserTest {
 
     private lateinit var fileSystem: FakeFileSystem
 
@@ -61,12 +62,44 @@ class IgnoreParserTest {
         fileSystem.write(path) { writeUtf8(FILE) }
         runTest(testDispatcher) {
             assertEquals(
-                expected = Ignores(
-                    refs = setOf("kotlin"),
-                    libraryKeys = setOf("kotlin-test"),
-                    pluginKeys = setOf("jetbrains-kotlin-jvm")
+                expected = VersionCatalogInfo(
+                    ignores = VersionCatalogInfo.Ignores(
+                        refs = setOf("kotlin"),
+                        libraryKeys = setOf("kotlin-test"),
+                        pluginKeys = setOf("jetbrains-kotlin-jvm")
+                    ),
+                    versionRefsPositions = mapOf(
+                        "junit" to VersionCatalogInfo.VersionPosition(
+                            position = Position(2, 8, 2, 16),
+                            valueText = "\"4.13.2\""
+                        ),
+                        "kotlin" to VersionCatalogInfo.VersionPosition(
+                            position = Position(3, 9, 3, 17),
+                            valueText = "\"2.1.20\""
+                        ),
+                        "kotlinx-coroutines" to VersionCatalogInfo.VersionPosition(
+                            position = Position(4, 21, 4, 29),
+                            valueText = "'1.10.2'"
+                        )
+                    ),
+                    libraryVersionPositions = mapOf(
+                        "example" to VersionCatalogInfo.VersionPosition(
+                            position = Position(9, 51, 9, 58),
+                            valueText = "\"1.0.0\""
+                        )
+                    ),
+                    pluginVersionPositions = mapOf(
+                        "kotlinx-atomicfu" to VersionCatalogInfo.VersionPosition(
+                            position = Position(19, 19, 19, 58),
+                            valueText = "\"org.jetbrains.kotlinx.atomicfu:0.27.0\""
+                        ),
+                        "dokka" to VersionCatalogInfo.VersionPosition(
+                            position = Position(20, 8, 20, 35),
+                            valueText = "\"org.jetbrains.dokka:2.0.0\""
+                        ),
+                    )
                 ),
-                actual = IgnoreParser(fileSystem, testDispatcher).computeIgnores(path)
+                actual = SupplementaryParser(fileSystem, testDispatcher).parse(path)
             )
         }
     }
@@ -77,11 +110,12 @@ private val FILE = """
 [versions]
 junit = "4.13.2"
 kotlin = "2.1.20" #ignoreUpdates
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = '1.10.2'
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" } #ignoreUpdates
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+example = { module = "com.example:test", version = "1.0.0" }
 
 [bundles]
 clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]

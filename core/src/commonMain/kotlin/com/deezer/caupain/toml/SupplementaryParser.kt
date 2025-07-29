@@ -27,7 +27,8 @@ package com.deezer.caupain.toml
 import com.deezer.caupain.antlr.TomlLexer
 import com.deezer.caupain.antlr.TomlParser
 import com.deezer.caupain.antlr.TomlParserBaseVisitor
-import com.deezer.caupain.model.Ignores
+import com.deezer.caupain.model.VersionCatalogInfo
+import com.deezer.caupain.model.VersionCatalogInfo.VersionPosition
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -37,11 +38,11 @@ import okio.Path
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 
-internal class IgnoreParser(
+internal class SupplementaryParser(
     private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-    suspend fun computeIgnores(versionCatalogPath: Path): Ignores {
+    suspend fun parse(versionCatalogPath: Path): VersionCatalogInfo {
         val charStream = withContext(ioDispatcher) {
             fileSystem.read(versionCatalogPath) {
                 CharStreams.fromString(readUtf8())
@@ -50,20 +51,28 @@ internal class IgnoreParser(
         val lexer = TomlLexer(charStream)
         val tokenStream = CommonTokenStream(lexer)
         val parser = TomlParser(tokenStream)
-        val visitor = IgnoreVisitor()
-        visitor.visit(parser.document())
-        return Ignores(
-            refs = visitor.ignoredRefs,
-            libraryKeys = visitor.ignoredLibraryKeys,
-            pluginKeys = visitor.ignoredPluginKeys
+        val visitor = Visitor().apply { visit(parser.document()) }
+        return VersionCatalogInfo(
+            ignores = VersionCatalogInfo.Ignores(
+                refs = visitor.ignoredRefs,
+                libraryKeys = visitor.ignoredLibraryKeys,
+                pluginKeys = visitor.ignoredPluginKeys
+            ),
+            versionRefsPositions = visitor.versionRefsPositions,
+            libraryVersionPositions = visitor.libraryVersionPositions,
+            pluginVersionPositions = visitor.pluginVersionPositions
         )
     }
 
-    private class IgnoreVisitor : TomlParserBaseVisitor<Unit>() {
+    class Visitor : TomlParserBaseVisitor<Unit>() {
 
         val ignoredRefs = mutableSetOf<String>()
         val ignoredLibraryKeys = mutableSetOf<String>()
         val ignoredPluginKeys = mutableSetOf<String>()
+
+        val versionRefsPositions = mutableMapOf<String, VersionPosition>()
+        val libraryVersionPositions = mutableMapOf<String, VersionPosition>()
+        val pluginVersionPositions = mutableMapOf<String, VersionPosition>()
 
         private var currentSection: Section? = null
 
@@ -73,15 +82,64 @@ internal class IgnoreParser(
 
         override fun visitStandard_table(ctx: TomlParser.Standard_tableContext) {
             super.visitStandard_table(ctx)
-            val sectionName = ctx.key().text
+            val sectionName = ctx.key().keyText ?: return
             val section = Section.entries.firstOrNull { it.key == sectionName }
             currentSection = section
         }
 
         override fun visitKey_value(ctx: TomlParser.Key_valueContext) {
-            super.visitKey_value(ctx)
-            currentKey = ctx.key().text
+            val key = ctx.key().keyText ?: return
+            currentKey = key
             currentKeyLine = ctx.key().position?.start?.line ?: -1
+
+            val simpleValue = ctx.value().string()
+            val richValue = ctx.value().inline_table()
+            when (currentSection) {
+                Section.VERSIONS -> simpleValue
+                    ?.toVersionPosition()
+                    ?.let { versionRefsPositions[key] = it }
+
+                Section.LIBRARIES -> if (simpleValue != null) {
+                    simpleValue
+                        .toVersionPosition()
+                        ?.let { libraryVersionPositions[key] = it }
+                } else if (richValue != null) {
+                    visitChildren(richValue)
+                }
+
+                Section.PLUGINS -> if (simpleValue != null) {
+                    simpleValue
+                        .toVersionPosition()
+                        ?.let { pluginVersionPositions[key] = it }
+                } else if (richValue != null) {
+                    visitChildren(richValue)
+                }
+
+                else -> Unit
+            }
+        }
+
+        override fun visitInline_table_keyvals(ctx: TomlParser.Inline_table_keyvalsContext) {
+            var current = ctx.inline_table_keyvals_non_empty()
+            var valueContext: TomlParser.ValueContext? = null
+            while (current != null) {
+                if (current.key().keyText == "version") {
+                    valueContext = current.value()
+                    break
+                }
+                current = current.inline_table_keyvals_non_empty()
+            }
+            if (valueContext == null) return
+            val key = currentKey ?: return
+            val versionPosition = valueContext
+                .string()
+                ?.toVersionPosition()
+                ?: return
+            when (currentSection) {
+                Section.LIBRARIES -> libraryVersionPositions
+                Section.PLUGINS -> pluginVersionPositions
+                else -> null
+            }?.put(key, versionPosition)
         }
 
         override fun visitComment(ctx: TomlParser.CommentContext) {
@@ -114,5 +172,20 @@ internal class IgnoreParser(
 
     companion object {
         private const val IGNORE_COMMENT = "#ignoreUpdates"
+
+        private val TomlParser.Simple_keyContext.keyText: String?
+            get() = unquoted_key()?.text
+                ?: quoted_key()?.text?.let { it.substring(1, it.lastIndex) }
+
+        private val TomlParser.KeyContext.keyText: String?
+            get() = simple_key()?.keyText
+                ?: dotted_key()?.simple_key()?.joinToString(".") { it.keyText.orEmpty() }
+
+        private fun TomlParser.StringContext.toVersionPosition(): VersionPosition? {
+            return VersionPosition(
+                position = position ?: return null,
+                valueText = text
+            )
+        }
     }
 }

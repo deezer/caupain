@@ -383,14 +383,14 @@ internal class DefaultDependencyUpdateChecker(
         coroutineScope {
             parseResults
                 .asSequence()
-                .flatMap { (versionCatalog, ignores) ->
+                .flatMap { (versionCatalog, info) ->
                     versionCatalog
                         .dependencies
                         .asSequence()
                         .map { (key, dep) ->
                             async {
                                 val isExcluded = configuration.isExcluded(key, dep)
-                                        || ignores.isExcluded(key, dep)
+                                        || info.ignores.isExcluded(key, dep)
                                 if (!isExcluded || configuration.checkIgnored) {
                                     val updatedVersion = versionResolver.getUpdatedVersion(
                                         dep,

@@ -24,11 +24,11 @@
 
 package com.deezer.caupain
 
-import com.deezer.caupain.model.Ignores
+import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.decodeFromPath
-import com.deezer.caupain.toml.IgnoreParser
+import com.deezer.caupain.toml.SupplementaryParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -48,7 +48,7 @@ internal class DefaultVersionCatalogParser(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : VersionCatalogParser {
 
-    private val ignoreParser = IgnoreParser(fileSystem, ioDispatcher)
+    private val parser = SupplementaryParser(fileSystem, ioDispatcher)
 
     override suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult =
         withContext(ioDispatcher) {
@@ -57,12 +57,12 @@ internal class DefaultVersionCatalogParser(
                     path = versionCatalogPath,
                     fileSystem = fileSystem
                 ),
-                ignores = ignoreParser.computeIgnores(versionCatalogPath)
+                info = parser.parse(versionCatalogPath)
             )
         }
 }
 
 internal data class VersionCatalogParseResult(
     val versionCatalog: VersionCatalog,
-    val ignores: Ignores
+    val info: VersionCatalogInfo
 )
