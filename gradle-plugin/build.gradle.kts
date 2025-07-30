@@ -2,7 +2,7 @@ import com.vanniktech.maven.publish.GradlePublishPlugin
 import io.gitlab.arturbosch.detekt.Detekt
 
 plugins {
-    `kotlin-dsl`
+    alias(libs.plugins.kotlin.jvm)
     `java-gradle-plugin`
     alias(libs.plugins.compat.patrouille)
     alias(libs.plugins.binary.compatibility.validator)
@@ -14,7 +14,7 @@ plugins {
 
 compatPatrouille {
     java(17)
-    kotlin(libs.versions.kotlin.get())
+    kotlin(pluginLibs.versions.kotlin.get())
 }
 
 buildConfig {
@@ -22,8 +22,32 @@ buildConfig {
     useKotlinOutput()
 }
 
+fun isCheckOrPublish(taskName: String): Boolean {
+    return taskName.contains("check", ignoreCase = true) ||
+           taskName.contains("publish", ignoreCase = true) ||
+           taskName.contains("dependencyGuard", ignoreCase = true)
+}
+
+// We need core-compat for build, but IntelliJ has an issue with the dependency, so we still use core
+// when not checking or publishing
+fun DependencyHandler.applyCoreDependency() {
+    if (System.getenv("CI").toBoolean() || gradle.startParameter.taskNames.any { isCheckOrPublish(it) })  {
+        api(projects.coreCompat)
+    } else {
+        gradle.taskGraph.whenReady {
+            if (allTasks.any { isCheckOrPublish(it.name) }) {
+                api(projects.coreCompat)
+            } else {
+                api(projects.core)
+            }
+        }
+    }
+}
+
 dependencies {
-    api(projects.core)
+    applyCoreDependency()
+    api(projects.coreCompat)
+    implementation(pluginLibs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
@@ -36,6 +60,7 @@ dependencies {
 
 dependencyGuard {
     configuration("runtimeClasspath")
+    configuration("compileClasspath")
 }
 
 gradlePlugin {

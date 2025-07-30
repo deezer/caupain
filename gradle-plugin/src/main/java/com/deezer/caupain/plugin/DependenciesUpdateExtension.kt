@@ -26,6 +26,9 @@ package com.deezer.caupain.plugin
 
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
+import com.deezer.caupain.plugin.internal.listProperty
+import com.deezer.caupain.plugin.internal.property
+import com.deezer.caupain.plugin.internal.setProperty
 import org.gradle.api.Action
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -34,9 +37,6 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Nested
-import org.gradle.kotlin.dsl.listProperty
-import org.gradle.kotlin.dsl.property
-import org.gradle.kotlin.dsl.setProperty
 import javax.inject.Inject
 
 /**

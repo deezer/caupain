@@ -375,7 +375,7 @@ class DependencyUpdatePluginTest {
         override fun provideValues(context: Context?): List<Versions> = listOf(
             Versions(GradleVersion.current().version, "8.9.1"),
             Versions("8.14.2", "8.9.1"),
-            Versions("8.11.1", "8.9.1"),
+            Versions("8.12.1", "8.9.1"),
         )
     }
 }
