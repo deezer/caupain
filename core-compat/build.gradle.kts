@@ -34,13 +34,13 @@ kotlin {
             }
             dependencies {
                 implementation(pluginLibs.kotlin.stdlib)
-                implementation(libs.kotlinx.serialization.xml)
+                implementation(pluginLibs.kotlinx.serialization.xml)
                 implementation(pluginLibs.kotlinx.serialization.toml)
-                api(libs.okio)
+                api(pluginLibs.okio)
                 implementation(libs.bundles.ktor)
                 api(libs.ktor.client.core)
                 implementation(libs.bundles.ktor.serialization)
-                implementation(libs.xmlutil.core.io)
+                implementation(pluginLibs.xmlutil.core.io)
                 implementation(pluginLibs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.html)
@@ -57,7 +57,7 @@ kotlin {
             }
             dependencies {
                 implementation(pluginLibs.kotlin.test)
-                implementation(libs.okio.fake.filesystem)
+                implementation(pluginLibs.okio.fake.filesystem)
                 implementation(libs.ktor.client.mock)
                 implementation(libs.kotlinx.coroutines.test)
                 compileOnly(libs.jetbrains.annotations)
