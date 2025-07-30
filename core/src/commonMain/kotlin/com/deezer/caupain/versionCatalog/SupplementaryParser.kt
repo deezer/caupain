@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.toml
+package com.deezer.caupain.versionCatalog
 
 import com.deezer.caupain.antlr.TomlLexer
 import com.deezer.caupain.antlr.TomlParser
@@ -58,13 +58,15 @@ internal class SupplementaryParser(
                 libraryKeys = visitor.ignoredLibraryKeys,
                 pluginKeys = visitor.ignoredPluginKeys
             ),
-            versionRefsPositions = visitor.versionRefsPositions,
-            libraryVersionPositions = visitor.libraryVersionPositions,
-            pluginVersionPositions = visitor.pluginVersionPositions
+            positions = VersionCatalogInfo.Positions(
+                versionRefsPositions = visitor.versionRefsPositions,
+                libraryVersionPositions = visitor.libraryVersionPositions,
+                pluginVersionPositions = visitor.pluginVersionPositions
+            )
         )
     }
 
-    class Visitor : TomlParserBaseVisitor<Unit>() {
+    private class Visitor : TomlParserBaseVisitor<Unit>() {
 
         val ignoredRefs = mutableSetOf<String>()
         val ignoredLibraryKeys = mutableSetOf<String>()

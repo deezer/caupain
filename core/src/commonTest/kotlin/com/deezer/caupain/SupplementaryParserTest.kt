@@ -25,7 +25,7 @@
 package com.deezer.caupain
 
 import com.deezer.caupain.model.VersionCatalogInfo
-import com.deezer.caupain.toml.SupplementaryParser
+import com.deezer.caupain.versionCatalog.SupplementaryParser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -68,36 +68,42 @@ class SupplementaryParserTest {
                         libraryKeys = setOf("kotlin-test"),
                         pluginKeys = setOf("jetbrains-kotlin-jvm")
                     ),
-                    versionRefsPositions = mapOf(
-                        "junit" to VersionCatalogInfo.VersionPosition(
-                            position = Position(2, 8, 2, 16),
-                            valueText = "\"4.13.2\""
+                    positions = VersionCatalogInfo.Positions(
+                        versionRefsPositions = mapOf(
+                            "junit" to VersionCatalogInfo.VersionPosition(
+                                position = Position(2, 8, 2, 16),
+                                valueText = "\"4.13.2\""
+                            ),
+                            "kotlin" to VersionCatalogInfo.VersionPosition(
+                                position = Position(3, 9, 3, 17),
+                                valueText = "\"2.1.20\""
+                            ),
+                            "kotlinx-coroutines" to VersionCatalogInfo.VersionPosition(
+                                position = Position(4, 21, 4, 29),
+                                valueText = "'1.10.2'"
+                            ),
+                            "multiline" to VersionCatalogInfo.VersionPosition(
+                                position = Position(5, 12, 7, 5),
+                                valueText = "'''0\n.1\n.0'''"
+                            )
                         ),
-                        "kotlin" to VersionCatalogInfo.VersionPosition(
-                            position = Position(3, 9, 3, 17),
-                            valueText = "\"2.1.20\""
+                        libraryVersionPositions = mapOf(
+                            "example" to VersionCatalogInfo.VersionPosition(
+                                position = Position(12, 51, 12, 58),
+                                valueText = "\"1.0.0\""
+                            )
                         ),
-                        "kotlinx-coroutines" to VersionCatalogInfo.VersionPosition(
-                            position = Position(4, 21, 4, 29),
-                            valueText = "'1.10.2'"
+                        pluginVersionPositions = mapOf(
+                            "kotlinx-atomicfu" to VersionCatalogInfo.VersionPosition(
+                                position = Position(22, 19, 22, 58),
+                                valueText = "\"org.jetbrains.kotlinx.atomicfu:0.27.0\""
+                            ),
+                            "dokka" to VersionCatalogInfo.VersionPosition(
+                                position = Position(23, 8, 23, 35),
+                                valueText = "\"org.jetbrains.dokka:2.0.0\""
+                            ),
                         )
                     ),
-                    libraryVersionPositions = mapOf(
-                        "example" to VersionCatalogInfo.VersionPosition(
-                            position = Position(9, 51, 9, 58),
-                            valueText = "\"1.0.0\""
-                        )
-                    ),
-                    pluginVersionPositions = mapOf(
-                        "kotlinx-atomicfu" to VersionCatalogInfo.VersionPosition(
-                            position = Position(19, 19, 19, 58),
-                            valueText = "\"org.jetbrains.kotlinx.atomicfu:0.27.0\""
-                        ),
-                        "dokka" to VersionCatalogInfo.VersionPosition(
-                            position = Position(20, 8, 20, 35),
-                            valueText = "\"org.jetbrains.dokka:2.0.0\""
-                        ),
-                    )
                 ),
                 actual = SupplementaryParser(fileSystem, testDispatcher).parse(path)
             )
@@ -111,6 +117,9 @@ private val FILE = """
 junit = "4.13.2"
 kotlin = "2.1.20" #ignoreUpdates
 kotlinx-coroutines = '1.10.2'
+multiline = '''0
+.1
+.0'''
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" } #ignoreUpdates
