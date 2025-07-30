@@ -28,16 +28,20 @@ import com.deezer.caupain.model.versionCatalog.Version
 import org.antlr.v4.kotlinruntime.ast.Position
 
 internal data class VersionCatalogInfo(
-    val ignores: Ignores,
-    val versionRefsPositions: Map<String, VersionPosition> = emptyMap(),
-    val libraryVersionPositions: Map<String, VersionPosition> = emptyMap(),
-    val pluginVersionPositions: Map<String, VersionPosition> = emptyMap()
+    val ignores: Ignores = Ignores(),
+    val positions: Positions = Positions()
 ) {
 
     internal data class Ignores(
         val refs: Set<String> = emptySet(),
         val libraryKeys: Set<String> = emptySet(),
         val pluginKeys: Set<String> = emptySet()
+    )
+
+    internal data class Positions(
+        val versionRefsPositions: Map<String, VersionPosition> = emptyMap(),
+        val libraryVersionPositions: Map<String, VersionPosition> = emptyMap(),
+        val pluginVersionPositions: Map<String, VersionPosition> = emptyMap()
     )
 
     data class VersionPosition(

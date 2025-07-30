@@ -28,7 +28,7 @@ import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.decodeFromPath
-import com.deezer.caupain.toml.SupplementaryParser
+import com.deezer.caupain.versionCatalog.SupplementaryParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO

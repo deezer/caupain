@@ -26,7 +26,7 @@ package com.deezer.caupain
 
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
-import com.deezer.caupain.model.Ignores
+import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -108,7 +108,7 @@ class VersionCatalogParserTest {
                         )
                     )
                 ),
-                ignores = Ignores()
+                info = VersionCatalogInfo()
             ),
             actual = parser.parseDependencyInfo(filePath)
         )
