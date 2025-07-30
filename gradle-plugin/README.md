@@ -250,6 +250,8 @@ useCache = true
 onlyCheckStaticVersions = true
 // The stability level to use for Gradle version checks. Default is STABLE.
 gradleStabilityLevel = GradleStabilityLevel.STABLE
+// Whether or not to show a section in the report about the ignored available updates.
+checkIgnored = true
 ```
 
 ### Minimum Gradle version

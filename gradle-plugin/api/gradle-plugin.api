@@ -35,6 +35,7 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun checkUpdates ()V
 	public final fun customFormatter (Lcom/deezer/caupain/plugin/Formatter;)V
 	public final fun getCacheDir ()Lorg/gradle/api/file/DirectoryProperty;
+	public final fun getCheckIgnored ()Lorg/gradle/api/provider/Property;
 	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;

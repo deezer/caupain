@@ -126,6 +126,12 @@ open class DependenciesUpdateTask : DefaultTask() {
     val gradleStabilityLevel = project.objects.property<GradleStabilityLevel>()
 
     /**
+     * @see DependenciesUpdateExtension.checkIgnored
+     */
+    @get:Internal
+    val checkIgnored = project.objects.property<Boolean>()
+
+    /**
      * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
      */
     @get:Internal
@@ -170,7 +176,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             selfUpdateResolver = PluginUpdateResolver,
             policies = policy?.let { listOf(it) },
             currentGradleVersion = GradleVersion.current().version,
-            gradleVersionsUrl = gradleVersionsUrl
+            gradleVersionsUrl = gradleVersionsUrl,
         )
         runBlocking {
             val updates = checker.checkForUpdates()
@@ -225,7 +231,8 @@ open class DependenciesUpdateTask : DefaultTask() {
             cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
             debugHttpCalls = true,
             onlyCheckStaticVersions = onlyCheckStaticVersions.get(),
-            gradleStabilityLevel = gradleStabilityLevel.get()
+            gradleStabilityLevel = gradleStabilityLevel.get(),
+            checkIgnored = checkIgnored.get()
         )
     }
 

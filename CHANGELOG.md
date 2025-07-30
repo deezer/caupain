@@ -11,7 +11,8 @@
 ### Removed
 
 ### Fixed
-- Compatability issue with Gradle < 9.0 (#46)
+- Compatibility issue with Gradle < 9.0 (#46)
+- Ignored dependencies switch not taken into account in Gradle plugin (#47)
 
 ### Security
 
