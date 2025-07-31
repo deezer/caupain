@@ -88,14 +88,12 @@ kotlin {
     }
 }
 
-val generateKotlinGrammarSource =
-    rootProject.project(":core").tasks.named("generateKotlinGrammarSource")
 tasks.withType<KotlinCompilationTask<*>> {
-    dependsOn(generateKotlinGrammarSource)
+    dependsOn(":core:generateKotlinGrammarSource")
 }
 tasks
     .matching { it.name.endsWith("SourcesJar", ignoreCase = true) }
-    .configureEach { dependsOn(generateKotlinGrammarSource) }
+    .configureEach { dependsOn(":core:generateKotlinGrammarSource") }
 
 mavenPublishing {
     configure(KotlinMultiplatform(sourcesJar = true))
