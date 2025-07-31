@@ -179,6 +179,7 @@ class PluginTest {
                 ),
                 ignoredUpdateInfos = emptyList(),
                 versionCatalog = VERSION_CATALOG,
+                versionCatalogInfo = VersionCatalogInfo(),
                 selfUpdateInfo = null
             ),
             actual = checker.checkForUpdates()
