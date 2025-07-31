@@ -33,9 +33,9 @@ import com.deezer.caupain.plugin.internal.toRepositories
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.Provider
-import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -50,11 +50,12 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         }
         val ext = target.extensions.create<DependenciesUpdateExtension>("caupain")
         ext.initDefaultRepositories(target)
+        val versionCatalogFilesProvider = ext.versionCatalogFilesProvider(target)
 
         target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
             description = "Check for dependency updates"
-            versionCatalogFiles.convention(ext.resolveVersionCatalogFiles(target))
+            versionCatalogFiles.convention(versionCatalogFilesProvider)
             excludedKeys.convention(ext.excludedKeys)
             excludedLibraries.convention(ext.excludedLibraries)
             excludedPluginIds.convention(ext.excludedPluginIds)
@@ -66,6 +67,21 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
             gradleStabilityLevel.convention(ext.gradleStabilityLevel)
             checkIgnored.convention(ext.checkIgnored)
+        }
+        target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
+            group = "verification"
+            description = "Check for dependency updates"
+            versionCatalogFile.convention(
+                versionCatalogFilesProvider.map { files ->
+                    files.firstNotNullOf { it as? RegularFile }
+                }
+            )
+            excludedKeys.convention(ext.excludedKeys)
+            excludedLibraries.convention(ext.excludedLibraries)
+            excludedPluginIds.convention(ext.excludedPluginIds)
+            repositories.convention(ext.repositories.libraries)
+            pluginRepositories.convention(ext.repositories.plugins)
+            useCache.convention(ext.useCache)
         }
     }
 
@@ -101,7 +117,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         repositories.setupConvention(collectedRepositories, collectedPluginRepositories)
     }
 
-    private fun DependenciesUpdateExtension.resolveVersionCatalogFiles(project: Project): Provider<Iterable<FileSystemLocation>> {
+    private fun DependenciesUpdateExtension.versionCatalogFilesProvider(project: Project): Provider<Iterable<FileSystemLocation>> {
         val defaultVersionCatalogFile = project
             .layout
             .projectDirectory
@@ -110,7 +126,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             .elements
             .asOptional()
             .flatMap { files ->
-                val isDefaultValueForCollection = files.getOrDefault(emptySet()).isEmpty()
+                val isDefaultValueForCollection = files.getOrNull().isNullOrEmpty()
                 versionCatalogFile
                     .asOptional()
                     .map { file ->
@@ -121,7 +137,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
                                 files.get()
                             }
 
-                            !isDefaultValueForFile -> listOf(file.get())
+                            !isDefaultValueForFile -> setOf(file.get())
 
                             else -> files
                                 .getOrNull()

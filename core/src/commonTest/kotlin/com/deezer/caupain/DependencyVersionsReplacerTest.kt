@@ -57,7 +57,7 @@ class DependencyVersionsReplacerTest {
     fun setup() {
         fileSystem = FakeFileSystem()
         fileSystem.createDirectories(FileSystem.SYSTEM_TEMPORARY_DIRECTORY)
-        replacer = DependencyVersionsReplacer(
+        replacer = DefaultDependencyVersionsReplacer(
             fileSystem = fileSystem,
             ioDispatcher = testDispatcher,
             defaultDispatcher = testDispatcher

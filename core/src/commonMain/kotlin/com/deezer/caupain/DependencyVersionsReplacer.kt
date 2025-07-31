@@ -39,18 +39,36 @@ import okio.BufferedSink
 import okio.BufferedSource
 import okio.FileSystem
 import okio.Path
+import okio.SYSTEM
 import okio.buffer
 import okio.use
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+public interface DependencyVersionsReplacer {
+    public suspend fun replaceVersions(
+        versionCatalogPath: Path,
+        updateResult: DependenciesUpdateResult,
+    )
+}
+
+public fun DependencyVersionsReplacer(
+    fileSystem: FileSystem = FileSystem.SYSTEM,
+    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+): DependencyVersionsReplacer = DefaultDependencyVersionsReplacer(
+    fileSystem = fileSystem,
+    ioDispatcher = ioDispatcher,
+    defaultDispatcher = defaultDispatcher
+)
+
 @OptIn(ExperimentalUuidApi::class)
-public class DependencyVersionsReplacer(
+internal class DefaultDependencyVersionsReplacer(
     private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
-) {
-    public suspend fun replaceVersions(
+) : DependencyVersionsReplacer {
+    override suspend fun replaceVersions(
         versionCatalogPath: Path,
         updateResult: DependenciesUpdateResult,
     ) {
