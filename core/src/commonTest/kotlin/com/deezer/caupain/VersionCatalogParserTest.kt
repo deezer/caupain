@@ -152,7 +152,7 @@ class VersionCatalogParserTest {
 }
 
 @Language("TOML")
-private const val TEST_VERSION_CATALOG = """
+private val TEST_VERSION_CATALOG = """
 [versions]
 groovy = "3.0.5-alpha-1"
 checkstyle = "8.37"
@@ -170,4 +170,4 @@ groovy = ["groovy-core", "groovy-json", "groovy-nio"]
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.45.0-SNAPSHOT" }
 dokka = "org.jetbrains.dokka:2.0.0"
-"""
+""".trimIndent()
