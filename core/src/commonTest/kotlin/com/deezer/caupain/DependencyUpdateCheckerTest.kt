@@ -209,6 +209,7 @@ class DependencyUpdateCheckerTest {
                 ),
                 ignoredUpdateInfos = emptyList(),
                 versionCatalog = null,
+                versionCatalogInfo = null,
                 selfUpdateInfo = SELF_UPDATE_INFO
             ),
             actual = checker.checkForUpdates()

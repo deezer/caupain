@@ -24,6 +24,7 @@
 
 package com.deezer.caupain
 
+import com.deezer.caupain.model.Point
 import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.versionCatalog.SupplementaryParser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +32,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
-import org.antlr.v4.kotlinruntime.ast.Position
 import org.intellij.lang.annotations.Language
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -71,35 +71,42 @@ class SupplementaryParserTest {
                     positions = VersionCatalogInfo.Positions(
                         versionRefsPositions = mapOf(
                             "junit" to VersionCatalogInfo.VersionPosition(
-                                position = Position(2, 8, 2, 16),
+                                startPoint = Point(1, 8),
+                                nbLines = 1,
                                 valueText = "\"4.13.2\""
                             ),
                             "kotlin" to VersionCatalogInfo.VersionPosition(
-                                position = Position(3, 9, 3, 17),
+                                startPoint = Point(1, 9),
+                                nbLines = 1,
                                 valueText = "\"2.1.20\""
                             ),
                             "kotlinx-coroutines" to VersionCatalogInfo.VersionPosition(
-                                position = Position(4, 21, 4, 29),
+                                startPoint = Point(3, 21),
+                                nbLines = 1,
                                 valueText = "'1.10.2'"
                             ),
                             "multiline" to VersionCatalogInfo.VersionPosition(
-                                position = Position(5, 12, 7, 5),
+                                startPoint = Point(4, 12),
+                                nbLines = 3,
                                 valueText = "'''0\n.1\n.0'''"
                             )
                         ),
                         libraryVersionPositions = mapOf(
                             "example" to VersionCatalogInfo.VersionPosition(
-                                position = Position(12, 51, 12, 58),
+                                startPoint = Point(11, 51),
+                                nbLines = 1,
                                 valueText = "\"1.0.0\""
                             )
                         ),
                         pluginVersionPositions = mapOf(
                             "kotlinx-atomicfu" to VersionCatalogInfo.VersionPosition(
-                                position = Position(22, 19, 22, 58),
+                                startPoint = Point(21, 19),
+                                nbLines = 1,
                                 valueText = "\"org.jetbrains.kotlinx.atomicfu:0.27.0\""
                             ),
                             "dokka" to VersionCatalogInfo.VersionPosition(
-                                position = Position(23, 8, 23, 35),
+                                startPoint = Point(22, 8),
+                                nbLines = 1,
                                 valueText = "\"org.jetbrains.dokka:2.0.0\""
                             ),
                         )

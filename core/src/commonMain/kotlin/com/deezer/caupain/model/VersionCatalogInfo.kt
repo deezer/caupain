@@ -27,27 +27,130 @@ package com.deezer.caupain.model
 import com.deezer.caupain.model.versionCatalog.Version
 import org.antlr.v4.kotlinruntime.ast.Position
 
-internal data class VersionCatalogInfo(
-    val ignores: Ignores = Ignores(),
-    val positions: Positions = Positions()
+public class VersionCatalogInfo(
+    public val ignores: Ignores = Ignores(),
+    public val positions: Positions = Positions()
 ) {
+    public class Ignores(
+        public val refs: Set<String> = emptySet(),
+        public val libraryKeys: Set<String> = emptySet(),
+        public val pluginKeys: Set<String> = emptySet()
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
 
-    internal data class Ignores(
-        val refs: Set<String> = emptySet(),
-        val libraryKeys: Set<String> = emptySet(),
-        val pluginKeys: Set<String> = emptySet()
-    )
+            other as Ignores
 
-    internal data class Positions(
-        val versionRefsPositions: Map<String, VersionPosition> = emptyMap(),
-        val libraryVersionPositions: Map<String, VersionPosition> = emptyMap(),
-        val pluginVersionPositions: Map<String, VersionPosition> = emptyMap()
-    )
+            if (refs != other.refs) return false
+            if (libraryKeys != other.libraryKeys) return false
+            if (pluginKeys != other.pluginKeys) return false
 
-    data class VersionPosition(
-        val position: Position,
-        val valueText: String
-    )
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = refs.hashCode()
+            result = 31 * result + libraryKeys.hashCode()
+            result = 31 * result + pluginKeys.hashCode()
+            return result
+        }
+
+        override fun toString(): String {
+            return "Ignores(refs=$refs, libraryKeys=$libraryKeys, pluginKeys=$pluginKeys)"
+        }
+    }
+
+    public class Positions(
+        public val versionRefsPositions: Map<String, VersionPosition> = emptyMap(),
+        public val libraryVersionPositions: Map<String, VersionPosition> = emptyMap(),
+        public val pluginVersionPositions: Map<String, VersionPosition> = emptyMap()
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Positions
+
+            if (versionRefsPositions != other.versionRefsPositions) return false
+            if (libraryVersionPositions != other.libraryVersionPositions) return false
+            if (pluginVersionPositions != other.pluginVersionPositions) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = versionRefsPositions.hashCode()
+            result = 31 * result + libraryVersionPositions.hashCode()
+            result = 31 * result + pluginVersionPositions.hashCode()
+            return result
+        }
+
+        override fun toString(): String {
+            return "Positions(versionRefsPositions=$versionRefsPositions, libraryVersionPositions=$libraryVersionPositions, pluginVersionPositions=$pluginVersionPositions)"
+        }
+    }
+
+    public class VersionPosition(
+        public val startPoint: Point,
+        public val nbLines: Int,
+        public val valueText: String
+    ) {
+        internal constructor(
+            position: Position,
+            valueText: String
+        ) : this(
+            startPoint = Point(position.start),
+            nbLines = position.end.line - position.start.line + 1,
+            valueText = valueText
+        )
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as VersionPosition
+
+            if (nbLines != other.nbLines) return false
+            if (startPoint != other.startPoint) return false
+            if (valueText != other.valueText) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = nbLines
+            result = 31 * result + startPoint.hashCode()
+            result = 31 * result + valueText.hashCode()
+            return result
+        }
+
+        override fun toString(): String {
+            return "VersionPosition(startPoint=$startPoint, nbLines=$nbLines, valueText='$valueText')"
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as VersionCatalogInfo
+
+        if (ignores != other.ignores) return false
+        if (positions != other.positions) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = ignores.hashCode()
+        result = 31 * result + positions.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "VersionCatalogInfo(ignores=$ignores, positions=$positions)"
+    }
 }
 
 internal fun VersionCatalogInfo.Ignores.isExcluded(key: String, dependency: Dependency): Boolean {

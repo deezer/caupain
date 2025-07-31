@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.versionCatalog
+package com.deezer.caupain
 
+import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
@@ -39,40 +41,41 @@ import okio.FileSystem
 import okio.Path
 import okio.buffer
 import okio.use
-import org.antlr.v4.kotlinruntime.ast.Point
-import org.antlr.v4.kotlinruntime.ast.Position
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
-internal class VersionReplacer(
+public class DependencyVersionsReplacer(
     private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
-    suspend fun replaceVersions(
+    public suspend fun replaceVersions(
         versionCatalogPath: Path,
-        versionCatalog: VersionCatalog,
-        positions: VersionCatalogInfo.Positions,
-        updatedLibraryVersions: Map<String, GradleDependencyVersion.Static>,
-        updatedPluginsVersions: Map<String, GradleDependencyVersion.Static>,
+        updateResult: DependenciesUpdateResult,
     ) {
         // First, let's compute the replacements
         val replacements = withContext(defaultDispatcher) {
             computeReplacements(
-                updatedLibraryVersions = updatedLibraryVersions,
-                updatedPluginsVersions = updatedPluginsVersions,
-                versionCatalog = versionCatalog,
-                positions = positions,
+                updatedLibraryVersions = updateResult
+                    .updateInfos[UpdateInfo.Type.LIBRARY]
+                    ?.associate { it.dependency to it.updatedVersion }
+                    .orEmpty(),
+                updatedPluginsVersions = updateResult
+                    .updateInfos[UpdateInfo.Type.PLUGIN]
+                    ?.associate { it.dependency to it.updatedVersion }
+                    .orEmpty(),
+                versionCatalog = updateResult.versionCatalog ?: return@withContext null,
+                positions = updateResult.versionCatalogInfo?.positions ?: return@withContext null,
             )
         }
-        if (replacements.isEmpty()) return
+        if (replacements.isNullOrEmpty()) return
         withContext(ioDispatcher) {
             // Now, let's read the file and apply the replacements
             val tmpFileName = buildString {
                 append(versionCatalogPath.name)
                 append('-')
-                append(Uuid.random().toString())
+                append(Uuid.Companion.random().toString())
                 append(".tmp")
             }
             val tmpOutPath = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / tmpFileName
@@ -134,8 +137,7 @@ internal class VersionReplacer(
                 put(
                     ReplacementKey(Type.VERSIONS, versionKey),
                     Replacement(
-                        valuePosition = position.position,
-                        valueText = position.valueText,
+                        position = position,
                         currentVersionText = currentVersionText,
                         updatedVersionText = updatedVersionText
                     )
@@ -149,8 +151,7 @@ internal class VersionReplacer(
                 put(
                     ReplacementKey(type, key),
                     Replacement(
-                        valuePosition = position.position,
-                        valueText = position.valueText,
+                        position = position,
                         currentVersionText = currentVersionText,
                         updatedVersionText = updatedVersionText
                     )
@@ -168,18 +169,18 @@ internal class VersionReplacer(
         fileSystem.sink(tmpOutPath).buffer().use { sink ->
             fileSystem.source(versionCatalogPath).buffer().use { source ->
                 val replacementIt = replacements.iterator()
-                var currentReplacement: Replacement? = null
+                var currentReplacement: Replacement? = replacementIt.nextOrNull()
                 var currentLine = source.readUtf8LineWithBreaks()
-                // We start the line count at 1 because the parser starts counting lines at 1
-                var lineIndex = 1
+                var lineIndex = 0
                 while (currentLine != null) {
-                    val replacement = currentReplacement ?: replacementIt.nextOrNull()
+                    val replacement = currentReplacement
                     if (replacement == null) {
                         // If there is no replacement left, just write the rest of the file
+                        sink.writeUtf8(currentLine)
                         sink.writeAll(source)
                         break
                     } else {
-                        if (lineIndex < replacement.valuePosition.start.line) {
+                        if (lineIndex < replacement.position.startPoint.line) {
                             // We're between replacements, so we can write the full line
                             sink.writeUtf8(currentLine)
                         } else {
@@ -198,6 +199,7 @@ internal class VersionReplacer(
                         }
                     }
                     currentLine = source.readUtf8LineWithBreaks()
+                    if (currentReplacement == null) currentReplacement = replacementIt.nextOrNull()
                     lineIndex++
                 }
             }
@@ -209,42 +211,40 @@ internal class VersionReplacer(
         currentLine: String,
     ): Int {
         // Replace the version text
-        val replacedText = replacement.valueText.replace(
+        val replacedText = replacement.position.valueText.replace(
             oldValue = replacement.currentVersionText,
             newValue = replacement.updatedVersionText
         )
-        val nbLines = replacement.valuePosition.nbLines
-        if (nbLines <= 1) {
+        val nbLines = replacement.position.nbLines
+        return if (nbLines <= 1) {
             // Replacement is on the same line, just replace it in the line to
             // keep the line breaks intact
             writeUtf8(
                 currentLine.replace(
-                    oldValue = replacement.valueText,
+                    oldValue = replacement.position.valueText,
                     newValue = replacedText
                 )
             )
+            // No lines to skip, as we replaced the whole line
+            0
         } else {
             // Write up to the start of the replacement
-            writeUtf8(currentLine, 0, replacement.valuePosition.start.column - 1)
+            writeUtf8(currentLine, 0, replacement.position.startPoint.column - 1)
             // Write the replaced text
             writeUtf8(replacedText)
+            // We need to skip the rest of the lines that were replaced
+            nbLines - 1
         }
-        return (nbLines - 1).coerceAtLeast(0)
     }
 
     private data class Replacement(
-        val valuePosition: Position,
-        val valueText: String,
+        val position: VersionCatalogInfo.VersionPosition,
         val currentVersionText: String,
         val updatedVersionText: String
     ) : Comparable<Replacement> {
 
         override fun compareTo(other: Replacement): Int {
-            return POINT_COMPARATOR.compare(valuePosition.start, other.valuePosition.start)
-        }
-
-        companion object {
-            private val POINT_COMPARATOR = compareBy<Point>(Point::line, Point::column)
+            return position.startPoint.compareTo(other.position.startPoint)
         }
     }
 
@@ -257,11 +257,8 @@ internal class VersionReplacer(
         val key: String
     )
 
-    companion object {
+    private companion object Companion {
         private val LINE_RETURN = '\n'.code.toByte()
-
-        private val Position.nbLines: Int
-            get() = end.line - start.line + 1
 
         private fun BufferedSource.readUtf8LineWithBreaks(): String? {
             val newLine = indexOf(LINE_RETURN)

@@ -364,7 +364,8 @@ internal class DefaultDependencyUpdateChecker(
             },
             ignoredUpdateInfos = updatedVersionsResult.ignoredVersions,
             versionCatalog = versionCatalogParseResults.singleOrNull()?.versionCatalog,
-            selfUpdateInfo = updatedVersionsResult.selfUpdateInfo
+            selfUpdateInfo = updatedVersionsResult.selfUpdateInfo,
+            versionCatalogInfo = versionCatalogParseResults.singleOrNull()?.info
         )
     }
 
