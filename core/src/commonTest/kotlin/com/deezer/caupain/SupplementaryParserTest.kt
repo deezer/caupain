@@ -76,7 +76,7 @@ class SupplementaryParserTest {
                                 valueText = "\"4.13.2\""
                             ),
                             "kotlin" to VersionCatalogInfo.VersionPosition(
-                                startPoint = Point(1, 9),
+                                startPoint = Point(2, 9),
                                 nbLines = 1,
                                 valueText = "\"2.1.20\""
                             ),
