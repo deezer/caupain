@@ -60,7 +60,7 @@ class DependencyUpdatePluginTest {
     val mockWebserverRule = MockWebServerRule()
 
     @TestParameter(valuesProvider = GradleVersionProvider::class)
-    private lateinit var versions: Versions
+    private lateinit var gradleVersion: String
 
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
@@ -72,7 +72,7 @@ class DependencyUpdatePluginTest {
         unzipProject()
         // Create version catalog file
         File(tempFolder.root, "gradle/libs.versions.toml").writeText(
-            createVersionCatalogFile(agpVersion = versions.agp)
+            createVersionCatalogFile()
         )
         // Create output files
         htmlOutputFile = tempFolder.newFile("output.html")
@@ -262,9 +262,9 @@ class DependencyUpdatePluginTest {
     include(":app")
     """.trimIndent()
 
-    private fun createVersionCatalogFile(agpVersion: String) = """
+    private fun createVersionCatalogFile() = """
     [versions]
-    agp = "$agpVersion"
+    agp = "8.9.1"
     kotlin = "2.0.21"
     coreKtx = "1.16.0"
     activityKtx = "1.10.1"
@@ -303,21 +303,21 @@ class DependencyUpdatePluginTest {
                 "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
             )
             .withPluginClasspath()
-            .withGradleVersion(versions.gradle)
+            .withGradleVersion(gradleVersion)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
-        assertContains(result.output, expectedConsoleResult(versions.gradle))
+        assertContains(result.output, expectedConsoleResult(gradleVersion))
         assertContains(result.output, "Infos size : 2")
         assertEquals(
-            expected = expectedHtmlResult(versions.gradle),
+            expected = expectedHtmlResult(gradleVersion),
             actual = htmlOutputFile.readText().trim()
         )
         assertEquals(
-            expected = expectedMarkdownResult(versions.gradle),
+            expected = expectedMarkdownResult(gradleVersion),
             actual = markdownOutputFile.readText().trim()
         )
         assertEquals(
-            expected = expectedJsonResult(versions.gradle),
+            expected = expectedJsonResult(gradleVersion),
             actual = jsonOutputFile.readText().trim()
         )
         assertEquals(10, mockWebserverRule.server.requestCount)
@@ -331,7 +331,7 @@ class DependencyUpdatePluginTest {
             .withProjectDir(tempFolder.root)
             .withArguments(":app:assembleDebug", "--stacktrace", "--refresh-dependencies")
             .withPluginClasspath()
-            .withGradleVersion(versions.gradle)
+            .withGradleVersion(gradleVersion)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":app:assembleDebug")?.outcome)
     }
@@ -356,7 +356,7 @@ class DependencyUpdatePluginTest {
                 "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
             )
             .withPluginClasspath()
-            .withGradleVersion(versions.gradle)
+            .withGradleVersion(gradleVersion)
             .forwardStdError(errorOutput)
             .build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
@@ -366,17 +366,11 @@ class DependencyUpdatePluginTest {
         )
     }
 
-    private data class Versions(
-        val gradle: String,
-        val agp: String
-    )
-
     private class GradleVersionProvider : TestParameterValuesProvider() {
-        override fun provideValues(context: Context?): List<Versions> = listOf(
-            Versions(GradleVersion.current().version, "8.9.1"),
-            Versions("8.14.2", "8.9.1"),
-            Versions("8.12.1", "8.9.1"),
-        )
+        override fun provideValues(context: Context?): List<String> = setOf(
+            GradleVersion.current().version,
+            GradleVersion.version("9.0.0").version
+        ).toList()
     }
 }
 

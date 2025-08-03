@@ -11,17 +11,11 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    versionCatalogs {
-        create("pluginLibs") {
-            from(files("gradle/pluginLibs.versions.toml"))
-        }
-    }
     repositories {
         mavenCentral()
     }
 }
 
 include(":core")
-include(":core-compat")
 include(":cli")
 include(":gradle-plugin")

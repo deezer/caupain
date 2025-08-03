@@ -35,6 +35,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.Provider
+import org.gradle.util.GradleVersion
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
@@ -47,6 +48,9 @@ open class DependencyUpdatePlugin : Plugin<Project> {
     override fun apply(target: Project) {
         require(target == target.rootProject) {
             "Plugin must be applied to the root project"
+        }
+        require(GradleVersion.current() >= GradleVersion.version("9.0")) {
+            "Caupain plugin requires Gradle 9.0 or higher"
         }
         val ext = target.extensions.create<DependenciesUpdateExtension>("caupain")
         ext.initDefaultRepositories(target)
