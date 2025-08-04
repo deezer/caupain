@@ -67,7 +67,6 @@ private data class ConfigurationImpl(
     override val onlyCheckStaticVersions: Boolean? = null,
     override val gradleStabilityLevel: GradleStabilityLevel? = null,
     override val checkIgnored: Boolean? = null,
-    override val replace: Boolean = false
 ) : Configuration {
 
     override fun validate(logger: Logger) {

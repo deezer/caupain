@@ -25,6 +25,7 @@
 package com.deezer.caupain.cli
 
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
@@ -33,14 +34,18 @@ import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.github.ajalt.clikt.command.test
+import dev.mokkery.MockMode
 import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
+import dev.mokkery.verify.VerifyMode
+import dev.mokkery.verifySuspend
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -55,11 +60,13 @@ import kotlin.test.assertEquals
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class DependencyUpdateCheckerCliTest {
+class CaupainCLITest {
 
     private val mockProgressFlow = MutableStateFlow<DependencyUpdateChecker.Progress?>(null)
 
     private lateinit var checker: DependencyUpdateChecker
+
+    private lateinit var replacer: DependencyVersionsReplacer
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
@@ -85,6 +92,7 @@ class DependencyUpdateCheckerCliTest {
         checker = mock {
             every { progress } returns mockProgressFlow
         }
+        replacer = mock(MockMode.autoUnit)
         val propertiesPath = "gradle-wrapper.properties".toPath()
         fileSystem.write(propertiesPath) { writeUtf8(GRADLE_WRAPPER_PROPERTIES) }
         parsedConfiguration = mock {
@@ -93,6 +101,8 @@ class DependencyUpdateCheckerCliTest {
             every { outputPath } returns null
             every { validate(any()) } returns Unit
             every { showVersionReferences } returns true
+            every { versionCatalogPaths } returns null
+            every { versionCatalogPath } returns null
         }
     }
 
@@ -104,7 +114,7 @@ class DependencyUpdateCheckerCliTest {
 
     private inline fun createCli(
         crossinline checkConfiguration: (Configuration) -> Unit = {},
-    ) = DependencyUpdateCheckerCli(
+    ) = CaupainCLI(
         fileSystem = fileSystem,
         defaultDispatcher = testDispatcher,
         ioDispatcher = testDispatcher,
@@ -113,11 +123,12 @@ class DependencyUpdateCheckerCliTest {
             assertEquals(configurationPath, path)
             parsedConfiguration
         },
-        createUpdateChecker = { config, gradleVersion, _, _, _ ->
+        createUpdateChecker = { config, gradleVersion, _, _, _, _ ->
             assertEquals("8.11", gradleVersion)
             checkConfiguration(config)
             checker
         },
+        createVersionReplacer = { _, _, _ -> replacer }
     )
 
     @Test
@@ -170,7 +181,8 @@ class DependencyUpdateCheckerCliTest {
                 currentVersion = "1.0.0",
                 updatedVersion = "1.1.0",
                 sources = SelfUpdateInfo.Source.entries
-            )
+            ),
+            versionCatalogInfo = VersionCatalogInfo()
         )
         everySuspend { checker.checkForUpdates() } returns output
         val baseConfiguration = Configuration(
@@ -182,6 +194,8 @@ class DependencyUpdateCheckerCliTest {
         )
         val mergedConfiguration = mock<Configuration> {
             every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
+            every { versionCatalogPaths } returns listOf(this@CaupainCLITest.versionCatalogPath)
+            every { onlyCheckStaticVersions } returns true
         }
         every { parsedConfiguration.toConfiguration(baseConfiguration) } returns mergedConfiguration
         val cli = createCli { conf ->
@@ -206,18 +220,24 @@ class DependencyUpdateCheckerCliTest {
                 outputPath.toString(),
                 "--cache-dir",
                 cacheDir.toString(),
-                "-q"
+                "-q",
+                "--in-place",
             )
         )
         assertEquals(0, result.statusCode)
         assertEquals("", result.output)
         assertEquals(EXPECTED_RESULT, fileSystem.read(outputPath) { readUtf8().trim() })
+        verifySuspend(VerifyMode.exactly(1)) {
+            replacer.replaceVersions(versionCatalogPath, output)
+        }
     }
 
     @Test
     fun testListPolicies() = runTest(testDispatcher) {
         val mergedConfiguration = mock<Configuration> {
             every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
+            every { versionCatalogPaths } returns listOf(this@CaupainCLITest.versionCatalogPath)
+            every { onlyCheckStaticVersions } returns true
         }
         every { parsedConfiguration.toConfiguration(any()) } returns mergedConfiguration
         val policies = listOf(
@@ -242,12 +262,14 @@ class DependencyUpdateCheckerCliTest {
             )
         )
         assertEquals(0, result.statusCode)
-        assertEquals("""
+        assertEquals(
+            """
             Available policies:
             - <no-policy>: Built-in default to update to the latest version available
             - test1
             - test2: Test policy 2
-        """.trimIndent(), result.output.trim())
+        """.trimIndent(), result.output.trim()
+        )
     }
 }
 

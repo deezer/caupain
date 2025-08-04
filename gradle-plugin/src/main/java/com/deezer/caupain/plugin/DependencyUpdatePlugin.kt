@@ -56,7 +56,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         ext.initDefaultRepositories(target)
         val versionCatalogFilesProvider = ext.versionCatalogFilesProvider(target)
 
-        target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
+        val checkTaskProvider = target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
             description = "Check for dependency updates"
             versionCatalogFiles.convention(versionCatalogFilesProvider)
@@ -80,12 +80,15 @@ open class DependencyUpdatePlugin : Plugin<Project> {
                     files.firstNotNullOf { it as? RegularFile }
                 }
             )
-            excludedKeys.convention(ext.excludedKeys)
-            excludedLibraries.convention(ext.excludedLibraries)
-            excludedPluginIds.convention(ext.excludedPluginIds)
-            repositories.convention(ext.repositories.libraries)
-            pluginRepositories.convention(ext.repositories.plugins)
-            useCache.convention(ext.useCache)
+            serializedUpdates.fileProvider(
+                checkTaskProvider.map { checkTask ->
+                    checkTask
+                        .outputs
+                        .files
+                        .filter { it.name == DependenciesUpdateTask.SERIALIZED_UPDATES_FILE_NAME }
+                        .singleFile
+                }
+            )
         }
     }
 

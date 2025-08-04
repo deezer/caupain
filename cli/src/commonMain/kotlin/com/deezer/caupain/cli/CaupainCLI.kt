@@ -90,20 +90,28 @@ import okio.SYSTEM
 import kotlin.time.TimeSource
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
-class DependencyUpdateCheckerCli(
+class CaupainCLI(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
     },
-    private val createUpdateChecker: (Configuration, String?, FileSystem, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, logger, selfUpdateResolver ->
+    private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
             currentGradleVersion = gradleVersion,
             fileSystem = fs,
+            ioDispatcher = ioDispatcher,
             logger = logger,
             selfUpdateResolver = selfUpdateResolver
+        )
+    },
+    private val createVersionReplacer: (FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { filesystem, ioDispatcher, defaultDispatcher ->
+        DependencyVersionsReplacer(
+            fileSystem = filesystem,
+            ioDispatcher = ioDispatcher,
+            defaultDispatcher = defaultDispatcher
         )
     }
 ) : SuspendingCliktCommand(name = "caupain") {
@@ -237,7 +245,6 @@ class DependencyUpdateCheckerCli(
         val configuration = loadConfiguration()
         configuration?.validate(logger)
         val finalConfiguration = createConfiguration(configuration)
-        val replace = configuration?.replace == true || this.replace
         if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
             echo("Policy plugins are not supported on this platform", err = true)
         } else if (
@@ -252,6 +259,7 @@ class DependencyUpdateCheckerCli(
                 finalConfiguration,
                 loadGradleVersion(configuration),
                 fileSystem,
+                ioDispatcher,
                 logger,
                 CLISelfUpdateResolver(ioDispatcher, fileSystem)
             )
@@ -310,14 +318,11 @@ class DependencyUpdateCheckerCli(
         }
 
         if (replace) {
-            DependencyVersionsReplacer(
-                fileSystem = fileSystem,
-                ioDispatcher = ioDispatcher,
-                defaultDispatcher = defaultDispatcher
-            ).replaceVersions(
-                versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
-                updateResult = updates
-            )
+            createVersionReplacer(fileSystem, ioDispatcher, defaultDispatcher)
+                .replaceVersions(
+                    versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
+                    updateResult = updates
+                )
         }
 
         if (logLevel > LogLevel.DEFAULT) {
@@ -503,7 +508,7 @@ class DependencyUpdateCheckerCli(
         printError = true
     )
 
-    companion object {
+    companion object Companion {
         private const val CONSOLE_TYPE = "console"
         private const val HTML_TYPE = "html"
         private const val MARKDOWN_TYPE = "markdown"

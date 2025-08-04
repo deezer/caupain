@@ -29,12 +29,11 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
-import com.deezer.caupain.model.versionCatalog.Version
-import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.FileSystem
@@ -44,14 +43,179 @@ import okio.buffer
 import okio.use
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import com.deezer.caupain.model.versionCatalog.Version.Reference as VersionCatalogVersionReference
+import com.deezer.caupain.model.versionCatalog.Version.Resolved as ResolvedVersionCatalogVersion
+import com.deezer.caupain.model.versionCatalog.Version.Simple as SimpleVersionCatalogVersion
 
+/**
+ * Interface for replacing dependency versions inline in a Gradle version catalog. This takes information
+ * produces by the [DependencyUpdateChecker], and uses it to find which part of the version catalog
+ * should be replaced with the new version.
+ */
 public interface DependencyVersionsReplacer {
+
+    /**
+     * Replaces the versions in the given version catalog file with the updated versions from the
+     * provided [DependenciesUpdateResult]. The version catalog file is expected to be in the format
+     * used by Gradle version catalogs (e.g., `libs.versions.toml`
+     */
     public suspend fun replaceVersions(
         versionCatalogPath: Path,
         updateResult: DependenciesUpdateResult,
+    ) {
+        replaceVersions(
+            versionCatalogPath = versionCatalogPath,
+            input = Input(updateResult)
+        )
+    }
+
+    /**
+     * Replaces the versions in the given version catalog file with the updated versions from the
+     * provided [Input]. The version catalog file is expected to be in the format used by
+     * Gradle version catalogs (e.g., `libs.versions.toml`).
+     */
+    public suspend fun replaceVersions(
+        versionCatalogPath: Path,
+        input: Input,
     )
+
+    /**
+     * Version replacement input, which contains a mix of info from dependencies updates and original
+     * version catalog.
+     */
+    @Serializable
+    public class Input(
+        public val originalLibraryVersions: Map<String, Version>,
+        public val updatedLibraryVersions: Map<String, GradleDependencyVersion.Static>,
+        public val originalPluginVersions: Map<String, Version>,
+        public val updatedPluginsVersions: Map<String, GradleDependencyVersion.Static>,
+        public val positions: VersionCatalogInfo.Positions,
+        public val versions: Map<String, SimpleVersionCatalogVersion>
+    ) {
+        public constructor(result: DependenciesUpdateResult) : this(
+            originalLibraryVersions = result
+                .versionCatalog
+                ?.libraries
+                ?.mapValuesNotNull { Version.from(it) }
+                .orEmpty(),
+            updatedLibraryVersions = result
+                .updateInfos[UpdateInfo.Type.LIBRARY]
+                ?.associate { it.dependency to it.updatedVersion }
+                .orEmpty(),
+            originalPluginVersions = result
+                .versionCatalog
+                ?.plugins
+                ?.mapValuesNotNull { Version.from(it) }
+                .orEmpty(),
+            updatedPluginsVersions = result
+                .updateInfos[UpdateInfo.Type.PLUGIN]
+                ?.associate { it.dependency to it.updatedVersion }
+                .orEmpty(),
+            versions = result
+                .versionCatalog
+                ?.versions
+                ?.filterValueIsInstance<String, ResolvedVersionCatalogVersion, SimpleVersionCatalogVersion>()
+                .orEmpty(),
+            positions = result.versionCatalogInfo?.positions ?: VersionCatalogInfo.Positions()
+        )
+
+        /**
+         * Version catalog version.
+         */
+        @Serializable
+        public sealed class Version {
+
+            /**
+             * Version reference
+             */
+            @Serializable
+            public class Reference(public val ref: String) : Version() {
+                override fun equals(other: Any?): Boolean {
+                    if (this === other) return true
+                    if (other == null || this::class != other::class) return false
+
+                    other as Reference
+
+                    return ref == other.ref
+                }
+
+                override fun hashCode(): Int {
+                    return ref.hashCode()
+                }
+
+                override fun toString(): String {
+                    return "Reference(ref='$ref')"
+                }
+            }
+
+            /**
+             * Resolved version.
+             */
+            @Serializable
+            public class Resolved(public val versionText: String) : Version() {
+                override fun equals(other: Any?): Boolean {
+                    if (this === other) return true
+                    if (other == null || this::class != other::class) return false
+
+                    other as Resolved
+
+                    return versionText == other.versionText
+                }
+
+                override fun hashCode(): Int {
+                    return versionText.hashCode()
+                }
+
+                override fun toString(): String {
+                    return "Resolved(versionText='$versionText')"
+                }
+            }
+
+            internal companion object {
+                fun from(dependency: Dependency) = when (val version = dependency.version) {
+                    null -> null
+                    is VersionCatalogVersionReference -> Reference(version.ref)
+                    is SimpleVersionCatalogVersion -> Resolved(version.toString())
+                    else -> null
+                }
+            }
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Input
+
+            if (originalLibraryVersions != other.originalLibraryVersions) return false
+            if (updatedLibraryVersions != other.updatedLibraryVersions) return false
+            if (originalPluginVersions != other.originalPluginVersions) return false
+            if (updatedPluginsVersions != other.updatedPluginsVersions) return false
+            if (positions != other.positions) return false
+            if (versions != other.versions) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = originalLibraryVersions.hashCode()
+            result = 31 * result + updatedLibraryVersions.hashCode()
+            result = 31 * result + originalPluginVersions.hashCode()
+            result = 31 * result + updatedPluginsVersions.hashCode()
+            result = 31 * result + positions.hashCode()
+            result = 31 * result + versions.hashCode()
+            return result
+        }
+
+        override fun toString(): String {
+            return "Input(originalLibraryVersions=$originalLibraryVersions, updatedLibraryVersions=$updatedLibraryVersions, originalPluginVersions=$originalPluginVersions, updatedPluginsVersions=$updatedPluginsVersions, positions=$positions, versions=$versions)"
+        }
+    }
 }
 
+/**
+ * Creates a new instance of [DependencyVersionsReplacer].
+ */
 public fun DependencyVersionsReplacer(
     fileSystem: FileSystem = FileSystem.SYSTEM,
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -70,24 +234,13 @@ internal class DefaultDependencyVersionsReplacer(
 ) : DependencyVersionsReplacer {
     override suspend fun replaceVersions(
         versionCatalogPath: Path,
-        updateResult: DependenciesUpdateResult,
+        input: DependencyVersionsReplacer.Input,
     ) {
         // First, let's compute the replacements
         val replacements = withContext(defaultDispatcher) {
-            computeReplacements(
-                updatedLibraryVersions = updateResult
-                    .updateInfos[UpdateInfo.Type.LIBRARY]
-                    ?.associate { it.dependency to it.updatedVersion }
-                    .orEmpty(),
-                updatedPluginsVersions = updateResult
-                    .updateInfos[UpdateInfo.Type.PLUGIN]
-                    ?.associate { it.dependency to it.updatedVersion }
-                    .orEmpty(),
-                versionCatalog = updateResult.versionCatalog ?: return@withContext null,
-                positions = updateResult.versionCatalogInfo?.positions ?: return@withContext null,
-            )
+            computeReplacements(input)
         }
-        if (replacements.isNullOrEmpty()) return
+        if (replacements.isEmpty()) return
         withContext(ioDispatcher) {
             // Now, let's read the file and apply the replacements
             val tmpFileName = buildString {
@@ -104,50 +257,44 @@ internal class DefaultDependencyVersionsReplacer(
         }
     }
 
-    private fun computeReplacements(
-        updatedLibraryVersions: Map<String, GradleDependencyVersion.Static>,
-        updatedPluginsVersions: Map<String, GradleDependencyVersion.Static>,
-        versionCatalog: VersionCatalog,
-        positions: VersionCatalogInfo.Positions,
-    ): List<Replacement> = buildMap {
-        for ((key, updatedVersion) in updatedLibraryVersions) {
-            addReplacementIfNecessary(
-                type = Type.LIBRARIES,
-                key = key,
-                updatedVersion = updatedVersion,
-                dependency = versionCatalog.libraries[key] ?: continue,
-                depPositions = positions.libraryVersionPositions,
-                versionRefPositions = positions.versionRefsPositions,
-                versionRefVersions = versionCatalog.versions
-            )
-        }
-        for ((key, updatedVersion) in updatedPluginsVersions) {
-            addReplacementIfNecessary(
-                type = Type.PLUGINS,
-                key = key,
-                updatedVersion = updatedVersion,
-                dependency = versionCatalog.plugins[key] ?: continue,
-                depPositions = positions.pluginVersionPositions,
-                versionRefPositions = positions.versionRefsPositions,
-                versionRefVersions = versionCatalog.versions
-            )
-        }
-    }.values.sorted()
+    private fun computeReplacements(input: DependencyVersionsReplacer.Input): List<Replacement> =
+        buildMap {
+            for ((key, updatedVersion) in input.updatedLibraryVersions) {
+                addReplacementIfNecessary(
+                    type = Type.LIBRARIES,
+                    key = key,
+                    updatedVersion = updatedVersion,
+                    definedVersion = input.originalLibraryVersions[key] ?: continue,
+                    depPositions = input.positions.libraryVersionPositions,
+                    versionRefPositions = input.positions.versionRefsPositions,
+                    versionRefVersions = input.versions
+                )
+            }
+            for ((key, updatedVersion) in input.updatedPluginsVersions) {
+                addReplacementIfNecessary(
+                    type = Type.PLUGINS,
+                    key = key,
+                    updatedVersion = updatedVersion,
+                    definedVersion = input.originalPluginVersions[key] ?: continue,
+                    depPositions = input.positions.pluginVersionPositions,
+                    versionRefPositions = input.positions.versionRefsPositions,
+                    versionRefVersions = input.versions
+                )
+            }
+        }.values.sorted()
 
     private fun MutableMap<ReplacementKey, Replacement>.addReplacementIfNecessary(
         type: Type,
         key: String,
         updatedVersion: GradleDependencyVersion.Static,
-        dependency: Dependency,
+        definedVersion: DependencyVersionsReplacer.Input.Version,
         depPositions: Map<String, VersionCatalogInfo.VersionPosition>,
         versionRefPositions: Map<String, VersionCatalogInfo.VersionPosition>,
-        versionRefVersions: Map<String, Version.Resolved>,
+        versionRefVersions: Map<String, SimpleVersionCatalogVersion>,
     ) {
-        when (val version = dependency.version) {
-            null -> return
-
-            is Version.Reference -> {
-                val versionKey = version.ref
+        when (definedVersion) {
+            is DependencyVersionsReplacer.Input.Version.Reference -> {
+                val versionKey = definedVersion.ref
                 val position = versionRefPositions[versionKey] ?: return
                 val currentVersionText = versionRefVersions[versionKey]?.toString()
                     ?: return
@@ -162,9 +309,9 @@ internal class DefaultDependencyVersionsReplacer(
                 )
             }
 
-            is Version.Resolved -> {
+            is DependencyVersionsReplacer.Input.Version.Resolved -> {
                 val position = depPositions[key] ?: return
-                val currentVersionText = dependency.version.toString()
+                val currentVersionText = definedVersion.versionText
                 val updatedVersionText = updatedVersion.toString()
                 put(
                     ReplacementKey(type, key),
@@ -294,5 +441,21 @@ internal class DefaultDependencyVersionsReplacer(
 
         @Suppress("NOTHING_TO_INLINE")
         private inline fun <T> Iterator<T>.nextOrNull(): T? = if (hasNext()) next() else null
+    }
+}
+
+private inline fun <K, V, R : Any> Map<K, V>.mapValuesNotNull(transform: (V) -> R?): Map<K, R> {
+    return buildMap {
+        for ((key, value) in this@mapValuesNotNull) {
+            transform(value)?.let { put(key, it) }
+        }
+    }
+}
+
+private inline fun <K, V, reified T : V> Map<K, V>.filterValueIsInstance(): Map<K, T> {
+    return buildMap {
+        for ((key, value) in this@filterValueIsInstance) {
+            if (value is T) put(key, value)
+        }
     }
 }

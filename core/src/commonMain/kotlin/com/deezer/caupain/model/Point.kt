@@ -24,8 +24,16 @@
 
 package com.deezer.caupain.model
 
+import kotlinx.serialization.Serializable
 import org.antlr.v4.kotlinruntime.ast.Point as ANTLRPoint
 
+/**
+ * Represents a point in a text document, defined by its line and column.
+ *
+ * @property line The line number (0-based).
+ * @property column The column number (0-based).
+ */
+@Serializable
 public class Point(
     public val line: Int,
     public val column: Int

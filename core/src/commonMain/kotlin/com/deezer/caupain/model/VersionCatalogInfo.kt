@@ -25,12 +25,22 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.versionCatalog.Version
+import kotlinx.serialization.Serializable
 import org.antlr.v4.kotlinruntime.ast.Position
 
+/**
+ * Represents additional information about a version catalog.
+ *
+ * @property ignores The elements to ignore in the version catalog.
+ * @property positions The positions of various elements in the version catalog.
+ */
 public class VersionCatalogInfo(
     public val ignores: Ignores = Ignores(),
     public val positions: Positions = Positions()
 ) {
+    /**
+     * Represents the elements to ignore in the version catalog.
+     */
     public class Ignores(
         public val refs: Set<String> = emptySet(),
         public val libraryKeys: Set<String> = emptySet(),
@@ -61,6 +71,10 @@ public class VersionCatalogInfo(
         }
     }
 
+    /**
+     * Represents the positions of various elements in the version catalog,
+     */
+    @Serializable
     public class Positions(
         public val versionRefsPositions: Map<String, VersionPosition> = emptyMap(),
         public val libraryVersionPositions: Map<String, VersionPosition> = emptyMap(),
@@ -91,6 +105,11 @@ public class VersionCatalogInfo(
         }
     }
 
+    /**
+     * Represents a position in the version catalog, including the starting point,
+     * the number of lines spanned, and the text value at that position.
+     */
+    @Serializable
     public class VersionPosition(
         public val startPoint: Point,
         public val nbLines: Int,
