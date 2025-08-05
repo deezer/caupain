@@ -24,8 +24,8 @@ there's only one source of truth, which is the [version catalog](https://docs.gr
 and it only handles Maven repositories.
 
 By not plugging itself into Gradle, it avoids the long runtime that comes with having to wait for Gradle
-resolving the dependencies. It also doesn't force you to do anything, nor changes anything by itself: 
-it only tells you what the new versions are and where to find info, and lets you deal with the info.
+resolving the dependencies. It also doesn't force you to do anything, nor changes anything by itself 
+if you don't want it to: it only tells you what the new versions are and where to find info, and lets you deal with the info.
 
 Basically, if you want a tool that's fast and simple to generate an update report for you, then Caupain 
 will be your best buddy !
