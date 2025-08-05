@@ -29,12 +29,12 @@ import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
-import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
@@ -209,6 +209,7 @@ class DependencyUpdateCheckerTest {
                 ),
                 ignoredUpdateInfos = emptyList(),
                 versionCatalog = null,
+                versionCatalogInfo = null,
                 selfUpdateInfo = SELF_UPDATE_INFO
             ),
             actual = checker.checkForUpdates()
@@ -294,7 +295,9 @@ class DependencyUpdateCheckerTest {
             override suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult =
                 VersionCatalogParseResult(
                     versionCatalog = VERSION_CATALOGS[versionCatalogPath]!!,
-                    ignores = Ignores(libraryKeys = setOf("groovy-other"))
+                    info = VersionCatalogInfo(
+                        ignores = VersionCatalogInfo.Ignores(libraryKeys = setOf("groovy-other"))
+                    ),
                 )
         }
 

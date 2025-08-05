@@ -28,6 +28,7 @@ import ca.gosyer.appdirs.AppDirs
 import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.model.GradleWrapperProperties
@@ -89,20 +90,28 @@ import okio.SYSTEM
 import kotlin.time.TimeSource
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
-class DependencyUpdateCheckerCli(
+class CaupainCLI(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
     },
-    private val createUpdateChecker: (Configuration, String?, FileSystem, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, logger, selfUpdateResolver ->
+    private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
             currentGradleVersion = gradleVersion,
             fileSystem = fs,
+            ioDispatcher = ioDispatcher,
             logger = logger,
             selfUpdateResolver = selfUpdateResolver
+        )
+    },
+    private val createVersionReplacer: (FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { filesystem, ioDispatcher, defaultDispatcher ->
+        DependencyVersionsReplacer(
+            fileSystem = filesystem,
+            ioDispatcher = ioDispatcher,
+            defaultDispatcher = defaultDispatcher
         )
     }
 ) : SuspendingCliktCommand(name = "caupain") {
@@ -137,7 +146,11 @@ class DependencyUpdateCheckerCli(
         hidden = !CAN_USE_PLUGINS
     ).path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
-    private val policy by option("-p", "--policy", help = "Update policy (default: update to the latest version available)")
+    private val policy by option(
+        "-p",
+        "--policy",
+        help = "Update policy (default: update to the latest version available)"
+    )
 
     private val listPolicies by option("--list-policies", help = "List available policies")
         .flag()
@@ -171,6 +184,12 @@ class DependencyUpdateCheckerCli(
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
     private val showVersionReferences by option(help = "Show versions references update summary in the report")
+        .flag()
+
+    private val replace by option(
+        "--in-place",
+        help = "Replace versions in version catalog in place"
+    )
         .flag()
 
     private val cacheDir by option(help = "Cache directory. This is not used if --no-cache is set")
@@ -216,6 +235,7 @@ class DependencyUpdateCheckerCli(
         versionOption(BuildKonfig.VERSION)
     }
 
+    @Suppress("CyclomaticComplexMethod")
     override suspend fun run() {
         val start = timesource.markNow()
 
@@ -227,6 +247,11 @@ class DependencyUpdateCheckerCli(
         val finalConfiguration = createConfiguration(configuration)
         if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
             echo("Policy plugins are not supported on this platform", err = true)
+        } else if (
+            replace
+            && (finalConfiguration.versionCatalogPaths.count() > 1 || !finalConfiguration.onlyCheckStaticVersions)
+        ) {
+            throw ReplaceNotAvailableException()
         }
 
         val updateChecker =
@@ -234,6 +259,7 @@ class DependencyUpdateCheckerCli(
                 finalConfiguration,
                 loadGradleVersion(configuration),
                 fileSystem,
+                ioDispatcher,
                 logger,
                 CLISelfUpdateResolver(ioDispatcher, fileSystem)
             )
@@ -266,12 +292,14 @@ class DependencyUpdateCheckerCli(
             echo(e.message, err = true)
             throw Abort()
         }
+
         val formatter = outputFormatter(configuration)
         if (formatter is ConsoleFormatter) {
             // Clear progress early to avoid sending progress to console while formatting
             progress?.clear()
             backgroundScope.cancel()
         }
+
         formatter.format(
             Input(
                 updateResult = updates,
@@ -279,13 +307,24 @@ class DependencyUpdateCheckerCli(
                     ?: showVersionReferences
             )
         )
+
         if (formatter !is ConsoleFormatter) {
             progress?.clear()
             backgroundScope.cancel()
         }
+
         if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
             echo("Report generated at ${formatter.outputPath}")
         }
+
+        if (replace) {
+            createVersionReplacer(fileSystem, ioDispatcher, defaultDispatcher)
+                .replaceVersions(
+                    versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
+                    updateResult = updates
+                )
+        }
+
         if (logLevel > LogLevel.DEFAULT) {
             start.elapsedNow().toComponents { minutes, seconds, nanoseconds ->
                 val milliseconds = nanoseconds / 1_000_000
@@ -463,7 +502,13 @@ class DependencyUpdateCheckerCli(
         QUIET, DEFAULT, VERBOSE, DEBUG
     }
 
-    companion object {
+    private class ReplaceNotAvailableException : PrintMessage(
+        statusCode = 1,
+        message = "Replace option cannot be used if multiple version catalogs are provided, or if checking non-static versions",
+        printError = true
+    )
+
+    companion object Companion {
         private const val CONSOLE_TYPE = "console"
         private const val HTML_TYPE = "html"
         private const val MARKDOWN_TYPE = "markdown"

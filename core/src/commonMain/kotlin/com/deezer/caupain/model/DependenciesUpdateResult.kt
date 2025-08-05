@@ -35,6 +35,8 @@ import com.deezer.caupain.model.versionCatalog.VersionCatalog
  * @property selfUpdateInfo Information about the update to Caupain itself.
  * @property versionCatalog The parsed version catalog. Only available if there was only one version
  * catalog file specified.
+ * @property versionCatalogInfo Information about the version catalog, such as ignored entries and
+ * versions text positions. Only available if there was only one version catalog file specified.
  */
 public class DependenciesUpdateResult(
     public val gradleUpdateInfo: GradleUpdateInfo?,
@@ -42,6 +44,7 @@ public class DependenciesUpdateResult(
     public val ignoredUpdateInfos: List<UpdateInfo>,
     public val selfUpdateInfo: SelfUpdateInfo?,
     public val versionCatalog: VersionCatalog?,
+    public val versionCatalogInfo: VersionCatalogInfo?
 ) {
     /**
      * Returns true if there are no updates available.
@@ -62,6 +65,7 @@ public class DependenciesUpdateResult(
         if (ignoredUpdateInfos != other.ignoredUpdateInfos) return false
         if (selfUpdateInfo != other.selfUpdateInfo) return false
         if (versionCatalog != other.versionCatalog) return false
+        if (versionCatalogInfo != other.versionCatalogInfo) return false
 
         return true
     }
@@ -72,10 +76,11 @@ public class DependenciesUpdateResult(
         result = 31 * result + ignoredUpdateInfos.hashCode()
         result = 31 * result + (selfUpdateInfo?.hashCode() ?: 0)
         result = 31 * result + (versionCatalog?.hashCode() ?: 0)
+        result = 31 * result + (versionCatalogInfo?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, ignoredUpdateInfos=$ignoredUpdateInfos, selfUpdateInfo=$selfUpdateInfo, versionCatalog=$versionCatalog)"
+        return "DependenciesUpdateResult(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, ignoredUpdateInfos=$ignoredUpdateInfos, selfUpdateInfo=$selfUpdateInfo, versionCatalog=$versionCatalog, versionCatalogInfo=$versionCatalogInfo)"
     }
 }

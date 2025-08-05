@@ -77,6 +77,7 @@ public sealed interface Version {
     /**
      * Represents a simple version.
      */
+    @Serializable
     public class Simple(public val value: GradleDependencyVersion) : Resolved {
 
         override val isStatic: Boolean

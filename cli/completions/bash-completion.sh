@@ -101,6 +101,11 @@ _caupain() {
           in_param=''
           continue
           ;;
+        --in-place)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
         --cache-dir)
           __skip_opt_eq
           (( i = i + 1 ))
@@ -154,7 +159,7 @@ _caupain() {
   done
   local word="${COMP_WORDS[$COMP_CWORD]}"
   if [[ "${word}" =~ ^[-] ]]; then
-    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --show-version-references --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
+    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --show-version-references --in-place --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
     return
   fi
 
@@ -192,6 +197,8 @@ _caupain() {
        __complete_files "${word}"
       ;;
     "--show-version-references")
+      ;;
+    "--in-place")
       ;;
     "--cache-dir")
        __complete_files "${word}"

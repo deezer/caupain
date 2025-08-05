@@ -42,6 +42,103 @@ public final class com/deezer/caupain/DependencyUpdateCheckerKt {
 	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
 }
 
+public abstract interface class com/deezer/caupain/DependencyVersionsReplacer {
+	public abstract fun replaceVersions (Lokio/Path;Lcom/deezer/caupain/DependencyVersionsReplacer$Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun replaceVersions (Lokio/Path;Lcom/deezer/caupain/model/DependenciesUpdateResult;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$DefaultImpls {
+	public static fun replaceVersions (Lcom/deezer/caupain/DependencyVersionsReplacer;Lokio/Path;Lcom/deezer/caupain/model/DependenciesUpdateResult;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$Input {
+	public static final field Companion Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Companion;
+	public fun <init> (Lcom/deezer/caupain/model/DependenciesUpdateResult;)V
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;Ljava/util/Map;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getOriginalLibraryVersions ()Ljava/util/Map;
+	public final fun getOriginalPluginVersions ()Ljava/util/Map;
+	public final fun getPositions ()Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;
+	public final fun getUpdatedLibraryVersions ()Ljava/util/Map;
+	public final fun getUpdatedPluginsVersions ()Ljava/util/Map;
+	public final fun getVersions ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/DependencyVersionsReplacer$Input$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/DependencyVersionsReplacer$Input$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/DependencyVersionsReplacer$Input;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/DependencyVersionsReplacer$Input;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public abstract class com/deezer/caupain/DependencyVersionsReplacer$Input$Version {
+	public synthetic fun <init> (ILkotlinx/serialization/internal/SerializationConstructorMarker;)V
+	public static final synthetic fun write$Self (Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version;Lkotlinx/serialization/encoding/CompositeEncoder;Lkotlinx/serialization/descriptors/SerialDescriptor;)V
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference : com/deezer/caupain/DependencyVersionsReplacer$Input$Version {
+	public static final field Companion Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRef ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$Reference$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved : com/deezer/caupain/DependencyVersionsReplacer$Input$Version {
+	public static final field Companion Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved$Companion;
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getVersionText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$Resolved$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/DependencyVersionsReplacerKt {
+	public static final fun DependencyVersionsReplacer (Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/deezer/caupain/DependencyVersionsReplacer;
+	public static synthetic fun DependencyVersionsReplacer$default (Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyVersionsReplacer;
+}
+
 public final class com/deezer/caupain/NoVersionCatalogException : com/deezer/caupain/CaupainException {
 	public fun <init> (Ljava/lang/Iterable;)V
 }
@@ -240,13 +337,14 @@ public final class com/deezer/caupain/model/DefaultRepositories {
 }
 
 public final class com/deezer/caupain/model/DependenciesUpdateResult {
-	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Ljava/util/List;Lcom/deezer/caupain/model/SelfUpdateInfo;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;)V
+	public fun <init> (Lcom/deezer/caupain/model/GradleUpdateInfo;Ljava/util/Map;Ljava/util/List;Lcom/deezer/caupain/model/SelfUpdateInfo;Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;Lcom/deezer/caupain/model/VersionCatalogInfo;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getGradleUpdateInfo ()Lcom/deezer/caupain/model/GradleUpdateInfo;
 	public final fun getIgnoredUpdateInfos ()Ljava/util/List;
 	public final fun getSelfUpdateInfo ()Lcom/deezer/caupain/model/SelfUpdateInfo;
 	public final fun getUpdateInfos ()Ljava/util/Map;
 	public final fun getVersionCatalog ()Lcom/deezer/caupain/model/versionCatalog/VersionCatalog;
+	public final fun getVersionCatalogInfo ()Lcom/deezer/caupain/model/VersionCatalogInfo;
 	public fun hashCode ()I
 	public final fun isEmpty ()Z
 	public fun toString ()Ljava/lang/String;
@@ -497,6 +595,33 @@ public final class com/deezer/caupain/model/PluginExclusion : com/deezer/caupain
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/deezer/caupain/model/Point : java/lang/Comparable {
+	public static final field Companion Lcom/deezer/caupain/model/Point$Companion;
+	public fun <init> (II)V
+	public fun compareTo (Lcom/deezer/caupain/model/Point;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColumn ()I
+	public final fun getLine ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/model/Point$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/Point$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/Point;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/Point;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/Point$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public abstract interface class com/deezer/caupain/model/Policy {
 	public fun getDescription ()Ljava/lang/String;
 	public abstract fun getName ()Ljava/lang/String;
@@ -628,6 +753,83 @@ public final class com/deezer/caupain/model/UpdateInfo$Type$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class com/deezer/caupain/model/VersionCatalogInfo {
+	public fun <init> ()V
+	public fun <init> (Lcom/deezer/caupain/model/VersionCatalogInfo$Ignores;Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;)V
+	public synthetic fun <init> (Lcom/deezer/caupain/model/VersionCatalogInfo$Ignores;Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIgnores ()Lcom/deezer/caupain/model/VersionCatalogInfo$Ignores;
+	public final fun getPositions ()Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/model/VersionCatalogInfo$Ignores {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;)V
+	public synthetic fun <init> (Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLibraryKeys ()Ljava/util/Set;
+	public final fun getPluginKeys ()Ljava/util/Set;
+	public final fun getRefs ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/model/VersionCatalogInfo$Positions {
+	public static final field Companion Lcom/deezer/caupain/model/VersionCatalogInfo$Positions$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLibraryVersionPositions ()Ljava/util/Map;
+	public final fun getPluginVersionPositions ()Ljava/util/Map;
+	public final fun getVersionRefsPositions ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/model/VersionCatalogInfo$Positions$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/VersionCatalogInfo$Positions$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/VersionCatalogInfo$Positions$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/VersionCatalogInfo$VersionPosition {
+	public static final field Companion Lcom/deezer/caupain/model/VersionCatalogInfo$VersionPosition$Companion;
+	public fun <init> (Lcom/deezer/caupain/model/Point;ILjava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNbLines ()I
+	public final fun getStartPoint ()Lcom/deezer/caupain/model/Point;
+	public final fun getValueText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/model/VersionCatalogInfo$VersionPosition$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/VersionCatalogInfo$VersionPosition$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/VersionCatalogInfo$VersionPosition;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/VersionCatalogInfo$VersionPosition;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/VersionCatalogInfo$VersionPosition$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class com/deezer/caupain/model/gradle/GradleConstants {
 	public static final field DEFAULT_GRADLE_VERSIONS_URL Ljava/lang/String;
 	public static final field INSTANCE Lcom/deezer/caupain/model/gradle/GradleConstants;
@@ -736,6 +938,7 @@ public final class com/deezer/caupain/model/versionCatalog/Version$Rich$Companio
 }
 
 public final class com/deezer/caupain/model/versionCatalog/Version$Simple : com/deezer/caupain/model/versionCatalog/Version$Resolved {
+	public static final field Companion Lcom/deezer/caupain/model/versionCatalog/Version$Simple$Companion;
 	public fun <init> (Lcom/deezer/caupain/model/GradleDependencyVersion;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getValue ()Lcom/deezer/caupain/model/GradleDependencyVersion;
@@ -744,6 +947,21 @@ public final class com/deezer/caupain/model/versionCatalog/Version$Simple : com/
 	public fun isUpdate (Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
 	public fun resolve (Ljava/util/Map;)Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
 	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/model/versionCatalog/Version$Simple$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/versionCatalog/Version$Simple$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/versionCatalog/Version$Simple;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/versionCatalog/Version$Simple;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/versionCatalog/Version$Simple$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
 public final class com/deezer/caupain/model/versionCatalog/VersionCatalog {

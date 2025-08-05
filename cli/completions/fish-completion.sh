@@ -13,6 +13,7 @@ complete -c caupain -l gradle-stability-level -r -fa "stable rc milestone releas
 complete -c caupain -s t -l output-type -r -fa "console html markdown json" -d 'Output type'
 complete -c caupain -s o -l output -r -F -d 'Report output path'
 complete -c caupain -l show-version-references -d 'Show versions references update summary in the report'
+complete -c caupain -l in-place -d 'Replace versions in version catalog in place'
 complete -c caupain -l cache-dir -r -F -d 'Cache directory. This is not used if --no-cache is set'
 complete -c caupain -l no--cache -d 'Disable HTTP cache'
 complete -c caupain -s q -l quiet -d 'Suppress all output'

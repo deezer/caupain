@@ -62,6 +62,7 @@ class DependencyUpdatePluginTest {
     @TestParameter(valuesProvider = GradleVersionProvider::class)
     private lateinit var gradleVersion: String
 
+    private lateinit var versionCatalogFile: File
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
     private lateinit var jsonOutputFile: File
@@ -71,7 +72,8 @@ class DependencyUpdatePluginTest {
         // Unzip project
         unzipProject()
         // Create version catalog file
-        File(tempFolder.root, "gradle/libs.versions.toml").writeText(
+        versionCatalogFile = File(tempFolder.root, "gradle/libs.versions.toml")
+        versionCatalogFile.writeText(
             createVersionCatalogFile()
         )
         // Create output files
@@ -262,11 +264,11 @@ class DependencyUpdatePluginTest {
     include(":app")
     """.trimIndent()
 
-    private fun createVersionCatalogFile() = """
+    private fun createVersionCatalogFile(updated: Boolean = false) = """
     [versions]
     agp = "8.9.1"
-    kotlin = "2.0.21"
-    coreKtx = "1.16.0"
+    kotlin = "${if (updated) "2.1.20" else "2.0.21"}"
+    coreKtx = "${if (updated) "1.17.0" else "1.16.0"}"
     activityKtx = "1.10.1"
     ignored = "1.0.0" #ignoreUpdates
     
@@ -321,6 +323,30 @@ class DependencyUpdatePluginTest {
             actual = jsonOutputFile.readText().trim()
         )
         assertEquals(10, mockWebserverRule.server.requestCount)
+    }
+
+    @Test
+    fun testReplace() {
+        createBuildFile()
+        replaceSettings()
+        val result = GradleRunner
+            .create()
+            .withProjectDir(tempFolder.root)
+            .withArguments(
+                ":replaceOutdatedDependencies",
+                "--no-configuration-cache",
+                "--stacktrace",
+                "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            )
+            .withPluginClasspath()
+            .withGradleVersion(gradleVersion)
+            .build()
+        assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result.task(":replaceOutdatedDependencies")?.outcome)
+        assertEquals(
+            expected = createVersionCatalogFile(updated = true),
+            actual = versionCatalogFile.readText()
+        )
     }
 
     @Test

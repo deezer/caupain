@@ -26,7 +26,8 @@ package com.deezer.caupain
 
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
-import com.deezer.caupain.model.Ignores
+import com.deezer.caupain.model.Point
+import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -108,7 +109,42 @@ class VersionCatalogParserTest {
                         )
                     )
                 ),
-                ignores = Ignores()
+                info = VersionCatalogInfo(
+                    ignores = VersionCatalogInfo.Ignores(),
+                    positions = VersionCatalogInfo.Positions(
+                        versionRefsPositions = mapOf(
+                            "groovy" to VersionCatalogInfo.VersionPosition(
+                                startPoint = Point(1, 9),
+                                nbLines = 1,
+                                valueText = "\"3.0.5-alpha-1\""
+                            ),
+                            "checkstyle" to VersionCatalogInfo.VersionPosition(
+                                startPoint = Point(2, 13),
+                                nbLines = 1,
+                                valueText = "\"8.37\""
+                            )
+                        ),
+                        libraryVersionPositions = mapOf(
+                            "commons-text" to VersionCatalogInfo.VersionPosition(
+                                startPoint = Point(9, 15),
+                                nbLines = 1,
+                                valueText = "\"org.apache.commons:commons-text:1.13.1\""
+                            )
+                        ),
+                        pluginVersionPositions = mapOf(
+                            "versions" to VersionCatalogInfo.VersionPosition(
+                                startPoint = Point(15, 61),
+                                nbLines = 1,
+                                valueText = "\"0.45.0-SNAPSHOT\""
+                            ),
+                            "dokka" to VersionCatalogInfo.VersionPosition(
+                                startPoint = Point(16, 8),
+                                nbLines = 1,
+                                valueText = "\"org.jetbrains.dokka:2.0.0\""
+                            ),
+                        )
+                    ),
+                )
             ),
             actual = parser.parseDependencyInfo(filePath)
         )
@@ -116,7 +152,7 @@ class VersionCatalogParserTest {
 }
 
 @Language("TOML")
-private const val TEST_VERSION_CATALOG = """
+private val TEST_VERSION_CATALOG = """
 [versions]
 groovy = "3.0.5-alpha-1"
 checkstyle = "8.37"
@@ -134,4 +170,4 @@ groovy = ["groovy-core", "groovy-json", "groovy-nio"]
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version = "0.45.0-SNAPSHOT" }
 dokka = "org.jetbrains.dokka:2.0.0"
-"""
+""".trimIndent()

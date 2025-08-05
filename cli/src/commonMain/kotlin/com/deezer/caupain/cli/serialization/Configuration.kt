@@ -62,11 +62,11 @@ private data class ConfigurationImpl(
     override val cacheDir: Path? = null,
     override val showVersionReferences: Boolean? = null,
     @Serializable(OutputTypeSerializer::class) override val outputType: Configuration.OutputType? = Configuration.OutputType.CONSOLE,
-    override val outputPath: Path?,
-    override val gradleWrapperPropertiesPath: Path?,
-    override val onlyCheckStaticVersions: Boolean?,
-    override val gradleStabilityLevel: GradleStabilityLevel?,
-    override val checkIgnored: Boolean?
+    override val outputPath: Path? = null,
+    override val gradleWrapperPropertiesPath: Path? = null,
+    override val onlyCheckStaticVersions: Boolean? = null,
+    override val gradleStabilityLevel: GradleStabilityLevel? = null,
+    override val checkIgnored: Boolean? = null,
 ) : Configuration {
 
     override fun validate(logger: Logger) {

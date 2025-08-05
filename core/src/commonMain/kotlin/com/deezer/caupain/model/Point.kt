@@ -24,23 +24,47 @@
 
 package com.deezer.caupain.model
 
-import com.deezer.caupain.model.versionCatalog.Version
+import kotlinx.serialization.Serializable
+import org.antlr.v4.kotlinruntime.ast.Point as ANTLRPoint
 
-internal data class Ignores(
-    val refs: Set<String> = emptySet(),
-    val libraryKeys: Set<String> = emptySet(),
-    val pluginKeys: Set<String> = emptySet()
-)
+/**
+ * Represents a point in a text document, defined by its line and column.
+ *
+ * @property line The line number (0-based).
+ * @property column The column number (0-based).
+ */
+@Serializable
+public class Point(
+    public val line: Int,
+    public val column: Int
+) : Comparable<Point> {
+    internal constructor(point: ANTLRPoint) : this(
+        line = point.line - 1,
+        column = point.column
+    )
 
-internal fun Ignores.isExcluded(key: String, dependency: Dependency): Boolean {
-    return when {
-        dependency.version is Version.Reference ->
-            (dependency.version as? Version.Reference)?.ref in refs
+    override fun compareTo(other: Point): Int =
+        compareValuesBy(this, other, Point::line, Point::column)
 
-        dependency is Dependency.Library -> key in libraryKeys
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
 
-        dependency is Dependency.Plugin -> key in pluginKeys
+        other as Point
 
-        else -> false
+        if (line != other.line) return false
+        if (column != other.column) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = line
+        result = 31 * result + column
+        return result
+    }
+
+    override fun toString(): String {
+        return "Point(line=$line, column=$column)"
     }
 }
