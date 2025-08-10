@@ -3,8 +3,10 @@
 ## Unreleased
 
 ### Added
+- Possibility to replace versions directly in the catalog file (#49)
 
 ### Changed
+- Updated Gradle to 9.0.0. **Important:** the Caupain Gradle plugin now requires Gradle 9.0.0 as its minimum version.
 
 ### Deprecated
 
