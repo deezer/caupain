@@ -25,6 +25,7 @@
 package com.deezer.caupain.plugin
 
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.model.Input
@@ -37,11 +38,14 @@ import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.plugin.internal.DefaultJson
 import com.deezer.caupain.plugin.internal.listProperty
 import com.deezer.caupain.plugin.internal.property
 import com.deezer.caupain.plugin.internal.setProperty
 import com.deezer.caupain.plugin.internal.toOkioPath
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.encodeToStream
 import okio.Path.Companion.toOkioPath
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -59,6 +63,7 @@ import java.util.UUID
 /**
  * Dependencies Update task.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @DisableCachingByDefault(because = "Will never be up to date")
 open class DependenciesUpdateTask : DefaultTask() {
 
@@ -96,6 +101,12 @@ open class DependenciesUpdateTask : DefaultTask() {
     @get:Internal
     internal val formatterOutputs = project.objects.listProperty<OutputsHandler.Output>()
 
+    @get:Internal
+    internal val replacerInputFile: Provider<RegularFile> = project
+        .layout
+        .buildDirectory
+        .file("dependencies/$SERIALIZED_UPDATES_FILE_NAME")
+
     private val customFormatter = project.objects.property<Formatter>()
 
     @get:Internal
@@ -104,7 +115,12 @@ open class DependenciesUpdateTask : DefaultTask() {
     @get:OutputFiles
     internal val outputFiles: Provider<List<Provider<RegularFile>>> =
         formatterOutputs.map { outputs ->
-            outputs.mapNotNull { (it as? OutputsHandler.Output.File)?.file }
+            buildList {
+                outputs.mapNotNullTo(this) { output ->
+                    (output as? OutputsHandler.Output.File)?.file
+                }
+                add(replacerInputFile)
+            }
         }
 
     /**
@@ -178,7 +194,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             currentGradleVersion = GradleVersion.current().version,
             gradleVersionsUrl = gradleVersionsUrl,
         )
-        runBlocking {
+        val updates = runBlocking {
             val updates = checker.checkForUpdates()
             for (formatter in formatters) {
                 formatter.format(
@@ -188,7 +204,18 @@ open class DependenciesUpdateTask : DefaultTask() {
                     )
                 )
             }
+            updates
         }
+        replacerInputFile
+            .get()
+            .asFile
+            .outputStream()
+            .use { os ->
+                DefaultJson.encodeToStream(
+                    value = DependencyVersionsReplacer.Input(updates),
+                    stream = os
+                )
+            }
     }
 
     /**
@@ -280,5 +307,9 @@ open class DependenciesUpdateTask : DefaultTask() {
         ): Boolean {
             return policy.select(VersionUpdateInfo(dependency, currentVersion, updatedVersion))
         }
+    }
+
+    internal companion object {
+        internal const val SERIALIZED_UPDATES_FILE_NAME = "updates_for_replacement.json"
     }
 }

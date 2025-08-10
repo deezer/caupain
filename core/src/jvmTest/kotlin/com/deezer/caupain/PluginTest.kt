@@ -28,11 +28,11 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
-import com.deezer.caupain.model.Ignores
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.Versioning
@@ -179,6 +179,7 @@ class PluginTest {
                 ),
                 ignoredUpdateInfos = emptyList(),
                 versionCatalog = VERSION_CATALOG,
+                versionCatalogInfo = VersionCatalogInfo(),
                 selfUpdateInfo = null
             ),
             actual = checker.checkForUpdates()
@@ -203,7 +204,7 @@ class PluginTest {
 
         private object FixedVersionCatalogParser : VersionCatalogParser {
             override suspend fun parseDependencyInfo(versionCatalogPath: Path) =
-                VersionCatalogParseResult(VERSION_CATALOG, Ignores())
+                VersionCatalogParseResult(VERSION_CATALOG, VersionCatalogInfo())
         }
 
         private fun metadata(

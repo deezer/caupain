@@ -67,6 +67,7 @@ Options:
   -o, --output=<path>           Report output path
   --show-version-references     Show versions references update summary in the
                                 report
+  --in-place                    Replace versions in version catalog in place
   --cache-dir=<path>            Cache directory. This is not used if --no-cache
                                 is set (default: user cache dir)
   --no--cache                   Disable HTTP cache
@@ -246,6 +247,19 @@ As sample can be found in the [sample plugin module](../sample-plugin-policy-jar
 
 If this is a bit too difficult to do, custom policy use is way easier when using the [Gradle plugin version](../gradle-plugin/README.md)
 of the tool.
+
+## In-place update
+
+If needed, you can use the `--in-place` option to update the version catalog in place. This will
+replace the versions in the version catalog with the latest versions found by Caupain. This is
+useful if you want to quickly update your version catalog without having to manually change the
+versions.
+
+This will only work if there is only one version catalog provided, and if the `onlyCheckStaticVersions`
+parameter is set to `true` (this is the default behavior).
+
+There is no corresponding configuration option for this, because it should be used with care and we
+want to make sure that it is not used by accident.
 
 ## Completions
 

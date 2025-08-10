@@ -8,6 +8,13 @@ public class com/deezer/caupain/plugin/CredentialsHandler {
 	public final fun getUser ()Lorg/gradle/api/provider/Property;
 }
 
+public class com/deezer/caupain/plugin/DependenciesReplaceTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun getSerializedUpdates ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun replaceDependencies ()V
+}
+
 public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun excludeKeys ([Ljava/lang/String;)V
 	public final fun excludeLibraries ([Lcom/deezer/caupain/model/LibraryExclusion;)V

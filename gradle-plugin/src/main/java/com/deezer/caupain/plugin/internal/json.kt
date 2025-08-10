@@ -22,12 +22,17 @@
  * SOFTWARE.
  */
 
-import com.deezer.caupain.cli.CaupainCLI
-import com.github.ajalt.clikt.command.main
-import kotlinx.coroutines.runBlocking
+package com.deezer.caupain.plugin.internal
 
-fun main(args: Array<String>) {
-    runBlocking {
-        CaupainCLI().main(args)
+import kotlinx.serialization.json.Json
+
+internal val DefaultJson: Json =
+    Json {
+        encodeDefaults = true
+        isLenient = true
+        allowSpecialFloatingPointValues = true
+        allowStructuredMapKeys = true
+        prettyPrint = true
+        useArrayPolymorphism = false
+        ignoreUnknownKeys = true
     }
-}
