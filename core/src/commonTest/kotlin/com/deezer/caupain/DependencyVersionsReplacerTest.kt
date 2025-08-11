@@ -35,7 +35,6 @@ import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import org.intellij.lang.annotations.Language
@@ -56,7 +55,6 @@ class DependencyVersionsReplacerTest {
     @BeforeTest
     fun setup() {
         fileSystem = FakeFileSystem()
-        fileSystem.createDirectories(FileSystem.SYSTEM_TEMPORARY_DIRECTORY)
         replacer = DefaultDependencyVersionsReplacer(
             fileSystem = fileSystem,
             ioDispatcher = testDispatcher,
