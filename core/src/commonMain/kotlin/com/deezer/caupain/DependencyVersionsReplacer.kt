@@ -37,6 +37,7 @@ import kotlinx.serialization.Serializable
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.FileSystem
+import okio.IOException
 import okio.Path
 import okio.SYSTEM
 import okio.buffer
@@ -243,17 +244,20 @@ internal class DefaultDependencyVersionsReplacer(
         if (replacements.isEmpty()) return
         withContext(ioDispatcher) {
             // Now, let's read the file and apply the replacements
-            val tmpFileName = buildString {
-                append(versionCatalogPath.name)
-                append('-')
-                append(Uuid.Companion.random().toString())
-                append(".tmp")
-            }
-            val tmpOutPath = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / tmpFileName
+            val tmpOutPath = createTempPath(versionCatalogPath, ".tmp")
             writeReplacedFile(tmpOutPath, versionCatalogPath, replacements)
             // Finally, replace the original file with the temporary one
-            fileSystem.delete(versionCatalogPath)
-            fileSystem.atomicMove(tmpOutPath, versionCatalogPath)
+            val backupPath = createTempPath(versionCatalogPath, ".bak")
+            fileSystem.atomicMove(versionCatalogPath, backupPath)
+            try {
+                fileSystem.atomicMove(tmpOutPath, versionCatalogPath)
+            } catch (e: IOException) {
+                // If the move fails, we need to restore the original file and delete the temporary file
+                fileSystem.atomicMove(backupPath, versionCatalogPath)
+                fileSystem.delete(tmpOutPath)
+                throw e
+            }
+            fileSystem.delete(backupPath)
         }
     }
 
@@ -399,6 +403,20 @@ internal class DefaultDependencyVersionsReplacer(
             writeUtf8(replacedText)
             // We need to skip the rest of the lines that were replaced
             nbLines - 1
+        }
+    }
+
+    private fun createTempPath(base: Path, suffix: String): Path {
+        val parent = requireNotNull(base.parent) { "Base path must have a parent directory" }
+        while (true) {
+            val fileName = buildString {
+                append(base.name)
+                append('-')
+                append(Uuid.Companion.random().toString())
+                append(suffix)
+            }
+            val path = parent / fileName
+            if (!fileSystem.exists(path)) return path
         }
     }
 
