@@ -25,6 +25,7 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.versionCatalog.Version
+import dev.drewhamilton.poko.Poko
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -41,6 +42,7 @@ import kotlinx.serialization.Transient
  * @property updatedVersion The updated version of the dependency.
  */
 @Serializable
+@Poko
 public class UpdateInfo(
     public val dependency: String,
     public val dependencyId: String,
@@ -49,36 +51,6 @@ public class UpdateInfo(
     public val currentVersion: Version.Resolved,
     public val updatedVersion: GradleDependencyVersion.Static
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as UpdateInfo
-
-        if (dependency != other.dependency) return false
-        if (dependencyId != other.dependencyId) return false
-        if (name != other.name) return false
-        if (url != other.url) return false
-        if (currentVersion != other.currentVersion) return false
-        if (updatedVersion != other.updatedVersion) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = dependency.hashCode()
-        result = 31 * result + dependencyId.hashCode()
-        result = 31 * result + (name?.hashCode() ?: 0)
-        result = 31 * result + (url?.hashCode() ?: 0)
-        result = 31 * result + currentVersion.hashCode()
-        result = 31 * result + updatedVersion.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "UpdateInfo(dependency='$dependency', dependencyId='$dependencyId', name=$name, url=$url, currentVersion='$currentVersion', updatedVersion='$updatedVersion')"
-    }
-
     /**
      * Update info type (library or plugin).
      */
@@ -96,34 +68,13 @@ public class UpdateInfo(
  * @property updatedVersion The updated Gradle version
  */
 @Serializable
+@Poko
 public class GradleUpdateInfo(
     public val currentVersion: String,
     public val updatedVersion: String
 ) {
     @Transient
     public val url: String = "https://docs.gradle.org/$updatedVersion/release-notes.html"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as GradleUpdateInfo
-
-        if (currentVersion != other.currentVersion) return false
-        if (updatedVersion != other.updatedVersion) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = currentVersion.hashCode()
-        result = 31 * result + updatedVersion.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "GradleUpdateInfo(currentVersion='$currentVersion', updatedVersion='$updatedVersion')"
-    }
 }
 
 /**
@@ -134,35 +85,12 @@ public class GradleUpdateInfo(
  * @param sources The sources from which the update can be fetched.
  */
 @Serializable
+@Poko
 public class SelfUpdateInfo(
     public val currentVersion: String,
     public val updatedVersion: String,
     public val sources: List<Source>
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as SelfUpdateInfo
-
-        if (currentVersion != other.currentVersion) return false
-        if (updatedVersion != other.updatedVersion) return false
-        if (sources != other.sources) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = currentVersion.hashCode()
-        result = 31 * result + updatedVersion.hashCode()
-        result = 31 * result + sources.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "SelfUpdateInfo(currentVersion='$currentVersion', updatedVersion='$updatedVersion', sources=$sources)"
-    }
-
     /**
      * Update source.
      */

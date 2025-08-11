@@ -29,6 +29,7 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
+import dev.drewhamilton.poko.Poko
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -85,6 +86,7 @@ public interface DependencyVersionsReplacer {
      * version catalog.
      */
     @Serializable
+    @Poko
     public class Input(
         public val originalLibraryVersions: Map<String, Version>,
         public val updatedLibraryVersions: Map<String, GradleDependencyVersion.Static>,
@@ -130,47 +132,15 @@ public interface DependencyVersionsReplacer {
              * Version reference
              */
             @Serializable
-            public class Reference(public val ref: String) : Version() {
-                override fun equals(other: Any?): Boolean {
-                    if (this === other) return true
-                    if (other == null || this::class != other::class) return false
-
-                    other as Reference
-
-                    return ref == other.ref
-                }
-
-                override fun hashCode(): Int {
-                    return ref.hashCode()
-                }
-
-                override fun toString(): String {
-                    return "Reference(ref='$ref')"
-                }
-            }
+            @Poko
+            public class Reference(public val ref: String) : Version()
 
             /**
              * Resolved version.
              */
             @Serializable
-            public class Resolved(public val versionText: String) : Version() {
-                override fun equals(other: Any?): Boolean {
-                    if (this === other) return true
-                    if (other == null || this::class != other::class) return false
-
-                    other as Resolved
-
-                    return versionText == other.versionText
-                }
-
-                override fun hashCode(): Int {
-                    return versionText.hashCode()
-                }
-
-                override fun toString(): String {
-                    return "Resolved(versionText='$versionText')"
-                }
-            }
+            @Poko
+            public class Resolved(public val versionText: String) : Version()
 
             internal companion object {
                 fun from(dependency: Dependency) = when (val version = dependency.version) {
@@ -180,36 +150,6 @@ public interface DependencyVersionsReplacer {
                     else -> null
                 }
             }
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Input
-
-            if (originalLibraryVersions != other.originalLibraryVersions) return false
-            if (updatedLibraryVersions != other.updatedLibraryVersions) return false
-            if (originalPluginVersions != other.originalPluginVersions) return false
-            if (updatedPluginsVersions != other.updatedPluginsVersions) return false
-            if (positions != other.positions) return false
-            if (versions != other.versions) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = originalLibraryVersions.hashCode()
-            result = 31 * result + updatedLibraryVersions.hashCode()
-            result = 31 * result + originalPluginVersions.hashCode()
-            result = 31 * result + updatedPluginsVersions.hashCode()
-            result = 31 * result + positions.hashCode()
-            result = 31 * result + versions.hashCode()
-            return result
-        }
-
-        override fun toString(): String {
-            return "Input(originalLibraryVersions=$originalLibraryVersions, updatedLibraryVersions=$updatedLibraryVersions, originalPluginVersions=$originalPluginVersions, updatedPluginsVersions=$updatedPluginsVersions, positions=$positions, versions=$versions)"
         }
     }
 }

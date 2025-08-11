@@ -31,12 +31,14 @@ import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.Serializable
 
 /**
  * Formatter input
  */
 @Serializable
+@Poko
 public class Input(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
@@ -68,34 +70,6 @@ public class Input(
             null
         }
     )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as Input
-
-        if (gradleUpdateInfo != other.gradleUpdateInfo) return false
-        if (updateInfos != other.updateInfos) return false
-        if (ignoredUpdateInfos != other.ignoredUpdateInfos) return false
-        if (versionReferenceInfo != other.versionReferenceInfo) return false
-        if (selfUpdateInfo != other.selfUpdateInfo) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = gradleUpdateInfo?.hashCode() ?: 0
-        result = 31 * result + updateInfos.hashCode()
-        result = 31 * result + ignoredUpdateInfos.hashCode()
-        result = 31 * result + (versionReferenceInfo?.hashCode() ?: 0)
-        result = 31 * result + (selfUpdateInfo?.hashCode() ?: 0)
-        return result
-    }
-
-    override fun toString(): String {
-        return "Input(gradleUpdateInfo=$gradleUpdateInfo, updateInfos=$updateInfos, ignoredUpdateInfos=$ignoredUpdateInfos, versionReferenceInfo=$versionReferenceInfo, selfUpdateInfo=$selfUpdateInfo)"
-    }
 }
 
 private data class SimpleDependencyInfo(val key: String, val type: Type) {
@@ -171,6 +145,7 @@ internal fun computeVersionReferenceInfos(
  * Information about updates for a specific references in the versions block.
  */
 @Serializable
+@Poko
 public class VersionReferenceInfo(
     public val id: String,
     public val libraryKeys: List<String>,
@@ -198,36 +173,4 @@ public class VersionReferenceInfo(
 
     internal val isFullyUpdated: Boolean
         get() = nbFullyUpdatedLibraries == libraryKeys.size && nbFullyUpdatedPlugins == pluginKeys.size
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as VersionReferenceInfo
-
-        if (id != other.id) return false
-        if (libraryKeys != other.libraryKeys) return false
-        if (updatedLibraries != other.updatedLibraries) return false
-        if (pluginKeys != other.pluginKeys) return false
-        if (updatedPlugins != other.updatedPlugins) return false
-        if (currentVersion != other.currentVersion) return false
-        if (updatedVersion != other.updatedVersion) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + libraryKeys.hashCode()
-        result = 31 * result + updatedLibraries.hashCode()
-        result = 31 * result + pluginKeys.hashCode()
-        result = 31 * result + updatedPlugins.hashCode()
-        result = 31 * result + currentVersion.hashCode()
-        result = 31 * result + updatedVersion.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "VersionReferenceInfo(id='$id', libraryKeys=$libraryKeys, updatedLibraryKeys=$updatedLibraries, pluginKeys=$pluginKeys, updatedPluginKeys=$updatedPlugins, currentVersion=$currentVersion, updatedVersion=$updatedVersion)"
-    }
 }

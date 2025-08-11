@@ -34,6 +34,7 @@ import com.deezer.caupain.model.group
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.name
 import com.deezer.caupain.model.versionCatalog.Version
+import dev.drewhamilton.poko.Poko
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.http.appendPathSegments
@@ -64,6 +65,7 @@ public interface UpdatedVersionResolver {
      * @property updatedVersion The updated version of the dependency.
      * @property repository The repository where the updated version was found.
      */
+    @Poko
     public class Result(
         public val currentVersion: Version.Resolved,
         public val updatedVersion: GradleDependencyVersion.Static,
@@ -71,30 +73,6 @@ public interface UpdatedVersionResolver {
     ) : Comparable<Result> {
         override fun compareTo(other: Result): Int {
             return updatedVersion.compareTo(other.updatedVersion)
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Result
-
-            if (currentVersion != other.currentVersion) return false
-            if (updatedVersion != other.updatedVersion) return false
-            if (repository != other.repository) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = currentVersion.hashCode()
-            result = 31 * result + updatedVersion.hashCode()
-            result = 31 * result + repository.hashCode()
-            return result
-        }
-
-        override fun toString(): String {
-            return "Result(currentVersion=$currentVersion, updatedVersion=$updatedVersion, repository=$repository)"
         }
     }
 }

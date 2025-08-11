@@ -29,6 +29,7 @@ import com.deezer.caupain.model.GradleDependencyVersion.Prefix
 import com.deezer.caupain.model.GradleDependencyVersion.Range
 import com.deezer.caupain.model.GradleDependencyVersion.Snapshot
 import com.deezer.caupain.model.GradleDependencyVersion.Unknown
+import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -83,6 +84,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Exact version
      */
+    @Poko
     public class Exact(private val version: String) : Static {
 
         override val text: String
@@ -157,19 +159,6 @@ public sealed interface GradleDependencyVersion {
             }
             .toList()
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Exact
-
-            return version == other.version
-        }
-
-        override fun hashCode(): Int {
-            return version.hashCode()
-        }
-
         override fun toString(): String = version
 
         private sealed interface Part : Comparable<Part> {
@@ -239,6 +228,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Version range
      */
+    @Poko
     public class Range(override val text: String) : GradleDependencyVersion {
 
         override val isStatic: Boolean
@@ -329,19 +319,6 @@ public sealed interface GradleDependencyVersion {
             }
         }
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Range
-
-            return text == other.text
-        }
-
-        override fun hashCode(): Int {
-            return text.hashCode()
-        }
-
         override fun toString(): String = text
 
         /**
@@ -350,29 +327,8 @@ public sealed interface GradleDependencyVersion {
          * @property value bound value
          * @property isExclusive true if the bound is exclusive
          */
-        public class Bound(public val value: Static, public val isExclusive: Boolean) {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other == null || this::class != other::class) return false
-
-                other as Bound
-
-                if (isExclusive != other.isExclusive) return false
-                if (value != other.value) return false
-
-                return true
-            }
-
-            override fun hashCode(): Int {
-                var result = isExclusive.hashCode()
-                result = 31 * result + value.hashCode()
-                return result
-            }
-
-            override fun toString(): String {
-                return "Bound(value=$value, isExclusive=$isExclusive)"
-            }
-        }
+        @Poko
+        public class Bound(public val value: Static, public val isExclusive: Boolean)
 
         internal companion object {
             val LOWER_BOUND_MARKERS = charArrayOf('[', '(', ']')
@@ -385,6 +341,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Version with prefix
      */
+    @Poko
     public class Prefix(override val text: String) : GradleDependencyVersion {
 
         override val isStatic: Boolean
@@ -421,25 +378,13 @@ public sealed interface GradleDependencyVersion {
             return baseVersion != null && !contains(version) && baseVersion.isUpdate(version)
         }
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Prefix
-
-            return text == other.text
-        }
-
-        override fun hashCode(): Int {
-            return text.hashCode()
-        }
-
         override fun toString(): String = text
     }
 
     /**
      * Latest version
      */
+    @Poko
     public class Latest(override val text: String) : GradleDependencyVersion {
 
         override val isStatic: Boolean
@@ -448,19 +393,6 @@ public sealed interface GradleDependencyVersion {
         override fun contains(version: Static): Boolean = false
 
         override fun isUpdate(version: Static): Boolean = false
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Latest
-
-            return text == other.text
-        }
-
-        override fun hashCode(): Int {
-            return text.hashCode()
-        }
 
         override fun toString(): String = text
 
@@ -475,6 +407,7 @@ public sealed interface GradleDependencyVersion {
     /**
      * Snapshot version
      */
+    @Poko
     public class Snapshot(override val text: String) : Static {
 
         override val exactVersion: Exact = Exact(text.dropLast(SNAPSHOT_SUFFIX.length))
@@ -492,24 +425,12 @@ public sealed interface GradleDependencyVersion {
         override fun isUpdate(version: Static): Boolean = version.exactVersion > exactVersion
 
         override fun toString(): String = text
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Snapshot
-
-            return text == other.text
-        }
-
-        override fun hashCode(): Int {
-            return text.hashCode()
-        }
     }
 
     /**
      * Unknown version
      */
+    @Poko
     public class Unknown(override val text: String) : GradleDependencyVersion {
 
         override val isStatic: Boolean
@@ -520,19 +441,6 @@ public sealed interface GradleDependencyVersion {
         override fun isUpdate(version: Static): Boolean = false
 
         override fun toString(): String = "Unknown"
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Unknown
-
-            return text == other.text
-        }
-
-        override fun hashCode(): Int {
-            return text.hashCode()
-        }
     }
 }
 

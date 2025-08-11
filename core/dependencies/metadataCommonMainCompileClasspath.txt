@@ -3,6 +3,7 @@ co.touchlab:stately-concurrent-collections:2.1.0
 co.touchlab:stately-strict:2.1.0
 com.squareup.okio:okio:3.16.0
 com.strumenta:antlr-kotlin-runtime:1.0.5
+dev.drewhamilton.poko:poko-annotations:0.19.3
 io.github.pdvrieze.xmlutil:core-io:0.91.2
 io.github.pdvrieze.xmlutil:core:0.91.2
 io.github.pdvrieze.xmlutil:serialization:0.91.2

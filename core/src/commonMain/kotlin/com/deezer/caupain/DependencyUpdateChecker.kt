@@ -56,6 +56,7 @@ import com.deezer.caupain.resolver.UpdatedVersionResolver
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.DefaultXml
+import dev.drewhamilton.poko.Poko
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
@@ -129,54 +130,17 @@ public interface DependencyUpdateChecker {
         /**
          * Intederminate progress, used when the task length is not known.
          */
-        public class Indeterminate(override val taskName: String) : Progress {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other == null || this::class != other::class) return false
-
-                other as Indeterminate
-
-                return taskName == other.taskName
-            }
-
-            override fun hashCode(): Int {
-                return taskName.hashCode()
-            }
-
-            override fun toString(): String {
-                return "Indeterminate(taskName='$taskName')"
-            }
-        }
+        @Poko
+        public class Indeterminate(override val taskName: String) : Progress
 
         /**
          * Determinate progress, used when the task length is known.
          */
+        @Poko
         public class Determinate(
             override val taskName: String,
             public val percentage: Int,
-        ) : Progress {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (other == null || this::class != other::class) return false
-
-                other as Determinate
-
-                if (percentage != other.percentage) return false
-                if (taskName != other.taskName) return false
-
-                return true
-            }
-
-            override fun hashCode(): Int {
-                var result = percentage
-                result = 31 * result + taskName.hashCode()
-                return result
-            }
-
-            override fun toString(): String {
-                return "Determinate(taskName='$taskName', percentage=$percentage)"
-            }
-        }
+        ) : Progress
     }
 
     public companion object {

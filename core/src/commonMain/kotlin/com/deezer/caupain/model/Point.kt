@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.model
 
+import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.Serializable
 import org.antlr.v4.kotlinruntime.ast.Point as ANTLRPoint
 
@@ -34,6 +35,7 @@ import org.antlr.v4.kotlinruntime.ast.Point as ANTLRPoint
  * @property column The column number (0-based).
  */
 @Serializable
+@Poko
 public class Point(
     public val line: Int,
     public val column: Int
@@ -45,26 +47,4 @@ public class Point(
 
     override fun compareTo(other: Point): Int =
         compareValuesBy(this, other, Point::line, Point::column)
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as Point
-
-        if (line != other.line) return false
-        if (column != other.column) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = line
-        result = 31 * result + column
-        return result
-    }
-
-    override fun toString(): String {
-        return "Point(line=$line, column=$column)"
-    }
 }

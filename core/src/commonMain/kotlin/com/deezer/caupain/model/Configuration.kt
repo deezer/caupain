@@ -27,6 +27,7 @@ package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
+import dev.drewhamilton.poko.Poko
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.jvm.JvmName
@@ -237,6 +238,7 @@ public sealed interface Exclusion<D : Dependency> {
  * @property group The group of the library to exclude. If `name` is null, then this is interpreted as a glob
  * @property name The name of the library to exclude. If null, all libraries in the group are excluded.
  */
+@Poko
 public class LibraryExclusion(
     public val group: String,
     public val name: String? = null,
@@ -246,28 +248,6 @@ public class LibraryExclusion(
 
     override fun isExcluded(dependency: Dependency.Library): Boolean = spec.matches(dependency)
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as LibraryExclusion
-
-        if (group != other.group) return false
-        if (name != other.name) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = group.hashCode()
-        result = 31 * result + (name?.hashCode() ?: 0)
-        return result
-    }
-
-    override fun toString(): String {
-        return "LibraryExclusion(group='$group', name=$name)"
-    }
-
     private companion object {
         private const val serialVersionUID = 1L
     }
@@ -276,26 +256,10 @@ public class LibraryExclusion(
 /**
  * Wrapper for plugin id exclusion.
  */
+@Poko
 public class PluginExclusion(public val id: String) : Exclusion<Dependency.Plugin> {
 
     override fun isExcluded(dependency: Dependency.Plugin): Boolean = dependency.id == id
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as PluginExclusion
-
-        return id == other.id
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
-
-    override fun toString(): String {
-        return "PluginExclusion(id='$id')"
-    }
 }
 
 internal fun Configuration.isExcluded(dependencyKey: String, dependency: Dependency): Boolean {

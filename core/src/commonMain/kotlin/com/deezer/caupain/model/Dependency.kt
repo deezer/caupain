@@ -29,6 +29,7 @@ package com.deezer.caupain.model
 import com.deezer.caupain.model.Dependency.Library
 import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.versionCatalog.Version
+import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -60,6 +61,7 @@ public sealed interface Dependency {
      * Library dependency
      */
     @Serializable(LibrarySerializer::class)
+    @Poko
     public class Library(
         public val group: String? = null,
         public val name: String? = null,
@@ -95,36 +97,13 @@ public sealed interface Dependency {
         )
 
         internal constructor(library: String) : this(libraryParts = library.split(':'))
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Library
-
-            if (group != other.group) return false
-            if (name != other.name) return false
-            if (version != other.version) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = group?.hashCode() ?: 0
-            result = 31 * result + (name?.hashCode() ?: 0)
-            result = 31 * result + (version?.hashCode() ?: 0)
-            return result
-        }
-
-        override fun toString(): String {
-            return "Library(group=$group, name=$name, version=$version)"
-        }
     }
 
     /**
      * Plugin dependency
      */
     @Serializable(PluginSerializer::class)
+    @Poko
     public class Plugin(
         public val id: String,
         override val version: Version? = null,
@@ -141,28 +120,6 @@ public sealed interface Dependency {
         )
 
         internal constructor(plugin: String) : this(plugin.split(':'))
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Plugin
-
-            if (id != other.id) return false
-            if (version != other.version) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = id.hashCode()
-            result = 31 * result + (version?.hashCode() ?: 0)
-            return result
-        }
-
-        override fun toString(): String {
-            return "Plugin(id='$id', version=$version)"
-        }
     }
 }
 

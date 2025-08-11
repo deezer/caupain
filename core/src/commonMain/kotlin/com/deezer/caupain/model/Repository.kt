@@ -26,6 +26,7 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.Serializable
+import dev.drewhamilton.poko.Poko
 import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
@@ -82,6 +83,7 @@ public interface Credentials : Serializable {
  * @property password The password for authentication.
  */
 @OptIn(ExperimentalEncodingApi::class)
+@Poko
 public class PasswordCredentials(
     public val user: String,
     public val password: String
@@ -92,28 +94,6 @@ public class PasswordCredentials(
             "Basic ${Base64.encode("$user:$password".encodeToByteArray())}"
         )
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as PasswordCredentials
-
-        if (user != other.user) return false
-        if (password != other.password) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = user.hashCode()
-        result = 31 * result + password.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "PasswordCredentials(user='$user', password='$password')"
-    }
 }
 
 /**
@@ -123,34 +103,13 @@ public class PasswordCredentials(
  * @property name The name of the header.
  * @property value The value of the header.
  */
+@Poko
 public class HeaderCredentials(
     public val name: String,
     public val value: String
 ) : Credentials {
     override fun HttpRequestBuilder.configureAuthentication() {
         header(name, value)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as HeaderCredentials
-
-        if (name != other.name) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + value.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "HeaderCredentials(name='$name', value='$value')"
     }
 }
 

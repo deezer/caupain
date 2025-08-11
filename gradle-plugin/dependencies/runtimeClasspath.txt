@@ -10,6 +10,8 @@ com.squareup.okio:okio-jvm:3.16.0
 com.squareup.okio:okio:3.16.0
 com.strumenta:antlr-kotlin-runtime-jvm:1.0.5
 com.strumenta:antlr-kotlin-runtime:1.0.5
+dev.drewhamilton.poko:poko-annotations-jvm:0.19.3
+dev.drewhamilton.poko:poko-annotations:0.19.3
 io.github.pdvrieze.xmlutil:core-io-jvm:0.91.2
 io.github.pdvrieze.xmlutil:core-io:0.91.2
 io.github.pdvrieze.xmlutil:core-jvmcommon:0.91.2

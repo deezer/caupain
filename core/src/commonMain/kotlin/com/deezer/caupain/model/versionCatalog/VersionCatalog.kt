@@ -25,12 +25,14 @@
 package com.deezer.caupain.model.versionCatalog
 
 import com.deezer.caupain.model.Dependency
+import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.Serializable
 
 /**
  * Gradle version catalog.
  */
 @Serializable
+@Poko
 public class VersionCatalog(
     public val versions: Map<String, Version.Resolved> = emptyMap(),
     public val libraries: Map<String, Dependency.Library> = emptyMap(),
@@ -38,28 +40,4 @@ public class VersionCatalog(
 ) {
     internal val dependencies: Map<String, Dependency>
         get() = libraries + plugins
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as VersionCatalog
-
-        if (versions != other.versions) return false
-        if (libraries != other.libraries) return false
-        if (plugins != other.plugins) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = versions.hashCode()
-        result = 31 * result + libraries.hashCode()
-        result = 31 * result + plugins.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "VersionCatalog(versions=$versions, libraries=$libraries, plugins=$plugins)"
-    }
 }
