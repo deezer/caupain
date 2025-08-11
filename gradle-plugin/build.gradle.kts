@@ -1,11 +1,13 @@
+@file:OptIn(ExperimentalAbiValidation::class)
+
 import com.vanniktech.maven.publish.GradlePublishPlugin
 import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `java-gradle-plugin`
     alias(libs.plugins.compat.patrouille)
-    alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.gradle.plugin.publish)
     alias(libs.plugins.dependency.guard)
@@ -20,6 +22,12 @@ compatPatrouille {
 buildConfig {
     buildConfigField("VERSION", version.toString())
     useKotlinOutput()
+}
+
+kotlin {
+    abiValidation {
+        enabled.set(true)
+    }
 }
 
 dependencies {
@@ -90,4 +98,8 @@ mavenPublishing {
 
 tasks.withType<Detekt> {
     setSource(files("src/main/java"))
+}
+
+tasks.named("check") {
+    dependsOn("checkLegacyAbi")
 }

@@ -1,12 +1,12 @@
-@file:OptIn(ExperimentalBCVApi::class)
+@file:OptIn(ExperimentalAbiValidation::class)
 
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import io.gitlab.arturbosch.detekt.Detekt
-import kotlinx.validation.ExperimentalBCVApi
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -16,7 +16,6 @@ plugins {
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.dokka)
     alias(libs.plugins.antlr.kotlin)
-    alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.compat.patrouille)
     alias(libs.plugins.kotlinx.kover)
     alias(libs.plugins.vanniktech.maven.publish)
@@ -119,6 +118,11 @@ kotlin {
         }
         linuxX64Main.get().dependsOn(nonLinuxArm64Main)
     }
+
+    abiValidation {
+        enabled.set(true)
+        filters.excluded.byNames.add("com.deezer.caupain.antlr.**")
+    }
 }
 
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
@@ -169,13 +173,6 @@ tasks.withType<DokkaGeneratePublicationTask> {
     dependsOn("fixKMPMetadata")
 }
 
-apiValidation {
-    ignoredPackages.add("com.deezer.caupain.antlr")
-    klib {
-        enabled = true
-    }
-}
-
 dependencyGuard {
     configuration("jvmMainCompileClasspath")
     configuration("jvmMainRuntimeClasspath")
@@ -194,8 +191,9 @@ mavenPublishing {
     signAllPublications()
     pom {
         name = "Caupain core library"
-        description = "Dependency update check for Gradle version catalog. This is the core library " +
-                "used by the CLI tool and the Gradle plugin."
+        description =
+            "Dependency update check for Gradle version catalog. This is the core library " +
+                    "used by the CLI tool and the Gradle plugin."
         inceptionYear = "2025"
         url = "https://github.com/deezer/caupain"
         licenses {
@@ -222,4 +220,8 @@ mavenPublishing {
 
 tasks.register("testAll") {
     dependsOn(tasks.withType<Test>(), tasks.withType<KotlinNativeTest>())
+}
+
+tasks.named("check") {
+    dependsOn("checkLegacyAbi")
 }
