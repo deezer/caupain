@@ -37,6 +37,7 @@ import kotlinx.serialization.Serializable
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.FileSystem
+import okio.IOException
 import okio.Path
 import okio.SYSTEM
 import okio.buffer
@@ -248,7 +249,14 @@ internal class DefaultDependencyVersionsReplacer(
             // Finally, replace the original file with the temporary one
             val backupPath = createTempPath(versionCatalogPath, ".bak")
             fileSystem.atomicMove(versionCatalogPath, backupPath)
-            fileSystem.atomicMove(tmpOutPath, versionCatalogPath)
+            try {
+                fileSystem.atomicMove(tmpOutPath, versionCatalogPath)
+            } catch (e: IOException) {
+                // If the move fails, we need to restore the original file and delete the temporary file
+                fileSystem.atomicMove(backupPath, versionCatalogPath)
+                fileSystem.delete(tmpOutPath)
+                throw e
+            }
             fileSystem.delete(backupPath)
         }
     }
