@@ -14,6 +14,12 @@
 
 ### Security
 
+## 1.5.1 - 2025-08-11
+
+### Fixed
+
+- Fix version replacer issue when temporary file system is on another volumes (#51)
+
 ## 1.5.0 - 2025-08-10
 
 ### Added
