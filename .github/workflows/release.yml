@@ -93,6 +93,12 @@ jobs:
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
             cli/build/distributions/*.deb
+      - name: Trigger Debian repository workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: publishRepo.yml
+          repo: deezer/debian-repo
+          token: ${{ secrets.DEBIAN_REPO_TOKEN }}
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
