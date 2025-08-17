@@ -28,3 +28,4 @@ jobs:
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
+  CAUPAIN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

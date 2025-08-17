@@ -68,30 +68,30 @@ mavenPublishing {
         // Publish snapshots to Maven Central
         publishToMavenCentral(automaticRelease = true)
         signAllPublications()
-        pom {
-            name = "Caupain Gradle plugin"
-            description = "Gradle plugin generating reports for dependency updates."
-            inceptionYear = "2025"
+    }
+    pom {
+        name = "Caupain Gradle plugin"
+        description = "Gradle plugin generating reports for dependency updates."
+        inceptionYear = "2025"
+        url = "https://github.com/deezer/caupain"
+        licenses {
+            license {
+                name = "The MIT License"
+                url = "https://opensource.org/license/mit"
+                distribution = url
+            }
+        }
+        developers {
+            developer {
+                id = "deezer-android-team"
+                name = "Deezer Android Team"
+                url = "https://github.com/deezer"
+            }
+        }
+        scm {
             url = "https://github.com/deezer/caupain"
-            licenses {
-                license {
-                    name = "The MIT License"
-                    url = "https://opensource.org/license/mit"
-                    distribution = url
-                }
-            }
-            developers {
-                developer {
-                    id = "deezer-android-team"
-                    name = "Deezer Android Team"
-                    url = "https://github.com/deezer"
-                }
-            }
-            scm {
-                url = "https://github.com/deezer/caupain"
-                connection = "scm:git:git://github.com/deezer/caupain.git"
-                developerConnection = "scm:git:ssh://git@github.com:deezer/caupain.git"
-            }
+            connection = "scm:git:git://github.com/deezer/caupain.git"
+            developerConnection = "scm:git:ssh://git@github.com:deezer/caupain.git"
         }
     }
 }

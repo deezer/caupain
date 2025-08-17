@@ -230,19 +230,6 @@ tasks.withType<DependenciesUpdateTask> {
 }
 ```
 
-## In-place update
-
-If you want to update the version catalog in place, you can use the `replaceOutdatedDependencies` task.
-This will replace the versions in the version catalog with the latest versions found by Caupain. This 
-is useful if you want to quickly update your version catalog without having to manually change the
-versions.
-
-This will only work if there is only one version catalog provided, and if the `onlyCheckStaticVersions`
-parameter is set to `true` (this is the default behavior).
-
-There is no corresponding configuration option for this, because it should be used with care and we
-want to make sure that it is not used by accident.
-
 ### Other options
 
 ```kotlin
@@ -265,9 +252,27 @@ onlyCheckStaticVersions = true
 gradleStabilityLevel = GradleStabilityLevel.STABLE
 // Whether or not to show a section in the report about the ignored available updates.
 checkIgnored = true
+// Github token, used to search for release notes on GitHub.
+githubToken = "your-token"
+// Whether or not to search for release notes on GitHub and display the link to them in the results.
+// If a GitHub token is provided, this will be true by default.
+searchReleaseNotes = true
 ```
 
-### Minimum Gradle version
+## In-place update
+
+If you want to update the version catalog in place, you can use the `replaceOutdatedDependencies` task.
+This will replace the versions in the version catalog with the latest versions found by Caupain. This 
+is useful if you want to quickly update your version catalog without having to manually change the
+versions.
+
+This will only work if there is only one version catalog provided, and if the `onlyCheckStaticVersions`
+parameter is set to `true` (this is the default behavior).
+
+There is no corresponding configuration option for this, because it should be used with care and we
+want to make sure that it is not used by accident.
+
+## Minimum Gradle version
 
 The minimum Gradle versions for the plugin depending on the version of the plugin are as follows:
 

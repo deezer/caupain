@@ -38,6 +38,7 @@ import kotlinx.serialization.Transient
  * @property dependencyId The ID of the dependency.
  * @property name The detailed name of the dependency
  * @property url The URL of the dependency.
+ * @property releaseNoteUrl The URL to the release notes of the dependency.
  * @property currentVersion The current version of the dependency.
  * @property updatedVersion The updated version of the dependency.
  */
@@ -48,6 +49,7 @@ public class UpdateInfo(
     public val dependencyId: String,
     public val name: String? = null,
     public val url: String? = null,
+    public val releaseNoteUrl: String? = null,
     public val currentVersion: Version.Resolved,
     public val updatedVersion: GradleDependencyVersion.Static
 ) {

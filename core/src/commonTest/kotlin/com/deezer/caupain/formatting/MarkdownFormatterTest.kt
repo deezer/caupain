@@ -69,13 +69,13 @@ Gradle current version is 1.0 whereas last version is 1.1. See [https://docs.gra
 | ------ | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | deezer | 1.0.0           | 2.0.0           | Libraries: library<br/>Plugins: plugin<br/>Updates for these dependency using the reference were not found for the updated version:<ul><li>other-library: (no update found)</li></ul> |
 ## Libraries
-| Id                 | Name | Current version | Updated version | URL |
-| ------------------ | ---- | --------------- | --------------- | --- |
-| com.deezer:library |      | 1.0.0           | 2.0.0           |     |
+| Id                 | Name | Current version | Updated version | URL                                                                                                    |
+| ------------------ | ---- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| com.deezer:library |      | 1.0.0           | 2.0.0           | [Release notes](http://www.example.com/library/releases)<br/>[Project](http://www.example.com/library) |
 ## Plugins
-| Id                | Name | Current version | Updated version | URL |
-| ----------------- | ---- | --------------- | --------------- | --- |
-| com.deezer:plugin |      | 1.0.0           | 2.0.0           |     |
+| Id                | Name | Current version | Updated version | URL                                                                                                  |
+| ----------------- | ---- | --------------- | --------------- | ---------------------------------------------------------------------------------------------------- |
+| com.deezer:plugin |      | 1.0.0           | 2.0.0           | [Release notes](http://www.example.com/plugin/releases)<br/>[Project](http://www.example.com/plugin) |
 ## Ignored
 | Id                         | Current version | Updated version |
 | -------------------------- | --------------- | --------------- |

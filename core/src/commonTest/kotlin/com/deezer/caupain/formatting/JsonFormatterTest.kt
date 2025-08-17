@@ -90,7 +90,8 @@ class JsonFormatterTest : FileFormatterTest() {
                             "dependency": "library",
                             "dependencyId": "com.deezer:library",
                             "name": null,
-                            "url": null,
+                            "url": "http://www.example.com/library",
+                            "releaseNoteUrl": "http://www.example.com/library/releases",
                             "currentVersion": "1.0.0",
                             "updatedVersion": "2.0.0"
                         }
@@ -100,7 +101,8 @@ class JsonFormatterTest : FileFormatterTest() {
                             "dependency": "plugin",
                             "dependencyId": "com.deezer:plugin",
                             "name": null,
-                            "url": null,
+                            "url": "http://www.example.com/plugin",
+                            "releaseNoteUrl": "http://www.example.com/plugin/releases",
                             "currentVersion": "1.0.0",
                             "updatedVersion": "2.0.0"
                         }
@@ -112,6 +114,7 @@ class JsonFormatterTest : FileFormatterTest() {
                         "dependencyId": "com.deezer:ignored-library",
                         "name": null,
                         "url": null,
+                        "releaseNoteUrl": null,
                         "currentVersion": "1.0.0",
                         "updatedVersion": "2.0.0"
                     }

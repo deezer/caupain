@@ -161,14 +161,14 @@ private const val FULL_RESULT = """
           <th>Name</th>
           <th>Current version</th>
           <th>Updated version</th>
-          <th>URL</th>
+          <th>URLs</th>
         </tr>
         <tr id="update_LIBRARY_library">
           <td>com.deezer:library</td>
           <td></td>
           <td>1.0.0</td>
           <td>2.0.0</td>
-          <td></td>
+          <td><a href="http://www.example.com/library/releases">Release notes</a><br><a href="http://www.example.com/library">Project</a></td>
         </tr>
       </table>
     </p>
@@ -180,14 +180,14 @@ private const val FULL_RESULT = """
           <th>Name</th>
           <th>Current version</th>
           <th>Updated version</th>
-          <th>URL</th>
+          <th>URLs</th>
         </tr>
         <tr id="update_PLUGIN_plugin">
           <td>com.deezer:plugin</td>
           <td></td>
           <td>1.0.0</td>
           <td>2.0.0</td>
-          <td></td>
+          <td><a href="http://www.example.com/plugin/releases">Release notes</a><br><a href="http://www.example.com/plugin">Project</a></td>
         </tr>
       </table>
     </p>

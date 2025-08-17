@@ -78,7 +78,8 @@ abstract class AbstractFormatterTest {
                         "library",
                         "com.deezer:library",
                         null,
-                        null,
+                        "http://www.example.com/library",
+                        "http://www.example.com/library/releases",
                         "1.0.0".toSimpleVersion(),
                         "2.0.0".toStaticVersion()
                     )
@@ -88,7 +89,8 @@ abstract class AbstractFormatterTest {
                         "plugin",
                         "com.deezer:plugin",
                         null,
-                        null,
+                        "http://www.example.com/plugin",
+                        "http://www.example.com/plugin/releases",
                         "1.0.0".toSimpleVersion(),
                         "2.0.0".toStaticVersion()
                     )
@@ -100,6 +102,7 @@ abstract class AbstractFormatterTest {
                     "com.deezer:ignored-library",
                     null,
                     null,
+                    releaseNoteUrl = null,
                     "1.0.0".toSimpleVersion(),
                     "2.0.0".toStaticVersion()
                 )

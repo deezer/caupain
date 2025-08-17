@@ -57,6 +57,8 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -103,6 +105,8 @@ class CaupainCLITest {
             every { showVersionReferences } returns true
             every { versionCatalogPaths } returns null
             every { versionCatalogPath } returns null
+            every { githubToken } returns "test"
+            every { searchReleaseNote } returns null
         }
     }
 
@@ -198,6 +202,7 @@ class CaupainCLITest {
             every { onlyCheckStaticVersions } returns true
         }
         every { parsedConfiguration.toConfiguration(baseConfiguration) } returns mergedConfiguration
+        every { mergedConfiguration.withReleaseNotes() } returns mergedConfiguration
         val cli = createCli { conf ->
             assertEquals(mergedConfiguration, conf)
         }
@@ -240,6 +245,7 @@ class CaupainCLITest {
             every { onlyCheckStaticVersions } returns true
         }
         every { parsedConfiguration.toConfiguration(any()) } returns mergedConfiguration
+        every { mergedConfiguration.withReleaseNotes() } returns mergedConfiguration
         val policies = listOf(
             mock<Policy> {
                 every { name } returns "test1"
@@ -343,14 +349,14 @@ private val EXPECTED_RESULT = """
           <th>Name</th>
           <th>Current version</th>
           <th>Updated version</th>
-          <th>URL</th>
+          <th>URLs</th>
         </tr>
         <tr id="update_LIBRARY_groovy-core">
           <td>org.codehaus.groovy:groovy</td>
           <td>Groovy core</td>
           <td>3.0.5-alpha-1</td>
           <td>3.0.6</td>
-          <td><a href="https://groovy-lang.org/">https://groovy-lang.org/</a></td>
+          <td><a href="https://groovy-lang.org/">Project</a></td>
         </tr>
       </table>
     </p>
@@ -362,14 +368,14 @@ private val EXPECTED_RESULT = """
           <th>Name</th>
           <th>Current version</th>
           <th>Updated version</th>
-          <th>URL</th>
+          <th>URLs</th>
         </tr>
         <tr id="update_PLUGIN_versions">
           <td>com.github.ben-manes.versions</td>
           <td>Resolved plugin</td>
           <td>0.45.0-SNAPSHOT</td>
           <td>1.0.0</td>
-          <td><a href="http://www.example.com/resolved">http://www.example.com/resolved</a></td>
+          <td><a href="http://www.example.com/resolved">Project</a></td>
         </tr>
       </table>
     </p>

@@ -67,6 +67,8 @@ private data class ConfigurationImpl(
     override val onlyCheckStaticVersions: Boolean? = null,
     override val gradleStabilityLevel: GradleStabilityLevel? = null,
     override val checkIgnored: Boolean? = null,
+    override val githubToken: String? = null,
+    override val searchReleaseNote: Boolean? = null
 ) : Configuration {
 
     override fun validate(logger: Logger) {
@@ -75,6 +77,7 @@ private data class ConfigurationImpl(
         }
     }
 
+    @Suppress("CyclomaticComplexMethod")
     override fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration {
         return ModelConfiguration(
             repositories = repositories?.map { it.toModel() }
@@ -93,7 +96,9 @@ private data class ConfigurationImpl(
             onlyCheckStaticVersions = onlyCheckStaticVersions
                 ?: baseConfiguration.onlyCheckStaticVersions,
             gradleStabilityLevel = gradleStabilityLevel ?: baseConfiguration.gradleStabilityLevel,
-            checkIgnored = checkIgnored ?: baseConfiguration.checkIgnored
+            checkIgnored = checkIgnored ?: baseConfiguration.checkIgnored,
+            searchReleaseNote = searchReleaseNote ?: baseConfiguration.searchReleaseNote,
+            githubToken = githubToken ?: baseConfiguration.githubToken,
         )
     }
 }

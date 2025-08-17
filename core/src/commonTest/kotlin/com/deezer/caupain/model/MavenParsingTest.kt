@@ -27,6 +27,7 @@ package com.deezer.caupain.model
 import com.deezer.caupain.model.maven.Dependency
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.maven.SCMInfos
 import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Version
 import com.deezer.caupain.model.maven.Versioning
@@ -67,7 +68,8 @@ class MavenParsingTest {
                         artifactId = "junit",
                         version = "4.12"
                     )
-                )
+                ),
+                scm = SCMInfos("http://source.android.com")
             ),
             actual = DefaultXml.decodeFromString(INFO)
         )

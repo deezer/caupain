@@ -52,6 +52,8 @@ interface Configuration {
     val onlyCheckStaticVersions: Boolean?
     val gradleStabilityLevel: GradleStabilityLevel?
     val checkIgnored: Boolean?
+    val searchReleaseNote: Boolean?
+    val githubToken: String?
 
     fun validate(logger: Logger)
 

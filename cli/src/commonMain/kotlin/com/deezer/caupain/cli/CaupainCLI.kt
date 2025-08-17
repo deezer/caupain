@@ -56,7 +56,10 @@ import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.installMordant
 import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.output.HelpFormatter
 import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
@@ -64,6 +67,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
@@ -124,7 +128,8 @@ class CaupainCLI(
     option(
         "-i",
         "--version-catalog",
-        help = "Version catalog path. Use multiple times to use multiple version catalogs"
+        help = "Version catalog path. Use multiple times to use multiple version catalogs",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "gradle/libs.versions.toml")
     )
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
         .multiple(default = listOf("gradle/libs.versions.toml".toPath()))
@@ -180,8 +185,11 @@ class CaupainCLI(
             defaultForHelp = CONSOLE_TYPE
         )
 
-    private val outputPath by option("-o", "--output", help = "Report output path")
-        .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+    private val outputPath by option(
+        "-o", "--output",
+        help = "Report output path",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "build/reports/dependencies-update.(html|md|json)")
+    ).path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
     private val showVersionReferences by option(help = "Show versions references update summary in the report")
         .flag()
@@ -189,8 +197,9 @@ class CaupainCLI(
     private val replace by option(
         "--in-place",
         help = "Replace versions in version catalog in place"
-    )
-        .flag()
+    ).flag()
+
+    private val releaseNoteOptions by ReleaseNoteOptions().cooccurring()
 
     private val cacheDir by option(help = "Cache directory. This is not used if --no-cache is set")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
@@ -227,7 +236,6 @@ class CaupainCLI(
                 MordantMarkdownHelpFormatter(
                     context = ctx,
                     showDefaultValues = true,
-                    showRequiredTag = true
                 )
             }
         }
@@ -390,8 +398,21 @@ class CaupainCLI(
             cacheDir = if (doNotCache) null else cacheDir,
             debugHttpCalls = debugHttpCalls,
             gradleStabilityLevel = gradleStabilityLevel,
+            searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,
+            githubToken = releaseNoteOptions?.githubToken
         )
-        return parsedConfiguration?.toConfiguration(baseConfiguration) ?: baseConfiguration
+        val mergedConfiguration = parsedConfiguration?.toConfiguration(baseConfiguration)
+            ?: baseConfiguration
+        // Handle release note options special case
+        return if (
+            releaseNoteOptions == null
+            && parsedConfiguration?.githubToken != null
+            && parsedConfiguration.searchReleaseNote == null
+        ) {
+            mergedConfiguration.withReleaseNotes()
+        } else {
+            mergedConfiguration
+        }
     }
 
     private suspend fun loadGradleVersion(parsedConfiguration: ParsedConfiguration?): String? {
@@ -516,4 +537,17 @@ class CaupainCLI(
         private val GRADLE_URL_REGEX =
             Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
     }
+}
+
+private class ReleaseNoteOptions : OptionGroup() {
+    val githubToken by option(
+        "--github-token",
+        help = "GitHub token for searching release notes",
+        envvar = "CAUPAIN_GITHUB_TOKEN"
+    ).required()
+
+    val searchReleaseNote by option(
+        "--search-release-notes",
+        help = "Search for release notes for updated versions on GitHub",
+    ).flag(defaultForHelp = "true if GitHub token is provided")
 }
