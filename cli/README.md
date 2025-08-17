@@ -50,7 +50,8 @@ Usage: caupain [<options>]
 
 Options:
   -i, --version-catalog=<path>  Version catalog path. Use multiple times to use
-                                multiple version catalogs
+                                multiple version catalogs (default:
+                                gradle/libs.versions.toml)
   --gradle-wrapper-properties=<path>
                                 Gradle wrapper properties path (default:
                                 gradle/wrapper/gradle-wrapper.properties)
@@ -64,10 +65,15 @@ Options:
                                 Gradle stability level (default: stable)
   -t, --output-type=(console|html|markdown|json)
                                 Output type (default: console)
-  -o, --output=<path>           Report output path
+  -o, --output=<path>           Report output path (default:
+                                build/reports/dependencies-update.(html|md|json))
   --show-version-references     Show versions references update summary in the
                                 report
   --in-place                    Replace versions in version catalog in place
+  --github-token=<text>         GitHub token for searching release notes
+  --search-release-notes        Search for release notes for updated versions
+                                on GitHub (default: true if GitHub token is
+                                provided)
   --cache-dir=<path>            Cache directory. This is not used if --no-cache
                                 is set (default: user cache dir)
   --no--cache                   Disable HTTP cache
@@ -159,6 +165,11 @@ onlyCheckStaticVersions = false
 gradleStabilityLevel = "stable"
 # Whether or not to show a section in the report about the ignored available updates. Default is false.
 checkIgnored = true
+# Github token, used to search for release notes on GitHub.
+githubToken = "your-token"
+# Whether or not to search for release notes on GitHub and display the link to them in the results.
+# If a GitHub token is provided, this will be true by default.
+searchReleaseNotes = true
 ```
 
 #### Repository component filtering
