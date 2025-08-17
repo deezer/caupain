@@ -1,6 +1,6 @@
 [versions]
 junit = "4.13.2"
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 kotlinx-coroutines = "1.10.2"
 xml-serialization = "0.91.2"
 okio = "3.16.0"

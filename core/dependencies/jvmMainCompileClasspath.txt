@@ -56,7 +56,7 @@ net.peanuuutz.tomlkt:tomlkt-jvm:0.5.0
 net.peanuuutz.tomlkt:tomlkt:0.5.0
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.21
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21
-org.jetbrains.kotlin:kotlin-stdlib:2.2.0
+org.jetbrains.kotlin:kotlin-stdlib:2.2.10
 org.jetbrains.kotlinx:atomicfu-jvm:0.29.0
 org.jetbrains.kotlinx:atomicfu:0.29.0
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
