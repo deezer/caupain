@@ -6,3 +6,4 @@ outputType = "markdown"
 outputPath = "build/reports/dependency-updates.md"
 showVersionReferences = true
 gradleStabilityLevel = "stable"
+searchReleaseNote = true

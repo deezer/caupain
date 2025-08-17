@@ -57,6 +57,8 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.installMordant
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
@@ -64,6 +66,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
@@ -189,8 +192,9 @@ class CaupainCLI(
     private val replace by option(
         "--in-place",
         help = "Replace versions in version catalog in place"
-    )
-        .flag()
+    ).flag()
+
+    private val releaseNoteOptions by ReleaseNoteOptions().cooccurring()
 
     private val cacheDir by option(help = "Cache directory. This is not used if --no-cache is set")
         .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
@@ -390,8 +394,21 @@ class CaupainCLI(
             cacheDir = if (doNotCache) null else cacheDir,
             debugHttpCalls = debugHttpCalls,
             gradleStabilityLevel = gradleStabilityLevel,
+            searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,
+            githubToken = releaseNoteOptions?.githubToken
         )
-        return parsedConfiguration?.toConfiguration(baseConfiguration) ?: baseConfiguration
+        val mergedConfiguration = parsedConfiguration?.toConfiguration(baseConfiguration)
+            ?: baseConfiguration
+        // Handle release note options special case
+        return if (
+            releaseNoteOptions == null
+            && parsedConfiguration?.githubToken != null
+            && parsedConfiguration.searchReleaseNote == null
+        ) {
+            mergedConfiguration.withReleaseNotes()
+        } else {
+            mergedConfiguration
+        }
     }
 
     private suspend fun loadGradleVersion(parsedConfiguration: ParsedConfiguration?): String? {
@@ -516,4 +533,17 @@ class CaupainCLI(
         private val GRADLE_URL_REGEX =
             Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
     }
+}
+
+private class ReleaseNoteOptions : OptionGroup() {
+    val githubToken by option(
+        "--github-token",
+        help = "GitHub token for searching release notes",
+        envvar = "CAUPAIN_GITHUB_TOKEN"
+    ).required()
+
+    val searchReleaseNote by option(
+        "--search-release-notes",
+        help = "Search for release notes for updated versions on GitHub"
+    ).flag()
 }

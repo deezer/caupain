@@ -253,7 +253,7 @@ public class HtmlFormatter(
                     th { +"Name" }
                     th { +CURRENT_VERSION_TITLE }
                     th { +UPDATED_VERSION_TITLE }
-                    th { +"URL" }
+                    th { +"URLs" }
                 }
                 for (update in updates) {
                     tr {
@@ -263,12 +263,19 @@ public class HtmlFormatter(
                         td { +update.currentVersion.toString() }
                         td { +update.updatedVersion.toString() }
                         td {
-                            update
-                                .url
-                                ?.let { url ->
-                                    a(href = url) { +url }
+                            if (update.url == null && update.releaseNoteUrl == null) {
+                                +""
+                            } else {
+                                var hasContent = false
+                                if (update.releaseNoteUrl != null) {
+                                    a(href = update.releaseNoteUrl) { +"Release notes" }
+                                    hasContent = true
                                 }
-                                ?: +""
+                                if (update.url != null) {
+                                    if (hasContent) br
+                                    a(href = update.url) { +"Project" }
+                                }
+                            }
                         }
                     }
                 }

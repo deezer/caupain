@@ -71,6 +71,8 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
             gradleStabilityLevel.convention(ext.gradleStabilityLevel)
             checkIgnored.convention(ext.checkIgnored)
+            searchReleaseNote.convention(ext.searchReleaseNote)
+            githubToken.convention(ext.githubToken)
         }
         target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
             group = "verification"

@@ -35,9 +35,11 @@ import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
+import com.deezer.caupain.model.github.Release
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.maven.SCMInfos
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
@@ -97,7 +99,9 @@ class DependencyUpdateCheckerTest {
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             excludedKeys = setOf("groovy-json"),
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
-            versionCatalogPaths = VERSION_CATALOGS.keys
+            versionCatalogPaths = VERSION_CATALOGS.keys,
+            githubToken = GITHUB_TOKEN,
+            searchReleaseNote = true
         )
         for (versionCatalogPath in VERSION_CATALOGS.keys) {
             fileSystem.write(versionCatalogPath) {}
@@ -130,9 +134,14 @@ class DependencyUpdateCheckerTest {
     ): HttpResponseData? {
         val url = requestData.url
         // Check authentification
+        val authHeader = requestData.headers[HttpHeaders.Authorization]
         if (url.host == SIGNED_URL.host) {
-            val authHeader = requestData.headers[HttpHeaders.Authorization]
             if (authHeader != AUTHORIZATION) {
+                return scope.respond("Unauthorized", HttpStatusCode.Unauthorized)
+            }
+        }
+        if (url == VERSIONS_RELEASES_URL) {
+            if (authHeader != "Bearer $GITHUB_TOKEN") {
                 return scope.respond("Unauthorized", HttpStatusCode.Unauthorized)
             }
         }
@@ -152,6 +161,11 @@ class DependencyUpdateCheckerTest {
             VERSIONS_INFO_URL -> scope.respondElement(VERSIONS_INFO)
 
             RESOLVED_VERSIONS_INFO_URL -> scope.respondElement(RESOLVED_VERSIONS_INFO)
+
+            VERSIONS_RELEASES_URL -> scope.respond(
+                content = DefaultJson.encodeToString(VERSIONS_RELEASES),
+                headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
+            )
 
             GRADLE_VERSION_URL -> scope.respond(
                 content = GradleVersionResolverTest.GRADLE_RELEASES,
@@ -202,6 +216,7 @@ class DependencyUpdateCheckerTest {
                             dependencyId = "com.github.ben-manes.versions",
                             name = "Resolved plugin",
                             url = "http://www.example.com/resolved",
+                            releaseNoteUrl = VERSIONS_RELEASE_NOTE_URL,
                             currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
                             updatedVersion = "1.0.0".toStaticVersion()
                         )
@@ -285,6 +300,8 @@ class DependencyUpdateCheckerTest {
 
         private val SIGNED_URL = Url("http://www.example.fr")
 
+        private const val GITHUB_TOKEN = "token"
+
         private val SIGNED_REPOSITORY = Repository(
             url = SIGNED_URL.toString(),
             user = USER,
@@ -314,6 +331,7 @@ class DependencyUpdateCheckerTest {
         private fun info(
             name: String?,
             url: String?,
+            scmUrl: String? = null,
             dependency: Pair<String, String>? = null
         ) = MavenInfo(
             name = name,
@@ -327,7 +345,10 @@ class DependencyUpdateCheckerTest {
                             version = "1.0"
                         )
                     }
-            )
+            ),
+            scm = scmUrl?.let { url ->
+                SCMInfos(url = url)
+            }
         )
 
         private val GROOVY_CORE_METADATA = metadata(
@@ -415,9 +436,11 @@ class DependencyUpdateCheckerTest {
                 "com.github.ben-manes.versions.gradle.plugin-1.0.0.pom"
             )
             .build()
+
         private val RESOLVED_VERSIONS_INFO = info(
             name = "Resolved plugin",
             url = "http://www.example.com/resolved",
+            scmUrl = "https://github.com/ben-manes/gradle-versions-plugin"
         )
         private val RESOLVED_VERSIONS_INFO_URL = URLBuilder()
             .takeFrom(SIGNED_URL)
@@ -428,6 +451,20 @@ class DependencyUpdateCheckerTest {
                 "plugin-1.0.pom"
             )
             .build()
+
+        private val VERSIONS_RELEASES_URL = URLBuilder()
+            .takeFrom("https://api.github.com")
+            .appendPathSegments("repos", "ben-manes", "gradle-versions-plugin", "releases")
+            .build()
+
+        private const val VERSIONS_RELEASE_NOTE_URL = "http://www.example.com/versions/releases"
+
+        private val VERSIONS_RELEASES = listOf(
+            Release(
+                name = "1.0.0",
+                url = VERSIONS_RELEASE_NOTE_URL,
+            )
+        )
 
         private val GRADLE_VERSION_URL = Url(GradleConstants.DEFAULT_GRADLE_VERSIONS_URL)
 

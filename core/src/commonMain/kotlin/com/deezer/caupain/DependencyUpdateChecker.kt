@@ -49,6 +49,7 @@ import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
+import com.deezer.caupain.resolver.GithubReleaseNoteResolver
 import com.deezer.caupain.resolver.GradleVersionResolver
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.resolver.MavenInfoResolver
@@ -66,7 +67,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.serialization.kotlinx.json.jsonIo
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineDispatcher
@@ -80,6 +81,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.ExperimentalSerializationApi
 import okio.FileSystem
 import okio.Path
 import okio.SYSTEM
@@ -165,6 +167,7 @@ public interface DependencyUpdateChecker {
 /**
  * Creates a new [DependencyUpdateChecker] instance with the specified parameters.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Suppress("LongParameterList") // Needed to reflect parameters
 public fun DependencyUpdateChecker(
     configuration: Configuration,
@@ -184,7 +187,7 @@ public fun DependencyUpdateChecker(
             configureKtorEngine()
         }
         install(ContentNegotiation) {
-            json(DefaultJson)
+            jsonIo(DefaultJson)
             xml(DefaultXml, ContentType.Any)
         }
         install(Logging) {
@@ -281,6 +284,13 @@ internal class DefaultDependencyUpdateChecker(
         httpClient = httpClient,
         ioDispatcher = ioDispatcher,
         logger = logger
+    )
+
+    private val releaseNoteResolver = GithubReleaseNoteResolver(
+        httpClient = httpClient,
+        ioDispatcher = ioDispatcher,
+        logger = logger,
+        githubToken = configuration.githubToken
     )
 
     private var completed by atomic(0)
@@ -454,12 +464,21 @@ internal class DefaultDependencyUpdateChecker(
                             repository = result.repository,
                             updatedVersion = result.updatedVersion
                         )
+                        val releaseNoteUrl = if (configuration.searchReleaseNote) {
+                            releaseNoteResolver.getReleaseNoteUrl(
+                                mavenInfo = mavenInfo,
+                                updatedVersion = result.updatedVersion
+                            )
+                        } else {
+                            null
+                        }
                         val updateInfo = toUpdateInfo(
                             key = result.dependencyKey,
                             dependency = result.dependency,
                             currentVersion = result.currentVersion,
                             updatedVersion = result.updatedVersion,
-                            mavenInfo = mavenInfo
+                            mavenInfo = mavenInfo,
+                            releaseNoteUrl = releaseNoteUrl
                         )
                         updateInfosMutex.withLock {
                             val infosForType = updatesInfos[type]
@@ -484,12 +503,14 @@ internal class DefaultDependencyUpdateChecker(
         dependency: Dependency,
         currentVersion: Version.Resolved,
         updatedVersion: GradleDependencyVersion.Static,
-        mavenInfo: MavenInfo? = null
+        mavenInfo: MavenInfo? = null,
+        releaseNoteUrl: String? = null,
     ) = UpdateInfo(
         dependency = key,
         dependencyId = dependency.moduleId,
         name = mavenInfo?.name,
         url = mavenInfo?.url,
+        releaseNoteUrl = releaseNoteUrl,
         currentVersion = currentVersion,
         updatedVersion = updatedVersion
     )

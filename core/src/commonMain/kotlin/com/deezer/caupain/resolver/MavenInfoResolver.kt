@@ -28,7 +28,6 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.executeRepositoryRequest
 import com.deezer.caupain.model.group
 import com.deezer.caupain.model.maven.MavenInfo
@@ -109,9 +108,4 @@ internal class MavenInfoResolver(
             ?.firstOrNull { it.extension == "pom" }
             ?.value as? GradleDependencyVersion.Static
     }
-
-    data class Result(
-        val type: UpdateInfo.Type,
-        val info: UpdateInfo
-    )
 }

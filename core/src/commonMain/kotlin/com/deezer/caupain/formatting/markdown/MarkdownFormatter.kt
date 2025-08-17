@@ -147,13 +147,13 @@ public class MarkdownFormatter(
             update.fullyUpdatedLibraries.joinTo(this)
         }
         if (update.fullyUpdatedPlugins.isNotEmpty()) {
-            if (hasContent) append("<br/>")
+            if (hasContent) append(LINE_BREAK)
             hasContent = true
             append("Plugins: ")
             update.fullyUpdatedPlugins.joinTo(this)
         }
         if (!update.isFullyUpdated) {
-            if (hasContent) append("<br/>")
+            if (hasContent) append(LINE_BREAK)
             append("Updates for these dependency using the reference were not found for the updated version:")
             append("<ul>")
             for (key in update.libraryKeys) {
@@ -196,10 +196,16 @@ public class MarkdownFormatter(
                     update.currentVersion.toString(),
                     update.updatedVersion.toString(),
                     buildString {
+                        var hasContent = false
+                        if (update.releaseNoteUrl != null) {
+                            hasContent = true
+                            append("[Release notes](")
+                            append(update.releaseNoteUrl)
+                            append(")")
+                        }
                         if (update.url != null) {
-                            append("[")
-                            append(update.url)
-                            append("](")
+                            if (hasContent) append(LINE_BREAK)
+                            append("[Project](")
                             append(update.url)
                             append(')')
                         }
@@ -264,5 +270,6 @@ public class MarkdownFormatter(
         private const val ID_TITLE = "Id"
         private const val CURRENT_VERSION_TITLE = "Current version"
         private const val UPDATED_VERSION_TITLE = "Updated version"
+        private const val LINE_BREAK = "<br/>"
     }
 }

@@ -61,7 +61,6 @@ class DependencyUpdatePluginTest {
 
     @TestParameter(valuesProvider = GradleVersionProvider::class)
     private lateinit var gradleVersion: String
-
     private lateinit var versionCatalogFile: File
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
@@ -1201,14 +1200,14 @@ private fun expectedHtmlResult(gradleVersion: String) = """
           <th>Name</th>
           <th>Current version</th>
           <th>Updated version</th>
-          <th>URL</th>
+          <th>URLs</th>
         </tr>
         <tr id="update_LIBRARY_androidx-core-ktx">
           <td>androidx.core:core-ktx</td>
           <td>Core Kotlin Extensions</td>
           <td>1.16.0</td>
           <td>1.17.0</td>
-          <td><a href="https://developer.android.com/jetpack/androidx/releases/core#1.17.0">https://developer.android.com/jetpack/androidx/releases/core#1.17.0</a></td>
+          <td><a href="https://developer.android.com/jetpack/androidx/releases/core#1.17.0">Project</a></td>
         </tr>
       </table>
     </p>
@@ -1220,14 +1219,14 @@ private fun expectedHtmlResult(gradleVersion: String) = """
           <th>Name</th>
           <th>Current version</th>
           <th>Updated version</th>
-          <th>URL</th>
+          <th>URLs</th>
         </tr>
         <tr id="update_PLUGIN_kotlin-android">
           <td>org.jetbrains.kotlin.android</td>
           <td>Kotlin Gradle Plugin</td>
           <td>2.0.21</td>
           <td>2.1.20</td>
-          <td><a href="https://kotlinlang.org/">https://kotlinlang.org/</a></td>
+          <td><a href="https://kotlinlang.org/">Project</a></td>
         </tr>
       </table>
     </p>
@@ -1277,13 +1276,13 @@ Gradle current version is $gradleVersion whereas last version is 99.0.0. See [ht
 | coreKtx | 1.16.0          | 1.17.0          | Libraries: androidx-core-ktx |
 | kotlin  | 2.0.21          | 2.1.20          | Plugins: kotlin-android      |
 ## Libraries
-| Id                     | Name                   | Current version | Updated version | URL                                                                                                                                        |
-| ---------------------- | ---------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| androidx.core:core-ktx | Core Kotlin Extensions | 1.16.0          | 1.17.0          | [https://developer.android.com/jetpack/androidx/releases/core#1.17.0](https://developer.android.com/jetpack/androidx/releases/core#1.17.0) |
+| Id                     | Name                   | Current version | Updated version | URL                                                                            |
+| ---------------------- | ---------------------- | --------------- | --------------- | ------------------------------------------------------------------------------ |
+| androidx.core:core-ktx | Core Kotlin Extensions | 1.16.0          | 1.17.0          | [Project](https://developer.android.com/jetpack/androidx/releases/core#1.17.0) |
 ## Plugins
-| Id                           | Name                 | Current version | Updated version | URL                                                |
-| ---------------------------- | -------------------- | --------------- | --------------- | -------------------------------------------------- |
-| org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21          | 2.1.20          | [https://kotlinlang.org/](https://kotlinlang.org/) |
+| Id                           | Name                 | Current version | Updated version | URL                                |
+| ---------------------------- | -------------------- | --------------- | --------------- | ---------------------------------- |
+| org.jetbrains.kotlin.android | Kotlin Gradle Plugin | 2.0.21          | 2.1.20          | [Project](https://kotlinlang.org/) |
 ## Ignored
 | Id                  | Current version | Updated version |
 | ------------------- | --------------- | --------------- |
@@ -1304,6 +1303,7 @@ private fun expectedJsonResult(gradleVersion: String) = """
                 "dependencyId": "androidx.core:core-ktx",
                 "name": "Core Kotlin Extensions",
                 "url": "https://developer.android.com/jetpack/androidx/releases/core#1.17.0",
+                "releaseNoteUrl": null,
                 "currentVersion": "1.16.0",
                 "updatedVersion": "1.17.0"
             }
@@ -1314,6 +1314,7 @@ private fun expectedJsonResult(gradleVersion: String) = """
                 "dependencyId": "org.jetbrains.kotlin.android",
                 "name": "Kotlin Gradle Plugin",
                 "url": "https://kotlinlang.org/",
+                "releaseNoteUrl": null,
                 "currentVersion": "2.0.21",
                 "updatedVersion": "2.1.20"
             }
@@ -1325,6 +1326,7 @@ private fun expectedJsonResult(gradleVersion: String) = """
             "dependencyId": "com.example:ignored",
             "name": null,
             "url": null,
+            "releaseNoteUrl": null,
             "currentVersion": "1.0.0",
             "updatedVersion": "1.1.0"
         }

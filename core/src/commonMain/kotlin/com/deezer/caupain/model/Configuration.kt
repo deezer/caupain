@@ -50,6 +50,9 @@ import kotlin.jvm.JvmOverloads
  * @property gradleStabilityLevel The desired stability level of the Gradle version.
  * @property checkIgnored Whether to check ignored dependencies or not (they will be placed in a specific
  * property in the result to eventually display).
+ * @property searchReleaseNote whether or not to try to find the release note URL for the updated dependencies.
+ * This only works if the source project for the dependency is hosted on GitHub
+ * @property githubToken The GitHub token to use for API requests, if any.
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -68,6 +71,13 @@ public interface Configuration : Serializable {
     public val onlyCheckStaticVersions: Boolean
     public val gradleStabilityLevel: GradleStabilityLevel
     public val checkIgnored: Boolean
+    public val searchReleaseNote: Boolean
+    public val githubToken: String?
+
+    /**
+     * Returns a copy of this configuration with [searchReleaseNote] set to true
+     */
+    public fun withReleaseNotes(): Configuration
 
     public companion object {
         private const val serialVersionUID = 1L
@@ -91,6 +101,10 @@ public interface Configuration : Serializable {
  * @param gradleStabilityLevel The desired stability level of the Gradle version.
  * @param checkIgnored Whether to check ignored dependencies or not (they will be placed in a specific
  * property in the result to eventually display).
+ * @param githubToken The GitHub token to use for API requests, if any.
+ * @param searchReleaseNote whether or not to try to find the release note URL for the updated dependencies.
+ * This only works if the source project for the dependency is hosted on GitHub. This defaults to true
+ * if the GitHub token is provided, otherwise false.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -115,6 +129,8 @@ public fun Configuration(
     onlyCheckStaticVersions: Boolean = true,
     gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
     checkIgnored: Boolean = false,
+    githubToken: String? = null,
+    searchReleaseNote: Boolean = githubToken != null,
 ): Configuration = Configuration(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -128,7 +144,9 @@ public fun Configuration(
     debugHttpCalls = debugHttpCalls,
     onlyCheckStaticVersions = onlyCheckStaticVersions,
     gradleStabilityLevel = gradleStabilityLevel,
-    checkIgnored = checkIgnored
+    checkIgnored = checkIgnored,
+    searchReleaseNote = searchReleaseNote,
+    githubToken = githubToken
 )
 
 /**
@@ -148,6 +166,10 @@ public fun Configuration(
  * @param gradleStabilityLevel The desired stability level of the Gradle version.
  * @param checkIgnored Whether to check ignored dependencies or not (they will be placed in a specific
  * property in the result to eventually display).
+ * @param githubToken The GitHub token to use for API requests, if any.
+ * @param searchReleaseNote whether or not to try to find the release note URL for the updated dependencies.
+ * This only works if the source project for the dependency is hosted on GitHub. This defaults to true
+ * if the GitHub token is provided, otherwise false.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -172,6 +194,8 @@ public fun Configuration(
     onlyCheckStaticVersions: Boolean = true,
     gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
     checkIgnored: Boolean = false,
+    githubToken: String? = null,
+    searchReleaseNote: Boolean = githubToken != null,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -185,7 +209,9 @@ public fun Configuration(
     debugHttpCalls = debugHttpCalls,
     onlyCheckStaticVersions = onlyCheckStaticVersions,
     gradleStabilityLevel = gradleStabilityLevel,
-    checkIgnored = checkIgnored
+    checkIgnored = checkIgnored,
+    searchReleaseNote = searchReleaseNote,
+    githubToken = githubToken
 )
 
 internal data class ConfigurationImpl(
@@ -209,10 +235,14 @@ internal data class ConfigurationImpl(
     override val onlyCheckStaticVersions: Boolean = true,
     override val gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
     override val checkIgnored: Boolean = false,
+    override val searchReleaseNote: Boolean = false,
+    override val githubToken: String? = null
 ) : Configuration {
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path
         get() = versionCatalogPaths.first()
+
+    override fun withReleaseNotes(): Configuration = copy(searchReleaseNote = true)
 }
 
 /**

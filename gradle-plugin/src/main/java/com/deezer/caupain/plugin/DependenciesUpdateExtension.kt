@@ -106,6 +106,21 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
     val checkIgnored: Property<Boolean> = objects.property<Boolean>().convention(false)
 
     /**
+     * The GitHub token to use for API requests, if any.
+     */
+    val githubToken: Property<String> = objects.property<String>()
+
+    /**
+     * Whether or not to try to find the release note URL for the updated dependencies.
+     * This only works if the source project for the dependency is hosted on GitHub.
+     * This is true by default if a GitHub token is provided.
+     *
+     * @see githubToken
+     */
+    val searchReleaseNote: Property<Boolean> =
+        objects.property<Boolean>().convention(githubToken.map { true })
+
+    /**
      * Configure repositories
      */
     fun repositories(action: Action<RepositoryHandler>) {

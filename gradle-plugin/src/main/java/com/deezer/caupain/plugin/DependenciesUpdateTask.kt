@@ -148,6 +148,18 @@ open class DependenciesUpdateTask : DefaultTask() {
     val checkIgnored = project.objects.property<Boolean>()
 
     /**
+     * @see DependenciesUpdateExtension.searchReleaseNote
+     */
+    @get:Internal
+    val searchReleaseNote = project.objects.property<Boolean>()
+
+    /**
+     * @see DependenciesUpdateExtension.githubToken
+     */
+    @get:Internal
+    val githubToken = project.objects.property<String>()
+
+    /**
      * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
      */
     @get:Internal
@@ -259,7 +271,9 @@ open class DependenciesUpdateTask : DefaultTask() {
             debugHttpCalls = true,
             onlyCheckStaticVersions = onlyCheckStaticVersions.get(),
             gradleStabilityLevel = gradleStabilityLevel.get(),
-            checkIgnored = checkIgnored.get()
+            checkIgnored = checkIgnored.get(),
+            searchReleaseNote = searchReleaseNote.getOrElse(false),
+            githubToken = githubToken.orNull
         )
     }
 
