@@ -56,6 +56,7 @@ import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.installMordant
 import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.output.HelpFormatter
 import com.github.ajalt.clikt.output.MordantMarkdownHelpFormatter
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
@@ -127,7 +128,8 @@ class CaupainCLI(
     option(
         "-i",
         "--version-catalog",
-        help = "Version catalog path. Use multiple times to use multiple version catalogs"
+        help = "Version catalog path. Use multiple times to use multiple version catalogs",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "gradle/libs.versions.toml")
     )
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
         .multiple(default = listOf("gradle/libs.versions.toml".toPath()))
@@ -183,8 +185,11 @@ class CaupainCLI(
             defaultForHelp = CONSOLE_TYPE
         )
 
-    private val outputPath by option("-o", "--output", help = "Report output path")
-        .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+    private val outputPath by option(
+        "-o", "--output",
+        help = "Report output path",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "build/reports/dependencies-update.(html|md|json)")
+    ).path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
     private val showVersionReferences by option(help = "Show versions references update summary in the report")
         .flag()
@@ -231,7 +236,6 @@ class CaupainCLI(
                 MordantMarkdownHelpFormatter(
                     context = ctx,
                     showDefaultValues = true,
-                    showRequiredTag = true
                 )
             }
         }
@@ -544,6 +548,6 @@ private class ReleaseNoteOptions : OptionGroup() {
 
     val searchReleaseNote by option(
         "--search-release-notes",
-        help = "Search for release notes for updated versions on GitHub"
-    ).flag()
+        help = "Search for release notes for updated versions on GitHub",
+    ).flag(defaultForHelp = "true if GitHub token is provided")
 }
