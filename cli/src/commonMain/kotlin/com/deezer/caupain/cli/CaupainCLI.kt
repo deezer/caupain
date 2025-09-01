@@ -269,7 +269,11 @@ class CaupainCLI(
                 fileSystem,
                 ioDispatcher,
                 logger,
-                CLISelfUpdateResolver(ioDispatcher, fileSystem)
+                CLISelfUpdateResolver(
+                    ioDispatcher = ioDispatcher,
+                    fileSystem = fileSystem,
+                    githubToken = finalConfiguration.githubToken
+                )
             )
 
         if (listPolicies) {

@@ -29,6 +29,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class Release(
-    val name: String,
+    val name: String?,
+    @SerialName("tag_name") val tagName: String?,
     @SerialName("html_url") val url: String,
-)
+) {
+    fun matches(versionName: String): Boolean {
+        return name?.endsWith(versionName) == true
+                || tagName?.endsWith(versionName) == true
+    }
+}

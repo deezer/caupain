@@ -97,7 +97,7 @@ class SelfUpdateResolverTest {
         return if (url.toString() == CLISelfUpdateResolver.UPDATE_URL) {
             scope.respond(
                 content = GITHUB_RESPONSE,
-                headers = headersOf(HttpHeaders.ContentType, "application/json")
+                headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
             )
         } else {
             null

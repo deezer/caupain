@@ -34,6 +34,7 @@ import com.deezer.caupain.resolver.SelfUpdateResolver
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -42,21 +43,27 @@ import okio.FileSystem
 internal class CLISelfUpdateResolver(
     private val ioDispatcher: CoroutineDispatcher,
     private val fileSystem: FileSystem,
+    private val githubToken: String? = null
 ) : SelfUpdateResolver {
 
     override suspend fun resolveSelfUpdate(
         checker: DependencyUpdateChecker,
         versionCatalogs: List<VersionCatalog>
     ): SelfUpdateInfo? {
-        val latestRelease = withContext(ioDispatcher) {
+        val latestTag = withContext(ioDispatcher) {
             checker
                 .httpClient
-                .get(UPDATE_URL) { header("X-GitHub-Api-Version", "2022-11-28") }
+                .get(UPDATE_URL) {
+                    header("X-GitHub-Api-Version", "2022-11-28")
+                    if (githubToken != null) header(HttpHeaders.Authorization, "Bearer $githubToken")
+                    header(HttpHeaders.Accept, "application/vnd.github+json")
+                }
                 .takeIf { it.status.isSuccess() }
                 ?.body<GithubRelease>()
+                ?.tagName
         } ?: return null
         val updatedVersion = TAG_REGEX
-            .find(latestRelease.tagName)
+            .find(latestTag)
             ?.groupValues
             ?.getOrNull(1)
             ?.let { GradleDependencyVersion(it) as? GradleDependencyVersion.Static }

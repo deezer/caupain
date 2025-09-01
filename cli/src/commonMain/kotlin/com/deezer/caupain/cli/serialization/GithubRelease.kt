@@ -31,5 +31,5 @@ import kotlinx.serialization.Serializable
 data class GithubRelease(
     val id: Long,
     val url: String,
-    @SerialName("tag_name") val tagName: String
+    @SerialName("tag_name") val tagName: String?
 )

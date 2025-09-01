@@ -57,8 +57,6 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -200,6 +198,7 @@ class CaupainCLITest {
             every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
             every { versionCatalogPaths } returns listOf(this@CaupainCLITest.versionCatalogPath)
             every { onlyCheckStaticVersions } returns true
+            every { githubToken } returns null
         }
         every { parsedConfiguration.toConfiguration(baseConfiguration) } returns mergedConfiguration
         every { mergedConfiguration.withReleaseNotes() } returns mergedConfiguration
@@ -243,6 +242,7 @@ class CaupainCLITest {
             every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
             every { versionCatalogPaths } returns listOf(this@CaupainCLITest.versionCatalogPath)
             every { onlyCheckStaticVersions } returns true
+            every { githubToken } returns null
         }
         every { parsedConfiguration.toConfiguration(any()) } returns mergedConfiguration
         every { mergedConfiguration.withReleaseNotes() } returns mergedConfiguration

@@ -88,7 +88,7 @@ internal class GithubReleaseNoteResolver(
                 ?.body<List<Release>>()
                 .orEmpty()
         }
-        val releaseNote = releaseNotes.firstOrNull { it.name.endsWith(version) }
+        val releaseNote = releaseNotes.firstOrNull { it.matches(version) }
         if (releaseNote != null) return releaseNote.url
         // If not present, try to find the changelog file in the repository
         val searchResults = withContext(ioDispatcher) {

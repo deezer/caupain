@@ -93,6 +93,7 @@ private data class ConfigurationImpl(
             policy = policy ?: baseConfiguration.policy,
             policyPluginsDir = policyPluginDir ?: baseConfiguration.policyPluginsDir,
             cacheDir = cacheDir ?: baseConfiguration.cacheDir,
+            debugHttpCalls = baseConfiguration.debugHttpCalls,
             onlyCheckStaticVersions = onlyCheckStaticVersions
                 ?: baseConfiguration.onlyCheckStaticVersions,
             gradleStabilityLevel = gradleStabilityLevel ?: baseConfiguration.gradleStabilityLevel,

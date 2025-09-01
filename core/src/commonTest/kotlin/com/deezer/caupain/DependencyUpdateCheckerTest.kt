@@ -462,6 +462,7 @@ class DependencyUpdateCheckerTest {
         private val VERSIONS_RELEASES = listOf(
             Release(
                 name = "1.0.0",
+                tagName = null,
                 url = VERSIONS_RELEASE_NOTE_URL,
             )
         )
