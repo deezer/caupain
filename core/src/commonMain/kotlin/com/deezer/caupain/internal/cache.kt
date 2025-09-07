@@ -40,8 +40,6 @@ import io.ktor.util.date.GMTDate
 import io.ktor.util.flattenEntries
 import io.ktor.util.logging.KtorSimpleLogger
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -54,7 +52,7 @@ import okio.Path
 internal fun FileStorage(
     fileSystem: FileSystem,
     directory: Path,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
+    dispatcher: CoroutineDispatcher = IODispatcher
 ): CacheStorage = CachingCacheStorage(FileCacheStorage(fileSystem, directory, dispatcher))
 
 private val LOGGER = KtorSimpleLogger("io.ktor.client.plugins.HttpCache")
@@ -106,7 +104,7 @@ private class CachingCacheStorage(
 private class FileCacheStorage(
     private val fileSystem: FileSystem,
     private val directory: Path,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val dispatcher: CoroutineDispatcher = IODispatcher
 ) : CacheStorage {
 
     private val mutexes = ConcurrentMutableMap<String, Mutex>()

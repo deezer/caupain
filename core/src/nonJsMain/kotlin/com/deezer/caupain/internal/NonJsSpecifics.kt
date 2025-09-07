@@ -22,35 +22,16 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.formatting.json
+package com.deezer.caupain.internal
 
-import com.deezer.caupain.formatting.FileFormatter
-import com.deezer.caupain.formatting.model.Input
-import com.deezer.caupain.internal.DefaultFileSystem
-import com.deezer.caupain.internal.IODispatcher
-import com.deezer.caupain.serialization.DefaultJson
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.okio.encodeToBufferedSink
-import okio.BufferedSink
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import okio.FileSystem
-import okio.Path
+import okio.SYSTEM
 
-/**
- * JsonFormatter is a [FileFormatter] that formats the output as JSON.
- *
- * @param path The path to the JSON file to write.
- * @param fileSystem The file system to use for writing the file. Default uses the native file system.
- * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default uses IO dispatcher.
- */
-@OptIn(ExperimentalSerializationApi::class)
-public class JsonFormatter(
-    path: Path,
-    fileSystem: FileSystem = DefaultFileSystem,
-    ioDispatcher: CoroutineDispatcher = IODispatcher,
-) : FileFormatter(path, fileSystem, ioDispatcher) {
+internal actual val IODispatcher: CoroutineDispatcher
+    get() = Dispatchers.IO
 
-    override suspend fun BufferedSink.writeUpdates(input: Input) {
-        DefaultJson.encodeToBufferedSink(input, this)
-    }
-}
+internal actual val DefaultFileSystem: FileSystem
+    get() = FileSystem.SYSTEM

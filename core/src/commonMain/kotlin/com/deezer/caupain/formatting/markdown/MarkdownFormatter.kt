@@ -28,29 +28,28 @@ import com.deezer.caupain.formatting.FileFormatter
 import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
+import com.deezer.caupain.internal.DefaultFileSystem
+import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.asAppendable
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import okio.BufferedSink
 import okio.FileSystem
 import okio.Path
-import okio.SYSTEM
 
 /**
  * MarkdownFormatter is a [Formatter] that formats the output as Markdown.
  *
  * @param path The path to the Markdown file to write.
  * @param fileSystem The file system to use for writing the file. Default uses the native file system.
- * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default is [Dispatchers.IO].
+ * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default is IO dispatcher.
  */
 public class MarkdownFormatter(
     path: Path,
-    fileSystem: FileSystem = FileSystem.SYSTEM,
-    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    fileSystem: FileSystem = DefaultFileSystem,
+    ioDispatcher: CoroutineDispatcher = IODispatcher,
 ) : FileFormatter(path, fileSystem, ioDispatcher) {
 
     override suspend fun BufferedSink.writeUpdates(input: Input) {
