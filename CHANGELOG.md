@@ -4,6 +4,7 @@
 
 ### Added
 - Add release note URL resolver if dependency has a GitHub project (#53)
+- JS version for core library (#54)
 
 ### Changed
 
