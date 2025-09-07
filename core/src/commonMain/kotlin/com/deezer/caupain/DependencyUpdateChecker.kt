@@ -28,7 +28,9 @@ import com.deezer.caupain.DependencyUpdateChecker.Companion.DONE
 import com.deezer.caupain.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.GATHERING_INFO_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.PARSING_TASK
+import com.deezer.caupain.internal.DefaultFileSystem
 import com.deezer.caupain.internal.FileStorage
+import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.configureKtorEngine
 import com.deezer.caupain.internal.extension
 import com.deezer.caupain.model.Configuration
@@ -51,8 +53,8 @@ import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
 import com.deezer.caupain.resolver.GithubReleaseNoteResolver
 import com.deezer.caupain.resolver.GradleVersionResolver
-import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.resolver.MavenInfoResolver
+import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.resolver.UpdatedVersionResolver
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
@@ -71,8 +73,6 @@ import io.ktor.serialization.kotlinx.json.jsonIo
 import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -84,7 +84,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import okio.FileSystem
 import okio.Path
-import okio.SYSTEM
 
 /**
  * Given a version catalog, this interrogates Maven repositories (specified via [Configuration]), and
@@ -174,8 +173,8 @@ public fun DependencyUpdateChecker(
     currentGradleVersion: String?,
     logger: Logger = Logger.EMPTY,
     selfUpdateResolver: SelfUpdateResolver? = null,
-    fileSystem: FileSystem = FileSystem.SYSTEM,
-    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    fileSystem: FileSystem = DefaultFileSystem,
+    ioDispatcher: CoroutineDispatcher = IODispatcher,
     policies: List<Policy>? = null,
     gradleVersionsUrl: String = GradleConstants.DEFAULT_GRADLE_VERSIONS_URL,
 ): DependencyUpdateChecker = DefaultDependencyUpdateChecker(
@@ -215,7 +214,7 @@ public fun DependencyUpdateChecker(
     versionCatalogParser = DefaultVersionCatalogParser(
         toml = DefaultToml,
         fileSystem = fileSystem,
-        ioDispatcher = Dispatchers.IO
+        ioDispatcher = IODispatcher
     ),
     logger = logger,
     selfUpdateResolver = selfUpdateResolver,

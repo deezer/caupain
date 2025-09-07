@@ -25,26 +25,25 @@
 package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.internal.DefaultFileSystem
+import com.deezer.caupain.internal.IODispatcher
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import okio.BufferedSink
 import okio.FileSystem
 import okio.Path
-import okio.SYSTEM
 
 /**
  * Interface for formatters that write to a file.
  *
  * @property path The path to the HTML file to write.
  * @property fileSystem The file system to use for writing the file. Default uses the native file system.
- * @property ioDispatcher The coroutine dispatcher to use for IO operations. Default is [Dispatchers.IO].
+ * @property ioDispatcher The coroutine dispatcher to use for IO operations. Default is IO dispatcher.
  */
 public abstract class FileFormatter(
     protected val path: Path,
-    protected val fileSystem: FileSystem = FileSystem.SYSTEM,
-    protected val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    protected val fileSystem: FileSystem = DefaultFileSystem,
+    protected val ioDispatcher: CoroutineDispatcher = IODispatcher,
 ) : Formatter {
 
     /**

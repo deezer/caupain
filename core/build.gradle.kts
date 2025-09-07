@@ -47,6 +47,9 @@ kotlin {
         linuxX64()
         linuxArm64()
         jvm()
+        js {
+            nodejs()
+        }
 
         applyDefaultHierarchyTemplate()
 
@@ -86,14 +89,22 @@ kotlin {
         val nonLinuxArm64Main by creating {
             dependsOn(commonMain.get())
         }
+        val nonJsMain by creating {
+            dependsOn(commonMain.get())
+        }
+        val nonJsTest by creating {
+            dependsOn(commonTest.get())
+        }
         jvmMain {
             dependsOn(nonLinuxArm64Main)
+            dependsOn(nonJsMain)
             dependencies {
                 implementation(libs.slf4j.nop)
                 implementation(libs.ktor.client.okhttp)
             }
         }
         jvmTest {
+            dependsOn(nonJsTest)
             dependencies {
                 implementation(libs.kotlin.test.junit)
                 implementation(libs.junit)
@@ -117,6 +128,15 @@ kotlin {
             }
         }
         linuxX64Main.get().dependsOn(nonLinuxArm64Main)
+        jsMain {
+            dependsOn(nonLinuxArm64Main)
+            dependencies {
+                implementation(libs.ktor.client.js)
+                implementation(libs.okio.node.filesystem)
+            }
+        }
+        nativeMain.get().dependsOn(nonJsMain)
+        nativeTest.get().dependsOn(nonJsTest)
     }
 
     abiValidation {

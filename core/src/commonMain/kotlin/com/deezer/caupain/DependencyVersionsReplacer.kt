@@ -24,6 +24,8 @@
 
 package com.deezer.caupain
 
+import com.deezer.caupain.internal.DefaultFileSystem
+import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -32,7 +34,6 @@ import com.deezer.caupain.model.VersionCatalogInfo
 import dev.drewhamilton.poko.Poko
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import okio.BufferedSink
@@ -40,7 +41,6 @@ import okio.BufferedSource
 import okio.FileSystem
 import okio.IOException
 import okio.Path
-import okio.SYSTEM
 import okio.buffer
 import okio.use
 import kotlin.uuid.ExperimentalUuidApi
@@ -158,8 +158,8 @@ public interface DependencyVersionsReplacer {
  * Creates a new instance of [DependencyVersionsReplacer].
  */
 public fun DependencyVersionsReplacer(
-    fileSystem: FileSystem = FileSystem.SYSTEM,
-    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    fileSystem: FileSystem = DefaultFileSystem,
+    ioDispatcher: CoroutineDispatcher = IODispatcher,
     defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): DependencyVersionsReplacer = DefaultDependencyVersionsReplacer(
     fileSystem = fileSystem,
@@ -170,7 +170,7 @@ public fun DependencyVersionsReplacer(
 @OptIn(ExperimentalUuidApi::class)
 internal class DefaultDependencyVersionsReplacer(
     private val fileSystem: FileSystem,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val ioDispatcher: CoroutineDispatcher = IODispatcher,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : DependencyVersionsReplacer {
     override suspend fun replaceVersions(

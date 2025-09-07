@@ -27,11 +27,10 @@ package com.deezer.caupain.versionCatalog
 import com.deezer.caupain.antlr.TomlLexer
 import com.deezer.caupain.antlr.TomlParser
 import com.deezer.caupain.antlr.TomlParserBaseVisitor
+import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.VersionCatalogInfo.VersionPosition
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import okio.FileSystem
 import okio.Path
@@ -40,7 +39,7 @@ import org.antlr.v4.kotlinruntime.CommonTokenStream
 
 internal class SupplementaryParser(
     private val fileSystem: FileSystem,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val ioDispatcher: CoroutineDispatcher = IODispatcher
 ) {
     suspend fun parse(versionCatalogPath: Path): VersionCatalogInfo {
         val charStream = withContext(ioDispatcher) {
