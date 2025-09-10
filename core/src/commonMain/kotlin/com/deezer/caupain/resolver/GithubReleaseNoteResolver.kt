@@ -36,6 +36,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
+import io.ktor.http.URLParserException
 import io.ktor.http.Url
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
@@ -58,7 +59,14 @@ internal class GithubReleaseNoteResolver(
             ?.scm
             ?.url
             ?.takeUnless { it.isBlank() }
-            ?.let { Url(it) }
+            ?.replace("git@", "https://")
+            ?.let {
+                try {
+                    Url(it)
+                } catch (_: URLParserException) {
+                    null
+                }
+            }
             ?: return null
         if (developerUrl.host != GITHUB_HOST) return null
         return getReleaseNoteUrl(

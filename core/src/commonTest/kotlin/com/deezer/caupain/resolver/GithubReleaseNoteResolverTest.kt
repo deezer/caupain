@@ -938,7 +938,7 @@ private val MAVEN_INFO_RELEASE = MavenInfo(
 
 private val MAVEN_INFO_CHANGELOG = MavenInfo(
     scm = SCMInfos(
-        url = "http://github.com/$OWNER/$CHANGELOG_REPO"
+        url = "git@github.com/$OWNER/$CHANGELOG_REPO"
     )
 )
 
