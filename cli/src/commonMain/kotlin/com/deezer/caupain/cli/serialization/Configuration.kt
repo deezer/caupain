@@ -61,7 +61,7 @@ private data class ConfigurationImpl(
     override val policyPluginDir: Path? = null,
     override val cacheDir: Path? = null,
     override val showVersionReferences: Boolean? = null,
-    @Serializable(OutputTypeSerializer::class) override val outputType: Configuration.OutputType? = Configuration.OutputType.CONSOLE,
+    @Serializable(OutputTypeSerializer::class) override val outputType: Configuration.OutputType? = null,
     override val outputPath: Path? = null,
     override val gradleWrapperPropertiesPath: Path? = null,
     override val onlyCheckStaticVersions: Boolean? = null,
