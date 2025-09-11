@@ -203,8 +203,3 @@ public final class com/deezer/caupain/plugin/internal/ProvidersKt {
 	public static final fun asOptional (Lorg/gradle/api/provider/Provider;)Lorg/gradle/api/provider/Provider;
 }
 
-public final class com/deezer/caupain/plugin/internal/TasksKt$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public final synthetic fun execute (Ljava/lang/Object;)V
-}
-

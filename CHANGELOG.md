@@ -7,6 +7,7 @@
 - JS version for core library (#54)
 
 ### Changed
+- Updated to Kotlin 2.2.20
 
 ### Deprecated
 
