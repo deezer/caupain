@@ -63,7 +63,7 @@ gradlePlugin {
             displayName = "Caupain"
             description = "Plugin to check for dependency updates from version catalog"
             tags = listOf("dependencies", "update", "version-catalog")
-            implementationClass = "com.deezer.caupain.plugin.DependencyUpdatePlugin"
+            implementationClass = "com.deezer.caupain.plugin.CaupainPlugin"
         }
     }
 }
