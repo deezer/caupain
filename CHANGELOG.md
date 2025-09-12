@@ -3,11 +3,8 @@
 ## Unreleased
 
 ### Added
-- Add release note URL resolver if dependency has a GitHub project (#53)
-- JS version for core library (#54)
 
 ### Changed
-- Updated to Kotlin 2.2.20
 
 ### Deprecated
 
@@ -16,6 +13,17 @@
 ### Fixed
 
 ### Security
+
+## 1.6.0 - 2025-09-12
+
+### Added
+
+- Add release note URL resolver if dependency has a GitHub project (#53)
+- JS version for core library (#54)
+
+### Changed
+
+- Updated to Kotlin 2.2.20
 
 ## 1.5.1 - 2025-08-11
 
