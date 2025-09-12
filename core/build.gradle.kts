@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.dependency.guard)
     alias(libs.plugins.cashapp.burst)
     alias(libs.plugins.poko)
+    alias(libs.plugins.testkit.support)
 }
 
 dependencies {

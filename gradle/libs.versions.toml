@@ -26,6 +26,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fake-filesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 okio-node-filesystem = { module = "com.squareup.okio:okio-nodefilesystem", version.ref = "okio" }
 kotlinx-serialization-toml = "net.peanuuutz.tomlkt:tomlkt:0.5.0"
+ktor-http = { module = "io.ktor:ktor-http", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
@@ -87,3 +88,4 @@ gradle-plugin-publish = "com.gradle.plugin-publish:2.0.0"
 dependency-guard = "com.dropbox.dependency-guard:0.5.0"
 cashapp-burst = "app.cash.burst:2.9.0"
 poko = "dev.drewhamilton.poko:0.19.3"
+testkit-support = "com.autonomousapps.testkit:0.16"

@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.gradle.plugin.publish)
     alias(libs.plugins.dependency.guard)
     alias(libs.plugins.build.config)
+    alias(libs.plugins.testkit.support)
 }
 
 compatPatrouille {
@@ -30,17 +31,22 @@ kotlin {
     }
 }
 
+gradleTestKitSupport {
+    withSupportLibrary()
+}
+
 dependencies {
     api(projects.core)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit)
-    testImplementation(libs.mockwebserver)
-    testImplementation(libs.mockwebserver.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.test.parameter.injector)
+    functionalTestImplementation(libs.ktor.http)
+    functionalTestImplementation(libs.junit)
+    functionalTestImplementation(libs.kotlin.test)
+    functionalTestImplementation(libs.kotlin.test.junit)
+    functionalTestImplementation(libs.mockwebserver)
+    functionalTestImplementation(libs.mockwebserver.junit)
+    functionalTestImplementation(libs.kotlinx.coroutines.test)
+    functionalTestImplementation(libs.test.parameter.injector)
 }
 
 dependencyGuard {
