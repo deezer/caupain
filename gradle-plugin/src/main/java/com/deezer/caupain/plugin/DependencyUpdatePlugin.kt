@@ -43,7 +43,7 @@ import kotlin.jvm.optionals.getOrNull
  * Plugin to check for dependency updates.
  */
 @Suppress("UnstableApiUsage")
-open class CaupainPlugin : Plugin<Project> {
+open class DependencyUpdatePlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         require(target == target.rootProject) {
