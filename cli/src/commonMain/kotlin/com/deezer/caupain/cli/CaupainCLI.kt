@@ -209,7 +209,11 @@ class CaupainCLI(
             defaultForHelp = "user cache dir"
         )
 
-    private val deprecatedDoNotCache by option("--no--cache", help = "Disable HTTP cache", hidden = true)
+    private val deprecatedDoNotCache by option(
+        "--no--cache",
+        help = "Disable HTTP cache",
+        hidden = true
+    )
         .flag()
         .deprecated("use --no-cache instead")
 
