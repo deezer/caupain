@@ -64,6 +64,7 @@ import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -208,7 +209,12 @@ class CaupainCLI(
             defaultForHelp = "user cache dir"
         )
 
-    private val doNotCache by option("--no--cache", help = "Disable HTTP cache").flag()
+    private val deprecatedDoNotCache by option("--no--cache", help = "Disable HTTP cache")
+        .flag()
+        .deprecated("use --no-cache instead")
+
+    private val doNotCache by option("--no-cache", help = "Disable HTTP cache")
+        .flag()
 
     private val logLevel by mutuallyExclusiveOptions(
         option("-q", "--quiet", help = "Suppress all output")
@@ -270,6 +276,7 @@ class CaupainCLI(
                 ioDispatcher,
                 logger,
                 CLISelfUpdateResolver(
+                    logger = logger,
                     ioDispatcher = ioDispatcher,
                     fileSystem = fileSystem,
                     githubToken = finalConfiguration.githubToken
@@ -399,7 +406,7 @@ class CaupainCLI(
             excludedKeys = excluded.toSet(),
             policyPluginsDir = policyPluginDir,
             policy = policy,
-            cacheDir = if (doNotCache) null else cacheDir,
+            cacheDir = if (deprecatedDoNotCache || doNotCache) null else cacheDir,
             debugHttpCalls = debugHttpCalls,
             gradleStabilityLevel = gradleStabilityLevel,
             searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,
