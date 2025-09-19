@@ -34,6 +34,10 @@ import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.serialization.DefaultXml
+import dev.mokkery.MockMode
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verify
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -53,11 +57,13 @@ import io.ktor.serialization.kotlinx.xml.xml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import kotlinx.serialization.encodeToString
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MavenInfoResolverTest {
@@ -67,8 +73,13 @@ class MavenInfoResolverTest {
 
     private lateinit var resolver: MavenInfoResolver
 
+    private lateinit var logger: Logger
+
+    private var hasError = false
+
     @BeforeTest
     fun setup() {
+        logger = mock(MockMode.autoUnit)
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
@@ -80,7 +91,7 @@ class MavenInfoResolverTest {
                 }
             },
             ioDispatcher = testDispatcher,
-            logger = Logger.EMPTY
+            logger = logger
         )
     }
 
@@ -88,6 +99,7 @@ class MavenInfoResolverTest {
         scope: MockRequestHandleScope,
         requestData: HttpRequestData
     ): HttpResponseData? {
+        if (hasError) throw TestException()
         val url = requestData.url
         return when (url) {
             CLASSIC_INFO_URL -> scope.respondElement(CLASSIC_INFO)
@@ -102,6 +114,7 @@ class MavenInfoResolverTest {
     @AfterTest
     fun teardown() {
         engine.close()
+        hasError = false
     }
 
     @Test
@@ -120,6 +133,22 @@ class MavenInfoResolverTest {
                 updatedVersion = GradleDependencyVersion.Exact("1.0")
             )
         )
+    }
+
+    @Test
+    fun testError() = runTest(testDispatcher) {
+        hasError = true
+        assertNull(
+            resolver.getMavenInfo(
+                dependency = Dependency.Library(
+                    module = "com.example:classic",
+                    version = Version.Simple(GradleDependencyVersion.Exact("0.9"))
+                ),
+                repository = BASE_REPOSITORY,
+                updatedVersion = GradleDependencyVersion.Exact("1.0")
+            )
+        )
+        verify { logger.error(any(), any<TestException>()) }
     }
 
     @Test
@@ -263,4 +292,6 @@ class MavenInfoResolverTest {
             )
             .build()
     }
+
+    private class TestException : IOException()
 }

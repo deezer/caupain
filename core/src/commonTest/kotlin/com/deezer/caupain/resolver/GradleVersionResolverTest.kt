@@ -26,8 +26,13 @@ package com.deezer.caupain.resolver
 
 import app.cash.burst.Burst
 import app.cash.burst.burstValues
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.serialization.DefaultJson
+import dev.mokkery.MockMode
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verify
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -47,11 +52,13 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import org.intellij.lang.annotations.Language
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Burst
@@ -66,12 +73,17 @@ class GradleVersionResolverTest(
 ) {
     private lateinit var engine: MockEngine
 
+    private var hasError = false
+
     private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var resolver: GradleVersionResolver
 
+    private lateinit var logger: Logger
+
     @BeforeTest
     fun setup() {
+        logger = mock(MockMode.autoUnit)
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
@@ -82,6 +94,7 @@ class GradleVersionResolverTest(
                     json(DefaultJson, ContentType.Application.Json)
                 }
             },
+            logger = logger,
             gradleVersionsUrl = GRADLE_VERSIONS_URL.toString(),
             stabilityLevel = testInfo.stabilityLevel,
             ioDispatcher = testDispatcher
@@ -92,6 +105,7 @@ class GradleVersionResolverTest(
         scope: MockRequestHandleScope,
         requestData: HttpRequestData
     ): HttpResponseData? {
+        if (hasError) throw TestException()
         val url = requestData.url
         return if (url == GRADLE_VERSIONS_URL) {
             scope.respond(
@@ -106,11 +120,24 @@ class GradleVersionResolverTest(
     @AfterTest
     fun teardown() {
         engine.close()
+        hasError = false
     }
 
     @Test
     fun testUpdate() = runTest(testDispatcher) {
         assertEquals(testInfo.expectedVersion, resolver.getUpdatedVersion("8.12"))
+    }
+
+    @Test
+    fun testUpdateError() = runTest(testDispatcher) {
+        hasError = true
+        assertNull(resolver.getUpdatedVersion("8.12"))
+        verify {
+            logger.error(
+                message = "Failed to fetch Gradle versions from $GRADLE_VERSIONS_URL",
+                throwable = any<TestException>()
+            )
+        }
     }
 
     data class TestInfo(
@@ -119,6 +146,8 @@ class GradleVersionResolverTest(
     ) {
         override fun toString(): String = stabilityLevel.name
     }
+
+    private class TestException : IOException()
 
     @Suppress("LargeClass")
     companion object {

@@ -24,6 +24,7 @@
 
 package com.deezer.caupain
 
+import com.deezer.caupain.DependencyUpdateChecker.Companion.CLEANING_CACHE_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.DONE
 import com.deezer.caupain.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.GATHERING_INFO_TASK
@@ -320,6 +321,7 @@ internal class DefaultDependencyUpdateChecker(
             .map { versionCatalogParser.parseDependencyInfo(it) }
         val cacheDir = configuration.cacheDir
         if (cacheDir != null && configuration.cleanCache) {
+            progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(CLEANING_CACHE_TASK)
             try {
                 fileSystem.deleteRecursively(cacheDir)
             } catch (_: IOException) {

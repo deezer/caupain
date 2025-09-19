@@ -29,6 +29,10 @@ import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.SCMInfos
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.toStaticVersion
+import dev.mokkery.MockMode
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verify
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -46,7 +50,9 @@ import io.ktor.serialization.kotlinx.json.jsonIo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,16 +61,27 @@ import kotlin.test.assertNull
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
 class GithubReleaseNoteResolverTest {
 
+    private var operationError: Operation? = null
+
     private lateinit var engine: MockEngine
+
+    private lateinit var logger: Logger
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @BeforeTest
     fun setup() {
+        logger = mock(MockMode.autoUnit)
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
         }
+    }
+
+    @AfterTest
+    fun teardown() {
+        engine.close()
+        operationError = null
     }
 
     private fun createResolver(token: String? = TOKEN): GithubReleaseNoteResolver {
@@ -75,7 +92,7 @@ class GithubReleaseNoteResolverTest {
                 }
             },
             ioDispatcher = testDispatcher,
-            logger = Logger.EMPTY,
+            logger = logger,
             githubToken = token
         )
     }
@@ -91,17 +108,29 @@ class GithubReleaseNoteResolverTest {
             return scope.respond("Unauthorized", HttpStatusCode.Unauthorized)
         }
         return when (url) {
-            RELEASE_NOTE_GITHUB_URL -> scope.respond(
-                content = RELEASE_NOTES,
-                headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
-            )
+            RELEASE_NOTE_GITHUB_URL -> {
+                if (operationError == Operation.RELEASE_NOTES) {
+                    throw TestException()
+                }
+                scope.respond(
+                    content = RELEASE_NOTES,
+                    headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
+                )
+            }
 
-            CHANGELOG_GITHUB_URL -> scope.respond(
-                content = CHANGELOG_RESULT,
-                headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
-            )
+            CHANGELOG_GITHUB_URL -> {
+                if (operationError == Operation.CHANGELOG) {
+                    throw TestException()
+                }
+                scope.respond(
+                    content = CHANGELOG_RESULT,
+                    headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
+                )
+            }
 
-            else -> null
+            else -> {
+                null
+            }
         }
     }
 
@@ -129,6 +158,23 @@ class GithubReleaseNoteResolverTest {
     }
 
     @Test
+    fun testReleaseNoteError() = runTest(testDispatcher) {
+        operationError = Operation.RELEASE_NOTES
+        assertNull(
+            createResolver().getReleaseNoteUrl(
+                MAVEN_INFO_RELEASE,
+                "1.5.1".toStaticVersion()
+            )
+        )
+        verify {
+            logger.error(
+                message = "Failed to fetch releases for $OWNER/$RELEASE_REPO",
+                throwable = any<TestException>()
+            )
+        }
+    }
+
+    @Test
     fun testChangelog() = runTest(testDispatcher) {
         assertEquals(
             expected = CHANGELOG_URL,
@@ -137,6 +183,28 @@ class GithubReleaseNoteResolverTest {
                 "2.0.0".toStaticVersion()
             )
         )
+    }
+
+    @Test
+    fun testChangelogError() = runTest(testDispatcher) {
+        operationError = Operation.CHANGELOG
+        assertNull(
+            createResolver().getReleaseNoteUrl(
+                MAVEN_INFO_CHANGELOG,
+                "2.0.0".toStaticVersion()
+            )
+        )
+        verify {
+            logger.error(
+                message = "Failed to search for changelog in $OWNER/$CHANGELOG_REPO",
+                throwable = any<TestException>()
+            )
+        }
+    }
+
+    private enum class Operation {
+        RELEASE_NOTES,
+        CHANGELOG,
     }
 }
 
@@ -947,3 +1015,5 @@ private val MAVEN_INFO_NO_GITHUB = MavenInfo(
         url = "http://www.example.com/repo"
     )
 )
+
+private class TestException : IOException()
