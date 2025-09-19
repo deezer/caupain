@@ -84,6 +84,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import okio.FileSystem
+import okio.IOException
 import okio.Path
 
 /**
@@ -147,6 +148,7 @@ public interface DependencyUpdateChecker {
 
     public companion object {
         internal const val PARSING_TASK = "Parsing version catalog"
+        internal const val CLEANING_CACHE_TASK = "Cleaning cache"
         internal const val FINDING_UPDATES_TASK = "Finding updates"
         internal const val GATHERING_INFO_TASK = "Gathering update info"
         internal const val DONE = "done"
@@ -316,6 +318,14 @@ internal class DefaultDependencyUpdateChecker(
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
         val versionCatalogParseResults = versionCatalogPaths
             .map { versionCatalogParser.parseDependencyInfo(it) }
+        val cacheDir = configuration.cacheDir
+        if (cacheDir != null && configuration.cleanCache) {
+            try {
+                fileSystem.deleteRecursively(cacheDir)
+            } catch (_: IOException) {
+                // Ignored
+            }
+        }
         val updatedVersionsResult: UpdateVersionResult
         val updatesInfos = try {
             completed = 0

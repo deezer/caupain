@@ -27,6 +27,7 @@ package com.deezer.caupain.cli
 import ca.gosyer.appdirs.AppDirs
 import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.CaupainException
+import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
@@ -220,6 +221,9 @@ class CaupainCLI(
     private val doNotCache by option("--no-cache", help = "Disable HTTP cache")
         .flag()
 
+    private val cleanCache by option("--clean-cache", help = "Clean the cache before running")
+        .flag()
+
     private val logLevel by mutuallyExclusiveOptions(
         option("-q", "--quiet", help = "Suppress all output")
             .flag()
@@ -253,7 +257,7 @@ class CaupainCLI(
         versionOption(BuildKonfig.VERSION)
     }
 
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     override suspend fun run() {
         val start = timesource.markNow()
 
@@ -311,6 +315,12 @@ class CaupainCLI(
 
         val updates = try {
             updateChecker.checkForUpdates()
+        } catch (_: CorruptedCacheException) {
+            echo(
+                "The cache is corrupted. Try to run again with --clean-cache to refresh it",
+                err = true
+            )
+            throw Abort()
         } catch (e: CaupainException) {
             echo(e.message, err = true)
             throw Abort()
@@ -411,6 +421,7 @@ class CaupainCLI(
             policyPluginsDir = policyPluginDir,
             policy = policy,
             cacheDir = if (deprecatedDoNotCache || doNotCache) null else cacheDir,
+            cleanCache = cleanCache,
             debugHttpCalls = debugHttpCalls,
             gradleStabilityLevel = gradleStabilityLevel,
             searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,

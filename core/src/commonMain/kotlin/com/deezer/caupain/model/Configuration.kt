@@ -45,6 +45,7 @@ import kotlin.jvm.JvmOverloads
  * @property policy The policy to use for the update process.
  * @property policyPluginsDir The directory for the policy plugins.
  * @property cacheDir The directory for the HTTP cache.
+ * @property cleanCache Whether or not to clean the cache before running the update process.
  * @property debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @property onlyCheckStaticVersions Whether to only check updates for direct versions or all versions.
  * @property gradleStabilityLevel The desired stability level of the Gradle version.
@@ -67,6 +68,7 @@ public interface Configuration : Serializable {
     public val policy: String?
     public val policyPluginsDir: Path?
     public val cacheDir: Path?
+    public val cleanCache: Boolean
     public val debugHttpCalls: Boolean
     public val onlyCheckStaticVersions: Boolean
     public val gradleStabilityLevel: GradleStabilityLevel
@@ -96,6 +98,7 @@ public interface Configuration : Serializable {
  * @param policy The policy to use for the update process.
  * @param policyPluginsDir The directory for the policy plugins.
  * @param cacheDir The directory for the HTTP cache.
+ * @param cleanCache Whether or not to clean the cache before running the update process.
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  * @param gradleStabilityLevel The desired stability level of the Gradle version.
@@ -125,6 +128,7 @@ public fun Configuration(
     policy: String? = null,
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
+    cleanCache: Boolean = false,
     debugHttpCalls: Boolean = false,
     onlyCheckStaticVersions: Boolean = true,
     gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
@@ -161,6 +165,7 @@ public fun Configuration(
  * @param policy The policy to use for the update process.
  * @param policyPluginsDir The directory for the policy plugins.
  * @param cacheDir The directory for the HTTP cache.
+ * @param cleanCache Whether or not to clean the cache before running the update process.
  * @param debugHttpCalls Whether or not to enable debug logging for HTTP calls.
  * @param onlyCheckStaticVersions Whether to only check updates for static versions or all versions.
  * @param gradleStabilityLevel The desired stability level of the Gradle version.
@@ -190,6 +195,7 @@ public fun Configuration(
     policy: String? = null,
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
+    cleanCache: Boolean = false,
     debugHttpCalls: Boolean = false,
     onlyCheckStaticVersions: Boolean = true,
     gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
@@ -231,6 +237,7 @@ internal data class ConfigurationImpl(
     override val policy: String? = null,
     override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
+    override val cleanCache: Boolean = false,
     override val debugHttpCalls: Boolean = false,
     override val onlyCheckStaticVersions: Boolean = true,
     override val gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
