@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Handle cache issues correctly (#57)
 
 ### Security
 
