@@ -39,6 +39,7 @@ import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 
 internal class MavenInfoResolver(
     private val httpClient: HttpClient,
@@ -58,14 +59,19 @@ internal class MavenInfoResolver(
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
         val mavenInfo = withContext(ioDispatcher) {
-            httpClient.executeRepositoryRequest(repository) {
-                appendPathSegments(group.split('.'))
-                appendPathSegments(
-                    name,
-                    updatedVersion.toString(),
-                    "$name-$resolvedUpdatedVersion.pom"
-                )
-            }.takeIf { it.status.isSuccess() }?.body<MavenInfo>()
+            try {
+                httpClient.executeRepositoryRequest(repository) {
+                    appendPathSegments(group.split('.'))
+                    appendPathSegments(
+                        name,
+                        updatedVersion.toString(),
+                        "$name-$resolvedUpdatedVersion.pom"
+                    )
+                }.takeIf { it.status.isSuccess() }?.body<MavenInfo>()
+            } catch (ignored: IOException) {
+                logger.error("Unable to fetch maven info for $group:$name:$updatedVersion from ${repository.url}", ignored)
+                null
+            }
         }
         // If this is a plugin, we need to find the real maven info by following the dependency
         return if (dependency is Dependency.Plugin && mavenInfo != null) {
@@ -97,11 +103,16 @@ internal class MavenInfoResolver(
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
         val snapshotMetadata = withContext(ioDispatcher) {
-            httpClient.executeRepositoryRequest(repository) {
-                appendPathSegments(group.split('.'))
-                appendPathSegments(name, updatedVersion.toString(), "maven-metadata.xml")
+            try {
+                httpClient.executeRepositoryRequest(repository) {
+                    appendPathSegments(group.split('.'))
+                    appendPathSegments(name, updatedVersion.toString(), "maven-metadata.xml")
+                }
+            } catch (ignored: IOException) {
+                logger.error("Unable to fetch snapshot metadata for $group:$name:$updatedVersion from ${repository.url}", ignored)
+                null
             }
-        }.takeIf { it.status.isSuccess() }?.body<Metadata>()
+        }?.takeIf { it.status.isSuccess() }?.body<Metadata>()
         return snapshotMetadata
             ?.versioning
             ?.snapshotVersions

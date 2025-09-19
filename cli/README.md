@@ -76,7 +76,8 @@ Options:
                                 provided)
   --cache-dir=<path>            Cache directory. This is not used if --no-cache
                                 is set (default: user cache dir)
-  --no--cache                   Disable HTTP cache
+  --no-cache                    Disable HTTP cache
+  --clean-cache                 Clean the cache before running
   -q, --quiet                   Suppress all output
   -v, --verbose                 Verbose output
   -d, --debug                   Debug output

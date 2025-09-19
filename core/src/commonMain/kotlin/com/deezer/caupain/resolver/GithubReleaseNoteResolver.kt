@@ -43,6 +43,7 @@ import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 
 internal class GithubReleaseNoteResolver(
     private val httpClient: HttpClient,
@@ -90,22 +91,32 @@ internal class GithubReleaseNoteResolver(
         val repository = urlSegments.last()
         // First, let's check if we find the version in the releases
         val releaseNotes = withContext(ioDispatcher) {
-            httpClient
-                .getGithubResource("repos", owner, repository, "releases")
-                .takeIf { it.status.isSuccess() }
-                ?.body<List<Release>>()
-                .orEmpty()
+            try {
+                httpClient
+                    .getGithubResource("repos", owner, repository, "releases")
+                    .takeIf { it.status.isSuccess() }
+                    ?.body<List<Release>>()
+                    .orEmpty()
+            } catch (ignored: IOException) {
+                logger.error("Failed to fetch releases for $owner/$repository", ignored)
+                emptyList()
+            }
         }
         val releaseNote = releaseNotes.firstOrNull { it.matches(version) }
         if (releaseNote != null) return releaseNote.url
         // If not present, try to find the changelog file in the repository
         val searchResults = withContext(ioDispatcher) {
-            httpClient
-                .getGithubResource("search", "code") {
-                    parameters["q"] = "$version repo:$owner/$repository filename:CHANGELOG.md"
-                }
-                .takeIf { it.status.isSuccess() }
-                ?.body<SearchResults>()
+            try {
+                httpClient
+                    .getGithubResource("search", "code") {
+                        parameters["q"] = "$version repo:$owner/$repository filename:CHANGELOG.md"
+                    }
+                    .takeIf { it.status.isSuccess() }
+                    ?.body<SearchResults>()
+            } catch (ignored: IOException) {
+                logger.error("Failed to search for changelog in $owner/$repository", ignored)
+                null
+            }
         }
         if (searchResults != null && searchResults.totalCount > 0) {
             return searchResults.items.firstOrNull()?.url

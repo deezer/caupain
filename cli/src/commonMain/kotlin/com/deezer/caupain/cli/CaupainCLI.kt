@@ -27,6 +27,7 @@ package com.deezer.caupain.cli
 import ca.gosyer.appdirs.AppDirs
 import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.CaupainException
+import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
@@ -64,6 +65,7 @@ import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -208,7 +210,19 @@ class CaupainCLI(
             defaultForHelp = "user cache dir"
         )
 
-    private val doNotCache by option("--no--cache", help = "Disable HTTP cache").flag()
+    private val deprecatedDoNotCache by option(
+        "--no--cache",
+        help = "Disable HTTP cache",
+        hidden = true
+    )
+        .flag()
+        .deprecated("use --no-cache instead")
+
+    private val doNotCache by option("--no-cache", help = "Disable HTTP cache")
+        .flag()
+
+    private val cleanCache by option("--clean-cache", help = "Clean the cache before running")
+        .flag()
 
     private val logLevel by mutuallyExclusiveOptions(
         option("-q", "--quiet", help = "Suppress all output")
@@ -243,7 +257,7 @@ class CaupainCLI(
         versionOption(BuildKonfig.VERSION)
     }
 
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     override suspend fun run() {
         val start = timesource.markNow()
 
@@ -270,6 +284,7 @@ class CaupainCLI(
                 ioDispatcher,
                 logger,
                 CLISelfUpdateResolver(
+                    logger = logger,
                     ioDispatcher = ioDispatcher,
                     fileSystem = fileSystem,
                     githubToken = finalConfiguration.githubToken
@@ -300,6 +315,12 @@ class CaupainCLI(
 
         val updates = try {
             updateChecker.checkForUpdates()
+        } catch (_: CorruptedCacheException) {
+            echo(
+                "The cache is corrupted. Try to run again with --clean-cache to refresh it",
+                err = true
+            )
+            throw Abort()
         } catch (e: CaupainException) {
             echo(e.message, err = true)
             throw Abort()
@@ -399,7 +420,8 @@ class CaupainCLI(
             excludedKeys = excluded.toSet(),
             policyPluginsDir = policyPluginDir,
             policy = policy,
-            cacheDir = if (doNotCache) null else cacheDir,
+            cacheDir = if (deprecatedDoNotCache || doNotCache) null else cacheDir,
+            cleanCache = cleanCache,
             debugHttpCalls = debugHttpCalls,
             gradleStabilityLevel = gradleStabilityLevel,
             searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,

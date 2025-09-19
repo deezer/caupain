@@ -28,6 +28,7 @@ import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.cli.serialization.GithubRelease
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.resolver.SelfUpdateResolver
@@ -38,9 +39,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import okio.FileSystem
 
 internal class CLISelfUpdateResolver(
+    private val logger: Logger,
     private val ioDispatcher: CoroutineDispatcher,
     private val fileSystem: FileSystem,
     private val githubToken: String? = null
@@ -51,16 +54,24 @@ internal class CLISelfUpdateResolver(
         versionCatalogs: List<VersionCatalog>
     ): SelfUpdateInfo? {
         val latestTag = withContext(ioDispatcher) {
-            checker
-                .httpClient
-                .get(UPDATE_URL) {
-                    header("X-GitHub-Api-Version", "2022-11-28")
-                    if (githubToken != null) header(HttpHeaders.Authorization, "Bearer $githubToken")
-                    header(HttpHeaders.Accept, "application/vnd.github+json")
-                }
-                .takeIf { it.status.isSuccess() }
-                ?.body<GithubRelease>()
-                ?.tagName
+            try {
+                checker
+                    .httpClient
+                    .get(UPDATE_URL) {
+                        header("X-GitHub-Api-Version", "2022-11-28")
+                        if (githubToken != null) header(
+                            HttpHeaders.Authorization,
+                            "Bearer $githubToken"
+                        )
+                        header(HttpHeaders.Accept, "application/vnd.github+json")
+                    }
+                    .takeIf { it.status.isSuccess() }
+                    ?.body<GithubRelease>()
+                    ?.tagName
+            } catch (ignored: IOException) {
+                logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
+                null
+            }
         } ?: return null
         val updatedVersion = TAG_REGEX
             .find(latestTag)

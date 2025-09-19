@@ -33,6 +33,10 @@ import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.serialization.DefaultXml
+import dev.mokkery.MockMode
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verify
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -56,6 +60,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import kotlinx.serialization.encodeToString
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -74,6 +79,10 @@ class UpdatedVersionResolverTest {
 
     private lateinit var resolver: UpdatedVersionResolver
 
+    private lateinit var logger: Logger
+
+    private var hasError = false
+
     private var delay: Duration = Duration.ZERO
 
     private val didDelay = mutableMapOf<String, Boolean>()
@@ -83,6 +92,7 @@ class UpdatedVersionResolverTest {
 
     @BeforeTest
     fun setup() {
+        logger = mock(MockMode.autoUnit)
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
@@ -107,7 +117,7 @@ class UpdatedVersionResolverTest {
             onlyCheckStaticVersions = true,
             policy = null,
             ioDispatcher = testDispatcher,
-            logger = Logger.EMPTY
+            logger = logger
         )
     }
 
@@ -115,6 +125,7 @@ class UpdatedVersionResolverTest {
         scope: MockRequestHandleScope,
         requestData: HttpRequestData
     ): HttpResponseData? {
+        if (hasError) throw TestException()
         val url = requestData.url
         // Check authentification
         if (url.host == SIGNED_URL.host) {
@@ -145,6 +156,7 @@ class UpdatedVersionResolverTest {
         delay = Duration.ZERO
         baseHits = 0
         signedHits = 0
+        hasError = false
     }
 
     @Test
@@ -202,6 +214,21 @@ class UpdatedVersionResolverTest {
                 versionReferences = VERSION_REFERENCES
             )
         )
+    }
+
+    @Test
+    fun testError() = runTest(testDispatcher) {
+        hasError = true
+        assertNull(
+            resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+        verify { logger.error(any(), any<TestException>()) }
     }
 
     @Test
@@ -311,4 +338,6 @@ class UpdatedVersionResolverTest {
             )
         )
     }
+
+    private class TestException : IOException()
 }

@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.io.IOException
 
 /**
  * This checks Maven repositories for updated versions of a dependency.
@@ -98,14 +99,19 @@ internal class DefaultUpdatedVersionResolver(
         override suspend fun HttpClient.getAvailableVersions(item: DependencyRequestInfo): Sequence<GradleDependencyVersion> {
             val group = item.dependency.group ?: return emptySequence()
             val name = item.dependency.name ?: return emptySequence()
-            val versioning = executeRepositoryRequest(item.repository) {
-                appendPathSegments(group.split('.'))
-                appendPathSegments(name, "maven-metadata.xml")
+            val versioning = try {
+                executeRepositoryRequest(item.repository) {
+                    appendPathSegments(group.split('.'))
+                    appendPathSegments(name, "maven-metadata.xml")
+                }
+                    .takeIf { it.status.isSuccess() }
+                    ?.body<Metadata>()
+                    ?.versioning
+                    ?: return emptySequence()
+            } catch (ignored: IOException) {
+                logger.error("Unable to fetch maven metadata for $group:$name from ${item.repository.url}", ignored)
+                return emptySequence()
             }
-                .takeIf { it.status.isSuccess() }
-                ?.body<Metadata>()
-                ?.versioning
-                ?: return emptySequence()
             return sequenceOf(versioning.release, versioning.latest)
                 .plus(versioning.versions.asSequence().map { it.version })
                 .filterNotNull()

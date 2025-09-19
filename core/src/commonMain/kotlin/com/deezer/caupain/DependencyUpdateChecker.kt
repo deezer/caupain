@@ -24,6 +24,7 @@
 
 package com.deezer.caupain
 
+import com.deezer.caupain.DependencyUpdateChecker.Companion.CLEANING_CACHE_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.DONE
 import com.deezer.caupain.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.GATHERING_INFO_TASK
@@ -64,6 +65,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.cache.HttpCache
+import io.ktor.client.plugins.cache.InvalidCacheStateException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
@@ -83,6 +85,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import okio.FileSystem
+import okio.IOException
 import okio.Path
 
 /**
@@ -146,6 +149,7 @@ public interface DependencyUpdateChecker {
 
     public companion object {
         internal const val PARSING_TASK = "Parsing version catalog"
+        internal const val CLEANING_CACHE_TASK = "Cleaning cache"
         internal const val FINDING_UPDATES_TASK = "Finding updates"
         internal const val GATHERING_INFO_TASK = "Gathering update info"
         internal const val DONE = "done"
@@ -274,6 +278,7 @@ internal class DefaultDependencyUpdateChecker(
 
     private val gradleVersionResolver = GradleVersionResolver(
         httpClient = httpClient,
+        logger = logger,
         gradleVersionsUrl = gradleVersionsUrl,
         stabilityLevel = configuration.gradleStabilityLevel,
         ioDispatcher = ioDispatcher
@@ -314,12 +319,29 @@ internal class DefaultDependencyUpdateChecker(
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
         val versionCatalogParseResults = versionCatalogPaths
             .map { versionCatalogParser.parseDependencyInfo(it) }
-        completed = 0
-        progressFlow.value =
-            DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
-        val updatedVersionsResult = checkUpdatedVersions(versionCatalogParseResults)
-        completed = 0
-        val updatesInfos = checkUpdateInfo(updatedVersionsResult.updatedVersions)
+        val cacheDir = configuration.cacheDir
+        if (cacheDir != null && configuration.cleanCache) {
+            progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(CLEANING_CACHE_TASK)
+            try {
+                fileSystem.deleteRecursively(cacheDir)
+            } catch (_: IOException) {
+                // Ignored
+            }
+        }
+        val updatedVersionsResult: UpdateVersionResult
+        val updatesInfos = try {
+            completed = 0
+            progressFlow.value =
+                DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
+            updatedVersionsResult = checkUpdatedVersions(versionCatalogParseResults)
+            completed = 0
+            checkUpdateInfo(updatedVersionsResult.updatedVersions)
+        } catch (e: InvalidCacheStateException) {
+            throw CorruptedCacheException(
+                cacheDir = fileSystem.canonicalize(requireNotNull(configuration.cacheDir)),
+                cause = e,
+            )
+        }
         // Sort and return
         return DependenciesUpdateResult(
             gradleUpdateInfo = if (updatedVersionsResult.updatedGradleVersion != null && currentGradleVersion != null) {
@@ -549,3 +571,14 @@ public class SamePolicyNameException(name: String) :
  */
 public class UnknownPolicyException(name: String) :
     CaupainException("Unknown policy: $name")
+
+/**
+ * Exception thrown when the cache directory is corrupted.
+ */
+public class CorruptedCacheException(
+    cacheDir: Path,
+    cause: Throwable,
+) : CaupainException(
+    message = "Cache directory $cacheDir is corrupted. Please delete it and try again.",
+    cause = cause,
+)

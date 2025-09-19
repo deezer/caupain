@@ -1,5 +1,11 @@
-repositories = [ "mavenCentral" ]
-pluginRepositories = [ "mavenCentral", "gradlePluginPortal" ]
+#repositories = [ "mavenCentral" ]
+#pluginRepositories = [ "mavenCentral", "gradlePluginPortal" ]
+repositories = [
+    { url = "https://artifacts.deez.re/repository/maven-public/" }
+]
+pluginRepositories = [
+    { url = "https://artifacts.deez.re/repository/maven-public/" }
+]
 policy = "stability-level"
 cacheDir = "build/cache/caupain"
 outputType = "markdown"

@@ -91,9 +91,15 @@ class DependencyUpdateCheckerTest {
 
     private lateinit var checker: DependencyUpdateChecker
 
+    private val cacheDir: Path = "cache".toPath()
+
+    private val oldCacheFile: Path = cacheDir / "old-cache-file"
+
     @BeforeTest
     fun setup() {
         fileSystem = FakeFileSystem()
+        fileSystem.createDirectories(cacheDir)
+        fileSystem.write(oldCacheFile) {}
         val configuration = Configuration(
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
@@ -101,6 +107,8 @@ class DependencyUpdateCheckerTest {
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
             versionCatalogPaths = VERSION_CATALOGS.keys,
             githubToken = GITHUB_TOKEN,
+            cacheDir = cacheDir,
+            cleanCache = true,
             searchReleaseNote = true
         )
         for (versionCatalogPath in VERSION_CATALOGS.keys) {
@@ -237,6 +245,7 @@ class DependencyUpdateCheckerTest {
             engine.requestHistory.any { it.url.toString().contains("groovy-json") },
             "Unexpected request for groovy-json"
         )
+        assertFalse(fileSystem.exists(oldCacheFile))
     }
 
     @Test

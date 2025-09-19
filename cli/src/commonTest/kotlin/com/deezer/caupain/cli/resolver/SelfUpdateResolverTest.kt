@@ -26,10 +26,15 @@ package com.deezer.caupain.cli.resolver
 
 import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver.Companion.UPDATE_URL
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.SelfUpdateInfo
+import dev.mokkery.MockMode
 import dev.mokkery.answering.returns
 import dev.mokkery.every
+import dev.mokkery.matcher.any
 import dev.mokkery.mock
+import dev.mokkery.verify
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -44,6 +49,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
@@ -64,13 +70,17 @@ class SelfUpdateResolverTest {
 
     private lateinit var checker: DependencyUpdateChecker
 
+    private lateinit var logger: Logger
+
     private lateinit var resolver: CLISelfUpdateResolver
+
+    private var throwIOError = false
 
     @BeforeTest
     fun setup() {
         fileSystem = FakeFileSystem()
         fileSystem.createDirectory("/etc".toPath())
-        fileSystem.write("/etc/debian_version".toPath()) {  }
+        fileSystem.write("/etc/debian_version".toPath()) { }
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
@@ -83,7 +93,9 @@ class SelfUpdateResolverTest {
         checker = mock {
             every { httpClient } returns mockHttpClient
         }
+        logger = mock(MockMode.autoUnit)
         resolver = CLISelfUpdateResolver(
+            logger = logger,
             ioDispatcher = dispatcher,
             fileSystem = fileSystem
         )
@@ -93,6 +105,7 @@ class SelfUpdateResolverTest {
         scope: MockRequestHandleScope,
         requestData: HttpRequestData
     ): HttpResponseData? {
+        if (throwIOError) throw FakeIOException()
         val url = requestData.url
         return if (url.toString() == CLISelfUpdateResolver.UPDATE_URL) {
             scope.respond(
@@ -109,6 +122,7 @@ class SelfUpdateResolverTest {
         engine.close()
         fileSystem.checkNoOpenFiles()
         fileSystem.close()
+        throwIOError = false
     }
 
     @Test
@@ -124,6 +138,21 @@ class SelfUpdateResolverTest {
                 versionCatalogs = emptyList()
             )
         )
+    }
+
+    @Test
+    fun testException() = runTest(dispatcher) {
+        throwIOError = true
+        resolver.resolveSelfUpdate(
+            checker = checker,
+            versionCatalogs = emptyList()
+        )
+        verify {
+            logger.error(
+                message = "Failed to fetch latest release from $UPDATE_URL",
+                throwable = any<FakeIOException>()
+            )
+        }
     }
 
     companion object {
@@ -483,4 +512,6 @@ class SelfUpdateResolverTest {
         }    
         """.trimIndent()
     }
+
+    private class FakeIOException() : IOException()
 }

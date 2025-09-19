@@ -25,6 +25,7 @@
 package com.deezer.caupain.resolver
 
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.gradle.GradleToolVersion
 import io.ktor.client.HttpClient
@@ -32,9 +33,11 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.io.IOException
 
 internal class GradleVersionResolver(
     httpClient: HttpClient,
+    private val logger: Logger,
     private val gradleVersionsUrl: String,
     private val stabilityLevel: GradleStabilityLevel,
     ioDispatcher: CoroutineDispatcher
@@ -47,13 +50,18 @@ internal class GradleVersionResolver(
             isUpdate(version)
 
         override suspend fun HttpClient.getAvailableVersions(item: GradleDependencyVersion): Sequence<GradleDependencyVersion> {
-            return get(gradleVersionsUrl)
-                .takeIf { it.status.isSuccess() }
-                ?.body<List<GradleToolVersion>>()
-                ?.asSequence()
-                ?.filter { it.level <= stabilityLevel }
-                ?.map { it.version }
-                .orEmpty()
+            return try {
+                get(gradleVersionsUrl)
+                    .takeIf { it.status.isSuccess() }
+                    ?.body<List<GradleToolVersion>>()
+                    ?.asSequence()
+                    ?.filter { it.level <= stabilityLevel }
+                    ?.map { it.version }
+                    .orEmpty()
+            } catch (ignored: IOException) {
+                logger.error("Failed to fetch Gradle versions from $gradleVersionsUrl", ignored)
+                emptySequence()
+            }
         }
 
         override fun canSelectVersion(

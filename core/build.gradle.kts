@@ -21,6 +21,7 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.dependency.guard)
     alias(libs.plugins.cashapp.burst)
+    alias(libs.plugins.mokkery)
     alias(libs.plugins.poko)
     alias(libs.plugins.testkit.support)
 }
