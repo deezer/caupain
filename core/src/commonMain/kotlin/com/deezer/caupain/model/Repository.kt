@@ -35,7 +35,6 @@ import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.URLBuilder
-import kotlinx.io.IOException
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.jvm.JvmName
@@ -50,9 +49,11 @@ import kotlin.jvm.JvmOverloads
 public interface Repository : Serializable {
     public val url: String
     public val credentials: Credentials?
+
     @Deprecated("Use credentials instead")
     public val user: String?
         get() = (credentials as? PasswordCredentials)?.user
+
     @Deprecated("Use credentials instead")
     public val password: String?
         get() = (credentials as? PasswordCredentials)?.password
@@ -135,7 +136,10 @@ public fun Repository(
     componentFilter: ComponentFilter? = null
 ): Repository = Repository(
     url = url,
-    credentials = if (user == null || password == null) null else PasswordCredentials(user, password),
+    credentials = if (user == null || password == null) null else PasswordCredentials(
+        user,
+        password
+    ),
     componentFilter = componentFilter
 )
 
