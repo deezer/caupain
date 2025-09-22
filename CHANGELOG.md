@@ -11,9 +11,16 @@
 ### Removed
 
 ### Fixed
-- Handle cache issues correctly (#57)
 
 ### Security
+
+## 1.6.1 - 2025-09-22
+
+### Fixed
+
+- Handle cache issues correctly (#57). It seems some users may have issues with corrupted cache files 
+after updating to 1.6.0. If this is your case, update to 1.6.1 and run a first time with the `--clear-cache` 
+option. This will clear the cache and re-download all necessary files.
 
 ## 1.6.0 - 2025-09-12
 
