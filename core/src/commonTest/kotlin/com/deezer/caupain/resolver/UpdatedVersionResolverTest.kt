@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.model.AlwaysAcceptPolicy
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
@@ -115,7 +116,7 @@ class UpdatedVersionResolverTest {
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             onlyCheckStaticVersions = true,
-            policy = null,
+            policy = AlwaysAcceptPolicy,
             ioDispatcher = testDispatcher,
             logger = logger
         )

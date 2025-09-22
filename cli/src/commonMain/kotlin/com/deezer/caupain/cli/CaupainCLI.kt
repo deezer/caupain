@@ -47,6 +47,7 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
+import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
@@ -156,8 +157,8 @@ class CaupainCLI(
     private val policy by option(
         "-p",
         "--policy",
-        help = "Update policy (default: update to the latest version available)"
-    )
+        help = "Update policy (default: `stability-level`)"
+    ).default(StabilityLevelPolicy.name)
 
     private val listPolicies by option("--list-policies", help = "List available policies")
         .flag()

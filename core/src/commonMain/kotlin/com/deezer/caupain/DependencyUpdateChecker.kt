@@ -256,7 +256,7 @@ internal class DefaultDependencyUpdateChecker(
     }
 
     private val policy by lazy {
-        configuration.policy?.let { name ->
+        configuration.policy.let { name ->
             this
                 .policies
                 .firstOrNull { it.name == name }

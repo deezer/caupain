@@ -6,7 +6,6 @@ repositories = [
 pluginRepositories = [
     { url = "https://artifacts.deez.re/repository/maven-public/" }
 ]
-policy = "stability-level"
 cacheDir = "build/cache/caupain"
 outputType = "markdown"
 outputPath = "build/reports/dependency-updates.md"

@@ -25,6 +25,7 @@
 package com.deezer.caupain
 
 import com.deezer.caupain.model.Configuration
+import com.deezer.caupain.model.DEFAULT_POLICIES
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -158,9 +159,12 @@ class PluginTest {
     @Test
     fun testUpdate() = runTest(testDispatcher) {
         val policies = checker.policies.toList()
-        assertEquals(2, policies.size)
-        assertEquals(StabilityLevelPolicy.name, policies[0].name)
-        assertEquals("my-custom-policy", policies[1].name)
+        assertEquals(3, policies.size)
+        assertEquals(
+            expected = DEFAULT_POLICIES,
+            policies.take(DEFAULT_POLICIES.size)
+        )
+        assertEquals("my-custom-policy", policies.last().name)
         assertEquals(
             expected = DependenciesUpdateResult(
                 gradleUpdateInfo = null,
