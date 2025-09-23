@@ -18,7 +18,9 @@
 
 ### Fixed
 
-- Handle cache issues correctly (#57). It seems some users may have issues with corrupted cache files 
+- Handle cache issues correctly (#57).
+
+**Notice**: It seems some users may have issues with corrupted cache files 
 after updating to 1.6.0. If this is your case, update to 1.6.1 and run a first time with the `--clear-cache` 
 option. This will clear the cache and re-download all necessary files.
 
