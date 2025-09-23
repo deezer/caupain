@@ -164,6 +164,10 @@ the current version.
 
 This means that if you're using a beta version, alpha versions won't be suggested for you, and so on.
 
+This is the default policy if none is specified.
+
+If you want to see all available updates, you can use the `always` policy, which will accept all updates.
+
 #### Configuration
 
 They are defined via task configuration like so:

@@ -261,6 +261,13 @@ public final class com/deezer/caupain/formatting/model/VersionReferenceInfo$Comp
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class com/deezer/caupain/model/AlwaysAcceptPolicy : com/deezer/caupain/model/Policy {
+	public static final field INSTANCE Lcom/deezer/caupain/model/AlwaysAcceptPolicy;
+	public fun getDescription ()Ljava/lang/String;
+	public fun getName ()Ljava/lang/String;
+	public fun select (Lcom/deezer/caupain/model/Dependency;Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
+}
+
 public abstract interface class com/deezer/caupain/model/ComponentFilter : java/io/Serializable {
 	public abstract fun accepts (Lcom/deezer/caupain/model/Dependency;)Z
 }

@@ -58,8 +58,8 @@ Options:
   -e, --excluded=<text>         Excluded keys
   -c, --config=<path>           Configuration file (default: caupain.toml)
   --policy-plugin-dir=<path>    Custom policies plugin dir
-  -p, --policy=<text>           Update policy (default: update to the latest
-                                version available)
+  -p, --policy=<text>           Update policy (default: stability-level)
+                                (default: stability-level)
   --list-policies               List available policies
   --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)
                                 Gradle stability level (default: stable)
@@ -242,6 +242,10 @@ There's only one predefined policy at the moment, which is `stability-level`. Th
 only select an update if its stability is greater than or equal to the stability of the current version.
 
 This means that if you're using a beta version, alpha versions won't be suggested for you, and so on.
+
+This is the default policy if none is specified.
+
+If you want to see all available updates, you can use the `always` policy, which will accept all updates.
 
 #### Custom policies
 

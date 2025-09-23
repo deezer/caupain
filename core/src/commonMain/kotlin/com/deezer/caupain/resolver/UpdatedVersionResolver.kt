@@ -84,7 +84,7 @@ internal class DefaultUpdatedVersionResolver(
     private val pluginRepositories: List<Repository>,
     private val logger: Logger,
     private val onlyCheckStaticVersions: Boolean,
-    private val policy: Policy?,
+    private val policy: Policy,
     ioDispatcher: CoroutineDispatcher
 ) : UpdatedVersionResolver {
 
@@ -121,7 +121,6 @@ internal class DefaultUpdatedVersionResolver(
             item: DependencyRequestInfo,
             version: GradleDependencyVersion.Static
         ): Boolean {
-            val policy = this@DefaultUpdatedVersionResolver.policy ?: return true
             val dependencyVersion = item.dependency.version?.resolve(item.versionReferences)
                 ?: return false
             return policy.select(item.dependency, dependencyVersion, version)

@@ -24,7 +24,9 @@
 
 package com.deezer.caupain
 
+import com.deezer.caupain.model.AlwaysAcceptPolicy
 import com.deezer.caupain.model.Configuration
+import com.deezer.caupain.model.DEFAULT_POLICIES
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -109,7 +111,8 @@ class DependencyUpdateCheckerTest {
             githubToken = GITHUB_TOKEN,
             cacheDir = cacheDir,
             cleanCache = true,
-            searchReleaseNote = true
+            searchReleaseNote = true,
+            policy = AlwaysAcceptPolicy.name
         )
         for (versionCatalogPath in VERSION_CATALOGS.keys) {
             fileSystem.write(versionCatalogPath) {}
@@ -130,7 +133,7 @@ class DependencyUpdateCheckerTest {
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            policies = emptyList(),
+            policies = DEFAULT_POLICIES,
             currentGradleVersion = "8.11",
             selfUpdateResolver = FixedSelfUpdateResolver
         )
@@ -256,7 +259,8 @@ class DependencyUpdateCheckerTest {
             excludedKeys = setOf("groovy-json"),
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
             versionCatalogPaths = VERSION_CATALOGS.keys,
-            checkIgnored = true
+            checkIgnored = true,
+            policy = AlwaysAcceptPolicy.name
         )
         checker = DefaultDependencyUpdateChecker(
             configuration = configuration,
@@ -270,7 +274,7 @@ class DependencyUpdateCheckerTest {
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            policies = emptyList(),
+            policies = DEFAULT_POLICIES,
             currentGradleVersion = "8.11",
             selfUpdateResolver = FixedSelfUpdateResolver
         )

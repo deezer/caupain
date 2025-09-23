@@ -55,7 +55,8 @@ public interface Policy {
 internal expect fun loadPolicies(paths: Iterable<Path>, logger: Logger): Iterable<Policy>
 
 internal val DEFAULT_POLICIES = listOf(
-    StabilityLevelPolicy
+    StabilityLevelPolicy,
+    AlwaysAcceptPolicy
 )
 
 /**
@@ -113,4 +114,19 @@ public object StabilityLevelPolicy : Policy {
                 entries.first { it.matches(version.exactVersion.text) }
         }
     }
+}
+
+/**
+ * This is a default policy implementation that always accepts all updates.
+ */
+public object AlwaysAcceptPolicy : Policy {
+    override val name: String = "always"
+
+    override val description: String? = "Policy that always accepts an update."
+
+    override fun select(
+        dependency: Dependency,
+        currentVersion: Version.Resolved,
+        updatedVersion: GradleDependencyVersion.Static
+    ): Boolean = true
 }

@@ -65,7 +65,7 @@ public interface Configuration : Serializable {
     public val excludedKeys: Set<String>
     public val excludedLibraries: List<LibraryExclusion>
     public val excludedPlugins: List<PluginExclusion>
-    public val policy: String?
+    public val policy: String
     public val policyPluginsDir: Path?
     public val cacheDir: Path?
     public val cleanCache: Boolean
@@ -125,7 +125,7 @@ public fun Configuration(
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
-    policy: String? = null,
+    policy: String = StabilityLevelPolicy.name,
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
     cleanCache: Boolean = false,
@@ -193,7 +193,7 @@ public fun Configuration(
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
-    policy: String? = null,
+    policy: String = StabilityLevelPolicy.name,
     policyPluginsDir: Path? = null,
     cacheDir: Path? = null,
     cleanCache: Boolean = false,
@@ -236,7 +236,7 @@ internal data class ConfigurationImpl(
     override val excludedKeys: Set<String> = emptySet(),
     override val excludedLibraries: List<LibraryExclusion> = emptyList(),
     override val excludedPlugins: List<PluginExclusion> = emptyList(),
-    override val policy: String? = null,
+    override val policy: String = StabilityLevelPolicy.name,
     override val policyPluginsDir: Path? = null,
     override val cacheDir: Path? = null,
     override val cleanCache: Boolean = false,

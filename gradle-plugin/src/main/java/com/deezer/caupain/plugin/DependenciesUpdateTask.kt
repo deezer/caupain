@@ -35,6 +35,7 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
@@ -185,8 +186,8 @@ open class DependenciesUpdateTask : DefaultTask() {
 
     @TaskAction
     fun checkUpdates() {
-        val policy = this.policy?.let { SinglePolicy(it) }
-        val configuration = createConfiguration(policy?.name)
+        val policy = this.policy?.let { SinglePolicy(it) } ?: StabilityLevelPolicy
+        val configuration = createConfiguration(policy.name)
         val formatters = buildList {
             formatterOutputs.get().mapTo(this) { output ->
                 when (output) {
@@ -202,7 +203,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             configuration = configuration,
             logger = LoggerAdapter(logger),
             selfUpdateResolver = PluginUpdateResolver,
-            policies = policy?.let { listOf(it) },
+            policies = listOf(policy),
             currentGradleVersion = GradleVersion.current().version,
             gradleVersionsUrl = gradleVersionsUrl,
         )
@@ -258,7 +259,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         customFormatter.set(formatter)
     }
 
-    private fun createConfiguration(policyId: String?): Configuration {
+    private fun createConfiguration(policyId: String): Configuration {
         return Configuration(
             repositories = repositories.get(),
             pluginRepositories = pluginRepositories.get(),
