@@ -72,8 +72,9 @@ excludeLibraries(
 excludePluginIds("excluded.plugin.id")
 ```
 
-You can also exclude dependencies directly in the TOML file by adding an inline comment `#ignoreUpdates`
-on the same line as a version reference or dependency/plugin definition, like so:
+You can also exclude dependencies directly in the TOML file by adding a `#ignoreUpdates` comment, 
+either on the same line as a version reference or dependency/plugin definition or as a full-line 
+comment in the line just before, like so:
 ```toml
 [versions]
 my-excluded-version-ref = "1.0.0" #ignoreUpdates
@@ -85,6 +86,9 @@ my-regular-lib = { module = "com.example:example", version.ref = "my-regular-ref
 my-excluded-plugin = { id = "com.example.plugin", version.ref = "my-excluded-version-ref" } #ignoreUpdates
 my-regular-plugin = { id = "com.example.plugin", version.ref = "my-regular-ref" }
 ```
+
+Using `#noinspection NewerVersionAvailable` is also possible to be compatible with the way IntelliJ
+marks ignored updates.
 
 ### Repositories
 
