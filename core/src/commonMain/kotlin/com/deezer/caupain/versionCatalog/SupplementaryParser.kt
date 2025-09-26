@@ -36,21 +36,22 @@ import okio.FileSystem
 import okio.Path
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
+import org.antlr.v4.kotlinruntime.ast.Position
 
 internal class SupplementaryParser(
     private val fileSystem: FileSystem,
-    private val ioDispatcher: CoroutineDispatcher = IODispatcher
+    private val ioDispatcher: CoroutineDispatcher = IODispatcher,
 ) {
     suspend fun parse(versionCatalogPath: Path): VersionCatalogInfo {
-        val charStream = withContext(ioDispatcher) {
+        val contents = withContext(ioDispatcher) {
             fileSystem.read(versionCatalogPath) {
-                CharStreams.fromString(readUtf8())
+                readUtf8()
             }
         }
-        val lexer = TomlLexer(charStream)
+        val lexer = TomlLexer(CharStreams.fromString(contents))
         val tokenStream = CommonTokenStream(lexer)
         val parser = TomlParser(tokenStream)
-        val visitor = Visitor().apply { visit(parser.document()) }
+        val visitor = Visitor(contents).apply { visit(parser.document()) }
         return VersionCatalogInfo(
             ignores = VersionCatalogInfo.Ignores(
                 refs = visitor.ignoredRefs,
@@ -65,7 +66,7 @@ internal class SupplementaryParser(
         )
     }
 
-    private class Visitor : TomlParserBaseVisitor<Unit>() {
+    private class Visitor(private val contents: String) : TomlParserBaseVisitor<Unit>() {
 
         val ignoredRefs = mutableSetOf<String>()
         val ignoredLibraryKeys = mutableSetOf<String>()
@@ -74,6 +75,8 @@ internal class SupplementaryParser(
         val versionRefsPositions = mutableMapOf<String, VersionPosition>()
         val libraryVersionPositions = mutableMapOf<String, VersionPosition>()
         val pluginVersionPositions = mutableMapOf<String, VersionPosition>()
+
+        private var hasPendingIgnore = false
 
         private var currentSection: Section? = null
 
@@ -86,12 +89,15 @@ internal class SupplementaryParser(
             val sectionName = ctx.key().keyText ?: return
             val section = Section.entries.firstOrNull { it.key == sectionName }
             currentSection = section
+            hasPendingIgnore = false
         }
 
         override fun visitKey_value(ctx: TomlParser.Key_valueContext) {
             val key = ctx.key().keyText ?: return
             currentKey = key
             currentKeyLine = ctx.key().position?.start?.line ?: -1
+
+            handlePendingIgnore(key)
 
             val simpleValue = ctx.value().string()
             val richValue = ctx.value().inline_table()
@@ -120,6 +126,18 @@ internal class SupplementaryParser(
             }
         }
 
+        private fun handlePendingIgnore(key: String) {
+            if (hasPendingIgnore) {
+                when (currentSection) {
+                    Section.VERSIONS -> ignoredRefs.add(key)
+                    Section.LIBRARIES -> ignoredLibraryKeys.add(key)
+                    Section.PLUGINS -> ignoredPluginKeys.add(key)
+                    else -> Unit
+                }
+                hasPendingIgnore = false
+            }
+        }
+
         override fun visitInline_table_keyvals(ctx: TomlParser.Inline_table_keyvalsContext) {
             var current = ctx.inline_table_keyvals_non_empty()
             var valueContext: TomlParser.ValueContext? = null
@@ -145,10 +163,18 @@ internal class SupplementaryParser(
 
         override fun visitComment(ctx: TomlParser.CommentContext) {
             super.visitComment(ctx)
-            val commentText = ctx.text
-            if (commentText.startsWith(IGNORE_COMMENT)) {
-                val commentLine = ctx.position?.start?.line
-                if (currentKey != null && currentKeyLine == commentLine) {
+            val position = try {
+                ctx.position
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+            val commentFullText = ctx.text.trim()
+            if (!commentFullText.startsWith('#')) return
+            val commentText = commentFullText.drop(1).trim()
+            if (commentText.isIgnoreComment()) {
+                if (position != null && isFullLine(position, commentFullText)) {
+                    hasPendingIgnore = true
+                } else if (currentKey != null && currentKeyLine == position?.start?.line) {
                     when (currentSection) {
                         Section.VERSIONS -> ignoredRefs.add(currentKey!!)
                         Section.LIBRARIES -> ignoredLibraryKeys.add(currentKey!!)
@@ -162,6 +188,27 @@ internal class SupplementaryParser(
         override fun defaultResult() {
             // Nothing to do
         }
+
+        private fun isFullLine(position: Position, text: String): Boolean {
+            // Return fast if position spans multiple lines
+            if (position.start.line != position.end.line) return false
+            val contentLine = contents
+                .lineSequence()
+                .elementAtOrNull(position.start.line - 1)
+            return contentLine?.trim() == text.trim()
+        }
+
+        private fun String.isIgnoreComment(): Boolean {
+            return startsWith(IGNORE_COMMENT) ||
+                    INTELLIJ_NO_INSPECTION_PATTERN
+                        .matchEntire(this)
+                        ?.groupValues
+                        ?.getOrNull(1)
+                        ?.splitToSequence(',')
+                        ?.map { it.trim() }
+                        .orEmpty()
+                        .contains(INTELLIJ_VERSION_WARNING)
+        }
     }
 
     private enum class Section(val key: String) {
@@ -172,7 +219,9 @@ internal class SupplementaryParser(
     }
 
     companion object {
-        private const val IGNORE_COMMENT = "#ignoreUpdates"
+        private const val IGNORE_COMMENT = "ignoreUpdates"
+        private const val INTELLIJ_VERSION_WARNING = "NewerVersionAvailable"
+        private val INTELLIJ_NO_INSPECTION_PATTERN = Regex("noinspection\\s(\\S+).*")
 
         private val TomlParser.Simple_keyContext.keyText: String?
             get() = unquoted_key()?.text

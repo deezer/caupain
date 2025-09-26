@@ -65,8 +65,8 @@ class SupplementaryParserTest {
                 expected = VersionCatalogInfo(
                     ignores = VersionCatalogInfo.Ignores(
                         refs = setOf("kotlin"),
-                        libraryKeys = setOf("kotlin-test"),
-                        pluginKeys = setOf("jetbrains-kotlin-jvm")
+                        libraryKeys = setOf("kotlin-test", "example"),
+                        pluginKeys = setOf("jetbrains-kotlin-jvm", "kotlinMultiplatform")
                     ),
                     positions = VersionCatalogInfo.Positions(
                         versionRefsPositions = mapOf(
@@ -93,19 +93,19 @@ class SupplementaryParserTest {
                         ),
                         libraryVersionPositions = mapOf(
                             "example" to VersionCatalogInfo.VersionPosition(
-                                startPoint = Point(11, 51),
+                                startPoint = Point(12, 51),
                                 nbLines = 1,
                                 valueText = "\"1.0.0\""
                             )
                         ),
                         pluginVersionPositions = mapOf(
                             "kotlinx-atomicfu" to VersionCatalogInfo.VersionPosition(
-                                startPoint = Point(21, 19),
+                                startPoint = Point(23, 19),
                                 nbLines = 1,
                                 valueText = "\"org.jetbrains.kotlinx.atomicfu:0.27.0\""
                             ),
                             "dokka" to VersionCatalogInfo.VersionPosition(
-                                startPoint = Point(22, 8),
+                                startPoint = Point(24, 8),
                                 nbLines = 1,
                                 valueText = "\"org.jetbrains.dokka:2.0.0\""
                             ),
@@ -131,6 +131,7 @@ multiline = '''0
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" } #ignoreUpdates
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+#ignoreUpdates
 example = { module = "com.example:test", version = "1.0.0" }
 
 [bundles]
@@ -138,6 +139,7 @@ clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]
 ktor = ["ktor-client-core", "ktor-client-logging", "ktor-client-content-negociation"]
 
 [plugins]
+#noinspection GradleDependency,NewerVersionAvailable compatibility with native consumers 
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" } #ignoreUpdates
