@@ -37,19 +37,27 @@ internal abstract class AbstractVersionResolver<T : Any>(
 
     protected abstract suspend fun HttpClient.getAvailableVersions(item: T): Sequence<GradleDependencyVersion>
 
-    protected abstract fun canSelectVersion(
+    protected abstract suspend fun canSelectVersion(
         item: T,
         version: GradleDependencyVersion.Static
     ): Boolean
 
+    @Suppress("ComplexCondition")
     suspend fun findUpdatedVersion(item: T): GradleDependencyVersion.Static? {
         val versions = withContext(ioDispatcher) {
             httpClient.getAvailableVersions(item)
         }
-        return versions
-            .filterIsInstance<GradleDependencyVersion.Static>()
-            .filter { item.isUpdatedVersion(it) }
-            .filter { canSelectVersion(item, it) }
-            .maxOrNull()
+        var max: GradleDependencyVersion.Static? = null
+        for (version in versions) {
+            if (
+                version is GradleDependencyVersion.Static
+                && item.isUpdatedVersion(version)
+                && canSelectVersion(item, version)
+                && (max == null || version > max)
+            ) {
+                max = version
+            }
+        }
+        return max
     }
 }

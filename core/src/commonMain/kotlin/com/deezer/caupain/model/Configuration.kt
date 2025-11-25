@@ -54,6 +54,8 @@ import kotlin.jvm.JvmOverloads
  * @property searchReleaseNote whether or not to try to find the release note URL for the updated dependencies.
  * This only works if the source project for the dependency is hosted on GitHub
  * @property githubToken The GitHub token to use for API requests, if any.
+ * @property verifyExistence Whether to verify that .pom files exist in the repository before accepting a version
+ * as valid.
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -75,6 +77,7 @@ public interface Configuration : Serializable {
     public val checkIgnored: Boolean
     public val searchReleaseNote: Boolean
     public val githubToken: String?
+    public val verifyExistence: Boolean
 
     /**
      * Returns a copy of this configuration with [searchReleaseNote] set to true
@@ -108,6 +111,8 @@ public interface Configuration : Serializable {
  * @param searchReleaseNote whether or not to try to find the release note URL for the updated dependencies.
  * This only works if the source project for the dependency is hosted on GitHub. This defaults to true
  * if the GitHub token is provided, otherwise false.
+ * @param verifyExistence Whether to verify that .pom files exist in the repository before accepting a version
+ * as valid.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -135,6 +140,7 @@ public fun Configuration(
     checkIgnored: Boolean = false,
     githubToken: String? = null,
     searchReleaseNote: Boolean = githubToken != null,
+    verifyExistence: Boolean = false,
 ): Configuration = Configuration(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -151,7 +157,8 @@ public fun Configuration(
     gradleStabilityLevel = gradleStabilityLevel,
     checkIgnored = checkIgnored,
     searchReleaseNote = searchReleaseNote,
-    githubToken = githubToken
+    githubToken = githubToken,
+    verifyExistence = verifyExistence
 )
 
 /**
@@ -176,6 +183,8 @@ public fun Configuration(
  * @param searchReleaseNote whether or not to try to find the release note URL for the updated dependencies.
  * This only works if the source project for the dependency is hosted on GitHub. This defaults to true
  * if the GitHub token is provided, otherwise false.
+ * @param verifyExistence Whether to verify that .pom files exist in the repository before accepting a version
+ * as valid.
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -203,6 +212,7 @@ public fun Configuration(
     checkIgnored: Boolean = false,
     githubToken: String? = null,
     searchReleaseNote: Boolean = githubToken != null,
+    verifyExistence: Boolean = false,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -219,7 +229,8 @@ public fun Configuration(
     gradleStabilityLevel = gradleStabilityLevel,
     checkIgnored = checkIgnored,
     searchReleaseNote = searchReleaseNote,
-    githubToken = githubToken
+    githubToken = githubToken,
+    verifyExistence = verifyExistence
 )
 
 internal data class ConfigurationImpl(
@@ -245,7 +256,8 @@ internal data class ConfigurationImpl(
     override val gradleStabilityLevel: GradleStabilityLevel = GradleStabilityLevel.STABLE,
     override val checkIgnored: Boolean = false,
     override val searchReleaseNote: Boolean = false,
-    override val githubToken: String? = null
+    override val githubToken: String? = null,
+    override val verifyExistence: Boolean = false
 ) : Configuration {
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path

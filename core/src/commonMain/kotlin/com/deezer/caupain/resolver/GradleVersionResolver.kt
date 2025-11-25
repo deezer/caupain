@@ -64,7 +64,7 @@ internal class GradleVersionResolver(
             }
         }
 
-        override fun canSelectVersion(
+        override suspend fun canSelectVersion(
             item: GradleDependencyVersion,
             version: GradleDependencyVersion.Static
         ): Boolean = true

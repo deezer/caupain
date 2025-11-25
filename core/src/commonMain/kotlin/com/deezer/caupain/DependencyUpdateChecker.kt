@@ -264,6 +264,12 @@ internal class DefaultDependencyUpdateChecker(
         }
     }
 
+    private val infoResolver = MavenInfoResolver(
+        httpClient = httpClient,
+        ioDispatcher = ioDispatcher,
+        logger = logger
+    )
+
     override val versionResolver by lazy {
         DefaultUpdatedVersionResolver(
             httpClient = httpClient,
@@ -272,7 +278,9 @@ internal class DefaultDependencyUpdateChecker(
             logger = logger,
             onlyCheckStaticVersions = configuration.onlyCheckStaticVersions,
             policy = policy,
-            ioDispatcher = ioDispatcher
+            ioDispatcher = ioDispatcher,
+            verifyExistence = configuration.verifyExistence,
+            mavenInfoResolver = infoResolver,
         )
     }
 
@@ -282,12 +290,6 @@ internal class DefaultDependencyUpdateChecker(
         gradleVersionsUrl = gradleVersionsUrl,
         stabilityLevel = configuration.gradleStabilityLevel,
         ioDispatcher = ioDispatcher
-    )
-
-    private val infoResolver = MavenInfoResolver(
-        httpClient = httpClient,
-        ioDispatcher = ioDispatcher,
-        logger = logger
     )
 
     private val releaseNoteResolver = GithubReleaseNoteResolver(

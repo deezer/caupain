@@ -85,7 +85,9 @@ internal class DefaultUpdatedVersionResolver(
     private val logger: Logger,
     private val onlyCheckStaticVersions: Boolean,
     private val policy: Policy,
-    ioDispatcher: CoroutineDispatcher
+    ioDispatcher: CoroutineDispatcher,
+    private val verifyExistence: Boolean,
+    private val mavenInfoResolver: MavenInfoResolver,
 ) : UpdatedVersionResolver {
 
     private val versionResolver = object : AbstractVersionResolver<DependencyRequestInfo>(
@@ -117,12 +119,17 @@ internal class DefaultUpdatedVersionResolver(
                 .filterNotNull()
         }
 
-        override fun canSelectVersion(
+        override suspend fun canSelectVersion(
             item: DependencyRequestInfo,
             version: GradleDependencyVersion.Static
         ): Boolean {
             val dependencyVersion = item.dependency.version?.resolve(item.versionReferences)
                 ?: return false
+            if (verifyExistence) {
+                // Check that MavenInfo exists for this version (we only need the existence check, not the data).
+                // If it doesn't exist (null), we can't proceed with this version.
+                mavenInfoResolver.getMavenInfo(item.dependency, item.repository, version) ?: return false
+            }
             return policy.select(item.dependency, dependencyVersion, version)
         }
     }

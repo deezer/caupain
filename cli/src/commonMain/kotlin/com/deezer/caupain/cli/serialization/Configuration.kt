@@ -68,7 +68,8 @@ private data class ConfigurationImpl(
     override val gradleStabilityLevel: GradleStabilityLevel? = null,
     override val checkIgnored: Boolean? = null,
     override val githubToken: String? = null,
-    override val searchReleaseNote: Boolean? = null
+    override val searchReleaseNote: Boolean? = null,
+    override val verifyExistence: Boolean? = null
 ) : Configuration {
 
     override fun validate(logger: Logger) {
@@ -101,6 +102,7 @@ private data class ConfigurationImpl(
             checkIgnored = checkIgnored ?: baseConfiguration.checkIgnored,
             searchReleaseNote = searchReleaseNote ?: baseConfiguration.searchReleaseNote,
             githubToken = githubToken ?: baseConfiguration.githubToken,
+            verifyExistence = verifyExistence ?: baseConfiguration.verifyExistence,
         )
     }
 }

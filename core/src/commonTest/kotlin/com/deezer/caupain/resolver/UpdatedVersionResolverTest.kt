@@ -29,6 +29,7 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
@@ -78,8 +79,6 @@ class UpdatedVersionResolverTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private lateinit var resolver: UpdatedVersionResolver
-
     private lateinit var logger: Logger
 
     private var hasError = false
@@ -98,28 +97,6 @@ class UpdatedVersionResolverTest {
             handleRequest(this, requestData)
                 ?: respond("Not found", HttpStatusCode.NotFound)
         }
-        resolver = DefaultUpdatedVersionResolver(
-            httpClient = HttpClient(engine) {
-                install(ContentNegotiation) {
-                    xml(DefaultXml, ContentType.Any)
-                }
-                install(HttpRequestRetry) {
-                    retryOnException(maxRetries = 3, retryOnTimeout = true)
-                    exponentialDelay(baseDelayMs = 100)
-                }
-                install(HttpTimeout) {
-                    requestTimeoutMillis = 1_000
-                    connectTimeoutMillis = 500
-                    socketTimeoutMillis = 500
-                }
-            },
-            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
-            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
-            onlyCheckStaticVersions = true,
-            policy = AlwaysAcceptPolicy,
-            ioDispatcher = testDispatcher,
-            logger = logger
-        )
     }
 
     private suspend fun handleRequest(
@@ -147,6 +124,9 @@ class UpdatedVersionResolverTest {
             GROOVY_CORE_METADATA_URL -> scope.respondElement(GROOVY_CORE_METADATA)
             GROOVY_NIO_METADATA_URL -> scope.respondElement(GROOVY_NIO_METADATA)
             VERSIONS_METADATA_URL -> scope.respondElement(VERSIONS_METADATA)
+            GROOVY_CORE_POM_3_0_6_URL -> scope.respondElement(EMPTY_MAVEN_INFO)
+            GROOVY_CORE_POM_3_0_5_URL -> scope.respondElement(EMPTY_MAVEN_INFO)
+            GROOVY_NIO_POM_3_0_5_URL -> scope.respond("Not found", HttpStatusCode.NotFound)
             else -> null
         }
     }
@@ -162,6 +142,7 @@ class UpdatedVersionResolverTest {
 
     @Test
     fun testUpdate() = runTest(testDispatcher) {
+        val resolver = createResolver()
         assertEquals(
             expected = UpdatedVersionResolver.Result(
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
@@ -219,6 +200,7 @@ class UpdatedVersionResolverTest {
 
     @Test
     fun testError() = runTest(testDispatcher) {
+        val resolver = createResolver()
         hasError = true
         assertNull(
             resolver.getUpdatedVersion(
@@ -234,6 +216,7 @@ class UpdatedVersionResolverTest {
 
     @Test
     fun testTimeout() = runTest(testDispatcher) {
+        val resolver = createResolver()
         delay = 2.seconds
         assertEquals(
             expected = UpdatedVersionResolver.Result(
@@ -252,6 +235,73 @@ class UpdatedVersionResolverTest {
         assertEquals(1, engine.requestHistory.size)
         assertEquals(0, baseHits)
         assertEquals(2, signedHits)
+    }
+
+    @Test
+    fun testVerifyExistence_WhenPomExists() = runTest(testDispatcher) {
+        val resolver = createResolver(verifyExistence = true)
+        assertEquals(
+            expected = UpdatedVersionResolver.Result(
+                currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
+                updatedVersion = GradleDependencyVersion.Exact("3.0.6"),
+                repository = BASE_REPOSITORY
+            ),
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+    }
+
+    @Test
+    fun testVerifyExistence_WhenLatestPomDoesNotExist() = runTest(testDispatcher) {
+        val resolver = createResolver(verifyExistence = true)
+
+        // groovy-nio has 3.0.5 as the latest, but this version doesn't have pom
+        assertNull(
+            resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "org.codehaus.groovy:groovy-nio",
+                    version = Version.Reference("groovy")
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+    }
+
+    private fun createResolver(verifyExistence: Boolean = false): DefaultUpdatedVersionResolver {
+        val httpClient = HttpClient(engine) {
+            install(ContentNegotiation) {
+                xml(DefaultXml, ContentType.Any)
+            }
+            install(HttpRequestRetry) {
+                retryOnException(maxRetries = 3, retryOnTimeout = true)
+                exponentialDelay(baseDelayMs = 100)
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 1_000
+                connectTimeoutMillis = 500
+                socketTimeoutMillis = 500
+            }
+        }
+        return DefaultUpdatedVersionResolver(
+            httpClient = httpClient,
+            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
+            onlyCheckStaticVersions = true,
+            policy = AlwaysAcceptPolicy,
+            ioDispatcher = testDispatcher,
+            logger = logger,
+            verifyExistence = verifyExistence,
+            mavenInfoResolver = MavenInfoResolver(
+                httpClient = httpClient,
+                ioDispatcher = testDispatcher,
+                logger = logger
+            )
+        )
     }
 
     companion object {
@@ -338,6 +388,23 @@ class UpdatedVersionResolverTest {
                 GradleDependencyVersion.Exact("8.37")
             )
         )
+
+        private val EMPTY_MAVEN_INFO = MavenInfo()
+
+        private val GROOVY_CORE_POM_3_0_6_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("org", "codehaus", "groovy", "groovy", "3.0.6", "groovy-3.0.6.pom")
+            .build()
+
+        private val GROOVY_CORE_POM_3_0_5_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("org", "codehaus", "groovy", "groovy", "3.0.5", "groovy-3.0.5.pom")
+            .build()
+
+        private val GROOVY_NIO_POM_3_0_5_URL = URLBuilder()
+            .takeFrom(SIGNED_URL)
+            .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "3.0.5", "groovy-nio-3.0.5.pom")
+            .build()
     }
 
     private class TestException : IOException()

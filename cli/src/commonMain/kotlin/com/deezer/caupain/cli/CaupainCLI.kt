@@ -242,6 +242,11 @@ class CaupainCLI(
         help = "Enable debugging for HTTP calls"
     ).flag()
 
+    private val verifyExistence by option(
+        "--verify-existence",
+        help = "Verify that .pom file exists before accepting version updates (warning: may slow down checks)"
+    ).flag()
+
     private val timesource = TimeSource.Monotonic
 
     init {
@@ -426,7 +431,8 @@ class CaupainCLI(
             debugHttpCalls = debugHttpCalls,
             gradleStabilityLevel = gradleStabilityLevel,
             searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,
-            githubToken = releaseNoteOptions?.githubToken
+            githubToken = releaseNoteOptions?.githubToken,
+            verifyExistence = verifyExistence
         )
         val mergedConfiguration = parsedConfiguration?.toConfiguration(baseConfiguration)
             ?: baseConfiguration
