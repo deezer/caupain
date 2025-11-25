@@ -1,16 +1,16 @@
 [versions]
 junit = "4.13.2"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 kotlinx-coroutines = "1.10.2"
-xml-serialization = "0.91.2"
-okio = "3.16.0"
-ktor = "3.3.0"
-kotlinx-io = "0.8.0"
+xml-serialization = "0.91.3"
+okio = "3.16.4"
+ktor = "3.3.2"
+kotlinx-io = "0.8.2"
 mordant = "3.0.2"
-okhttp = "5.1.0"
+okhttp = "5.3.2"
 detekt = "1.23.8"
 clikt = "5.0.3"
-antlr-kotlin = "1.0.5"
+antlr-kotlin = "1.0.8"
 kotlinx-serialization = "1.9.0"
 
 [libraries]
@@ -60,7 +60,7 @@ semver = "io.github.z4kn4fein:semver:3.0.0"
 antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
 app-dirs = "ca.gosyer:kotlin-multiplatform-appdirs:2.0.0"
 commons-text = "org.apache.commons:commons-text:1.14.0"
-test-parameter-injector = "com.google.testparameterinjector:test-parameter-injector:1.19"
+test-parameter-injector = "com.google.testparameterinjector:test-parameter-injector:1.20"
 
 [bundles]
 clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]
@@ -73,19 +73,19 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.29.0"
-dokka = "org.jetbrains.dokka:2.0.0"
+dokka = "org.jetbrains.dokka:2.1.0"
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-mokkery = "dev.mokkery:2.10.0"
+mokkery = "dev.mokkery:3.0.0"
 changelog = "org.jetbrains.changelog:2.4.0"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
-compat-patrouille = "com.gradleup.compat.patrouille:0.0.2"
+compat-patrouille = "com.gradleup.compat.patrouille:0.1.0"
 buildkonfig = "com.codingfeline.buildkonfig:0.17.1"
-build-config = "com.github.gmazzo.buildconfig:5.6.8"
-netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:12.1.0"
-kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.2"
-vanniktech-maven-publish = "com.vanniktech.maven.publish:0.34.0"
+build-config = "com.github.gmazzo.buildconfig:6.0.3"
+netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:12.1.1"
+kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.3"
+vanniktech-maven-publish = "com.vanniktech.maven.publish:0.35.0"
 gradle-plugin-publish = "com.gradle.plugin-publish:2.0.0"
 dependency-guard = "com.dropbox.dependency-guard:0.5.0"
-cashapp-burst = "app.cash.burst:2.9.0"
-poko = "dev.drewhamilton.poko:0.20.0"
-testkit-support = "com.autonomousapps.testkit:0.16"
+cashapp-burst = "app.cash.burst:2.10.2"
+poko = "dev.drewhamilton.poko:0.20.2"
+testkit-support = "com.autonomousapps.testkit:0.17"
