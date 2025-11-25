@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Add option to verify .pom availability (#67, thanks to [@bacecek](https://github.com/bacecek))
 
 ### Changed
 - Use `stability-level` as default policy for update. The previous "accept-all" policy can be used by
