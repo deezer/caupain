@@ -137,6 +137,12 @@ open class DependenciesUpdateTask : DefaultTask() {
     val onlyCheckStaticVersions = project.objects.property<Boolean>()
 
     /**
+     * @see DependenciesUpdateExtension.verifyExistence
+     */
+    @get:Internal
+    val verifyExistence = project.objects.property<Boolean>()
+
+    /**
      * @see DependenciesUpdateExtension.gradleStabilityLevel
      */
     @get:Internal
@@ -274,7 +280,8 @@ open class DependenciesUpdateTask : DefaultTask() {
             gradleStabilityLevel = gradleStabilityLevel.get(),
             checkIgnored = checkIgnored.get(),
             searchReleaseNote = searchReleaseNote.getOrElse(false),
-            githubToken = githubToken.orNull
+            githubToken = githubToken.orNull,
+            verifyExistence = verifyExistence.get(),
         )
     }
 

@@ -121,6 +121,15 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
         objects.property<Boolean>().convention(githubToken.map { true })
 
     /**
+     * Whether to verify that .pom files exist in the repository before accepting a version as valid.
+     * When enabled, only versions with available POM metadata will be considered for updates.
+     * This helps ensure that suggested versions are actually downloadable. Default is false.
+     *
+     * **WARNING**: This option can increase total build time significantly due to the extra HTTP requests.
+     */
+    val verifyExistence: Property<Boolean> = objects.property<Boolean>().convention(false)
+
+    /**
      * Configure repositories
      */
     fun repositories(action: Action<RepositoryHandler>) {

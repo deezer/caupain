@@ -73,6 +73,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             checkIgnored.convention(ext.checkIgnored)
             searchReleaseNote.convention(ext.searchReleaseNote)
             githubToken.convention(ext.githubToken)
+            verifyExistence.convention(ext.verifyExistence)
         }
         target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
             group = "verification"

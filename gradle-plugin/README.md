@@ -265,6 +265,12 @@ githubToken = "your-token"
 // Whether or not to search for release notes on GitHub and display the link to them in the results.
 // If a GitHub token is provided, this will be true by default.
 searchReleaseNotes = true
+// Whether to verify that .pom files exist in the repository before accepting a version as valid.
+// When enabled, only versions with available POM metadata will be considered for updates.
+// This helps ensure that suggested versions are actually downloadable.
+// Note: This may slow down the checking process as it adds extra network requests.
+// Default is false.
+verifyExistence = true
 ```
 
 ## In-place update

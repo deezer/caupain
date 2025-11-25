@@ -54,6 +54,7 @@ interface Configuration {
     val checkIgnored: Boolean?
     val searchReleaseNote: Boolean?
     val githubToken: String?
+    val verifyExistence: Boolean?
 
     fun validate(logger: Logger)
 
