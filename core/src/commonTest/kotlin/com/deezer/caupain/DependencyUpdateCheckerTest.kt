@@ -256,7 +256,7 @@ class DependencyUpdateCheckerTest {
         val configuration = Configuration(
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
-            excludedKeys = setOf("groovy-json"),
+            excludedKeys = setOf("groovy-json", "groovy-core"),
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
             versionCatalogPaths = VERSION_CATALOGS.keys,
             checkIgnored = true,
@@ -282,11 +282,17 @@ class DependencyUpdateCheckerTest {
         assertEquals(
             expected = listOf(
                 UpdateInfo(
+                    dependency = "groovy-core",
+                    dependencyId = "org.codehaus.groovy:groovy",
+                    currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                    updatedVersion = "3.0.6".toStaticVersion()
+                ),
+                UpdateInfo(
                     dependency = "groovy-json",
                     dependencyId = "org.codehaus.groovy:groovy-json",
                     currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
                     updatedVersion = "3.0.6".toStaticVersion()
-                )
+                ),
             ),
             actual = result.ignoredUpdateInfos
         )
@@ -488,12 +494,12 @@ class DependencyUpdateCheckerTest {
                 "checkstyle" to Version.Simple(GradleDependencyVersion.Exact("8.37"))
             ),
             libraries = mapOf(
-                "groovy-core" to Dependency.Library(
-                    module = "org.codehaus.groovy:groovy",
-                    version = Version.Reference("groovy")
-                ),
                 "groovy-json" to Dependency.Library(
                     module = "org.codehaus.groovy:groovy-json",
+                    version = Version.Reference("groovy")
+                ),
+                "groovy-core" to Dependency.Library(
+                    module = "org.codehaus.groovy:groovy",
                     version = Version.Reference("groovy")
                 ),
                 "groovy-other" to Dependency.Library(
