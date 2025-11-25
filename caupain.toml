@@ -1,11 +1,5 @@
-#repositories = [ "mavenCentral" ]
-#pluginRepositories = [ "mavenCentral", "gradlePluginPortal" ]
-repositories = [
-    { url = "https://artifacts.deez.re/repository/maven-public/" }
-]
-pluginRepositories = [
-    { url = "https://artifacts.deez.re/repository/maven-public/" }
-]
+repositories = [ "mavenCentral" ]
+pluginRepositories = [ "mavenCentral", "gradlePluginPortal" ]
 cacheDir = "build/cache/caupain"
 outputType = "markdown"
 outputPath = "build/reports/dependency-updates.md"
