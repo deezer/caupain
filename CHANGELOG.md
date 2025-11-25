@@ -5,12 +5,15 @@
 ### Added
 
 ### Changed
+- Use `stability-level` as default policy for update. The previous "accept-all" policy can be used by
+using the `always` policy name. (#61)
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- Ignored dependences are now sorted correctly (#66)
 
 ### Security
 
