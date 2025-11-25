@@ -357,7 +357,9 @@ internal class DefaultDependencyUpdateChecker(
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
                 }
             },
-            ignoredUpdateInfos = updatedVersionsResult.ignoredVersions,
+            ignoredUpdateInfos = updatedVersionsResult
+                .ignoredVersions
+                .sortedBy { it.dependencyId },
             versionCatalog = versionCatalogParseResults.singleOrNull()?.versionCatalog,
             selfUpdateInfo = updatedVersionsResult.selfUpdateInfo,
             versionCatalogInfo = versionCatalogParseResults.singleOrNull()?.info
