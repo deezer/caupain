@@ -13,7 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: macos-latest
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/buildBinaries')
+    if: github.event.issue.pull_request && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.comment.body, '/buildBinaries')
     steps:
       - name: Get PR branch
         uses: xt0rted/pull-request-comment-branch@v3
@@ -61,7 +61,7 @@ jobs:
 
   publishSnapshot:
     runs-on: macos-latest
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '/publishSnapshot')
+    if: github.event.issue.pull_request && github.event.pull_request.head.repo.full_name == github.repository && contains(github.event.comment.body, '/publishSnapshot')
     steps:
       - name: Get PR branch
         uses: xt0rted/pull-request-comment-branch@v3

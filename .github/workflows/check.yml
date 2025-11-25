@@ -47,6 +47,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
       - name: Upload SARIF files
         if: (success() || failure()) && matrix.os == 'ubuntu-latest'
         uses: github/codeql-action/upload-sarif@v3

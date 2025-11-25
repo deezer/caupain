@@ -202,6 +202,9 @@ dependencyGuard {
     configuration("metadataNativeMainCompileClasspath")
 }
 
+val isCI = System.getenv("CI").toBoolean()
+val isFork = System.getenv("IS_FORK").toBoolean()
+
 mavenPublishing {
     configure(
         KotlinMultiplatform(
@@ -210,7 +213,9 @@ mavenPublishing {
         )
     )
     publishToMavenCentral(automaticRelease = true)
-    signAllPublications()
+    if (!isCI || !isFork) {
+        signAllPublications()
+    }
     pom {
         name = "Caupain core library"
         description =
