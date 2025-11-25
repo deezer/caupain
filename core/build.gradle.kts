@@ -202,8 +202,9 @@ dependencyGuard {
     configuration("metadataNativeMainCompileClasspath")
 }
 
-val isCI = System.getenv("CI").toBoolean()
-val isFork = System.getenv("IS_FORK").toBoolean()
+val fromForkedPullRequest = providers
+    .gradleProperty("fromForkedPullRequest")
+    .map { it.toBoolean() }
 
 mavenPublishing {
     configure(
@@ -213,7 +214,8 @@ mavenPublishing {
         )
     )
     publishToMavenCentral(automaticRelease = true)
-    if (!isCI || !isFork) {
+    if (!fromForkedPullRequest.getOrElse(false)) {
+        // Do not sign if the build is from a forked PR because secrets are not available
         signAllPublications()
     }
     pom {
