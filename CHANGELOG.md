@@ -4,10 +4,12 @@
 
 ### Added
 - Add option to verify .pom availability (#67, thanks to [@bacecek](https://github.com/bacecek))
+- Add possibility to specify multiple output types in CLI
 
 ### Changed
 - Use `stability-level` as default policy for update. The previous "accept-all" policy can be used by
 using the `always` policy name. (#61)
+- CLI options are not used in priority over configuration file. **This is a breaking change**.
 
 ### Deprecated
 

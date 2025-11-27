@@ -92,7 +92,12 @@ kotlin {
         val nonLinuxOrMacTest by creating {
             dependsOn(commonTest.get())
         }
-        jvmTest.get().dependsOn(nonLinuxOrMacTest)
+        jvmTest {
+            dependsOn(nonLinuxOrMacTest)
+            dependencies {
+                implementation(libs.test.parameter.injector)
+            }
+        }
         mingwTest.get().dependsOn(nonLinuxOrMacTest)
     }
 }

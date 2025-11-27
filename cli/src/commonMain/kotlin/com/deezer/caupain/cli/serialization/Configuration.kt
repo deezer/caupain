@@ -27,10 +27,12 @@
     PathSerializer::class,
     PluginExclusionSerializer::class,
     LibraryExclusionSerializer::class,
+    OutputTypeSerializer::class,
 )
 
 package com.deezer.caupain.cli.serialization
 
+import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.LibraryExclusion
@@ -46,7 +48,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import okio.Path
-import com.deezer.caupain.model.Configuration as ModelConfiguration
 
 @Serializable
 private data class ConfigurationImpl(
@@ -61,8 +62,11 @@ private data class ConfigurationImpl(
     override val policyPluginDir: Path? = null,
     override val cacheDir: Path? = null,
     override val showVersionReferences: Boolean? = null,
-    @Serializable(OutputTypeSerializer::class) override val outputType: Configuration.OutputType? = null,
+    override val outputType: Configuration.OutputType? = null,
+    override val outputTypes: Iterable<Configuration.OutputType>? = null,
     override val outputPath: Path? = null,
+    override val outputDir: Path?,
+    override val outputBaseName: String?,
     override val gradleWrapperPropertiesPath: Path? = null,
     override val onlyCheckStaticVersions: Boolean? = null,
     override val gradleStabilityLevel: GradleStabilityLevel? = null,
@@ -76,34 +80,22 @@ private data class ConfigurationImpl(
         if (versionCatalogPath != null && versionCatalogPaths != null) {
             logger.warn("Both versionCatalogPath and versionCatalogPaths are set. Using versionCatalogPaths.")
         }
-    }
-
-    @Suppress("CyclomaticComplexMethod")
-    override fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration {
-        return ModelConfiguration(
-            repositories = repositories?.map { it.toModel() }
-                ?: baseConfiguration.repositories,
-            pluginRepositories = pluginRepositories?.map { it.toModel() }
-                ?: baseConfiguration.pluginRepositories,
-            versionCatalogPaths = versionCatalogPaths
-                ?: versionCatalogPath?.let(::listOf)
-                ?: baseConfiguration.versionCatalogPaths,
-            excludedKeys = excludedKeys ?: baseConfiguration.excludedKeys,
-            excludedLibraries = excludedLibraries ?: baseConfiguration.excludedLibraries,
-            excludedPlugins = excludedPlugins ?: baseConfiguration.excludedPlugins,
-            policy = policy ?: baseConfiguration.policy,
-            policyPluginsDir = policyPluginDir ?: baseConfiguration.policyPluginsDir,
-            cacheDir = cacheDir ?: baseConfiguration.cacheDir,
-            cleanCache = baseConfiguration.cleanCache,
-            debugHttpCalls = baseConfiguration.debugHttpCalls,
-            onlyCheckStaticVersions = onlyCheckStaticVersions
-                ?: baseConfiguration.onlyCheckStaticVersions,
-            gradleStabilityLevel = gradleStabilityLevel ?: baseConfiguration.gradleStabilityLevel,
-            checkIgnored = checkIgnored ?: baseConfiguration.checkIgnored,
-            searchReleaseNote = searchReleaseNote ?: baseConfiguration.searchReleaseNote,
-            githubToken = githubToken ?: baseConfiguration.githubToken,
-            verifyExistence = verifyExistence ?: baseConfiguration.verifyExistence,
-        )
+        if (outputType != null && outputTypes != null) {
+            logger.warn("Both outputType and outputTypes are set. Using outputTypes.")
+        }
+        if (outputPath != null) {
+            val hasMultipleFileOutputs = outputTypes
+                ?.let { types ->
+                    types.count { it != Configuration.OutputType.CONSOLE } > 1
+                }
+                ?: false
+            if (hasMultipleFileOutputs) {
+                logger.warn("outputPath will be ignored because multiple file output types are set in outputTypes.")
+            }
+        }
+        if (policyPluginDir != null && !CAN_USE_PLUGINS) {
+            logger.error("Policy plugins are not supported on this platform")
+        }
     }
 }
 

@@ -79,13 +79,21 @@ public interface Configuration : Serializable {
     public val githubToken: String?
     public val verifyExistence: Boolean
 
-    /**
-     * Returns a copy of this configuration with [searchReleaseNote] set to true
-     */
-    public fun withReleaseNotes(): Configuration
-
     public companion object {
         private const val serialVersionUID = 1L
+
+        public val DEFAULT_REPOSITORIES: List<Repository> = listOf(
+            DefaultRepositories.mavenCentral,
+            DefaultRepositories.google,
+        )
+
+        public val DEFAULT_PLUGIN_REPOSITORIES: List<Repository> = listOf(
+            DefaultRepositories.gradlePlugins,
+            DefaultRepositories.mavenCentral,
+            DefaultRepositories.google,
+        )
+
+        public val DEFAULT_CATALOG_PATH: Path = "gradle/libs.versions.toml".toPath()
     }
 }
 
@@ -117,15 +125,8 @@ public interface Configuration : Serializable {
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
 public fun Configuration(
-    repositories: List<Repository> = listOf(
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
-    pluginRepositories: List<Repository> = listOf(
-        DefaultRepositories.gradlePlugins,
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
+    repositories: List<Repository> = Configuration.DEFAULT_REPOSITORIES,
+    pluginRepositories: List<Repository> = Configuration.DEFAULT_PLUGIN_REPOSITORIES,
     versionCatalogPath: Path,
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
@@ -189,16 +190,9 @@ public fun Configuration(
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
 public fun Configuration(
-    repositories: List<Repository> = listOf(
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
-    pluginRepositories: List<Repository> = listOf(
-        DefaultRepositories.gradlePlugins,
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
-    versionCatalogPaths: Iterable<Path> = listOf("gradle/libs.versions.toml".toPath()),
+    repositories: List<Repository> = Configuration.DEFAULT_REPOSITORIES,
+    pluginRepositories: List<Repository> = Configuration.DEFAULT_PLUGIN_REPOSITORIES,
+    versionCatalogPaths: Iterable<Path> = listOf(Configuration.DEFAULT_CATALOG_PATH),
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
@@ -234,15 +228,8 @@ public fun Configuration(
 )
 
 internal data class ConfigurationImpl(
-    override val repositories: List<Repository> = listOf(
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
-    override val pluginRepositories: List<Repository> = listOf(
-        DefaultRepositories.gradlePlugins,
-        DefaultRepositories.mavenCentral,
-        DefaultRepositories.google,
-    ),
+    override val repositories: List<Repository> = Configuration.DEFAULT_REPOSITORIES,
+    override val pluginRepositories: List<Repository> = Configuration.DEFAULT_PLUGIN_REPOSITORIES,
     override val versionCatalogPaths: Iterable<Path> = listOf("gradle/libs.versions.toml".toPath()),
     override val excludedKeys: Set<String> = emptySet(),
     override val excludedLibraries: List<LibraryExclusion> = emptyList(),
@@ -262,8 +249,6 @@ internal data class ConfigurationImpl(
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path
         get() = versionCatalogPaths.first()
-
-    override fun withReleaseNotes(): Configuration = copy(searchReleaseNote = true)
 }
 
 /**

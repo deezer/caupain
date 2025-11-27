@@ -303,10 +303,12 @@ public abstract interface class com/deezer/caupain/model/Configuration : java/io
 	public abstract fun getVerifyExistence ()Z
 	public abstract fun getVersionCatalogPath ()Lokio/Path;
 	public abstract fun getVersionCatalogPaths ()Ljava/lang/Iterable;
-	public abstract fun withReleaseNotes ()Lcom/deezer/caupain/model/Configuration;
 }
 
 public final class com/deezer/caupain/model/Configuration$Companion {
+	public final fun getDEFAULT_CATALOG_PATH ()Lokio/Path;
+	public final fun getDEFAULT_PLUGIN_REPOSITORIES ()Ljava/util/List;
+	public final fun getDEFAULT_REPOSITORIES ()Ljava/util/List;
 }
 
 public final class com/deezer/caupain/model/Configurations {

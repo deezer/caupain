@@ -24,8 +24,8 @@
 
 package com.deezer.caupain.cli
 
+import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.serialization.DefaultToml
-import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DefaultRepositories
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
@@ -37,51 +37,56 @@ import okio.Path.Companion.toPath
 import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
 class ConfigurationParsingTest {
 
     @Test
     fun testParsing() {
+        val result = DefaultToml.decodeFromString<Configuration>(CONFIGURATION)
         assertEquals(
-            expected = Configuration(
-                repositories = listOf(
-                    DefaultRepositories.mavenCentral.withComponentFilter {
+            expected = listOf(
+                DefaultRepositories.mavenCentral.withComponentFilter {
+                    include(group = "com.example", name = "example-lib")
+                    include("com.example2.**")
+                    exclude("com.other")
+                },
+                Repository(
+                    url = "http://www.example.com/repo",
+                    componentFilter = buildComponentFilter {
                         include(group = "com.example", name = "example-lib")
                         include("com.example2.**")
                         exclude("com.other")
                     },
-                    Repository(
-                        url = "http://www.example.com/repo",
-                        componentFilter = buildComponentFilter {
-                            include(group = "com.example", name = "example-lib")
-                            include("com.example2.**")
-                            exclude("com.other")
-                        },
-                    ),
-                    DefaultRepositories.google
                 ),
-                pluginRepositories = listOf(
-                    DefaultRepositories.gradlePlugins,
-                    Repository(
-                        url = "http://www.example.com/plugin"
-                    )
-                ),
-                policy = "stability-level",
-                cacheDir = "build/cache/caupain".toPath(),
-                excludedKeys = setOf("test"),
-                excludedLibraries = listOf(
-                    LibraryExclusion("com.example", "example-lib"),
-                    LibraryExclusion("com.example2.**")
-                ),
-                excludedPlugins = listOf(
-                    PluginExclusion("com.first"),
-                    PluginExclusion("com.second")
+                DefaultRepositories.google
+            ),
+            actual = result.repositories?.map { it.toModel() }
+        )
+        assertEquals(
+            expected = listOf(
+                DefaultRepositories.gradlePlugins,
+                Repository(
+                    url = "http://www.example.com/plugin"
                 )
             ),
-            actual = DefaultToml
-                .decodeFromString<ParsedConfiguration>(CONFIGURATION)
-                .toConfiguration(Configuration())
+            actual = result.pluginRepositories?.map { it.toModel() }
+        )
+        assertEquals("stability-level", result.policy)
+        assertEquals("build/cache/caupain".toPath(), result.cacheDir)
+        assertEquals(setOf("test"), result.excludedKeys)
+        assertEquals(
+            expected = listOf(
+                LibraryExclusion("com.example", "example-lib"),
+                LibraryExclusion("com.example2.**")
+            ),
+            actual = result.excludedLibraries
+        )
+        assertEquals(
+            expected = listOf(
+                PluginExclusion("com.first"),
+                PluginExclusion("com.second")
+            ),
+            actual = result.excludedPlugins
         )
     }
 }

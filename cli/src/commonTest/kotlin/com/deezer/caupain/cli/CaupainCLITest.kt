@@ -27,7 +27,6 @@ package com.deezer.caupain.cli
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
-import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
@@ -42,7 +41,6 @@ import dev.mokkery.MockMode
 import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.everySuspend
-import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import dev.mokkery.verify.VerifyMode
 import dev.mokkery.verifySuspend
@@ -57,7 +55,6 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CaupainCLITest {
@@ -72,9 +69,7 @@ class CaupainCLITest {
 
     private lateinit var fileSystem: FakeFileSystem
 
-    private lateinit var parsedConfiguration: ParsedConfiguration
-
-    private val configurationPath = "config.toml".toPath()
+    private val wrapperPropertiesPath = "gradle-wrapper.properties".toPath()
 
     private val versionCatalogPath = "libs.versions.toml".toPath()
 
@@ -86,26 +81,13 @@ class CaupainCLITest {
     fun setup() {
         fileSystem = FakeFileSystem()
         fileSystem.write(versionCatalogPath) { writeUtf8("") }
-        fileSystem.write(configurationPath) { writeUtf8("") }
         fileSystem.createDirectories(mockPolicyPluginDir)
         fileSystem.createDirectories(cacheDir)
         checker = mock {
             every { progress } returns mockProgressFlow
         }
         replacer = mock(MockMode.autoUnit)
-        val propertiesPath = "gradle-wrapper.properties".toPath()
-        fileSystem.write(propertiesPath) { writeUtf8(GRADLE_WRAPPER_PROPERTIES) }
-        parsedConfiguration = mock {
-            every { gradleWrapperPropertiesPath } returns propertiesPath
-            every { outputType } returns null
-            every { outputPath } returns null
-            every { validate(any()) } returns Unit
-            every { showVersionReferences } returns true
-            every { versionCatalogPaths } returns null
-            every { versionCatalogPath } returns null
-            every { githubToken } returns "test"
-            every { searchReleaseNote } returns null
-        }
+        fileSystem.write(wrapperPropertiesPath) { writeUtf8(GRADLE_WRAPPER_PROPERTIES) }
     }
 
     @AfterTest
@@ -114,168 +96,158 @@ class CaupainCLITest {
         fileSystem.close()
     }
 
-    private inline fun createCli(
-        crossinline checkConfiguration: (Configuration) -> Unit = {},
-    ) = CaupainCLI(
+    private fun createCli() = CaupainCLI(
         fileSystem = fileSystem,
         defaultDispatcher = testDispatcher,
         ioDispatcher = testDispatcher,
-        parseConfiguration = { fs, path ->
-            assertEquals(fileSystem, fs)
-            assertEquals(configurationPath, path)
-            parsedConfiguration
-        },
-        createUpdateChecker = { config, gradleVersion, _, _, _, _ ->
+        createUpdateChecker = { _, gradleVersion, _, _, _, _ ->
             assertEquals("8.11", gradleVersion)
-            checkConfiguration(config)
             checker
         },
         createVersionReplacer = { _, _, _ -> replacer }
     )
 
     @Test
-    fun testComplete() = runTest(testDispatcher) {
-        val output = DependenciesUpdateResult(
-            updateInfos = mapOf(
-                UpdateInfo.Type.LIBRARY to listOf(
-                    UpdateInfo(
-                        dependency = "groovy-core",
-                        dependencyId = "org.codehaus.groovy:groovy",
-                        name = "Groovy core",
-                        url = "https://groovy-lang.org/",
-                        currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
-                        updatedVersion = "3.0.6".toStaticVersion()
+    fun testComplete() {
+        runTest(testDispatcher) {
+            val output = DependenciesUpdateResult(
+                updateInfos = mapOf(
+                    UpdateInfo.Type.LIBRARY to listOf(
+                        UpdateInfo(
+                            dependency = "groovy-core",
+                            dependencyId = "org.codehaus.groovy:groovy",
+                            name = "Groovy core",
+                            url = "https://groovy-lang.org/",
+                            currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                            updatedVersion = "3.0.6".toStaticVersion()
+                        )
+                    ),
+                    UpdateInfo.Type.PLUGIN to listOf(
+                        UpdateInfo(
+                            dependency = "versions",
+                            dependencyId = "com.github.ben-manes.versions",
+                            name = "Resolved plugin",
+                            url = "http://www.example.com/resolved",
+                            currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
+                            updatedVersion = "1.0.0".toStaticVersion()
+                        )
                     )
                 ),
-                UpdateInfo.Type.PLUGIN to listOf(
-                    UpdateInfo(
-                        dependency = "versions",
-                        dependencyId = "com.github.ben-manes.versions",
-                        name = "Resolved plugin",
-                        url = "http://www.example.com/resolved",
-                        currentVersion = "0.45.0-SNAPSHOT".toSimpleVersion(),
-                        updatedVersion = "1.0.0".toStaticVersion()
-                    )
-                )
-            ),
-            gradleUpdateInfo = GradleUpdateInfo(
-                currentVersion = "8.11",
-                updatedVersion = "8.13"
-            ),
-            versionCatalog = VersionCatalog(
-                versions = mapOf("groovy" to "3.0.5-alpha-1".toSimpleVersion()),
-                libraries = mapOf(
-                    "groovy-core" to Dependency.Library(
-                        group = "org.codehaus.groovy",
-                        name = "groovy",
-                        version = Version.Reference("groovy"),
+                gradleUpdateInfo = GradleUpdateInfo(
+                    currentVersion = "8.11",
+                    updatedVersion = "8.13"
+                ),
+                versionCatalog = VersionCatalog(
+                    versions = mapOf("groovy" to "3.0.5-alpha-1".toSimpleVersion()),
+                    libraries = mapOf(
+                        "groovy-core" to Dependency.Library(
+                            group = "org.codehaus.groovy",
+                            name = "groovy",
+                            version = Version.Reference("groovy"),
+                        )
+                    ),
+                    plugins = mapOf(
+                        "versions" to Dependency.Plugin(
+                            id = "com.github.ben-manes.versions",
+                            version = "0.45.0-SNAPSHOT".toSimpleVersion()
+                        )
                     )
                 ),
-                plugins = mapOf(
-                    "versions" to Dependency.Plugin(
-                        id = "com.github.ben-manes.versions",
-                        version = "0.45.0-SNAPSHOT".toSimpleVersion()
-                    )
-                )
-            ),
-            ignoredUpdateInfos = emptyList(),
-            selfUpdateInfo = SelfUpdateInfo(
-                currentVersion = "1.0.0",
-                updatedVersion = "1.1.0",
-                sources = SelfUpdateInfo.Source.entries
-            ),
-            versionCatalogInfo = VersionCatalogInfo()
-        )
-        everySuspend { checker.checkForUpdates() } returns output
-        val baseConfiguration = Configuration(
-            versionCatalogPath = versionCatalogPath,
-            excludedKeys = setOf("excluded"),
-            policy = "custom",
-            policyPluginsDir = mockPolicyPluginDir,
-            cacheDir = cacheDir
-        )
-        val mergedConfiguration = mock<Configuration> {
-            every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
-            every { versionCatalogPaths } returns listOf(this@CaupainCLITest.versionCatalogPath)
-            every { onlyCheckStaticVersions } returns true
-            every { githubToken } returns null
-        }
-        every { parsedConfiguration.toConfiguration(baseConfiguration) } returns mergedConfiguration
-        every { mergedConfiguration.withReleaseNotes() } returns mergedConfiguration
-        val cli = createCli { conf ->
-            assertEquals(mergedConfiguration, conf)
-        }
-        val outputPath = "outputs/output.html".toPath()
-        val result = cli.test(
-            listOf(
-                "-i",
-                versionCatalogPath.toString(),
-                "-e",
-                "excluded",
-                "-c",
-                configurationPath.toString(),
-                "--policy-plugin-dir",
-                mockPolicyPluginDir.toString(),
-                "-p",
-                "custom",
-                "-t",
-                "html",
-                "-o",
-                outputPath.toString(),
-                "--cache-dir",
-                cacheDir.toString(),
-                "-q",
-                "--in-place",
+                ignoredUpdateInfos = emptyList(),
+                selfUpdateInfo = SelfUpdateInfo(
+                    currentVersion = "1.0.0",
+                    updatedVersion = "1.1.0",
+                    sources = SelfUpdateInfo.Source.entries
+                ),
+                versionCatalogInfo = VersionCatalogInfo()
             )
-        )
-        assertEquals(0, result.statusCode)
-        assertEquals("", result.output)
-        assertEquals(EXPECTED_RESULT, fileSystem.read(outputPath) { readUtf8().trim() })
-        verifySuspend(VerifyMode.exactly(1)) {
-            replacer.replaceVersions(versionCatalogPath, output)
+            everySuspend { checker.checkForUpdates() } returns output
+            val cli = createCli()
+            val outputPath = "outputs/output.html".toPath()
+            val result = cli.test(
+                if (CAN_USE_PLUGINS) {
+                    listOf(
+                        "-i",
+                        versionCatalogPath.toString(),
+                        "-e",
+                        "excluded",
+                        "--policy-plugin-dir",
+                        mockPolicyPluginDir.toString(),
+                        "-p",
+                        "custom",
+                        "-t",
+                        "html",
+                        "-o",
+                        outputPath.toString(),
+                        "--cache-dir",
+                        cacheDir.toString(),
+                        "--gradle-wrapper-properties",
+                        wrapperPropertiesPath.toString(),
+                        "--show-version-references",
+                        "-q",
+                        "--in-place",
+                    )
+                } else {
+                    listOf(
+                        "-i",
+                        versionCatalogPath.toString(),
+                        "-e",
+                        "excluded",
+                        "-t",
+                        "html",
+                        "-o",
+                        outputPath.toString(),
+                        "--cache-dir",
+                        cacheDir.toString(),
+                        "--gradle-wrapper-properties",
+                        wrapperPropertiesPath.toString(),
+                        "--show-version-references",
+                        "-q",
+                        "--in-place",
+                    )
+                }
+            )
+            assertEquals(0, result.statusCode)
+            assertEquals("", result.output)
+            assertEquals(EXPECTED_RESULT, fileSystem.read(outputPath) { readUtf8().trim() })
+            verifySuspend(VerifyMode.exactly(1)) {
+                replacer.replaceVersions(versionCatalogPath, output)
+            }
         }
     }
 
     @Test
-    fun testListPolicies() = runTest(testDispatcher) {
-        val mergedConfiguration = mock<Configuration> {
-            every { policyPluginsDir } returns if (CAN_USE_PLUGINS) mockPolicyPluginDir else null
-            every { versionCatalogPaths } returns listOf(this@CaupainCLITest.versionCatalogPath)
-            every { onlyCheckStaticVersions } returns true
-            every { githubToken } returns null
-        }
-        every { parsedConfiguration.toConfiguration(any()) } returns mergedConfiguration
-        every { mergedConfiguration.withReleaseNotes() } returns mergedConfiguration
-        val policies = listOf(
-            mock<Policy> {
-                every { name } returns "test1"
-                every { description } returns null
-            },
-            mock<Policy> {
-                every { name } returns "test2"
-                every { description } returns "Test policy 2"
-            }
-        )
-        every { checker.policies } returns policies.asSequence()
-        val cli = createCli { conf ->
-            assertEquals(mergedConfiguration, conf)
-        }
-        val result = cli.test(
-            listOf(
-                "--list-policies",
-                "-c",
-                configurationPath.toString(),
+    fun testListPolicies() {
+        runTest(testDispatcher) {
+            val policies = listOf<Policy>(
+                mock {
+                    every { name } returns "test1"
+                    every { description } returns null
+                },
+                mock {
+                    every { name } returns "test2"
+                    every { description } returns "Test policy 2"
+                }
             )
-        )
-        assertEquals(0, result.statusCode)
-        assertEquals(
-            """
+            every { checker.policies } returns policies.asSequence()
+            val cli = createCli()
+            val result = cli.test(
+                listOf(
+                    "--list-policies",
+                    "--gradle-wrapper-properties",
+                    wrapperPropertiesPath.toString(),
+                )
+            )
+            assertEquals(0, result.statusCode)
+            assertEquals(
+                """
             Available policies:
             - <no-policy>: Built-in default to update to the latest version available
             - test1
             - test2: Test policy 2
         """.trimIndent(), result.output.trim()
-        )
+            )
+        }
     }
 }
 

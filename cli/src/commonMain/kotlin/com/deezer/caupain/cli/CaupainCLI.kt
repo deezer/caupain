@@ -66,11 +66,11 @@ import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.unique
 import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
@@ -120,29 +120,31 @@ class CaupainCLI(
             ioDispatcher = ioDispatcher,
             defaultDispatcher = defaultDispatcher
         )
-    }
+    },
+    private val appDirs: AppDirs = AppDirs { appName = "caupain" },
 ) : SuspendingCliktCommand(name = "caupain") {
-
-    private val appDirs = AppDirs {
-        appName = "caupain"
-    }
 
     private val versionCatalogPaths by
     option(
         "-i",
         "--version-catalog",
         help = "Version catalog path. Use multiple times to use multiple version catalogs",
-        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "gradle/libs.versions.toml")
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to Configuration.DEFAULT_CATALOG_PATH.toString()),
     )
         .path(mustExist = true, canBeFile = true, canBeDir = false, fileSystem = fileSystem)
-        .multiple(default = listOf("gradle/libs.versions.toml".toPath()))
+        .multiple()
 
     private val gradleWrapperPropertiesPath by
-    option("--gradle-wrapper-properties", help = "Gradle wrapper properties path")
+    option(
+        "--gradle-wrapper-properties",
+        help = "Gradle wrapper properties path",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to DEFAULT_GRADLE_PROPERTIES_PATH.toString())
+    )
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
-        .default("gradle/wrapper/gradle-wrapper.properties".toPath())
 
-    private val excluded by option("-e", "--excluded", help = "Excluded keys").multiple()
+    private val excluded by option("-e", "--excluded", help = "Excluded keys")
+        .multiple()
+        .unique()
 
     private val configurationFile by option("-c", "--config", help = "Configuration file")
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
@@ -158,12 +160,15 @@ class CaupainCLI(
         "-p",
         "--policy",
         help = "Update policy (default: `stability-level`)"
-    ).default(StabilityLevelPolicy.name)
+    )
 
     private val listPolicies by option("--list-policies", help = "List available policies")
         .flag()
 
-    private val gradleStabilityLevel by option(help = "Gradle stability level")
+    private val gradleStabilityLevel by option(
+        help = "Gradle stability level",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "stable")
+    )
         .choice(
             "stable" to GradleStabilityLevel.STABLE,
             "rc" to GradleStabilityLevel.RC,
@@ -171,28 +176,27 @@ class CaupainCLI(
             "release-nightly" to GradleStabilityLevel.RELEASE_NIGHTLY,
             "nightly" to GradleStabilityLevel.NIGHTLY
         )
-        .default(
-            value = GradleStabilityLevel.STABLE,
-            defaultForHelp = "stable"
-        )
 
-    private val outputType by option("-t", "--output-type", help = "Output type")
+    private val outputTypes by option(
+        "-t", "--output-type",
+        help = "Output type",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to CONSOLE_TYPE)
+    )
         .choice(
             CONSOLE_TYPE to ParsedConfiguration.OutputType.CONSOLE,
             HTML_TYPE to ParsedConfiguration.OutputType.HTML,
             MARKDOWN_TYPE to ParsedConfiguration.OutputType.MARKDOWN,
             JSON_TYPE to ParsedConfiguration.OutputType.JSON
         )
-        .default(
-            value = ParsedConfiguration.OutputType.CONSOLE,
-            defaultForHelp = CONSOLE_TYPE
-        )
+        .multiple()
 
     private val outputPath by option(
         "-o", "--output",
-        help = "Report output path",
-        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "build/reports/dependencies-update.(html|md|json)")
+        help = "Report output path. Only used if a single output type is specified",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "$DEFAULT_OUTPUT_DIR/$DEFAULT_OUTPUT_BASE_NAME.(html|md|json)")
     ).path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+
+    private val multiplePathOptions by MultiplePathOptions(fileSystem).cooccurring()
 
     private val showVersionReferences by option(help = "Show versions references update summary in the report")
         .flag()
@@ -204,20 +208,10 @@ class CaupainCLI(
 
     private val releaseNoteOptions by ReleaseNoteOptions().cooccurring()
 
-    private val cacheDir by option(help = "Cache directory. This is not used if --no-cache is set")
-        .path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
-        .default(
-            value = appDirs.getUserCacheDir().toPath(),
-            defaultForHelp = "user cache dir"
-        )
-
-    private val deprecatedDoNotCache by option(
-        "--no--cache",
-        help = "Disable HTTP cache",
-        hidden = true
-    )
-        .flag()
-        .deprecated("use --no-cache instead")
+    private val cacheDir by option(
+        help = "Cache directory. This is not used if --no-cache is set",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "user cache dir")
+    ).path(canBeDir = true, canBeFile = false, fileSystem = fileSystem)
 
     private val doNotCache by option("--no-cache", help = "Disable HTTP cache")
         .flag()
@@ -271,7 +265,7 @@ class CaupainCLI(
         val logger = ClicktLogger()
 
         val configuration = loadConfiguration()
-        configuration?.validate(logger)
+        validateConfiguration(parsedConfiguration = configuration, logger = logger)
         val finalConfiguration = createConfiguration(configuration)
         if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
             echo("Policy plugins are not supported on this platform", err = true)
@@ -332,28 +326,30 @@ class CaupainCLI(
             throw Abort()
         }
 
-        val formatter = outputFormatter(configuration)
-        if (formatter is ConsoleFormatter) {
+        val formatters = outputFormatters(configuration)
+        val formatToConsole = formatters.any { it is ConsoleFormatter }
+        if (formatToConsole) {
             // Clear progress early to avoid sending progress to console while formatting
             progress?.clear()
             backgroundScope.cancel()
         }
 
-        formatter.format(
-            Input(
-                updateResult = updates,
-                showVersionReferences = configuration?.showVersionReferences
-                    ?: showVersionReferences
+        for (formatter in formatters) {
+            formatter.format(
+                Input(
+                    updateResult = updates,
+                    showVersionReferences = showVersionReferences
+                            || configuration?.showVersionReferences == true
+                )
             )
-        )
-
-        if (formatter !is ConsoleFormatter) {
-            progress?.clear()
-            backgroundScope.cancel()
+            if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
+                echo("Report generated at ${formatter.outputPath}")
+            }
         }
 
-        if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
-            echo("Report generated at ${formatter.outputPath}")
+        if (formatToConsole) {
+            progress?.clear()
+            backgroundScope.cancel()
         }
 
         if (replace) {
@@ -376,6 +372,8 @@ class CaupainCLI(
                 )
             }
         }
+
+        backgroundScope.cancel()
 
         throw ProgramResult(0)
     }
@@ -420,40 +418,68 @@ class CaupainCLI(
         }
     }
 
+    @Suppress("CyclomaticComplexMethod") // Just a lot of parameters and elvis operators
     private fun createConfiguration(parsedConfiguration: ParsedConfiguration?): Configuration {
-        val baseConfiguration = Configuration(
-            versionCatalogPaths = versionCatalogPaths,
-            excludedKeys = excluded.toSet(),
-            policyPluginsDir = policyPluginDir,
-            policy = policy,
-            cacheDir = if (deprecatedDoNotCache || doNotCache) null else cacheDir,
+        return Configuration(
+            repositories = parsedConfiguration?.repositories?.map { it.toModel() }
+                ?: Configuration.DEFAULT_REPOSITORIES,
+            pluginRepositories = parsedConfiguration?.pluginRepositories?.map { it.toModel() }
+                ?: Configuration.DEFAULT_PLUGIN_REPOSITORIES,
+            versionCatalogPaths = versionCatalogPaths.takeUnless { it.isEmpty() }
+                ?: parsedConfiguration?.versionCatalogPaths
+                ?: parsedConfiguration?.versionCatalogPath?.let(::listOf)
+                ?: listOf(Configuration.DEFAULT_CATALOG_PATH),
+            excludedKeys = excluded.takeUnless { it.isEmpty() }
+                ?: parsedConfiguration?.excludedKeys
+                ?: emptySet(),
+            excludedLibraries = parsedConfiguration?.excludedLibraries.orEmpty(),
+            excludedPlugins = parsedConfiguration?.excludedPlugins.orEmpty(),
+            policy = policy
+                ?: parsedConfiguration?.policy
+                ?: StabilityLevelPolicy.name,
+            policyPluginsDir = policyPluginDir
+                ?: parsedConfiguration?.policyPluginDir,
+            cacheDir = if (doNotCache) {
+                null
+            } else {
+                cacheDir
+                    ?: parsedConfiguration?.cacheDir
+                    ?: appDirs.getUserCacheDir().toPath()
+            },
             cleanCache = cleanCache,
             debugHttpCalls = debugHttpCalls,
-            gradleStabilityLevel = gradleStabilityLevel,
-            searchReleaseNote = releaseNoteOptions?.searchReleaseNote == true,
-            githubToken = releaseNoteOptions?.githubToken,
-            verifyExistence = verifyExistence
+            onlyCheckStaticVersions = parsedConfiguration?.onlyCheckStaticVersions ?: true,
+            gradleStabilityLevel = gradleStabilityLevel
+                ?: parsedConfiguration?.gradleStabilityLevel
+                ?: GradleStabilityLevel.STABLE,
+            checkIgnored = parsedConfiguration?.checkIgnored ?: false,
+            githubToken = releaseNoteOptions?.githubToken ?: parsedConfiguration?.githubToken,
+            searchReleaseNote = releaseNoteOptions?.searchReleaseNote
+                ?: parsedConfiguration?.let { it.searchReleaseNote ?: (it.githubToken != null) }
+                ?: false,
+            verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
         )
-        val mergedConfiguration = parsedConfiguration?.toConfiguration(baseConfiguration)
-            ?: baseConfiguration
-        // Handle release note options special case
-        return if (
-            releaseNoteOptions == null
-            && parsedConfiguration?.githubToken != null
-            && parsedConfiguration.searchReleaseNote == null
-        ) {
-            mergedConfiguration.withReleaseNotes()
-        } else {
-            mergedConfiguration
+    }
+
+    private fun validateConfiguration(
+        parsedConfiguration: ParsedConfiguration?,
+        logger: ClicktLogger,
+    ) {
+        parsedConfiguration?.validate(logger)
+        if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } > 1 && outputPath != null) {
+            logger.warn("Output path is ignored when multiple output types are specified. Use --output-dir and --output-base-name instead.")
+        }
+        if (policyPluginDir != null && !CAN_USE_PLUGINS) {
+            logger.error("Policy plugins are not supported on this platform and will be ignored.")
         }
     }
 
     private suspend fun loadGradleVersion(parsedConfiguration: ParsedConfiguration?): String? {
         return withContext(ioDispatcher) {
-            val gradleWrapperPropertiesPath = (parsedConfiguration?.gradleWrapperPropertiesPath
-                ?: gradleWrapperPropertiesPath)
-                .takeIf { fileSystem.exists(it) }
-                ?: return@withContext null
+            val gradleWrapperPropertiesPath = gradleWrapperPropertiesPath
+                ?: parsedConfiguration?.gradleWrapperPropertiesPath
+                ?: DEFAULT_GRADLE_PROPERTIES_PATH
+            if (!fileSystem.exists(gradleWrapperPropertiesPath)) return@withContext null
             val distributionUrl = decodeFromProperties<GradleWrapperProperties>(
                 fileSystem = fileSystem,
                 path = gradleWrapperPropertiesPath
@@ -470,33 +496,46 @@ class CaupainCLI(
         }
     }
 
-    private fun outputFormatter(configuration: ParsedConfiguration?): Formatter {
-        return when (configuration?.outputType ?: outputType) {
-            ParsedConfiguration.OutputType.CONSOLE -> ConsoleFormatter(CliktConsolePrinter())
+    @Suppress("CyclomaticComplexMethod") // Not really complex, just a lot of branches and elvises
+    private fun outputFormatters(configuration: ParsedConfiguration?): List<Formatter> {
+        val outputTypes = outputTypes.takeUnless { it.isEmpty() }
+            ?: configuration?.outputTypes
+            ?: listOf(ParsedConfiguration.OutputType.CONSOLE)
+        val outputPath =
+            if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } == 1) {
+                outputPath ?: configuration?.outputPath
+            } else {
+                null
+            }
+        val outputDir = multiplePathOptions?.outputDir
+            ?: configuration?.outputDir
+            ?: DEFAULT_OUTPUT_DIR.toPath()
+        val outputBaseName = multiplePathOptions?.outputBaseName
+            ?: configuration?.outputBaseName
+            ?: DEFAULT_OUTPUT_BASE_NAME
+        return outputTypes.map { outputType ->
+            @Suppress("UnnecessaryParentheses") // Needed for comprehension
+            when (outputType) {
+                ParsedConfiguration.OutputType.CONSOLE -> ConsoleFormatter(CliktConsolePrinter())
 
-            ParsedConfiguration.OutputType.HTML -> HtmlFormatter(
-                fileSystem = fileSystem,
-                ioDispatcher = ioDispatcher,
-                path = configuration?.outputPath
-                    ?: outputPath
-                    ?: "build/reports/dependencies-update.html".toPath()
-            )
+                ParsedConfiguration.OutputType.HTML -> HtmlFormatter(
+                    fileSystem = fileSystem,
+                    ioDispatcher = ioDispatcher,
+                    path = outputPath ?: (outputDir / "$outputBaseName.html")
+                )
 
-            ParsedConfiguration.OutputType.MARKDOWN -> MarkdownFormatter(
-                fileSystem = fileSystem,
-                ioDispatcher = ioDispatcher,
-                path = configuration?.outputPath
-                    ?: outputPath
-                    ?: "build/reports/dependencies-update.md".toPath()
-            )
+                ParsedConfiguration.OutputType.MARKDOWN -> MarkdownFormatter(
+                    fileSystem = fileSystem,
+                    ioDispatcher = ioDispatcher,
+                    path = outputPath ?: (outputDir / "$outputBaseName.md")
+                )
 
-            ParsedConfiguration.OutputType.JSON -> JsonFormatter(
-                fileSystem = fileSystem,
-                ioDispatcher = ioDispatcher,
-                path = configuration?.outputPath
-                    ?: outputPath
-                    ?: "build/reports/dependencies-update.json".toPath()
-            )
+                ParsedConfiguration.OutputType.JSON -> JsonFormatter(
+                    fileSystem = fileSystem,
+                    ioDispatcher = ioDispatcher,
+                    path = outputPath ?: (outputDir / "$outputBaseName.json")
+                )
+            }
         }
     }
 
@@ -569,6 +608,9 @@ class CaupainCLI(
         private const val JSON_TYPE = "json"
         private val GRADLE_URL_REGEX =
             Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
+
+        private val DEFAULT_GRADLE_PROPERTIES_PATH =
+            "gradle/wrapper/gradle-wrapper.properties".toPath()
     }
 }
 
@@ -582,5 +624,24 @@ private class ReleaseNoteOptions : OptionGroup() {
     val searchReleaseNote by option(
         "--search-release-notes",
         help = "Search for release notes for updated versions on GitHub",
-    ).flag(defaultForHelp = "true if GitHub token is provided")
+    ).flag(default = true, defaultForHelp = "true if GitHub token is provided")
 }
+
+private class MultiplePathOptions(fileSystem: FileSystem) : OptionGroup() {
+
+    val outputDir by option(
+        "--output-dir",
+        help = "Report output dir. Only used if multiple output types are specified",
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to DEFAULT_OUTPUT_DIR)
+    )
+        .path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
+        .required()
+
+    val outputBaseName by option(
+        "--output-base-name",
+        help = "Report output base name, without extension. Only used if multiple output types are specified",
+    ).default(DEFAULT_OUTPUT_BASE_NAME)
+}
+
+internal const val DEFAULT_OUTPUT_DIR = "build/reports"
+internal const val DEFAULT_OUTPUT_BASE_NAME = "dependencies-update"

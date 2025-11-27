@@ -76,9 +76,14 @@ abstract interface com.deezer.caupain.model/Configuration : com.deezer.caupain/S
     abstract val versionCatalogPaths // com.deezer.caupain.model/Configuration.versionCatalogPaths|{}versionCatalogPaths[0]
         abstract fun <get-versionCatalogPaths>(): kotlin.collections/Iterable<okio/Path> // com.deezer.caupain.model/Configuration.versionCatalogPaths.<get-versionCatalogPaths>|<get-versionCatalogPaths>(){}[0]
 
-    abstract fun withReleaseNotes(): com.deezer.caupain.model/Configuration // com.deezer.caupain.model/Configuration.withReleaseNotes|withReleaseNotes(){}[0]
-
-    final object Companion // com.deezer.caupain.model/Configuration.Companion|null[0]
+    final object Companion { // com.deezer.caupain.model/Configuration.Companion|null[0]
+        final val DEFAULT_CATALOG_PATH // com.deezer.caupain.model/Configuration.Companion.DEFAULT_CATALOG_PATH|{}DEFAULT_CATALOG_PATH[0]
+            final fun <get-DEFAULT_CATALOG_PATH>(): okio/Path // com.deezer.caupain.model/Configuration.Companion.DEFAULT_CATALOG_PATH.<get-DEFAULT_CATALOG_PATH>|<get-DEFAULT_CATALOG_PATH>(){}[0]
+        final val DEFAULT_PLUGIN_REPOSITORIES // com.deezer.caupain.model/Configuration.Companion.DEFAULT_PLUGIN_REPOSITORIES|{}DEFAULT_PLUGIN_REPOSITORIES[0]
+            final fun <get-DEFAULT_PLUGIN_REPOSITORIES>(): kotlin.collections/List<com.deezer.caupain.model/Repository> // com.deezer.caupain.model/Configuration.Companion.DEFAULT_PLUGIN_REPOSITORIES.<get-DEFAULT_PLUGIN_REPOSITORIES>|<get-DEFAULT_PLUGIN_REPOSITORIES>(){}[0]
+        final val DEFAULT_REPOSITORIES // com.deezer.caupain.model/Configuration.Companion.DEFAULT_REPOSITORIES|{}DEFAULT_REPOSITORIES[0]
+            final fun <get-DEFAULT_REPOSITORIES>(): kotlin.collections/List<com.deezer.caupain.model/Repository> // com.deezer.caupain.model/Configuration.Companion.DEFAULT_REPOSITORIES.<get-DEFAULT_REPOSITORIES>|<get-DEFAULT_REPOSITORIES>(){}[0]
+    }
 }
 
 abstract interface com.deezer.caupain.model/Credentials : com.deezer.caupain/Serializable { // com.deezer.caupain.model/Credentials|null[0]

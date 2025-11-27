@@ -31,7 +31,6 @@ import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import kotlinx.serialization.Serializable
 import okio.Path
-import com.deezer.caupain.model.Configuration as ModelConfiguration
 
 @Serializable(ConfigurationSerializer::class)
 interface Configuration {
@@ -47,7 +46,10 @@ interface Configuration {
     val cacheDir: Path?
     val showVersionReferences: Boolean?
     val outputType: OutputType?
+    val outputTypes: Iterable<OutputType>?
     val outputPath: Path?
+    val outputDir: Path?
+    val outputBaseName: String?
     val gradleWrapperPropertiesPath: Path?
     val onlyCheckStaticVersions: Boolean?
     val gradleStabilityLevel: GradleStabilityLevel?
@@ -57,8 +59,6 @@ interface Configuration {
     val verifyExistence: Boolean?
 
     fun validate(logger: Logger)
-
-    fun toConfiguration(baseConfiguration: ModelConfiguration): ModelConfiguration
 
     enum class OutputType {
         CONSOLE, HTML, MARKDOWN, JSON
