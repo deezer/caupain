@@ -3,32 +3,39 @@
 ## Unreleased
 
 ### Added
-- Add option to verify .pom availability (#67, thanks to [@bacecek](https://github.com/bacecek))
-- Add possibility to specify multiple output types in CLI
 
 ### Changed
-- Use `stability-level` as default policy for update. The previous "accept-all" policy can be used by
-using the `always` policy name. (#61)
-- CLI options are not used in priority over configuration file. **This is a breaking change**.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Ignored dependences are now sorted correctly (#66)
 
 ### Security
+
+## 1.7.0 - 2025-11-27
+
+### Added
+
+- Add option to verify .pom availability (#67, thanks to [@bacecek](https://github.com/bacecek))
+- Add possibility to specify multiple output types in CLI
+
+### Changed
+
+- Use `stability-level` as default policy for update. The previous "accept-all" policy can be used by
+using the `always` policy name. (#61)
+- CLI options are not used in priority over configuration file. **This is a breaking change**.
+
+### Fixed
+
+- Ignored dependences are now sorted correctly (#66)
 
 ## 1.6.1 - 2025-09-22
 
 ### Fixed
 
 - Handle cache issues correctly (#57).
-
-**Notice**: It seems some users may have issues with corrupted cache files 
-after updating to 1.6.0. If this is your case, update to 1.6.1 and run a first time with the `--clear-cache` 
-option. This will clear the cache and re-download all necessary files.
 
 ## 1.6.0 - 2025-09-12
 
