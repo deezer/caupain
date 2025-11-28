@@ -25,7 +25,7 @@
 
 - Use `stability-level` as default policy for update. The previous "accept-all" policy can be used by
 using the `always` policy name. (#61)
-- CLI options are not used in priority over configuration file. **This is a breaking change**.
+- CLI options are now used in priority over configuration file. **This is a breaking change**.
 
 ### Fixed
 
