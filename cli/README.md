@@ -1,6 +1,6 @@
 # Caupain Command Line Interface
 
-[![Homebrew](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdeezer%2Fhomebrew-repo%2Frefs%2Fheads%2Fmain%2FInfo%2Fcaupain.json&query=%24.versions.stable&label=homebrew)](https://github.com/deezer/homebrew-repo)
+![Homebrew](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdeezer%2Fhomebrew-repo%2Frefs%2Fheads%2Fmain%2FFormula%2Fcaupain.rb&search=refs%2Ftags%2Fv(%3F%3Cversion%3E%5Cd%2B(%3F%3A%5C.%5Cd%2B)%2B)&replace=%24%3Cversion%3E&label=homebrew)
 [![Debian](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fresearch.deezer.com%2Fdebian-repo%2Fdists%2Fstable%2Fmain%2Fbinary-amd64%2FPackages&search=%5EVersion%3A%20(.*)%24&replace=%241&flags=m&label=debian)](https://github.com/deezer/debian-repo)
 ![Chocolatey](https://img.shields.io/chocolatey/v/caupain)
 
