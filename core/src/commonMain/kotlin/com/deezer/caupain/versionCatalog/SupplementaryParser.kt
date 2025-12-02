@@ -175,6 +175,7 @@ internal class SupplementaryParser(
                 if (position != null && isFullLine(position, commentFullText)) {
                     hasPendingIgnore = true
                 } else if (currentKey != null && currentKeyLine == position?.start?.line) {
+                    @Suppress("UnsafeCallOnNullableType") // We know current key is not null here
                     when (currentSection) {
                         Section.VERSIONS -> ignoredRefs.add(currentKey!!)
                         Section.LIBRARIES -> ignoredLibraryKeys.add(currentKey!!)

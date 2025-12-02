@@ -274,6 +274,7 @@ internal data class DefaultComponentFilter(
 }
 
 @OptIn(ExperimentalEncodingApi::class)
+@Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
 internal suspend fun HttpClient.executeRepositoryRequest(
     repository: Repository,
     urlBuilder: URLBuilder.() -> Unit = {}

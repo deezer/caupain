@@ -1,7 +1,7 @@
 @file:OptIn(ExperimentalAbiValidation::class)
 
 import com.vanniktech.maven.publish.GradlePublishPlugin
-import io.gitlab.arturbosch.detekt.Detekt
+import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {

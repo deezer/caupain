@@ -61,9 +61,9 @@ internal class GithubReleaseNoteResolver(
             ?.url
             ?.takeUnless { it.isBlank() }
             ?.replace("git@", "https://")
-            ?.let {
+            ?.let { url ->
                 try {
-                    Url(it)
+                    Url(url)
                 } catch (_: URLParserException) {
                     null
                 }
@@ -132,6 +132,7 @@ internal class GithubReleaseNoteResolver(
         return true
     }
 
+    @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
     private suspend fun HttpClient.getGithubResource(
         vararg pathSegments: String,
         urlBuilder: URLBuilder.() -> Unit = {}

@@ -35,6 +35,7 @@ internal abstract class AbstractVersionResolver<T : Any>(
 ) {
     protected abstract fun T.isUpdatedVersion(version: GradleDependencyVersion.Static): Boolean
 
+    @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
     protected abstract suspend fun HttpClient.getAvailableVersions(item: T): Sequence<GradleDependencyVersion>
 
     protected abstract suspend fun canSelectVersion(

@@ -4,13 +4,13 @@ comments:
 
 complexity:
   LongMethod:
-    threshold: 100
+    allowedLines: 100
   LongParameterList:
-    functionThreshold: 10
-    constructorThreshold: 10
+    allowedFunctionParameters: 10
+    allowedConstructorParameters: 10
   NamedArguments:
     active: true
-    threshold: 4
+    allowedArguments: 4
   StringLiteralDuplication:
     active: true
 
@@ -68,7 +68,7 @@ style:
     active: true
   OptionalUnit:
     active: true
-  PreferToOverPairSyntax:
+  RangeUntilInsteadOfRangeTo:
     active: true
   RedundantExplicitType:
     active: true
@@ -76,11 +76,11 @@ style:
     active: true
   ReturnCount:
     active: false
-  SpacingBetweenPackageAndImports:
+  SpacingAfterPackageDeclaration:
     active: true
   ThrowsCount:
     active: false
-  UnusedImports:
+  UnusedImport:
     active: true
   UseIfInsteadOfWhen:
     active: true
@@ -103,8 +103,6 @@ style:
   UnnecessaryLet:
     active: true
   UnnecessaryParentheses:
-    active: true
-  UntilInsteadOfRangeTo:
     active: true
   UseEmptyCounterpart:
     active: true

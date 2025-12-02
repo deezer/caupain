@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:Suppress("UnusedImport")
 
 package com.deezer.caupain.internal
 
@@ -31,6 +32,7 @@ import okio.FileSystem
 import okio.SYSTEM
 
 internal actual val IODispatcher: CoroutineDispatcher
+    @Suppress("InjectDispatcher") // This is just a redirection
     get() = Dispatchers.IO
 
 internal actual val DefaultFileSystem: FileSystem

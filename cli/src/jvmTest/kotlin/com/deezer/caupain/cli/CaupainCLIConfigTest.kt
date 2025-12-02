@@ -54,6 +54,7 @@ import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import org.intellij.lang.annotations.Language
 import org.junit.runner.RunWith
+import java.util.EnumSet
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -158,7 +159,7 @@ class CaupainCLIConfigTest {
                     policyPluginDir = "policyConf".toPath(),
                     cacheDir = "cacheConf".toPath(),
                     showVersionReferences = true,
-                    outputTypes = listOf(
+                    outputTypes = EnumSet.of(
                         ParsedConfiguration.OutputType.HTML,
                         ParsedConfiguration.OutputType.JSON
                     ),
@@ -366,7 +367,7 @@ private data class TestConfiguration(
     override val repositories: List<Repository>?,
     override val pluginRepositories: List<Repository>?,
     override val versionCatalogPath: Path? = null,
-    override val versionCatalogPaths: Iterable<Path>?,
+    override val versionCatalogPaths: List<Path>?,
     override val excludedKeys: Set<String>?,
     override val excludedLibraries: List<LibraryExclusion>?,
     override val excludedPlugins: List<PluginExclusion>?,
@@ -375,7 +376,7 @@ private data class TestConfiguration(
     override val cacheDir: Path?,
     override val showVersionReferences: Boolean?,
     override val outputType: ParsedConfiguration.OutputType? = null,
-    override val outputTypes: Iterable<ParsedConfiguration.OutputType>?,
+    override val outputTypes: Set<ParsedConfiguration.OutputType>?,
     override val outputPath: Path? = null,
     override val outputDir: Path?,
     override val outputBaseName: String?,

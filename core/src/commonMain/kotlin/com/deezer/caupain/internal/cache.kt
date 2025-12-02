@@ -39,6 +39,7 @@ import io.ktor.http.Url
 import io.ktor.util.date.GMTDate
 import io.ktor.util.flattenEntries
 import io.ktor.util.logging.KtorSimpleLogger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -188,6 +189,8 @@ private class FileCacheStorage(
                     for (cache in caches) writeCache(cache)
                 }
             }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
         } catch (ignored: Exception) {
             LOGGER.trace("Exception during saving a cache to a file: ${ignored.stackTraceToString()}")
         }
@@ -208,6 +211,8 @@ private class FileCacheStorage(
                     caches
                 }
             }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
         } catch (ignored: Exception) {
             LOGGER.trace("Exception during cache lookup in a file: ${ignored.stackTraceToString()}")
             return emptySet()
@@ -239,6 +244,7 @@ private class FileCacheStorage(
         }
     }
 
+    @Suppress("UnsafeCallOnNullableType") // copied from Ktor
     private suspend fun BufferedSource.readCache(): CachedResponseData {
         return withContext(dispatcher) {
             val url = readUtf8Line()!!

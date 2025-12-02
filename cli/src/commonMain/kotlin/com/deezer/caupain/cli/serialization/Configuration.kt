@@ -87,8 +87,7 @@ private data class ConfigurationImpl(
             val hasMultipleFileOutputs = outputTypes
                 ?.let { types ->
                     types.count { it != Configuration.OutputType.CONSOLE } > 1
-                }
-                ?: false
+                } == true
             if (hasMultipleFileOutputs) {
                 logger.warn("outputPath will be ignored because multiple file output types are set in outputTypes.")
             }

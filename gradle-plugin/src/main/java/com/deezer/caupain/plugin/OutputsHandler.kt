@@ -43,7 +43,7 @@ import java.util.Optional
 import javax.inject.Inject
 import kotlin.jvm.optionals.getOrNull
 
-@Suppress("UnnecessaryAbstractClass") // Needed by Gradle
+@Suppress("AbstractClassCanBeConcreteClass") // Needed by Gradle
 abstract class OutputsHandler @Inject constructor(
     objects: ObjectFactory,
     layout: ProjectLayout

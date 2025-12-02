@@ -49,6 +49,7 @@ internal class GradleVersionResolver(
         override fun GradleDependencyVersion.isUpdatedVersion(version: GradleDependencyVersion.Static): Boolean =
             isUpdate(version)
 
+        @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
         override suspend fun HttpClient.getAvailableVersions(item: GradleDependencyVersion): Sequence<GradleDependencyVersion> {
             return try {
                 get(gradleVersionsUrl)

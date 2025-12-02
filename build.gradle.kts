@@ -1,7 +1,7 @@
 import com.deezer.caupain.tasks.FixKMPMetadata
-import io.gitlab.arturbosch.detekt.Detekt
-import io.gitlab.arturbosch.detekt.extensions.DetektExtension
-import io.gitlab.arturbosch.detekt.report.ReportMergeTask
+import dev.detekt.gradle.Detekt
+import dev.detekt.gradle.extensions.DetektExtension
+import dev.detekt.gradle.report.ReportMergeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 plugins {
@@ -41,11 +41,11 @@ subprojects {
     version = rootProject.version
 
     if (name != "core-compat") {
-        apply(plugin = "io.gitlab.arturbosch.detekt")
+        apply(plugin = "dev.detekt")
 
         extensions.configure<DetektExtension> {
             config.from(rootProject.layout.projectDirectory.file("code-quality/detekt.yml"))
-            basePath = rootDir.absolutePath
+            basePath.set(rootDir.absoluteFile)
             buildUponDefaultConfig = true
         }
         val detektAll = tasks.register("detektAll") {
@@ -58,7 +58,7 @@ subprojects {
                     dependsOn(this@withType)
                 }
                 mergeDetektReports {
-                    input.from(this@withType.sarifReportFile)
+                    input.from(this@withType.reports.sarif.outputLocation)
                 }
                 finalizedBy(mergeDetektReports)
             }

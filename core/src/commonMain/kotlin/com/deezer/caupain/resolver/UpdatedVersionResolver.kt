@@ -98,6 +98,7 @@ internal class DefaultUpdatedVersionResolver(
             version: GradleDependencyVersion.Static
         ): Boolean = dependency.version?.resolve(versionReferences)?.isUpdate(version) == true
 
+        @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
         override suspend fun HttpClient.getAvailableVersions(item: DependencyRequestInfo): Sequence<GradleDependencyVersion> {
             val group = item.dependency.group ?: return emptySequence()
             val name = item.dependency.name ?: return emptySequence()

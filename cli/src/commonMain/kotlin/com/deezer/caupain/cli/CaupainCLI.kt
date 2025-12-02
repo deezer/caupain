@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:Suppress("UnusedImport")
 
 package com.deezer.caupain.cli
 
@@ -104,6 +105,7 @@ class CaupainCLI(
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
     },
+    @Suppress("NoNameShadowing") // Ok to repeat here for clarity
     private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
@@ -114,6 +116,7 @@ class CaupainCLI(
             selfUpdateResolver = selfUpdateResolver
         )
     },
+    @Suppress("NoNameShadowing") // Ok to repeat here for clarity
     private val createVersionReplacer: (FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { filesystem, ioDispatcher, defaultDispatcher ->
         DependencyVersionsReplacer(
             fileSystem = filesystem,
@@ -418,7 +421,11 @@ class CaupainCLI(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod") // Just a lot of parameters and elvis operators
+    @Suppress(
+        "CyclomaticComplexMethod", // Just a lot of parameters and elvis operators
+        "NullableBooleanCheck", // Used for readibility
+        "UseOrEmpty", // Used for readibility
+    )
     private fun createConfiguration(parsedConfiguration: ParsedConfiguration?): Configuration {
         return Configuration(
             repositories = parsedConfiguration?.repositories?.map { it.toModel() }
@@ -448,11 +455,11 @@ class CaupainCLI(
             },
             cleanCache = cleanCache,
             debugHttpCalls = debugHttpCalls,
-            onlyCheckStaticVersions = parsedConfiguration?.onlyCheckStaticVersions ?: true,
+            onlyCheckStaticVersions = parsedConfiguration?.onlyCheckStaticVersions != false,
             gradleStabilityLevel = gradleStabilityLevel
                 ?: parsedConfiguration?.gradleStabilityLevel
                 ?: GradleStabilityLevel.STABLE,
-            checkIgnored = parsedConfiguration?.checkIgnored ?: false,
+            checkIgnored = parsedConfiguration?.checkIgnored == true,
             githubToken = releaseNoteOptions?.githubToken ?: parsedConfiguration?.githubToken,
             searchReleaseNote = releaseNoteOptions?.searchReleaseNote
                 ?: parsedConfiguration?.let { it.searchReleaseNote ?: (it.githubToken != null) }

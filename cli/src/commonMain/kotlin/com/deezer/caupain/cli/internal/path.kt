@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:Suppress("UnusedImport")
 
 package com.deezer.caupain.cli.internal
 
@@ -83,13 +84,13 @@ internal fun RawArgument.path(
 ): ProcessedArgument<Path, Path> {
     return convert(completionCandidates = CompletionCandidates.Path) { str ->
         convertToPath(
-            str,
-            mustExist,
-            canBeFile,
-            canBeDir,
-            canBeSymlink,
-            fileSystem,
-            context
+            stringPath = str,
+            mustExist = mustExist,
+            canBeFile = canBeFile,
+            canBeFolder = canBeDir,
+            canBeSymlink = canBeSymlink,
+            fileSystem = fileSystem,
+            context = context
         ) { fail(it) }
     }
 }
@@ -103,13 +104,13 @@ fun RawOption.path(
 ): NullableOption<Path, Path> {
     return convert({ localization.pathMetavar() }, CompletionCandidates.Path) { str ->
         convertToPath(
-            str,
-            mustExist,
-            canBeFile,
-            canBeDir,
-            canBeSymlink,
-            fileSystem,
-            context
+            stringPath = str,
+            mustExist = mustExist,
+            canBeFile = canBeFile,
+            canBeFolder = canBeDir,
+            canBeSymlink = canBeSymlink,
+            fileSystem = fileSystem,
+            context = context
         ) { fail(it) }
     }
 }
