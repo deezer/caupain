@@ -16,7 +16,7 @@ plugins {
     alias(libs.plugins.kotlinx.atomicfu)
     alias(libs.plugins.dokka)
     alias(libs.plugins.antlr.kotlin)
-    alias(libs.plugins.compat.patrouille)
+    alias(libs.plugins.tapmoc)
     alias(libs.plugins.kotlinx.kover)
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.dependency.guard)
@@ -30,7 +30,7 @@ dependencies {
     "detektPlugins"(libs.detekt.libraries)
 }
 
-compatPatrouille {
+tapmoc {
     java(17)
     kotlin(libs.versions.kotlin.get())
 }

@@ -19,7 +19,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mokkery)
-    alias(libs.plugins.compat.patrouille)
+    alias(libs.plugins.tapmoc)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.netflix.nebula.ospackage)
     alias(libs.plugins.dependency.guard)
@@ -33,7 +33,7 @@ fun KotlinNativeTarget.configureTarget() =
         }
     }
 
-compatPatrouille {
+tapmoc {
     java(17)
     kotlin(libs.versions.kotlin.get())
 }

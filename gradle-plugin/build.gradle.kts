@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `java-gradle-plugin`
-    alias(libs.plugins.compat.patrouille)
+    alias(libs.plugins.tapmoc)
     alias(libs.plugins.vanniktech.maven.publish)
     alias(libs.plugins.gradle.plugin.publish)
     alias(libs.plugins.dependency.guard)
@@ -15,7 +15,7 @@ plugins {
     alias(libs.plugins.testkit.support)
 }
 
-compatPatrouille {
+tapmoc {
     java(17)
     kotlin(libs.versions.kotlin.get())
 }
