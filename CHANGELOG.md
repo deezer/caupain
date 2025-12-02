@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Fix handling of `outputType` in CLI configuration
 
 ### Security
 
