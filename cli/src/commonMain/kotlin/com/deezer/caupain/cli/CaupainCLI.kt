@@ -500,6 +500,7 @@ class CaupainCLI(
     private fun outputFormatters(configuration: ParsedConfiguration?): List<Formatter> {
         val outputTypes = outputTypes.takeUnless { it.isEmpty() }
             ?: configuration?.outputTypes
+            ?: configuration?.outputType?.let(::listOf)
             ?: listOf(ParsedConfiguration.OutputType.CONSOLE)
         val outputPath =
             if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } == 1) {

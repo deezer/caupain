@@ -46,7 +46,7 @@ interface Configuration {
     val cacheDir: Path?
     val showVersionReferences: Boolean?
     val outputType: OutputType?
-    val outputTypes: Iterable<OutputType>?
+    val outputTypes: Set<OutputType>?
     val outputPath: Path?
     val outputDir: Path?
     val outputBaseName: String?
