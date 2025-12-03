@@ -49,44 +49,31 @@ or build it yourself by cloning the repository and running `./gradlew :cli:build
 Usage: caupain [<options>]
 
 Options:
-  -i, --version-catalog=<path>  Version catalog path. Use multiple times to use
-                                multiple version catalogs (default:
-                                gradle/libs.versions.toml)
-  --gradle-wrapper-properties=<path>
-                                Gradle wrapper properties path (default:
-                                gradle/wrapper/gradle-wrapper.properties)
-  -e, --excluded=<text>         Excluded keys
-  -c, --config=<path>           Configuration file (default: caupain.toml)
-  --policy-plugin-dir=<path>    Custom policies plugin dir
-  -p, --policy=<text>           Update policy (default: stability-level)
-                                (default: stability-level)
-  --list-policies               List available policies
-  --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)
-                                Gradle stability level (default: stable)
-  -t, --output-type=(console|html|markdown|json)
-                                Output type (default: console)
-  -o, --output=<path>           Report output path (default:
-                                build/reports/dependencies-update.(html|md|json))
-  --show-version-references     Show versions references update summary in the
-                                report
-  --in-place                    Replace versions in version catalog in place
-  --github-token=<text>         GitHub token for searching release notes
-  --search-release-notes        Search for release notes for updated versions
-                                on GitHub (default: true if GitHub token is
-                                provided)
-  --cache-dir=<path>            Cache directory. This is not used if --no-cache
-                                is set (default: user cache dir)
-  --no-cache                    Disable HTTP cache
-  --clean-cache                 Clean the cache before running
-  -q, --quiet                   Suppress all output
-  -v, --verbose                 Verbose output
-  -d, --debug                   Debug output
-  --debug-http-calls            Enable debugging for HTTP calls
-  --verify-existence            Verify that .pom files exist before accepting
-                                version updates (warning: may slow down the
-                                checking process)
-  --version                     Show the version and exit
-  -h, --help                    Show this message and exit
+  -i, --version-catalog=<path>                                            Version catalog path. Use multiple times to use multiple version catalogs (default: gradle/libs.versions.toml)
+  --gradle-wrapper-properties=<path>                                      Gradle wrapper properties path (default: gradle/wrapper/gradle-wrapper.properties)
+  -e, --excluded=<text>                                                   Excluded keys
+  -c, --config=<path>                                                     Configuration file (default: caupain.toml)
+  -p, --policy=<text>                                                     Update policy (default: stability-level)
+  --list-policies                                                         List available policies
+  --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)  Gradle stability level (default: stable)
+  -t, --output-type=(console|html|markdown|json)                          Output type (default: console)
+  -o, --output=<path>                                                     Report output path. Only used if a single output type is specified (default: build/reports/dependencies-update.(html|md|json))
+  --output-dir=<path>                                                     Report output dir. Only used if multiple output types are specified (default: build/reports)
+  --output-base-name=<text>                                               Report output base name, without extension. Only used if multiple output types are specified (default: dependencies-update)
+  --show-version-references                                               Show versions references update summary in the report
+  --in-place                                                              Replace versions in version catalog in place
+  --github-token=<text>                                                   GitHub token for searching release notes
+  --search-release-notes                                                  Search for release notes for updated versions on GitHub (default: true if GitHub token is provided)
+  --cache-dir=<path>                                                      Cache directory. This is not used if --no-cache is set (default: user cache dir)
+  --no-cache                                                              Disable HTTP cache
+  --clean-cache                                                           Clean the cache before running
+  -q, --quiet                                                             Suppress all output
+  -v, --verbose                                                           Verbose output
+  -d, --debug                                                             Debug output
+  --debug-http-calls                                                      Enable debugging for HTTP calls
+  --verify-existence                                                      Verify that .pom file exists before accepting version updates (warning: may slow down checks)
+  --version                                                               Show the version and exit
+  -h, --help                                                              Show this message and exit
 ```
 
 For a base usage, just launch the `caupain` command in the root of your project, and it will find your
