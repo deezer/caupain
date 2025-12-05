@@ -105,7 +105,7 @@ class CaupainCLI(
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
         DefaultToml.decodeFromPath(path, fs)
     },
-    @Suppress("NoNameShadowing") // Ok to repeat here for clarity
+    //@Suppress("NoNameShadowing") // Ok to repeat here for clarity
     private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
