@@ -57,12 +57,12 @@ jobs:
           ./sink-test/build/bin/${{matrix.SINK_TEST_BINARY}} > sink-test/build/actual.txt
           if ! cmp -s "sink-test/build/actual.txt" "sink-test/expected.txt"; then
             echo "Output does not match expected output"
-            cmp "sink-test/build/actual.txt" "sink-test/expected.txt"
             echo "Expected output:"
             cat sink-test/expected.txt
             echo "Actual output:"
             cat sink-test/build/actual.txt
             echo ""
+            cmp "sink-test/build/actual.txt" "sink-test/expected.txt"
             exit 1
           fi
         env:
@@ -71,15 +71,15 @@ jobs:
       - name: Test JS standard sink test
         shell: bash
         run: |
-          ./gradlew :sink-test:jsNodeDevelopmentRun -q --console=plain > sink-test/build/actual.txt -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}}
+          ./gradlew :sink-test:jsNodeDevelopmentRun -q --console=plain -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}} > sink-test/build/actual.txt
           if ! cmp -s "sink-test/build/actual.txt" "sink-test/expected.txt"; then
             echo "Output does not match expected output"
-            cmp "sink-test/build/actual.txt" "sink-test/expected.txt"
             echo "Expected output:"
             cat sink-test/expected.txt
             echo "Actual output:"
             cat sink-test/build/actual.txt
             echo ""
+            cmp "sink-test/build/actual.txt" "sink-test/expected.txt"
             exit 1
           fi
         env:
