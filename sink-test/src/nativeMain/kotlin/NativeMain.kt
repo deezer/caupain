@@ -28,7 +28,7 @@ import okio.use
 
 fun main() {
     systemSink().buffer().use { sink ->
-        sink.writeUtf8("test\ntest")
+        sink.writeUtf8("test\ttest")
         sink.flush()
     }
 }
