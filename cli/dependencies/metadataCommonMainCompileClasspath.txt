@@ -11,8 +11,8 @@ com.github.ajalt.mordant:mordant-coroutines:3.0.2
 com.github.ajalt.mordant:mordant-markdown:3.0.1
 com.github.ajalt.mordant:mordant:3.0.2
 com.squareup.okio:okio:3.16.4
-com.strumenta:antlr-kotlin-runtime:1.0.8
-dev.drewhamilton.poko:poko-annotations:0.20.2
+com.strumenta:antlr-kotlin-runtime:1.0.9
+dev.drewhamilton.poko:poko-annotations:0.21.0
 io.github.bishiboosh:properties-serializer:1.0.0
 io.github.pdvrieze.xmlutil:core-io:0.91.3
 io.github.pdvrieze.xmlutil:core:0.91.3
@@ -38,7 +38,7 @@ io.ktor:ktor-utils:3.3.3
 io.ktor:ktor-websocket-serialization:3.3.3
 io.ktor:ktor-websockets:3.3.3
 net.peanuuutz.tomlkt:tomlkt:0.5.0
-org.jetbrains.kotlin:kotlin-stdlib:2.2.21
+org.jetbrains.kotlin:kotlin-stdlib:2.3.0
 org.jetbrains.kotlinx:atomicfu:0.29.0
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2
 org.jetbrains.kotlinx:kotlinx-datetime:0.7.0
