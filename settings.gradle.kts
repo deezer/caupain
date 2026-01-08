@@ -19,4 +19,3 @@ dependencyResolutionManagement {
 include(":core")
 include(":cli")
 include(":gradle-plugin")
-include(":sink-test")
