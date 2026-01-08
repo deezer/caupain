@@ -155,21 +155,6 @@ public final class com/deezer/caupain/UnknownPolicyException : com/deezer/caupai
 	public fun <init> (Ljava/lang/String;)V
 }
 
-public abstract class com/deezer/caupain/formatting/FileFormatter : com/deezer/caupain/formatting/Formatter {
-	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
-	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	protected final fun getFileSystem ()Lokio/FileSystem;
-	protected final fun getIoDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
-	public fun getOutputPath ()Ljava/lang/String;
-	protected final fun getPath ()Lokio/Path;
-	protected abstract fun writeUpdates (Lokio/BufferedSink;Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public abstract interface class com/deezer/caupain/formatting/Formatter {
-	public abstract fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public abstract class com/deezer/caupain/formatting/SinkFormatter {
 	public fun <init> ()V
 	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
