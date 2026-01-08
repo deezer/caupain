@@ -59,10 +59,11 @@ jobs:
             echo "Output does not match expected output"
             echo "Expected output:"
             cat sink-test/expected.txt
+            echo ""
             echo "Actual output:"
             cat sink-test/build/actual.txt
             echo ""
-            cmp "sink-test/build/actual.txt" "sink-test/expected.txt"
+            cmp -l "sink-test/build/actual.txt" "sink-test/expected.txt"
             exit 1
           fi
         env:
@@ -76,10 +77,11 @@ jobs:
             echo "Output does not match expected output"
             echo "Expected output:"
             cat sink-test/expected.txt
+            echo ""
             echo "Actual output:"
             cat sink-test/build/actual.txt
             echo ""
-            cmp "sink-test/build/actual.txt" "sink-test/expected.txt"
+            cmp -l "sink-test/build/actual.txt" "sink-test/expected.txt"
             exit 1
           fi
         env:
