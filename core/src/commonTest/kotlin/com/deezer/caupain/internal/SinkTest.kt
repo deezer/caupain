@@ -25,6 +25,8 @@
 package com.deezer.caupain.internal
 
 import okio.Buffer
+import okio.buffer
+import okio.use
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

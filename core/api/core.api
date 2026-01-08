@@ -170,7 +170,16 @@ public abstract interface class com/deezer/caupain/formatting/Formatter {
 	public abstract fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class com/deezer/caupain/formatting/console/ConsoleFormatter : com/deezer/caupain/formatting/Formatter {
+public abstract class com/deezer/caupain/formatting/SinkFormatter {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun format (Lcom/deezer/caupain/formatting/model/Input;Lokio/Sink;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	protected final fun getIoDispatcher ()Lkotlinx/coroutines/CoroutineDispatcher;
+	protected abstract fun writeUpdates (Lokio/BufferedSink;Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/deezer/caupain/formatting/console/ConsoleFormatter {
 	public static final field IGNORED_TITLE Ljava/lang/String;
 	public static final field LIBRARY_TITLE Ljava/lang/String;
 	public static final field NO_UPDATES Ljava/lang/String;
@@ -178,7 +187,7 @@ public final class com/deezer/caupain/formatting/console/ConsoleFormatter : com/
 	public static final field UPDATES_TITLE Ljava/lang/String;
 	public static final field VERSIONS_TITLE Ljava/lang/String;
 	public fun <init> (Lcom/deezer/caupain/formatting/console/ConsolePrinter;)V
-	public fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun format (Lcom/deezer/caupain/formatting/model/Input;)V
 }
 
 public abstract interface class com/deezer/caupain/formatting/console/ConsolePrinter {
@@ -186,19 +195,22 @@ public abstract interface class com/deezer/caupain/formatting/console/ConsolePri
 	public abstract fun printError (Ljava/lang/String;)V
 }
 
-public final class com/deezer/caupain/formatting/html/HtmlFormatter : com/deezer/caupain/formatting/FileFormatter {
-	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
-	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/deezer/caupain/formatting/html/HtmlFormatter : com/deezer/caupain/formatting/SinkFormatter {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public final class com/deezer/caupain/formatting/json/JsonFormatter : com/deezer/caupain/formatting/FileFormatter {
-	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
-	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/deezer/caupain/formatting/json/JsonFormatter : com/deezer/caupain/formatting/SinkFormatter {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public final class com/deezer/caupain/formatting/markdown/MarkdownFormatter : com/deezer/caupain/formatting/FileFormatter {
-	public fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;)V
-	public synthetic fun <init> (Lokio/Path;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class com/deezer/caupain/formatting/markdown/MarkdownFormatter : com/deezer/caupain/formatting/SinkFormatter {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class com/deezer/caupain/formatting/model/Input {
@@ -259,6 +271,10 @@ public final synthetic class com/deezer/caupain/formatting/model/VersionReferenc
 
 public final class com/deezer/caupain/formatting/model/VersionReferenceInfo$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/internal/JvmSinkKt {
+	public static final fun systemSink ()Lokio/Sink;
 }
 
 public final class com/deezer/caupain/model/AlwaysAcceptPolicy : com/deezer/caupain/model/Policy {

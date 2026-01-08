@@ -26,16 +26,24 @@ package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
+import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
+import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.toSimpleVersion
+import com.deezer.caupain.toStaticVersion
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ConsoleFormatterTest : AbstractFormatterTest() {
+class ConsoleFormatterTest {
 
     private lateinit var printer: TestConsolePrinter
 
-    override lateinit var formatter: ConsoleFormatter
+    private lateinit var formatter: ConsoleFormatter
 
     @BeforeTest
     fun setup() {
@@ -43,12 +51,88 @@ class ConsoleFormatterTest : AbstractFormatterTest() {
         formatter = ConsoleFormatter(printer)
     }
 
-    override fun checkEmptyOutput(isMapEmpty: Boolean) {
+    @Test
+    fun testEmpty() {
+        formatter.format(Input(null, emptyMap(), emptyList(), null, null))
         assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
         assertEquals(emptyList(), printer.error)
     }
 
-    override fun checkStandardOutput() {
+    @Test
+    fun testEmptyWithNonEmptyMap() {
+        formatter.format(
+            Input(
+                gradleUpdateInfo = null,
+                updateInfos = mapOf(
+                    UpdateInfo.Type.LIBRARY to emptyList(),
+                    UpdateInfo.Type.PLUGIN to emptyList()
+                ),
+                ignoredUpdateInfos = emptyList(),
+                versionReferenceInfo = null,
+                selfUpdateInfo = null
+            )
+        )
+        assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
+        assertEquals(emptyList(), printer.error)
+    }
+
+    @Test
+    fun testFormat() {
+        val updates = Input(
+            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
+            updateInfos = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo(
+                        "library",
+                        "com.deezer:library",
+                        null,
+                        "http://www.example.com/library",
+                        "http://www.example.com/library/releases",
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                ),
+                UpdateInfo.Type.PLUGIN to listOf(
+                    UpdateInfo(
+                        "plugin",
+                        "com.deezer:plugin",
+                        null,
+                        "http://www.example.com/plugin",
+                        "http://www.example.com/plugin/releases",
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                )
+            ),
+            ignoredUpdateInfos = listOf(
+                UpdateInfo(
+                    "ignored-library",
+                    "com.deezer:ignored-library",
+                    null,
+                    null,
+                    releaseNoteUrl = null,
+                    "1.0.0".toSimpleVersion(),
+                    "2.0.0".toStaticVersion()
+                )
+            ),
+            versionReferenceInfo = listOf(
+                VersionReferenceInfo(
+                    id = "deezer",
+                    libraryKeys = listOf("library", "other-library"),
+                    updatedLibraries = mapOf("library" to "2.0.0".toStaticVersion()),
+                    pluginKeys = listOf("plugin"),
+                    updatedPlugins = mapOf("plugin" to "2.0.0".toStaticVersion()),
+                    currentVersion = "1.0.0".toSimpleVersion(),
+                    updatedVersion = "2.0.0".toStaticVersion(),
+                )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
+            )
+        )
+        formatter.format(updates)
         assertEquals(
             listOf(
                 ConsoleFormatter.UPDATES_TITLE,

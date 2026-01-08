@@ -22,14 +22,13 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.plugin
+import com.deezer.caupain.internal.systemSink
+import okio.buffer
+import okio.use
 
-import com.deezer.caupain.formatting.model.Input
-import java.io.Serializable
-
-/**
- * Formatter is an interface for formatting dependency updates.
- */
-fun interface Formatter : Serializable {
-    suspend fun format(input: Input)
+fun main() {
+    systemSink().buffer().use { sink ->
+        sink.writeUtf8("test\ntest")
+        sink.flush()
+    }
 }

@@ -23,10 +23,13 @@ jobs:
         include:
             - os: macos-latest
               TEST_TASK: macosArm64Test
+              SINK_TEST_BINARY: sink-test
             - os: windows-latest
               TEST_TASK: mingwX64Test
+              SINK_TEST_BINARY: sink-test.exe
             - os: ubuntu-latest
               TEST_TASK: check
+              SINK_TEST_BINARY: sink-test
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
     timeout-minutes: 40
@@ -44,6 +47,29 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}}
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
+      - name: Test native standard sink test
+        shell: bash
+        run: |
+          ./gradlew :sink-test:buildCurrentArchBinary
+          ./sink-test/build/bin/${{matrix.SINK_TEST_BINARY}} > sink-test/build/actual.txt
+          if ! cmp -s "sink-test/build/actual.txt" "sink-test/expected.txt"; then
+            echo "Output does not match expected output"
+            exit 1
+          fi
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
+      - name: Test JS standard sink test
+        shell: bash
+        run: |
+          ./gradlew :sink-test:jsNodeDevelopmentRun -q --console=plain > sink-test/build/actual.txt
+          if ! cmp -s "sink-test/build/actual.txt" "sink-test/expected.txt"; then
+            echo "Output does not match expected output"
+            exit 1
+          fi
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}

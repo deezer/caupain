@@ -32,14 +32,15 @@ import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
+import com.deezer.caupain.cli.internal.OutputSink
 import com.deezer.caupain.cli.internal.path
+import com.deezer.caupain.cli.internal.sink
+import com.deezer.caupain.cli.model.Formatter
 import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
 import com.deezer.caupain.cli.serialization.DefaultToml
 import com.deezer.caupain.cli.serialization.decodeFromPath
 import com.deezer.caupain.cli.serialization.decodeFromProperties
-import com.deezer.caupain.formatting.FileFormatter
-import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
@@ -193,11 +194,11 @@ class CaupainCLI(
         )
         .multiple()
 
-    private val outputPath by option(
+    private val outputSink by option(
         "-o", "--output",
-        help = "Report output path. Only used if a single output type is specified",
+        help = "Report output path (or - if you want to ouput to standard output). If a file is specified, only used if a single output type is specified",
         helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "$DEFAULT_OUTPUT_DIR/$DEFAULT_OUTPUT_BASE_NAME.(html|md|json)")
-    ).path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
+    ).sink(truncateExisting = true, fileSystem = fileSystem)
 
     private val multiplePathOptions by MultiplePathOptions(fileSystem).cooccurring()
 
@@ -330,25 +331,22 @@ class CaupainCLI(
         }
 
         val formatters = outputFormatters(configuration)
-        val formatToConsole = formatters.any { it is ConsoleFormatter }
+        val formatToConsole = formatters.any { it is Formatter.Console }
         if (formatToConsole) {
             // Clear progress early to avoid sending progress to console while formatting
             progress?.clear()
             backgroundScope.cancel()
         }
 
-        for (formatter in formatters) {
-            formatter.format(
-                Input(
-                    updateResult = updates,
-                    showVersionReferences = showVersionReferences
-                            || configuration?.showVersionReferences == true
-                )
-            )
-            if (logLevel >= LogLevel.DEFAULT && formatter is FileFormatter) {
-                echo("Report generated at ${formatter.outputPath}")
-            }
-        }
+        format(
+            input = Input(
+                updateResult = updates,
+                showVersionReferences = showVersionReferences
+                        || configuration?.showVersionReferences == true
+            ),
+            formatters = formatters,
+            configuration = configuration,
+        )
 
         if (formatToConsole) {
             progress?.clear()
@@ -473,7 +471,7 @@ class CaupainCLI(
         logger: ClicktLogger,
     ) {
         parsedConfiguration?.validate(logger)
-        if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } > 1 && outputPath != null) {
+        if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } > 1 && outputSink != null) {
             logger.warn("Output path is ignored when multiple output types are specified. Use --output-dir and --output-base-name instead.")
         }
         if (policyPluginDir != null && !CAN_USE_PLUGINS) {
@@ -503,46 +501,130 @@ class CaupainCLI(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod") // Not really complex, just a lot of branches and elvises
+//    @Suppress("CyclomaticComplexMethod") // Not really complex, just a lot of branches and elvises
+//    private fun outputFormatters(configuration: ParsedConfiguration?): List<Formatter> {
+//        val outputTypes = outputTypes.takeUnless { it.isEmpty() }
+//            ?: configuration?.outputTypes
+//            ?: configuration?.outputType?.let(::listOf)
+//            ?: listOf(ParsedConfiguration.OutputType.CONSOLE)
+//        val outputPath =
+//            if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } == 1) {
+//                outputSink ?: configuration?.outputPath
+//            } else {
+//                null
+//            }
+//        val outputDir = multiplePathOptions?.outputDir
+//            ?: configuration?.outputDir
+//            ?: DEFAULT_OUTPUT_DIR.toPath()
+//        val outputBaseName = multiplePathOptions?.outputBaseName
+//            ?: configuration?.outputBaseName
+//            ?: DEFAULT_OUTPUT_BASE_NAME
+//        return outputTypes.map { outputType ->
+//            @Suppress("UnnecessaryParentheses") // Needed for comprehension
+//            when (outputType) {
+//                ParsedConfiguration.OutputType.CONSOLE -> ConsoleFormatter(CliktConsolePrinter())
+//
+//                ParsedConfiguration.OutputType.HTML -> HtmlFormatter(
+//                    fileSystem = fileSystem,
+//                    ioDispatcher = ioDispatcher,
+//                    path = outputPath ?: (outputDir / "$outputBaseName.html")
+//                )
+//
+//                ParsedConfiguration.OutputType.MARKDOWN -> MarkdownFormatter(
+//                    fileSystem = fileSystem,
+//                    ioDispatcher = ioDispatcher,
+//                    path = outputPath ?: (outputDir / "$outputBaseName.md")
+//                )
+//
+//                ParsedConfiguration.OutputType.JSON -> JsonFormatter(
+//                    fileSystem = fileSystem,
+//                    ioDispatcher = ioDispatcher,
+//                    path = outputPath ?: (outputDir / "$outputBaseName.json")
+//                )
+//            }
+//        }
+//    }
+
     private fun outputFormatters(configuration: ParsedConfiguration?): List<Formatter> {
         val outputTypes = outputTypes.takeUnless { it.isEmpty() }
             ?: configuration?.outputTypes
             ?: configuration?.outputType?.let(::listOf)
             ?: listOf(ParsedConfiguration.OutputType.CONSOLE)
-        val outputPath =
-            if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } == 1) {
-                outputPath ?: configuration?.outputPath
-            } else {
-                null
+        return outputTypes.map { outputType ->
+            when (outputType) {
+                ParsedConfiguration.OutputType.CONSOLE ->
+                    Formatter.Console(ConsoleFormatter(CliktConsolePrinter()))
+
+                ParsedConfiguration.OutputType.HTML ->
+                    Formatter.Html(HtmlFormatter(ioDispatcher = ioDispatcher))
+
+                ParsedConfiguration.OutputType.MARKDOWN ->
+                    Formatter.Markdown(MarkdownFormatter(ioDispatcher = ioDispatcher))
+
+                ParsedConfiguration.OutputType.JSON ->
+                    Formatter.Json(JsonFormatter(ioDispatcher = ioDispatcher))
             }
+        }
+    }
+
+    private fun createOuputSink(
+        dir: Path,
+        baseName: String,
+        outputType: ParsedConfiguration.OutputType,
+        formatterTypes: List<ParsedConfiguration.OutputType>,
+    ): OutputSink {
+        val optionOutputSink = outputSink
+        val hasSingleNonConsoleOutput =
+            formatterTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } == 1
+        return when {
+            // Standard output, used by all formatters
+            optionOutputSink is OutputSink.System -> optionOutputSink
+
+            // Only a single non-console output, so use output sink directly
+            optionOutputSink != null && hasSingleNonConsoleOutput -> optionOutputSink
+
+            // Otherwise, use outputDir and outputBaseName
+            else -> {
+                val extension = when (outputType) {
+                    ParsedConfiguration.OutputType.HTML -> "html"
+                    ParsedConfiguration.OutputType.MARKDOWN -> "md"
+                    ParsedConfiguration.OutputType.JSON -> "json"
+                    else -> error("Unsupported output type: $outputType")
+                }
+                val outputPath = dir / "$baseName.$extension"
+                OutputSink.File(fileSystem.sink(outputPath), outputPath)
+            }
+        }
+    }
+
+    private suspend fun format(
+        input: Input,
+        formatters: List<Formatter>,
+        configuration: ParsedConfiguration?,
+    ) {
         val outputDir = multiplePathOptions?.outputDir
             ?: configuration?.outputDir
             ?: DEFAULT_OUTPUT_DIR.toPath()
         val outputBaseName = multiplePathOptions?.outputBaseName
             ?: configuration?.outputBaseName
             ?: DEFAULT_OUTPUT_BASE_NAME
-        return outputTypes.map { outputType ->
-            @Suppress("UnnecessaryParentheses") // Needed for comprehension
-            when (outputType) {
-                ParsedConfiguration.OutputType.CONSOLE -> ConsoleFormatter(CliktConsolePrinter())
+        val formatterTypes = formatters.map { it.outputType }
 
-                ParsedConfiguration.OutputType.HTML -> HtmlFormatter(
-                    fileSystem = fileSystem,
-                    ioDispatcher = ioDispatcher,
-                    path = outputPath ?: (outputDir / "$outputBaseName.html")
-                )
-
-                ParsedConfiguration.OutputType.MARKDOWN -> MarkdownFormatter(
-                    fileSystem = fileSystem,
-                    ioDispatcher = ioDispatcher,
-                    path = outputPath ?: (outputDir / "$outputBaseName.md")
-                )
-
-                ParsedConfiguration.OutputType.JSON -> JsonFormatter(
-                    fileSystem = fileSystem,
-                    ioDispatcher = ioDispatcher,
-                    path = outputPath ?: (outputDir / "$outputBaseName.json")
-                )
+        for (formatter in formatters) {
+            when (formatter) {
+                is Formatter.Console -> formatter.format(input)
+                is Formatter.Sink -> {
+                    val sink = createOuputSink(
+                        dir = outputDir,
+                        baseName = outputBaseName,
+                        outputType = formatter.outputType,
+                        formatterTypes = formatterTypes,
+                    )
+                    formatter.format(input, sink)
+                    if (logLevel >= LogLevel.DEFAULT && sink is OutputSink.File) {
+                        echo("Report generated at ${sink.path}")
+                    }
+                }
             }
         }
     }

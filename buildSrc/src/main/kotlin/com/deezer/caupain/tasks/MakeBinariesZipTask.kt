@@ -31,6 +31,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.support.zipTo
 import java.io.File
 
@@ -42,27 +43,35 @@ open class MakeBinariesZipTask : DefaultTask() {
     @get:OutputDirectory
     val zipDir = binDir.map { it.dir("zip") }
 
-    @get:InputFiles
-    val binFiles = project.files(
-        Architecture.values().map { arch ->
-            binDir.map { it.file(arch.filePath) }
-        }
-    )
-
     @get:Input
     val version = project.version.toString()
 
+    @get:Input
+    val baseName = project.objects.property<String>().convention("caupain")
+
+    @get:InputFiles
+    val binFiles = baseName.flatMap { baseName ->
+        binDir.map { binDir ->
+            binDir.files(
+                Architecture.values().map { arch ->
+                    binDir.file(arch.getFilePath(baseName))
+                }
+            )
+        }
+    }
+
     @TaskAction
     fun copyAndZip() {
+        val baseName = baseName.get()
         val binDir = this.binDir.get().asFile
         val zipDir = this.zipDir.get().asFile
         zipDir.mkdirs()
         val outDir = File(binDir, "caupain")
         outDir.mkdirs()
         for (arch in Architecture.values()) {
-            val binaryFile = File(binDir, arch.filePath)
+            val binaryFile = File(binDir, arch.getFilePath(baseName))
             outDir.listFiles()?.forEach { it.delete() }
-            val outFileName = arch.outFileName
+            val outFileName = arch.getOutFileName(baseName)
             val outFile = File(outDir, outFileName)
             binaryFile.copyTo(outFile)
             val zipFile = File(zipDir, "caupain-$version-${arch.platformName}.zip")

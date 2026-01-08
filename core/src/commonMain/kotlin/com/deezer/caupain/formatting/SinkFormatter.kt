@@ -24,20 +24,35 @@
 
 package com.deezer.caupain.formatting
 
-import com.deezer.caupain.formatting.console.ConsoleFormatter
-import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.internal.IODispatcher
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
+import okio.BufferedSink
+import okio.Sink
+import okio.buffer
+import okio.use
 
 /**
- * Formatter is an interface for formatting dependency updates.
+ * Interface for formatters that write to a [Sink].
  *
- * @see [ConsoleFormatter]
- * @see [HtmlFormatter]
+ * @property ioDispatcher The coroutine dispatcher to use for IO operations. Default is IO dispatcher.
  */
-public fun interface Formatter {
+public abstract class SinkFormatter(
+    protected val ioDispatcher: CoroutineDispatcher = IODispatcher,
+) {
+
     /**
      * Formats the update result to the desired output format.
      */
-    public suspend fun format(input: Input)
-}
+    public suspend fun format(input: Input, sink: Sink) {
+        withContext(ioDispatcher) {
+            sink.buffer().use { it.writeUpdates(input) }
+        }
+    }
 
+    /**
+     * Writes the formatted output to the given [BufferedSink].
+     */
+    protected abstract suspend fun BufferedSink.writeUpdates(input: Input)
+}

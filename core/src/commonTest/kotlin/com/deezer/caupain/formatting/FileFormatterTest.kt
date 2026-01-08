@@ -24,18 +24,28 @@
 
 package com.deezer.caupain.formatting
 
+import com.deezer.caupain.formatting.model.Input
+import com.deezer.caupain.formatting.model.VersionReferenceInfo
+import com.deezer.caupain.model.GradleUpdateInfo
+import com.deezer.caupain.model.SelfUpdateInfo
+import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.toSimpleVersion
+import com.deezer.caupain.toStaticVersion
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import okio.FileSystem
-import okio.Path
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class FileFormatterTest : AbstractFormatterTest() {
+abstract class FileFormatterTest {
+
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var fileSystem: FakeFileSystem
 
@@ -43,7 +53,7 @@ abstract class FileFormatterTest : AbstractFormatterTest() {
 
     private val path by lazy { "output.$extension".toPath() }
 
-    override lateinit var formatter: FileFormatter
+    private lateinit var formatter: SinkFormatter
 
     protected abstract val emptyResult: String
 
@@ -55,14 +65,16 @@ abstract class FileFormatterTest : AbstractFormatterTest() {
     @BeforeTest
     fun setup() {
         fileSystem = FakeFileSystem()
-        formatter = createFormatter(fileSystem, path, testDispatcher)
+        formatter = createFormatter(testDispatcher)
     }
 
-    protected abstract fun createFormatter(
-        fileSystem: FileSystem,
-        path: Path,
-        ioDispatcher: CoroutineDispatcher
-    ): FileFormatter
+    @AfterTest
+    fun teardown() {
+        fileSystem.checkNoOpenFiles()
+        fileSystem.close()
+    }
+
+    protected abstract fun createFormatter(ioDispatcher: CoroutineDispatcher): SinkFormatter
 
     private fun assertResult(result: String) {
         fileSystem.read(path) {
@@ -70,17 +82,90 @@ abstract class FileFormatterTest : AbstractFormatterTest() {
         }
     }
 
-    override fun checkEmptyOutput(isMapEmpty: Boolean) {
-        assertResult(if (isMapEmpty) emptyResult else emptyResultForNonEmptyMap)
+    @Test
+    fun testEmpty() = runTest(testDispatcher) {
+        formatter.format(
+            input = Input(null, emptyMap(), emptyList(), null, null),
+            sink = fileSystem.sink(path),
+        )
+        assertResult(emptyResult)
     }
 
-    override fun checkStandardOutput() {
+    @Test
+    fun testEmptyWithNonEmptyMap() = runTest(testDispatcher) {
+        formatter.format(
+            input = Input(
+                gradleUpdateInfo = null,
+                updateInfos = mapOf(
+                    UpdateInfo.Type.LIBRARY to emptyList(),
+                    UpdateInfo.Type.PLUGIN to emptyList()
+                ),
+                ignoredUpdateInfos = emptyList(),
+                versionReferenceInfo = null,
+                selfUpdateInfo = null
+            ),
+            sink = fileSystem.sink(path),
+        )
+        assertResult(emptyResultForNonEmptyMap)
+    }
+
+    @Test
+    fun testFormat() = runTest(testDispatcher) {
+        val updates = Input(
+            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
+            updateInfos = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo(
+                        "library",
+                        "com.deezer:library",
+                        null,
+                        "http://www.example.com/library",
+                        "http://www.example.com/library/releases",
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                ),
+                UpdateInfo.Type.PLUGIN to listOf(
+                    UpdateInfo(
+                        "plugin",
+                        "com.deezer:plugin",
+                        null,
+                        "http://www.example.com/plugin",
+                        "http://www.example.com/plugin/releases",
+                        "1.0.0".toSimpleVersion(),
+                        "2.0.0".toStaticVersion()
+                    )
+                )
+            ),
+            ignoredUpdateInfos = listOf(
+                UpdateInfo(
+                    "ignored-library",
+                    "com.deezer:ignored-library",
+                    null,
+                    null,
+                    releaseNoteUrl = null,
+                    "1.0.0".toSimpleVersion(),
+                    "2.0.0".toStaticVersion()
+                )
+            ),
+            versionReferenceInfo = listOf(
+                VersionReferenceInfo(
+                    id = "deezer",
+                    libraryKeys = listOf("library", "other-library"),
+                    updatedLibraries = mapOf("library" to "2.0.0".toStaticVersion()),
+                    pluginKeys = listOf("plugin"),
+                    updatedPlugins = mapOf("plugin" to "2.0.0".toStaticVersion()),
+                    currentVersion = "1.0.0".toSimpleVersion(),
+                    updatedVersion = "2.0.0".toStaticVersion(),
+                )
+            ),
+            selfUpdateInfo = SelfUpdateInfo(
+                currentVersion = "1.0.0",
+                updatedVersion = "1.1.0",
+                sources = SelfUpdateInfo.Source.entries
+            )
+        )
+        formatter.format(updates, fileSystem.sink(path))
         assertResult(fullResult)
-    }
-
-    @AfterTest
-    fun teardown() {
-        fileSystem.checkNoOpenFiles()
-        fileSystem.close()
     }
 }
