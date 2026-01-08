@@ -44,7 +44,7 @@ io.ktor:ktor-websockets-jvm:3.3.3
 io.ktor:ktor-websockets:3.3.3
 net.peanuuutz.tomlkt:tomlkt-jvm:0.5.0
 net.peanuuutz.tomlkt:tomlkt:0.5.0
-org.jetbrains.kotlin:kotlin-stdlib:2.2.21
+org.jetbrains.kotlin:kotlin-stdlib:2.3.0
 org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2

@@ -1,6 +1,6 @@
 [versions]
 junit = "4.13.2"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 xml-serialization = "0.91.3"
 okio = "3.16.4"
@@ -10,7 +10,7 @@ mordant = "3.0.2"
 okhttp = "5.3.2"
 detekt = "2.0.0-alpha.1"
 clikt = "5.0.3"
-antlr-kotlin = "1.0.8"
+antlr-kotlin = "1.0.9"
 kotlinx-serialization = "1.9.0"
 
 [libraries]
@@ -59,7 +59,7 @@ detekt-libraries = { module = "dev.detekt:detekt-rules-libraries", version.ref =
 semver = "io.github.z4kn4fein:semver:3.0.0"
 antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
 app-dirs = "ca.gosyer:kotlin-multiplatform-appdirs:2.0.0"
-commons-text = "org.apache.commons:commons-text:1.14.0"
+commons-text = "org.apache.commons:commons-text:1.15.0"
 test-parameter-injector = "com.google.testparameterinjector:test-parameter-injector:1.20"
 
 [bundles]
@@ -75,17 +75,17 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.29.0"
 dokka = "org.jetbrains.dokka:2.1.0"
 detekt = { id = "dev.detekt", version.ref = "detekt" }
-mokkery = "dev.mokkery:3.0.0"
+mokkery = "dev.mokkery:3.1.1"
 changelog = "org.jetbrains.changelog:2.5.0"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
-tapmoc = "com.gradleup.tapmoc:0.2.0"
+tapmoc = "com.gradleup.tapmoc:0.4.0"
 buildkonfig = "com.codingfeline.buildkonfig:0.17.1"
-build-config = "com.github.gmazzo.buildconfig:6.0.6"
+build-config = "com.github.gmazzo.buildconfig:6.0.7"
 netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:12.1.1"
-kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.3"
+kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.4"
 vanniktech-maven-publish = "com.vanniktech.maven.publish:0.35.0"
 gradle-plugin-publish = "com.gradle.plugin-publish:2.0.0"
 dependency-guard = "com.dropbox.dependency-guard:0.5.0"
-cashapp-burst = "app.cash.burst:2.10.2"
-poko = "dev.drewhamilton.poko:0.20.2"
+cashapp-burst = "app.cash.burst:2.11.0"
+poko = "dev.drewhamilton.poko:0.21.0"
 testkit-support = "com.autonomousapps.testkit:0.17"
