@@ -24,13 +24,13 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.github.Release
 import com.deezer.caupain.model.github.SearchResults
 import com.deezer.caupain.model.maven.MavenInfo
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
@@ -39,11 +39,9 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.URLParserException
 import io.ktor.http.Url
 import io.ktor.http.appendPathSegments
-import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.io.IOException
 
 internal class GithubReleaseNoteResolver(
     private val httpClient: HttpClient,
@@ -91,31 +89,28 @@ internal class GithubReleaseNoteResolver(
         val repository = urlSegments.last()
         // First, let's check if we find the version in the releases
         val releaseNotes = withContext(ioDispatcher) {
-            try {
-                httpClient
-                    .getGithubResource("repos", owner, repository, "releases")
-                    .takeIf { it.status.isSuccess() }
-                    ?.body<List<Release>>()
-                    .orEmpty()
-            } catch (ignored: IOException) {
-                logger.error("Failed to fetch releases for $owner/$repository", ignored)
-                emptyList()
+            httpClient.processRequest<List<Release>>(
+                default = emptyList(),
+                onRecoverableError = { error ->
+                    logger.error("Failed to fetch releases for $owner/$repository", error)
+                }
+            ) {
+                getGithubResource("repos", owner, repository, "releases")
             }
         }
         val releaseNote = releaseNotes.firstOrNull { it.matches(version) }
         if (releaseNote != null) return releaseNote.url
         // If not present, try to find the changelog file in the repository
         val searchResults = withContext(ioDispatcher) {
-            try {
-                httpClient
-                    .getGithubResource("search", "code") {
-                        parameters["q"] = "$version repo:$owner/$repository filename:CHANGELOG.md"
-                    }
-                    .takeIf { it.status.isSuccess() }
-                    ?.body<SearchResults>()
-            } catch (ignored: IOException) {
-                logger.error("Failed to search for changelog in $owner/$repository", ignored)
-                null
+            httpClient.processRequest<SearchResults?>(
+                default = null,
+                onRecoverableError = { error ->
+                    logger.error("Failed to search for changelog in $owner/$repository", error)
+                }
+            ) {
+                getGithubResource("search", "code") {
+                    parameters["q"] = "$version repo:$owner/$repository filename:CHANGELOG.md"
+                }
             }
         }
         if (searchResults != null && searchResults.totalCount > 0) {

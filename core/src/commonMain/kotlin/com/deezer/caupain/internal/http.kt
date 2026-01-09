@@ -24,6 +24,50 @@
 
 package com.deezer.caupain.internal
 
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngineConfig
+import io.ktor.client.plugins.SendCountExceedException
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.isSuccess
+import kotlinx.io.IOException
 
 internal expect fun HttpClientEngineConfig.configureKtorEngine()
+
+// We do not use it as a scope, but HttpClient does implement scope
+@Suppress("SuspendFunWithCoroutineScopeReceiver")
+internal suspend inline fun <reified T, R> HttpClient.processRequest(
+    default: R,
+    transform: (T) -> R,
+    onRecoverableError: (Throwable) -> Unit = {},
+    executeRequest: suspend HttpClient.() -> HttpResponse
+): R {
+    return try {
+        executeRequest()
+            .takeIf { it.status.isSuccess() }
+            ?.body<T>()
+            ?.let(transform)
+            ?: default
+    } catch (ignored: IOException) {
+        onRecoverableError(ignored)
+        default
+    } catch (ignored: SendCountExceedException) {
+        onRecoverableError(ignored)
+        default
+    }
+}
+
+// We do not use it as a scope, but HttpClient does implement scope
+@Suppress("SuspendFunWithCoroutineScopeReceiver")
+internal suspend inline fun <reified R> HttpClient.processRequest(
+    default: R,
+    onRecoverableError: (Throwable) -> Unit = {},
+    executeRequest: suspend HttpClient.() -> HttpResponse
+): R {
+    return processRequest<R, R>(
+        default = default,
+        transform = { it },
+        onRecoverableError = onRecoverableError,
+        executeRequest = executeRequest,
+    )
+}

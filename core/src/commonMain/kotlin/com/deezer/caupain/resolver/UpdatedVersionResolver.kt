@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
@@ -32,19 +33,17 @@ import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.executeRepositoryRequest
 import com.deezer.caupain.model.group
 import com.deezer.caupain.model.maven.Metadata
+import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.name
 import com.deezer.caupain.model.versionCatalog.Version
 import dev.drewhamilton.poko.Poko
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.http.appendPathSegments
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.io.IOException
 
 /**
  * This checks Maven repositories for updated versions of a dependency.
@@ -78,6 +77,7 @@ public interface UpdatedVersionResolver {
     }
 }
 
+@Suppress("LongParameterList") // Needed for dependency injection
 internal class DefaultUpdatedVersionResolver(
     httpClient: HttpClient,
     private val repositories: List<Repository>,
@@ -102,19 +102,21 @@ internal class DefaultUpdatedVersionResolver(
         override suspend fun HttpClient.getAvailableVersions(item: DependencyRequestInfo): Sequence<GradleDependencyVersion> {
             val group = item.dependency.group ?: return emptySequence()
             val name = item.dependency.name ?: return emptySequence()
-            val versioning = try {
+            val versioning = httpClient.processRequest<Metadata, Versioning?>(
+                default = null,
+                transform = { it.versioning },
+                onRecoverableError = { error ->
+                    logger.error(
+                        "Unable to fetch maven metadata for $group:$name from ${item.repository.url}",
+                        error
+                    )
+                }
+            ) {
                 executeRepositoryRequest(item.repository) {
                     appendPathSegments(group.split('.'))
                     appendPathSegments(name, "maven-metadata.xml")
                 }
-                    .takeIf { it.status.isSuccess() }
-                    ?.body<Metadata>()
-                    ?.versioning
-                    ?: return emptySequence()
-            } catch (ignored: IOException) {
-                logger.error("Unable to fetch maven metadata for $group:$name from ${item.repository.url}", ignored)
-                return emptySequence()
-            }
+            } ?: return emptySequence()
             return sequenceOf(versioning.release, versioning.latest)
                 .plus(versioning.versions.asSequence().map { it.version })
                 .filterNotNull()
@@ -129,7 +131,8 @@ internal class DefaultUpdatedVersionResolver(
             if (verifyExistence) {
                 // Check that MavenInfo exists for this version (we only need the existence check, not the data).
                 // If it doesn't exist (null), we can't proceed with this version.
-                mavenInfoResolver.getMavenInfo(item.dependency, item.repository, version) ?: return false
+                mavenInfoResolver.getMavenInfo(item.dependency, item.repository, version)
+                    ?: return false
             }
             return policy.select(item.dependency, dependencyVersion, version)
         }

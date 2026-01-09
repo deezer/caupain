@@ -24,16 +24,14 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.gradle.GradleToolVersion
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.io.IOException
 
 internal class GradleVersionResolver(
     httpClient: HttpClient,
@@ -51,18 +49,19 @@ internal class GradleVersionResolver(
 
         @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
         override suspend fun HttpClient.getAvailableVersions(item: GradleDependencyVersion): Sequence<GradleDependencyVersion> {
-            return try {
-                get(gradleVersionsUrl)
-                    .takeIf { it.status.isSuccess() }
-                    ?.body<List<GradleToolVersion>>()
-                    ?.asSequence()
-                    ?.filter { it.level <= stabilityLevel }
-                    ?.map { it.version }
-                    .orEmpty()
-            } catch (ignored: IOException) {
-                logger.error("Failed to fetch Gradle versions from $gradleVersionsUrl", ignored)
-                emptySequence()
-            }
+            return processRequest<List<GradleToolVersion>, Sequence<GradleDependencyVersion>>(
+                default = emptySequence(),
+                onRecoverableError = { error ->
+                    logger.error("Failed to fetch Gradle versions from $gradleVersionsUrl", error)
+                },
+                transform = { versions ->
+                    versions
+                        .asSequence()
+                        .filter { it.level <= stabilityLevel }
+                        .map { it.version }
+                },
+                executeRequest = { get(gradleVersionsUrl) }
+            )
         }
 
         override suspend fun canSelectVersion(
