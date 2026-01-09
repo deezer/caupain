@@ -24,7 +24,6 @@
 
 package com.deezer.caupain.formatting.console
 
-import com.deezer.caupain.formatting.Formatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
@@ -32,12 +31,15 @@ import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 
 /**
- * ConsoleFormatter is a [Formatter] that formats the output for the console.
+ * ConsoleFormatter is a formatter that formats the output for the console.
  */
 public class ConsoleFormatter(
     private val consolePrinter: ConsolePrinter
-) : Formatter {
-    override suspend fun format(input: Input) {
+) {
+    /**
+     * Formats the update result to the console.
+     */
+    public fun format(input: Input) {
         if (input.isEmpty) {
             consolePrinter.print(NO_UPDATES)
         } else {

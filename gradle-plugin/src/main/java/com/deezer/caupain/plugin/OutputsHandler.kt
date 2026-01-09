@@ -24,13 +24,14 @@
 
 package com.deezer.caupain.plugin
 
-import com.deezer.caupain.formatting.FileFormatter
+import com.deezer.caupain.formatting.SinkFormatter
 import com.deezer.caupain.formatting.html.HtmlFormatter
 import com.deezer.caupain.formatting.json.JsonFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
+import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.plugin.internal.listProperty
 import com.deezer.caupain.plugin.internal.property
-import okio.Path.Companion.toOkioPath
+import okio.sink
 import org.gradle.api.Action
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
@@ -85,28 +86,33 @@ abstract class OutputsHandler @Inject constructor(
     }
 
     sealed interface Output : Serializable {
+
         object Console : Output {
             private fun readResolve(): Any = Console
 
             override fun toString(): String = "Console"
         }
 
-        sealed interface File : Output {
-            val file: Provider<RegularFile>
+        sealed class File : Output {
+            abstract val file: Provider<RegularFile>
 
-            fun createFormatter(): FileFormatter
+            protected abstract fun createFormatter(): SinkFormatter
+
+            suspend fun format(input: Input) {
+                createFormatter().format(input, file.get().asFile.sink())
+            }
         }
 
-        data class Html(override val file: Provider<RegularFile>) : File {
-            override fun createFormatter() = HtmlFormatter(file.get().asFile.toOkioPath())
+        data class Html(override val file: Provider<RegularFile>) : File() {
+            override fun createFormatter() = HtmlFormatter()
         }
 
-        data class Markdown(override val file: Provider<RegularFile>) : File {
-            override fun createFormatter() = MarkdownFormatter(file.get().asFile.toOkioPath())
+        data class Markdown(override val file: Provider<RegularFile>) : File() {
+            override fun createFormatter() = MarkdownFormatter()
         }
 
-        data class Json(override val file: Provider<RegularFile>) : File {
-            override fun createFormatter() = JsonFormatter(file.get().asFile.toOkioPath())
+        data class Json(override val file: Provider<RegularFile>) : File() {
+            override fun createFormatter() = JsonFormatter()
         }
     }
 

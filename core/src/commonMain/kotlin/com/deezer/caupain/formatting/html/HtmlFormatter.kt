@@ -24,11 +24,9 @@
 
 package com.deezer.caupain.formatting.html
 
-import com.deezer.caupain.formatting.FileFormatter
-import com.deezer.caupain.formatting.Formatter
+import com.deezer.caupain.formatting.SinkFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
-import com.deezer.caupain.internal.DefaultFileSystem
 import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.asAppendable
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -57,21 +55,15 @@ import kotlinx.html.tr
 import kotlinx.html.ul
 import kotlinx.html.unsafe
 import okio.BufferedSink
-import okio.FileSystem
-import okio.Path
 
 /**
- * HtmlFormatter is a [Formatter] that formats the output as HTML.
+ * HtmlFormatter is a formatter that formats the output as HTML.
  *
- * @param path The path to the HTML file to write.
- * @param fileSystem The file system to use for writing the file. Default uses the native file system.
  * @param ioDispatcher The coroutine dispatcher to use for IO operations. Default is IO dispatcher.
  */
 public class HtmlFormatter(
-    path: Path,
-    fileSystem: FileSystem = DefaultFileSystem,
     ioDispatcher: CoroutineDispatcher = IODispatcher,
-) : FileFormatter(path, fileSystem, ioDispatcher) {
+) : SinkFormatter(ioDispatcher) {
 
     override suspend fun BufferedSink.writeUpdates(input: Input) {
         this

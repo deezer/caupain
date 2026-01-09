@@ -29,6 +29,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
+import org.gradle.kotlin.dsl.property
 
 @Suppress("LeakingThis") // This is only abstract to be instantiated by Gradle
 abstract class RenameCurrentBinaryTask : Copy() {
@@ -42,16 +43,21 @@ abstract class RenameCurrentBinaryTask : Copy() {
         .directoryProperty()
         .convention(project.layout.buildDirectory.dir("bin"))
 
+    @get:Input
+    val baseName = project.objects.property<String>().convention("caupain")
+
     @get:InputFile
-    val binaryFile = architecture.flatMap { arch ->
-        binDir.map { binDir ->
-            binDir.file(arch.filePath)
+    val binaryFile = baseName.flatMap { baseName ->
+        architecture.flatMap { arch ->
+            binDir.map { binDir ->
+                binDir.file(arch.getFilePath(baseName))
+            }
         }
     }
 
     init {
         from(binaryFile)
         into(binDir)
-        rename { architecture.get().outFileName }
+        rename { architecture.get().getOutFileName(baseName.get()) }
     }
 }

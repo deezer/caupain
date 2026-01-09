@@ -3,8 +3,10 @@
 ## Unreleased
 
 ### Added
+- Possibility to output formatted results directly to standard output in CLI (#72)
 
 ### Changed
+- Removed base formatter class from core library, to allow formatters to write to any sink.
 
 ### Deprecated
 

@@ -44,7 +44,7 @@ private fun pathType(context: Context, fileOkay: Boolean, folderOkay: Boolean): 
     else -> context.localization.pathTypeOther()
 }
 
-private fun convertToPath(
+internal fun convertToPath(
     stringPath: String,
     mustExist: Boolean,
     canBeFile: Boolean,
@@ -72,26 +72,6 @@ private fun convertToPath(
                     fail(pathIsSymlink(name, path.toString()))
             }
         }
-    }
-}
-
-internal fun RawArgument.path(
-    mustExist: Boolean = false,
-    canBeFile: Boolean = true,
-    canBeDir: Boolean = true,
-    canBeSymlink: Boolean = true,
-    fileSystem: FileSystem = FileSystem.SYSTEM,
-): ProcessedArgument<Path, Path> {
-    return convert(completionCandidates = CompletionCandidates.Path) { str ->
-        convertToPath(
-            stringPath = str,
-            mustExist = mustExist,
-            canBeFile = canBeFile,
-            canBeFolder = canBeDir,
-            canBeSymlink = canBeSymlink,
-            fileSystem = fileSystem,
-            context = context
-        ) { fail(it) }
     }
 }
 

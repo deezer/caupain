@@ -27,8 +27,6 @@ package com.deezer.caupain.formatting
 import com.deezer.caupain.formatting.json.JsonFormatter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import okio.FileSystem
-import okio.Path
 import org.intellij.lang.annotations.Language
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,11 +43,7 @@ class JsonFormatterTest : FileFormatterTest() {
     override val fullResult: String
         get() = FULL_RESULT
 
-    override fun createFormatter(
-        fileSystem: FileSystem,
-        path: Path,
-        ioDispatcher: CoroutineDispatcher
-    ): FileFormatter = JsonFormatter(path, fileSystem, ioDispatcher)
+    override fun createFormatter(ioDispatcher: CoroutineDispatcher) = JsonFormatter(ioDispatcher)
 
     companion object {
         @Language("JSON")

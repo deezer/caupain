@@ -42,11 +42,7 @@ class HtmlFormatterTest : FileFormatterTest() {
     override val fullResult: String
         get() = FULL_RESULT
 
-    override fun createFormatter(
-        fileSystem: FileSystem,
-        path: Path,
-        ioDispatcher: CoroutineDispatcher
-    ): FileFormatter = HtmlFormatter(path, fileSystem, ioDispatcher)
+    override fun createFormatter(ioDispatcher: CoroutineDispatcher) =  HtmlFormatter(ioDispatcher)
 }
 
 @Language("HTML")

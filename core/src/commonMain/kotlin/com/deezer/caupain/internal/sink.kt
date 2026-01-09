@@ -25,6 +25,7 @@
 package com.deezer.caupain.internal
 
 import okio.BufferedSink
+import okio.Sink
 
 internal fun BufferedSink.asAppendable(): Appendable = object : Appendable {
     override fun append(value: Char): Appendable {
@@ -42,3 +43,9 @@ internal fun BufferedSink.asAppendable(): Appendable = object : Appendable {
         return this
     }
 }
+
+/**
+ * A platform-specific sink writing to the system standard output. This uses `System.out` on JVM,
+ * `stdout` on Native, and `process.stdout` on JS.
+ */
+public expect fun systemSink(): Sink
