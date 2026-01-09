@@ -41,17 +41,15 @@ enum class Architecture(
     LINUX_ARM("linux-arm", "linuxArm64", "arm64", "kexe", null),
     WINDOWS("windows", "mingwX64", "amd64", "exe", "exe");
 
-    val filePath: String
-        get() = "${fullArchName}/releaseExecutable/caupain.${ext}"
+    fun getFilePath(baseName: String) = "${fullArchName}/releaseExecutable/$baseName.${ext}"
 
-    val outFileName: String
-        get() = buildString {
-            append("caupain")
-            if (outExt != null) {
-                append('.')
-                append(outExt)
-            }
+    fun getOutFileName(baseName: String): String = buildString {
+        append(baseName)
+        if (outExt != null) {
+            append('.')
+            append(outExt)
         }
+    }
 }
 
 private val Project.osName: Provider<String>

@@ -197,10 +197,11 @@ open class DependenciesUpdateTask : DefaultTask() {
         val formatters = buildList {
             formatterOutputs.get().mapTo(this) { output ->
                 when (output) {
-                    is OutputsHandler.Output.Console ->
-                        ConsoleFormatter(ConsolePrinterAdapter(logger))
+                    is OutputsHandler.Output.Console -> Formatter { input ->
+                        ConsoleFormatter(ConsolePrinterAdapter(logger)).format(input)
+                    }
 
-                    is OutputsHandler.Output.File -> output.createFormatter()
+                    is OutputsHandler.Output.File -> Formatter { output.format(it) }
                 }
             }
             if (customFormatter.isPresent) add(customFormatter.get())

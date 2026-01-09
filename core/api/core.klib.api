@@ -25,10 +25,6 @@ final enum class com.deezer.caupain.model.gradle/GradleStabilityLevel : kotlin/E
     }
 }
 
-abstract fun interface com.deezer.caupain.formatting/Formatter { // com.deezer.caupain.formatting/Formatter|null[0]
-    abstract suspend fun format(com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting/Formatter.format|format(com.deezer.caupain.formatting.model.Input){}[0]
-}
-
 abstract interface com.deezer.caupain.formatting.console/ConsolePrinter { // com.deezer.caupain.formatting.console/ConsolePrinter|null[0]
     abstract fun print(kotlin/String) // com.deezer.caupain.formatting.console/ConsolePrinter.print|print(kotlin.String){}[0]
     abstract fun printError(kotlin/String) // com.deezer.caupain.formatting.console/ConsolePrinter.printError|printError(kotlin.String){}[0]
@@ -591,42 +587,36 @@ sealed interface com.deezer.caupain.model/GradleDependencyVersion { // com.deeze
     }
 }
 
-abstract class com.deezer.caupain.formatting/FileFormatter : com.deezer.caupain.formatting/Formatter { // com.deezer.caupain.formatting/FileFormatter|null[0]
-    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting/FileFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+abstract class com.deezer.caupain.formatting/SinkFormatter { // com.deezer.caupain.formatting/SinkFormatter|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting/SinkFormatter.<init>|<init>(kotlinx.coroutines.CoroutineDispatcher){}[0]
 
-    final val fileSystem // com.deezer.caupain.formatting/FileFormatter.fileSystem|{}fileSystem[0]
-        final fun <get-fileSystem>(): okio/FileSystem // com.deezer.caupain.formatting/FileFormatter.fileSystem.<get-fileSystem>|<get-fileSystem>(){}[0]
-    final val ioDispatcher // com.deezer.caupain.formatting/FileFormatter.ioDispatcher|{}ioDispatcher[0]
-        final fun <get-ioDispatcher>(): kotlinx.coroutines/CoroutineDispatcher // com.deezer.caupain.formatting/FileFormatter.ioDispatcher.<get-ioDispatcher>|<get-ioDispatcher>(){}[0]
-    final val path // com.deezer.caupain.formatting/FileFormatter.path|{}path[0]
-        final fun <get-path>(): okio/Path // com.deezer.caupain.formatting/FileFormatter.path.<get-path>|<get-path>(){}[0]
-    open val outputPath // com.deezer.caupain.formatting/FileFormatter.outputPath|{}outputPath[0]
-        open fun <get-outputPath>(): kotlin/String // com.deezer.caupain.formatting/FileFormatter.outputPath.<get-outputPath>|<get-outputPath>(){}[0]
+    final val ioDispatcher // com.deezer.caupain.formatting/SinkFormatter.ioDispatcher|{}ioDispatcher[0]
+        final fun <get-ioDispatcher>(): kotlinx.coroutines/CoroutineDispatcher // com.deezer.caupain.formatting/SinkFormatter.ioDispatcher.<get-ioDispatcher>|<get-ioDispatcher>(){}[0]
 
-    abstract suspend fun (okio/BufferedSink).writeUpdates(com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting/FileFormatter.writeUpdates|writeUpdates@okio.BufferedSink(com.deezer.caupain.formatting.model.Input){}[0]
-    open suspend fun format(com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting/FileFormatter.format|format(com.deezer.caupain.formatting.model.Input){}[0]
+    abstract suspend fun (okio/BufferedSink).writeUpdates(com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting/SinkFormatter.writeUpdates|writeUpdates@okio.BufferedSink(com.deezer.caupain.formatting.model.Input){}[0]
+    final suspend fun format(com.deezer.caupain.formatting.model/Input, okio/Sink) // com.deezer.caupain.formatting/SinkFormatter.format|format(com.deezer.caupain.formatting.model.Input;okio.Sink){}[0]
 }
 
 abstract class com.deezer.caupain/CaupainException : kotlin/Exception { // com.deezer.caupain/CaupainException|null[0]
     constructor <init>(kotlin/String, kotlin/Throwable? = ...) // com.deezer.caupain/CaupainException.<init>|<init>(kotlin.String;kotlin.Throwable?){}[0]
 }
 
-final class com.deezer.caupain.formatting.console/ConsoleFormatter : com.deezer.caupain.formatting/Formatter { // com.deezer.caupain.formatting.console/ConsoleFormatter|null[0]
+final class com.deezer.caupain.formatting.console/ConsoleFormatter { // com.deezer.caupain.formatting.console/ConsoleFormatter|null[0]
     constructor <init>(com.deezer.caupain.formatting.console/ConsolePrinter) // com.deezer.caupain.formatting.console/ConsoleFormatter.<init>|<init>(com.deezer.caupain.formatting.console.ConsolePrinter){}[0]
 
-    final suspend fun format(com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting.console/ConsoleFormatter.format|format(com.deezer.caupain.formatting.model.Input){}[0]
+    final fun format(com.deezer.caupain.formatting.model/Input) // com.deezer.caupain.formatting.console/ConsoleFormatter.format|format(com.deezer.caupain.formatting.model.Input){}[0]
 }
 
-final class com.deezer.caupain.formatting.html/HtmlFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.html/HtmlFormatter|null[0]
-    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.html/HtmlFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+final class com.deezer.caupain.formatting.html/HtmlFormatter : com.deezer.caupain.formatting/SinkFormatter { // com.deezer.caupain.formatting.html/HtmlFormatter|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.html/HtmlFormatter.<init>|<init>(kotlinx.coroutines.CoroutineDispatcher){}[0]
 }
 
-final class com.deezer.caupain.formatting.json/JsonFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.json/JsonFormatter|null[0]
-    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.json/JsonFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+final class com.deezer.caupain.formatting.json/JsonFormatter : com.deezer.caupain.formatting/SinkFormatter { // com.deezer.caupain.formatting.json/JsonFormatter|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.json/JsonFormatter.<init>|<init>(kotlinx.coroutines.CoroutineDispatcher){}[0]
 }
 
-final class com.deezer.caupain.formatting.markdown/MarkdownFormatter : com.deezer.caupain.formatting/FileFormatter { // com.deezer.caupain.formatting.markdown/MarkdownFormatter|null[0]
-    constructor <init>(okio/Path, okio/FileSystem = ..., kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.markdown/MarkdownFormatter.<init>|<init>(okio.Path;okio.FileSystem;kotlinx.coroutines.CoroutineDispatcher){}[0]
+final class com.deezer.caupain.formatting.markdown/MarkdownFormatter : com.deezer.caupain.formatting/SinkFormatter { // com.deezer.caupain.formatting.markdown/MarkdownFormatter|null[0]
+    constructor <init>(kotlinx.coroutines/CoroutineDispatcher = ...) // com.deezer.caupain.formatting.markdown/MarkdownFormatter.<init>|<init>(kotlinx.coroutines.CoroutineDispatcher){}[0]
 }
 
 final class com.deezer.caupain.formatting.model/Input { // com.deezer.caupain.formatting.model/Input|null[0]
@@ -1115,6 +1105,7 @@ final object com.deezer.caupain.model/StabilityLevelPolicy : com.deezer.caupain.
     final fun select(com.deezer.caupain.model/Dependency, com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static): kotlin/Boolean // com.deezer.caupain.model/StabilityLevelPolicy.select|select(com.deezer.caupain.model.Dependency;com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static){}[0]
 }
 
+final fun com.deezer.caupain.internal/systemSink(): okio/Sink // com.deezer.caupain.internal/systemSink|systemSink(){}[0]
 final fun com.deezer.caupain.model/Configuration(kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/Iterable<okio/Path> = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<com.deezer.caupain.model/LibraryExclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/PluginExclusion> = ..., kotlin/String = ..., okio/Path? = ..., okio/Path? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., com.deezer.caupain.model.gradle/GradleStabilityLevel = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.deezer.caupain.model/Configuration // com.deezer.caupain.model/Configuration|Configuration(kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.Iterable<okio.Path>;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<com.deezer.caupain.model.LibraryExclusion>;kotlin.collections.List<com.deezer.caupain.model.PluginExclusion>;kotlin.String;okio.Path?;okio.Path?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;com.deezer.caupain.model.gradle.GradleStabilityLevel;kotlin.Boolean;kotlin.String?;kotlin.Boolean;kotlin.Boolean){}[0]
 final fun com.deezer.caupain.model/Configuration(kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., okio/Path, kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<com.deezer.caupain.model/LibraryExclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/PluginExclusion> = ..., kotlin/String = ..., okio/Path? = ..., okio/Path? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., com.deezer.caupain.model.gradle/GradleStabilityLevel = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.deezer.caupain.model/Configuration // com.deezer.caupain.model/Configuration|Configuration(kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.List<com.deezer.caupain.model.Repository>;okio.Path;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<com.deezer.caupain.model.LibraryExclusion>;kotlin.collections.List<com.deezer.caupain.model.PluginExclusion>;kotlin.String;okio.Path?;okio.Path?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;com.deezer.caupain.model.gradle.GradleStabilityLevel;kotlin.Boolean;kotlin.String?;kotlin.Boolean;kotlin.Boolean){}[0]
 final fun com.deezer.caupain.model/GradleDependencyVersion(kotlin/String): com.deezer.caupain.model/GradleDependencyVersion // com.deezer.caupain.model/GradleDependencyVersion|GradleDependencyVersion(kotlin.String){}[0]

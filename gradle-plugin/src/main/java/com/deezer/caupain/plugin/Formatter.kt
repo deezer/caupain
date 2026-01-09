@@ -24,10 +24,12 @@
 
 package com.deezer.caupain.plugin
 
-import com.deezer.caupain.formatting.Formatter
+import com.deezer.caupain.formatting.model.Input
 import java.io.Serializable
 
 /**
  * Formatter is an interface for formatting dependency updates.
  */
-fun interface Formatter : Formatter, Serializable
+fun interface Formatter : Serializable {
+    suspend fun format(input: Input)
+}

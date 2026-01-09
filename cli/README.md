@@ -57,9 +57,9 @@ Options:
   --list-policies                                                         List available policies
   --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)  Gradle stability level (default: stable)
   -t, --output-type=(console|html|markdown|json)                          Output type (default: console)
-  -o, --output=<path>                                                     Report output path. Only used if a single output type is specified (default: build/reports/dependencies-update.(html|md|json))
-  --output-dir=<path>                                                     Report output dir. Only used if multiple output types are specified (default: build/reports)
-  --output-base-name=<text>                                               Report output base name, without extension. Only used if multiple output types are specified (default: dependencies-update)
+  -o, --output=<path>                                                     Report output path (or - if you want to ouput to standard output). If a file is specified, only used if a single output type is specified (default: build/reports/dependencies-update.(html|md|json))
+  --output-dir=<path>                                                     Report output dir. Only used if multiple output types are specified, and output is not set to standard output (default: build/reports)
+  --output-base-name=<text>                                               Report output base name, without extension. Only used if multiple output types are specified, and output is not set to standard output (default: dependencies-update)
   --show-version-references                                               Show versions references update summary in the report
   --in-place                                                              Replace versions in version catalog in place
   --github-token=<text>                                                   GitHub token for searching release notes

@@ -101,6 +101,18 @@ _caupain() {
           [[ ${i} -gt COMP_CWORD ]] && in_param='--output' || in_param=''
           continue
           ;;
+        --output-dir)
+          __skip_opt_eq
+          (( i = i + 1 ))
+          [[ ${i} -gt COMP_CWORD ]] && in_param='--output-dir' || in_param=''
+          continue
+          ;;
+        --output-base-name)
+          __skip_opt_eq
+          (( i = i + 1 ))
+          [[ ${i} -gt COMP_CWORD ]] && in_param='--output-base-name' || in_param=''
+          continue
+          ;;
         --show-version-references)
           __skip_opt_eq
           in_param=''
@@ -111,13 +123,29 @@ _caupain() {
           in_param=''
           continue
           ;;
+        --github-token)
+          __skip_opt_eq
+          (( i = i + 1 ))
+          [[ ${i} -gt COMP_CWORD ]] && in_param='--github-token' || in_param=''
+          continue
+          ;;
+        --search-release-notes)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
         --cache-dir)
           __skip_opt_eq
           (( i = i + 1 ))
           [[ ${i} -gt COMP_CWORD ]] && in_param='--cache-dir' || in_param=''
           continue
           ;;
-        --no--cache)
+        --no-cache)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
+        --clean-cache)
           __skip_opt_eq
           in_param=''
           continue
@@ -138,6 +166,11 @@ _caupain() {
           continue
           ;;
         --debug-http-calls)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
+        --verify-existence)
           __skip_opt_eq
           in_param=''
           continue
@@ -164,7 +197,7 @@ _caupain() {
   done
   local word="${COMP_WORDS[$COMP_CWORD]}"
   if [[ "${word}" =~ ^[-] ]]; then
-    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --show-version-references --in-place --cache-dir --no--cache -q --quiet -v --verbose -d --debug --debug-http-calls --version -h --help' -- "${word}"))
+    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --output-dir --output-base-name --show-version-references --in-place --github-token --search-release-notes --cache-dir --no-cache --clean-cache -q --quiet -v --verbose -d --debug --debug-http-calls --verify-existence --version -h --help' -- "${word}"))
     return
   fi
 
@@ -201,14 +234,25 @@ _caupain() {
     "--output")
        __complete_files "${word}"
       ;;
+    "--output-dir")
+       __complete_files "${word}"
+      ;;
+    "--output-base-name")
+      ;;
     "--show-version-references")
       ;;
     "--in-place")
       ;;
+    "--github-token")
+      ;;
+    "--search-release-notes")
+      ;;
     "--cache-dir")
        __complete_files "${word}"
       ;;
-    "--no--cache")
+    "--no-cache")
+      ;;
+    "--clean-cache")
       ;;
     "--quiet")
       ;;
@@ -217,6 +261,8 @@ _caupain() {
     "--debug")
       ;;
     "--debug-http-calls")
+      ;;
+    "--verify-existence")
       ;;
     "--version")
       ;;
