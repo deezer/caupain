@@ -33,6 +33,7 @@ import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import io.ktor.client.call.body
+import io.ktor.client.plugins.SendCountExceedException
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
@@ -69,6 +70,9 @@ internal class CLISelfUpdateResolver(
                     ?.body<GithubRelease>()
                     ?.tagName
             } catch (ignored: IOException) {
+                logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
+                null
+            } catch (ignored: SendCountExceedException) {
                 logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
                 null
             }
