@@ -99,6 +99,7 @@ import okio.SYSTEM
 import kotlin.time.TimeSource
 import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
 
+@Suppress("LongParameterList") // Needed for dependency injection
 class CaupainCLI(
     private val fileSystem: FileSystem = FileSystem.SYSTEM,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -501,50 +502,6 @@ class CaupainCLI(
         }
     }
 
-//    @Suppress("CyclomaticComplexMethod") // Not really complex, just a lot of branches and elvises
-//    private fun outputFormatters(configuration: ParsedConfiguration?): List<Formatter> {
-//        val outputTypes = outputTypes.takeUnless { it.isEmpty() }
-//            ?: configuration?.outputTypes
-//            ?: configuration?.outputType?.let(::listOf)
-//            ?: listOf(ParsedConfiguration.OutputType.CONSOLE)
-//        val outputPath =
-//            if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } == 1) {
-//                outputSink ?: configuration?.outputPath
-//            } else {
-//                null
-//            }
-//        val outputDir = multiplePathOptions?.outputDir
-//            ?: configuration?.outputDir
-//            ?: DEFAULT_OUTPUT_DIR.toPath()
-//        val outputBaseName = multiplePathOptions?.outputBaseName
-//            ?: configuration?.outputBaseName
-//            ?: DEFAULT_OUTPUT_BASE_NAME
-//        return outputTypes.map { outputType ->
-//            @Suppress("UnnecessaryParentheses") // Needed for comprehension
-//            when (outputType) {
-//                ParsedConfiguration.OutputType.CONSOLE -> ConsoleFormatter(CliktConsolePrinter())
-//
-//                ParsedConfiguration.OutputType.HTML -> HtmlFormatter(
-//                    fileSystem = fileSystem,
-//                    ioDispatcher = ioDispatcher,
-//                    path = outputPath ?: (outputDir / "$outputBaseName.html")
-//                )
-//
-//                ParsedConfiguration.OutputType.MARKDOWN -> MarkdownFormatter(
-//                    fileSystem = fileSystem,
-//                    ioDispatcher = ioDispatcher,
-//                    path = outputPath ?: (outputDir / "$outputBaseName.md")
-//                )
-//
-//                ParsedConfiguration.OutputType.JSON -> JsonFormatter(
-//                    fileSystem = fileSystem,
-//                    ioDispatcher = ioDispatcher,
-//                    path = outputPath ?: (outputDir / "$outputBaseName.json")
-//                )
-//            }
-//        }
-//    }
-
     private fun outputFormatters(configuration: ParsedConfiguration?): List<Formatter> {
         val outputTypes = outputTypes.takeUnless { it.isEmpty() }
             ?: configuration?.outputTypes
@@ -721,7 +678,7 @@ private class MultiplePathOptions(fileSystem: FileSystem) : OptionGroup() {
 
     val outputDir by option(
         "--output-dir",
-        help = "Report output dir. Only used if multiple output types are specified",
+        help = "Report output dir. Only used if multiple output types are specified, and output is not set to standard output",
         helpTags = mapOf(HelpFormatter.Tags.DEFAULT to DEFAULT_OUTPUT_DIR)
     )
         .path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
@@ -729,7 +686,7 @@ private class MultiplePathOptions(fileSystem: FileSystem) : OptionGroup() {
 
     val outputBaseName by option(
         "--output-base-name",
-        help = "Report output base name, without extension. Only used if multiple output types are specified",
+        help = "Report output base name, without extension. Only used if multiple output types are specified, and output is not set to standard output",
     ).default(DEFAULT_OUTPUT_BASE_NAME)
 }
 
