@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
@@ -34,12 +35,9 @@ import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.name
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.http.appendPathSegments
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.io.IOException
 
 internal class MavenInfoResolver(
     private val httpClient: HttpClient,
@@ -59,18 +57,23 @@ internal class MavenInfoResolver(
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
         val mavenInfo = withContext(ioDispatcher) {
-            try {
-                httpClient.executeRepositoryRequest(repository) {
+            httpClient.processRequest<MavenInfo?>(
+                default = null,
+                onRecoverableError = { error ->
+                    logger.error(
+                        "Unable to fetch maven info for $group:$name:$updatedVersion from ${repository.url}",
+                        error
+                    )
+                }
+            ) {
+                executeRepositoryRequest(repository) {
                     appendPathSegments(group.split('.'))
                     appendPathSegments(
                         name,
                         updatedVersion.toString(),
                         "$name-$resolvedUpdatedVersion.pom"
                     )
-                }.takeIf { it.status.isSuccess() }?.body<MavenInfo>()
-            } catch (ignored: IOException) {
-                logger.error("Unable to fetch maven info for $group:$name:$updatedVersion from ${repository.url}", ignored)
-                null
+                }
             }
         }
         // If this is a plugin, we need to find the real maven info by following the dependency
@@ -103,16 +106,21 @@ internal class MavenInfoResolver(
         val group = dependency.group ?: return null
         val name = dependency.name ?: return null
         val snapshotMetadata = withContext(ioDispatcher) {
-            try {
-                httpClient.executeRepositoryRequest(repository) {
+            httpClient.processRequest<Metadata?>(
+                default = null,
+                onRecoverableError = { error ->
+                    logger.error(
+                        "Unable to fetch snapshot metadata for $group:$name:$updatedVersion from ${repository.url}",
+                        error
+                    )
+                }
+            ) {
+                executeRepositoryRequest(repository) {
                     appendPathSegments(group.split('.'))
                     appendPathSegments(name, updatedVersion.toString(), "maven-metadata.xml")
                 }
-            } catch (ignored: IOException) {
-                logger.error("Unable to fetch snapshot metadata for $group:$name:$updatedVersion from ${repository.url}", ignored)
-                null
             }
-        }?.takeIf { it.status.isSuccess() }?.body<Metadata>()
+        }
         return snapshotMetadata
             ?.versioning
             ?.snapshotVersions
