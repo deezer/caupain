@@ -3,19 +3,30 @@
 ## Unreleased
 
 ### Added
-- Possibility to output formatted results directly to standard output in CLI (#72)
 
 ### Changed
-- Removed base formatter class from core library, to allow formatters to write to any sink.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Avoid crashing on too much requests (#73) 
 
 ### Security
+
+## 1.8.0 - 2026-01-13
+
+### Added
+
+- Possibility to output formatted results directly to standard output in CLI (#72)
+
+### Changed
+
+- Removed base formatter class from core library, to allow formatters to write to any sink.
+
+### Fixed
+
+- Avoid crashing on too much requests (#73)
 
 ## 1.7.1 - 2025-12-02
 
