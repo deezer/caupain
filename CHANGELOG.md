@@ -13,6 +13,7 @@
 ### Removed
 
 ### Fixed
+- Avoid crashing on too much requests (#73) 
 
 ### Security
 
