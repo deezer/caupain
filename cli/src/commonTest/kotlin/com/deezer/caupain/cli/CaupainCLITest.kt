@@ -26,7 +26,6 @@ package com.deezer.caupain.cli
 
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
-import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
@@ -165,7 +164,7 @@ class CaupainCLITest {
             val cli = createCli()
             val outputPath = "outputs/output.html".toPath()
             val result = cli.test(
-                if (CAN_USE_PLUGINS) {
+                if (BuildConfig.CAN_USE_PLUGINS) {
                     listOf(
                         "-i",
                         versionCatalogPath.toString(),

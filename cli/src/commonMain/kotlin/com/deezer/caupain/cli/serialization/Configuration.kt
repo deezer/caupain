@@ -32,7 +32,7 @@
 
 package com.deezer.caupain.cli.serialization
 
-import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
+import com.deezer.caupain.cli.BuildConfig
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.LibraryExclusion
@@ -92,7 +92,7 @@ private data class ConfigurationImpl(
                 logger.warn("outputPath will be ignored because multiple file output types are set in outputTypes.")
             }
         }
-        if (policyPluginDir != null && !CAN_USE_PLUGINS) {
+        if (policyPluginDir != null && !BuildConfig.CAN_USE_PLUGINS) {
             logger.error("Policy plugins are not supported on this platform")
         }
     }

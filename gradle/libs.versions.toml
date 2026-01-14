@@ -79,7 +79,6 @@ mokkery = "dev.mokkery:3.1.1"
 changelog = "org.jetbrains.changelog:2.5.0"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
 tapmoc = "com.gradleup.tapmoc:0.4.0"
-buildkonfig = "com.codingfeline.buildkonfig:0.17.1"
 build-config = "com.github.gmazzo.buildconfig:6.0.7"
 netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:12.1.1"
 kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.4"

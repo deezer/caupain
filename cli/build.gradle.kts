@@ -1,6 +1,5 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import com.deezer.caupain.Architecture
 import com.deezer.caupain.currentArch
 import com.deezer.caupain.rename
@@ -20,7 +19,7 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mokkery)
     alias(libs.plugins.tapmoc)
-    alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.build.config)
     alias(libs.plugins.netflix.nebula.ospackage)
     alias(libs.plugins.dependency.guard)
 }
@@ -36,14 +35,6 @@ fun KotlinNativeTarget.configureTarget() =
 tapmoc {
     java(17)
     kotlin(libs.versions.kotlin.get())
-}
-
-buildkonfig {
-    packageName = "com.deezer.caupain"
-
-    defaultConfigs {
-        buildConfigField(STRING, "VERSION", version.toString())
-    }
 }
 
 kotlin {
@@ -102,15 +93,21 @@ kotlin {
     }
 }
 
+buildConfig {
+    buildConfigField("VERSION", version.toString())
+    buildConfigField("CAN_USE_PLUGINS", expect(false))
+    sourceSets.named("jvmMain") {
+        buildConfigField("CAN_USE_PLUGINS", true)
+    }
+
+    useKotlinOutput()
+}
+
 dependencyGuard {
     configuration("jvmMainCompileClasspath")
     configuration("jvmMainRuntimeClasspath")
     configuration("metadataCommonMainCompileClasspath")
     configuration("metadataNativeMainCompileClasspath")
-}
-
-tasks.withType<Detekt> {
-    exclude("**/BuildKonfig.kt")
 }
 
 ospackage {

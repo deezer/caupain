@@ -24,8 +24,8 @@
 
 package com.deezer.caupain.cli.resolver
 
-import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.cli.BuildConfig
 import com.deezer.caupain.cli.serialization.GithubRelease
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
@@ -37,6 +37,7 @@ import io.ktor.client.plugins.SendCountExceedException
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMessageBuilder
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -60,10 +61,7 @@ internal class CLISelfUpdateResolver(
                     .httpClient
                     .get(UPDATE_URL) {
                         header("X-GitHub-Api-Version", "2022-11-28")
-                        if (githubToken != null) header(
-                            HttpHeaders.Authorization,
-                            "Bearer $githubToken"
-                        )
+                        bearerTokenHeader(githubToken)
                         header(HttpHeaders.Accept, "application/vnd.github+json")
                     }
                     .takeIf { it.status.isSuccess() }
@@ -84,7 +82,7 @@ internal class CLISelfUpdateResolver(
             ?.let { GradleDependencyVersion(it) as? GradleDependencyVersion.Static }
             ?: return null
         val currentVersion =
-            GradleDependencyVersion(BuildKonfig.VERSION) as GradleDependencyVersion.Static
+            GradleDependencyVersion(BuildConfig.VERSION) as GradleDependencyVersion.Static
         return if (updatedVersion > currentVersion) {
             SelfUpdateInfo(
                 currentVersion = currentVersion.toString(),
@@ -101,6 +99,10 @@ internal class CLISelfUpdateResolver(
         private val TAG_REGEX = Regex("v(.*)")
         const val UPDATE_URL = "https://api.github.com/repos/deezer/caupain/releases/latest"
     }
+}
+
+private fun HttpMessageBuilder.bearerTokenHeader(token: String?) {
+    if (token != null) header(HttpHeaders.Authorization, "Bearer $token")
 }
 
 internal expect fun getPossibleUpdateSources(fileSystem: FileSystem): List<SelfUpdateInfo.Source>

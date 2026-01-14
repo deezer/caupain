@@ -26,12 +26,10 @@
 package com.deezer.caupain.cli
 
 import ca.gosyer.appdirs.AppDirs
-import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.CaupainException
 import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
-import com.deezer.caupain.cli.internal.CAN_USE_PLUGINS
 import com.deezer.caupain.cli.internal.OutputSink
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.internal.sink
@@ -158,7 +156,7 @@ class CaupainCLI(
     private val policyPluginDir by option(
         "--policy-plugin-dir",
         help = "Custom policies plugin dir",
-        hidden = !CAN_USE_PLUGINS
+        hidden = !BuildConfig.CAN_USE_PLUGINS
     ).path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
     private val policy by option(
@@ -259,7 +257,7 @@ class CaupainCLI(
             }
         }
         completionOption(help = "Generate completion script", hidden = true)
-        versionOption(BuildKonfig.VERSION)
+        versionOption(BuildConfig.VERSION)
     }
 
     @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -272,7 +270,7 @@ class CaupainCLI(
         val configuration = loadConfiguration()
         validateConfiguration(parsedConfiguration = configuration, logger = logger)
         val finalConfiguration = createConfiguration(configuration)
-        if (finalConfiguration.policyPluginsDir != null && !CAN_USE_PLUGINS) {
+        if (finalConfiguration.policyPluginsDir != null && !BuildConfig.CAN_USE_PLUGINS) {
             echo("Policy plugins are not supported on this platform", err = true)
         } else if (
             replace
@@ -475,7 +473,7 @@ class CaupainCLI(
         if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } > 1 && outputSink != null) {
             logger.warn("Output path is ignored when multiple output types are specified. Use --output-dir and --output-base-name instead.")
         }
-        if (policyPluginDir != null && !CAN_USE_PLUGINS) {
+        if (policyPluginDir != null && !BuildConfig.CAN_USE_PLUGINS) {
             logger.error("Policy plugins are not supported on this platform and will be ignored.")
         }
     }

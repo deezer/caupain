@@ -24,8 +24,8 @@
 
 package com.deezer.caupain.cli.resolver
 
-import com.deezer.caupain.BuildKonfig
 import com.deezer.caupain.DependencyUpdateChecker
+import com.deezer.caupain.cli.BuildConfig
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver.Companion.UPDATE_URL
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.SelfUpdateInfo
@@ -129,7 +129,7 @@ class SelfUpdateResolverTest {
     fun testUpdate() = runTest(dispatcher) {
         assertEquals(
             expected = SelfUpdateInfo(
-                currentVersion = BuildKonfig.VERSION,
+                currentVersion = BuildConfig.VERSION,
                 updatedVersion = "9999999999.99.99",
                 sources = listOf(SelfUpdateInfo.Source.GITHUB_RELEASES) + EXPECTED_SOURCES
             ),
