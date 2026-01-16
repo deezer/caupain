@@ -1,4 +1,4 @@
-@file:Suppress("UnusedImports") // Detekt bug
+@file:Suppress("UnusedImport") // Detekt bug
 
 package com.deezer.caupain.serialization.xml
 

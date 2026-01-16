@@ -39,6 +39,7 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMessageBuilder
 import io.ktor.http.isSuccess
+import io.ktor.serialization.ContentConvertException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
@@ -71,6 +72,9 @@ internal class CLISelfUpdateResolver(
                 logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
                 null
             } catch (ignored: SendCountExceedException) {
+                logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
+                null
+            } catch (ignored: ContentConvertException) {
                 logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
                 null
             }
