@@ -68,7 +68,7 @@ private data class RawMavenInfo(
             }
         }
 
-        private val PLACEHOLDER_REGEX = "\\$\\{(.+?)}".toRegex()
+        private val PLACEHOLDER_REGEX = "\\$\\{(.+?)\\}".toRegex()
     }
 }
 
