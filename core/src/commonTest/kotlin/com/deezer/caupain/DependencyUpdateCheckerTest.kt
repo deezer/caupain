@@ -48,7 +48,7 @@ import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.resolver.GradleVersionResolverTest
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.serialization.DefaultJson
-import com.deezer.caupain.serialization.DefaultXml
+import com.deezer.caupain.serialization.xml.DefaultXml
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope

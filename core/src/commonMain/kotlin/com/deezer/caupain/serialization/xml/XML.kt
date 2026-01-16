@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.serialization
+package com.deezer.caupain.serialization.xml
 
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.serialization.XML

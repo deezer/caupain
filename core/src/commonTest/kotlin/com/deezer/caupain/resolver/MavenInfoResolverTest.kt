@@ -33,7 +33,7 @@ import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
-import com.deezer.caupain.serialization.DefaultXml
+import com.deezer.caupain.serialization.xml.DefaultXml
 import dev.mokkery.MockMode
 import dev.mokkery.matcher.any
 import dev.mokkery.mock

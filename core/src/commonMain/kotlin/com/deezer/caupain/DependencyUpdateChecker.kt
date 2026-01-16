@@ -59,7 +59,7 @@ import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.resolver.UpdatedVersionResolver
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
-import com.deezer.caupain.serialization.DefaultXml
+import com.deezer.caupain.serialization.xml.DefaultXml
 import dev.drewhamilton.poko.Poko
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
