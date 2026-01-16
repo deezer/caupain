@@ -69,13 +69,13 @@ internal class CLISelfUpdateResolver(
                     ?.body<GithubRelease>()
                     ?.tagName
             } catch (ignored: IOException) {
-                logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
+                logger.error(ERROR_MESSAGE, ignored)
                 null
             } catch (ignored: SendCountExceedException) {
-                logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
+                logger.error(ERROR_MESSAGE, ignored)
                 null
             } catch (ignored: ContentConvertException) {
-                logger.error("Failed to fetch latest release from $UPDATE_URL", ignored)
+                logger.error(ERROR_MESSAGE, ignored)
                 null
             }
         } ?: return null
@@ -102,6 +102,7 @@ internal class CLISelfUpdateResolver(
     companion object {
         private val TAG_REGEX = Regex("v(.*)")
         const val UPDATE_URL = "https://api.github.com/repos/deezer/caupain/releases/latest"
+        val ERROR_MESSAGE = "Failed to fetch latest release from $UPDATE_URL"
     }
 }
 
