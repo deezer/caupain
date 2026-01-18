@@ -29,13 +29,13 @@
 
 package com.deezer.caupain.internal
 
-import co.touchlab.stately.collections.ConcurrentMutableMap
 import io.ktor.client.plugins.cache.storage.CacheStorage
 import io.ktor.client.plugins.cache.storage.CachedResponseData
 import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpProtocolVersion
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
+import io.ktor.util.collections.ConcurrentMap
 import io.ktor.util.date.GMTDate
 import io.ktor.util.flattenEntries
 import io.ktor.util.logging.KtorSimpleLogger
@@ -63,7 +63,7 @@ private class CachingCacheStorage(
     private val delegate: CacheStorage
 ) : CacheStorage {
 
-    private val store = ConcurrentMutableMap<Url, Set<CachedResponseData>>()
+    private val store = ConcurrentMap<Url, Set<CachedResponseData>>()
 
     override suspend fun store(url: Url, data: CachedResponseData) {
         delegate.store(url, data)
@@ -108,7 +108,7 @@ private class FileCacheStorage(
     private val dispatcher: CoroutineDispatcher = IODispatcher
 ) : CacheStorage {
 
-    private val mutexes = ConcurrentMutableMap<String, Mutex>()
+    private val mutexes = ConcurrentMap<String, Mutex>()
 
     init {
         fileSystem.createDirectories(directory)

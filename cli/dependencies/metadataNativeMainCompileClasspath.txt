@@ -1,7 +1,4 @@
 ca.gosyer:kotlin-multiplatform-appdirs:2.0.0
-co.touchlab:stately-concurrency:2.1.0
-co.touchlab:stately-concurrent-collections:2.1.0
-co.touchlab:stately-strict:2.1.0
 com.github.ajalt.clikt:clikt-core:5.1.0
 com.github.ajalt.clikt:clikt-markdown:5.1.0
 com.github.ajalt.clikt:clikt:5.1.0

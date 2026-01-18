@@ -70,7 +70,6 @@ kotlin {
                 implementation(libs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.html)
-                implementation(libs.stately.concurrent.collections)
                 implementation(libs.semver)
                 implementation(libs.antlr.kotlin.runtime)
                 implementation(libs.kotlinx.serialization.json)

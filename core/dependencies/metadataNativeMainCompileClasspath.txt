@@ -1,6 +1,3 @@
-co.touchlab:stately-concurrency:2.1.0
-co.touchlab:stately-concurrent-collections:2.1.0
-co.touchlab:stately-strict:2.1.0
 com.squareup.okio:okio:3.16.4
 com.strumenta:antlr-kotlin-runtime:1.0.9
 dev.drewhamilton.poko:poko-annotations:0.21.1
