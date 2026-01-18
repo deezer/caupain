@@ -21,6 +21,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           add-job-summary: 'never'
+      - name: Cached konan
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: Check updates
         run: ./gradlew :cli:runJvm --no-configuration-cache --stacktrace --args="-t markdown"
       - name: Update summary
