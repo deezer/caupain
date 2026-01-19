@@ -53,7 +53,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
       - name: Upload SARIF files
         if: (success() || failure()) && matrix.os == 'ubuntu-latest'
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: build/reports/detekt/merged.sarif
       - name: Test publication
