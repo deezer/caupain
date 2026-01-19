@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish) apply false
 }
 
-val currentVersion = "1.8.0"
+val currentVersion = "1.8.1"
 
 val isSnapshot = project.findProperty("isSnapshot")?.toString().toBoolean()
 val isRelease = project.findProperty("isRelease")?.toString().toBoolean()

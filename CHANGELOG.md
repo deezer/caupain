@@ -11,10 +11,15 @@
 ### Removed
 
 ### Fixed
-- Properly create directories for output files
-- Update XML parser to avoid some parsing issues for specific POM files
 
 ### Security
+
+## 1.8.1 - 2026-01-19
+
+### Fixed
+
+- Properly create directories for output files
+- Update XML parser to avoid some parsing issues for specific POM files
 
 ## 1.8.0 - 2026-01-13
 
