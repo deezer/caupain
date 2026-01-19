@@ -42,11 +42,10 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Cached konan
-        uses: actions/cache@v4.2.3
+      - name: Konan cache
+        uses: ./.github/actions/konan-cache
         with:
-          path: ~/.konan
-          key: ${{ runner.os }}-konan-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          job-type: 'test'
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}}
         env:
