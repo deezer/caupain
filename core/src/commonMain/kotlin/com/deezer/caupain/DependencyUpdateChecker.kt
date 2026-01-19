@@ -72,7 +72,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.jsonIo
-import io.ktor.serialization.kotlinx.xml.xml
+import io.ktor.serialization.kotlinx.serialization
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -191,7 +191,7 @@ public fun DependencyUpdateChecker(
         }
         install(ContentNegotiation) {
             jsonIo(DefaultJson)
-            xml(DefaultXml, ContentType.Any)
+            serialization(ContentType.Any, DefaultXml)
         }
         install(Logging) {
             this.logger = KtorLoggerAdapter(logger)

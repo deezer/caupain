@@ -53,7 +53,7 @@ import io.ktor.http.Url
 import io.ktor.http.appendPathSegments
 import io.ktor.http.headersOf
 import io.ktor.http.takeFrom
-import io.ktor.serialization.kotlinx.xml.xml
+import io.ktor.serialization.kotlinx.serialization
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -87,7 +87,7 @@ class MavenInfoResolverTest {
         resolver = MavenInfoResolver(
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {
-                    xml(DefaultXml, ContentType.Any)
+                    serialization(ContentType.Any, DefaultXml)
                 }
             },
             ioDispatcher = testDispatcher,
