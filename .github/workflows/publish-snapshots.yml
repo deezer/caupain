@@ -24,10 +24,6 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Konan cache
-        uses: ./.github/actions/konan-cache
-        with:
-          job-type: 'publish'
       - name: Publish snapshots
         run: ./gradlew publishAllPublicationsToMavenCentralRepository --stacktrace --no-configuration-cache
         env:

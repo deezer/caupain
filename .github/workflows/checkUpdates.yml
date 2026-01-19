@@ -21,10 +21,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           add-job-summary: 'never'
-      - name: Konan cache
-        uses: ./.github/actions/konan-cache
-        with:
-          job-type: 'run'
       - name: Check updates
         run: ./gradlew :cli:runJvm --no-configuration-cache --stacktrace --args="-t markdown"
       - name: Update summary
