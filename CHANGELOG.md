@@ -11,6 +11,8 @@
 ### Removed
 
 ### Fixed
+- Properly create directories for output files
+- Update XML parser to avoid some parsing issues for specific POM files
 
 ### Security
 
