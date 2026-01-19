@@ -23,10 +23,13 @@ jobs:
         include:
             - os: macos-latest
               TEST_TASK: macosArm64Test
+              ADDITIONAL_FLAGS: ''
             - os: windows-latest
               TEST_TASK: mingwX64Test
+              ADDITIONAL_FLAGS: ''
             - os: ubuntu-latest
               TEST_TASK: check
+              ADDITIONAL_FLAGS: '-Dkotlin.native.cacheKind.linuxX64=none'
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
     timeout-minutes: 40
@@ -47,7 +50,7 @@ jobs:
         with:
           job-type: 'test'
       - name: Check
-        run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}}
+        run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}} ${{matrix.ADDITIONAL_FLAGS}}
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
