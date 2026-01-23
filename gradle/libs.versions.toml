@@ -4,14 +4,14 @@ kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 xml-serialization = "1.0.0-rc2"
 okio = "3.16.4"
-ktor = "3.3.3"
+ktor = "3.4.0"
 kotlinx-io = "0.8.2"
 mordant = "3.0.2"
 okhttp = "5.3.2"
 detekt = "2.0.0-alpha.1"
 clikt = "5.1.0"
 antlr-kotlin = "1.0.9"
-kotlinx-serialization = "1.10.0-RC"
+kotlinx-serialization = "1.10.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -71,7 +71,7 @@ ktor-test-server = ["ktor-server-cio", "ktor-server-caching-headers", "ktor-serv
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.29.0"
+kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.31.0"
 dokka = "org.jetbrains.dokka:2.1.0"
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 mokkery = "dev.mokkery:3.1.1"
