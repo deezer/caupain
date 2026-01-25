@@ -24,17 +24,16 @@
 
 package com.deezer.caupain.model.maven
 
+import com.deezer.caupain.serialization.xml.MavenInfoSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import nl.adaptivity.xmlutil.serialization.XmlChildrenName
 import nl.adaptivity.xmlutil.serialization.XmlElement
 
-@Serializable
-@SerialName("project")
+@Serializable(MavenInfoSerializer::class)
 internal data class MavenInfo(
-    @XmlElement(true) val name: String? = null,
-    @XmlElement(true) val url: String? = null,
-    @XmlChildrenName("dependency") val dependencies: List<Dependency> = emptyList(),
+    val name: String? = null,
+    val url: String? = null,
+    val dependencies: List<Dependency> = emptyList(),
     val scm: SCMInfos? = null,
 )
 

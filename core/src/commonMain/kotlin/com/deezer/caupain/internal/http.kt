@@ -30,6 +30,7 @@ import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.plugins.SendCountExceedException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
+import io.ktor.serialization.ContentConvertException
 import kotlinx.io.IOException
 
 internal expect fun HttpClientEngineConfig.configureKtorEngine()
@@ -52,6 +53,9 @@ internal suspend inline fun <reified T, R> HttpClient.processRequest(
         onRecoverableError(ignored)
         default
     } catch (ignored: SendCountExceedException) {
+        onRecoverableError(ignored)
+        default
+    } catch (ignored: ContentConvertException) {
         onRecoverableError(ignored)
         default
     }
