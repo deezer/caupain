@@ -19,6 +19,10 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Konan cache
+        uses: ./.github/actions/konan-cache
+        with:
+          job-type: 'build'
       - name: Build binaries and packages
         run: ./gradlew :cli:assembleAll :cli:buildAllDebs :cli:buildChoco --stacktrace --no-configuration-cache
       - name: Create release notes

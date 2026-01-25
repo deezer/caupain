@@ -42,6 +42,11 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Konan cache
+        if: matrix.os != 'ubuntu-latest'
+        uses: ./.github/actions/konan-cache
+        with:
+          job-type: 'test'
       - name: Check
         run: ./gradlew ${{matrix.TEST_TASK}} --stacktrace --no-configuration-cache -PfromForkedPullRequest=${{github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository}}
         env:
@@ -49,7 +54,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
       - name: Upload SARIF files
         if: (success() || failure()) && matrix.os == 'ubuntu-latest'
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: build/reports/detekt/merged.sarif
       - name: Test publication

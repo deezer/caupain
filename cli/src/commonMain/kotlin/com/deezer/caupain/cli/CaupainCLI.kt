@@ -546,6 +546,7 @@ class CaupainCLI(
                     ParsedConfiguration.OutputType.JSON -> "json"
                     else -> error("Unsupported output type: $outputType")
                 }
+                fileSystem.createDirectories(dir)
                 val outputPath = dir / "$baseName.$extension"
                 OutputSink.File(fileSystem.sink(outputPath), outputPath)
             }

@@ -25,15 +25,18 @@
 package com.deezer.caupain.serialization.xml
 
 import nl.adaptivity.xmlutil.XmlDeclMode
+import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlSerializationPolicy
 
-internal val DefaultXml = XML {
-    defaultPolicy {
+internal val DefaultXml = XML.v1 {
+    policy {
+        autoPolymorphic = false
         ignoreUnknownChildren()
         encodeDefault = XmlSerializationPolicy.XmlEncodeDefault.NEVER
     }
     repairNamespaces = true
     xmlDeclMode = XmlDeclMode.None
-    autoPolymorphic = false
+    xmlVersion = XmlVersion.XML10
+    defaultToGenericParser = true
 }

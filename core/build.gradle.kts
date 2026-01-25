@@ -3,6 +3,7 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SourcesJar
 import dev.detekt.gradle.Detekt
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask
@@ -70,7 +71,6 @@ kotlin {
                 implementation(libs.kotlinx.io.okio)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.html)
-                implementation(libs.stately.concurrent.collections)
                 implementation(libs.semver)
                 implementation(libs.antlr.kotlin.runtime)
                 implementation(libs.kotlinx.serialization.json)
@@ -210,7 +210,7 @@ mavenPublishing {
     configure(
         KotlinMultiplatform(
             javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationHtml"),
-            sourcesJar = true
+            sourcesJar = SourcesJar.Sources()
         )
     )
     publishToMavenCentral(automaticRelease = true)

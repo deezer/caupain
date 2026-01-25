@@ -56,7 +56,7 @@ import io.ktor.http.Url
 import io.ktor.http.appendPathSegments
 import io.ktor.http.headersOf
 import io.ktor.http.takeFrom
-import io.ktor.serialization.kotlinx.xml.xml
+import io.ktor.serialization.kotlinx.serialization
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -275,7 +275,7 @@ class UpdatedVersionResolverTest {
     private fun createResolver(verifyExistence: Boolean = false): DefaultUpdatedVersionResolver {
         val httpClient = HttpClient(engine) {
             install(ContentNegotiation) {
-                xml(DefaultXml, ContentType.Any)
+                serialization(ContentType.Any, DefaultXml)
             }
             install(HttpRequestRetry) {
                 retryOnException(maxRetries = 3, retryOnTimeout = true)
@@ -403,7 +403,14 @@ class UpdatedVersionResolverTest {
 
         private val GROOVY_NIO_POM_3_0_5_URL = URLBuilder()
             .takeFrom(SIGNED_URL)
-            .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "3.0.5", "groovy-nio-3.0.5.pom")
+            .appendPathSegments(
+                "org",
+                "codehaus",
+                "groovy",
+                "groovy-nio",
+                "3.0.5",
+                "groovy-nio-3.0.5.pom"
+            )
             .build()
     }
 

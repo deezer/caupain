@@ -31,7 +31,6 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.maven.MavenInfo
@@ -57,7 +56,7 @@ import io.ktor.http.appendPathSegments
 import io.ktor.http.headersOf
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.serialization.kotlinx.xml.xml
+import io.ktor.serialization.kotlinx.serialization
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -112,7 +111,7 @@ class PluginTest {
             httpClient = HttpClient(engine) {
                 install(ContentNegotiation) {
                     json(DefaultJson)
-                    xml(DefaultXml, ContentType.Any)
+                    serialization(ContentType.Any, DefaultXml)
                 }
             },
             ioDispatcher = testDispatcher,
