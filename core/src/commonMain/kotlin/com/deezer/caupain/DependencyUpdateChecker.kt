@@ -24,6 +24,7 @@
 
 package com.deezer.caupain
 
+import com.deezer.caupain.DependencyUpdateChecker.Companion.CHECKING_VULNS_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.CLEANING_CACHE_TASK
 import com.deezer.caupain.DependencyUpdateChecker.Companion.DONE
 import com.deezer.caupain.DependencyUpdateChecker.Companion.FINDING_UPDATES_TASK
@@ -38,12 +39,12 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DEFAULT_POLICIES
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.DependencyUpdateResult
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.KtorLoggerAdapter
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Policy
-import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.gradle.GradleConstants
@@ -51,12 +52,14 @@ import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.model.vuln.Vulnerability
 import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
 import com.deezer.caupain.resolver.GithubReleaseNoteResolver
 import com.deezer.caupain.resolver.GradleVersionResolver
 import com.deezer.caupain.resolver.MavenInfoResolver
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.resolver.UpdatedVersionResolver
+import com.deezer.caupain.resolver.VulnerabilityResolver
 import com.deezer.caupain.serialization.DefaultJson
 import com.deezer.caupain.serialization.DefaultToml
 import com.deezer.caupain.serialization.xml.DefaultXml
@@ -152,6 +155,7 @@ public interface DependencyUpdateChecker {
         internal const val CLEANING_CACHE_TASK = "Cleaning cache"
         internal const val FINDING_UPDATES_TASK = "Finding updates"
         internal const val GATHERING_INFO_TASK = "Gathering update info"
+        internal const val CHECKING_VULNS_TASK = "Checking vulnerabilities"
         internal const val DONE = "done"
 
         /**
@@ -162,6 +166,7 @@ public interface DependencyUpdateChecker {
                 PARSING_TASK,
                 FINDING_UPDATES_TASK,
                 GATHERING_INFO_TASK,
+                CHECKING_VULNS_TASK,
                 DONE
             ).maxOf { it.length }
     }
@@ -299,6 +304,14 @@ internal class DefaultDependencyUpdateChecker(
         githubToken = configuration.githubToken
     )
 
+    private val vulnerabilityResolver = VulnerabilityResolver(
+        httpClient = httpClient,
+        ioDispatcher = ioDispatcher,
+        logger = logger,
+        username = configuration.ossIndexUsername,
+        apiToken = configuration.ossIndexApiToken,
+    )
+
     private var completed by atomic(0)
 
     private val progressFlow = MutableStateFlow<DependencyUpdateChecker.Progress?>(null)
@@ -337,7 +350,7 @@ internal class DefaultDependencyUpdateChecker(
                 DependencyUpdateChecker.Progress.Determinate(FINDING_UPDATES_TASK, 0)
             updatedVersionsResult = checkUpdatedVersions(versionCatalogParseResults)
             completed = 0
-            checkUpdateInfo(updatedVersionsResult.updatedVersions)
+            checkUpdateInfo(updatedVersionsResult)
         } catch (e: InvalidCacheStateException) {
             throw CorruptedCacheException(
                 cacheDir = fileSystem.canonicalize(requireNotNull(configuration.cacheDir)),
@@ -372,14 +385,17 @@ internal class DefaultDependencyUpdateChecker(
     private suspend fun checkUpdatedVersions(parseResults: List<VersionCatalogParseResult>): UpdateVersionResult {
         val checkGradleUpdate = currentGradleVersion != null
         val checkSelfUpdate = selfUpdateResolver != null
+        val checkVulns = configuration.searchVulnerabilities
         val updatedVersionsMutex = Mutex()
         var updatedGradleVersion: String? = null
         var selfUpdateInfo: SelfUpdateInfo? = null
+        var fixedVulns = emptyMap<String, List<Vulnerability>>()
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val ignoredVersions = mutableListOf<UpdateInfo>()
         var nbDependencies = parseResults.sumOf { it.versionCatalog.dependencies.size }
         if (checkGradleUpdate) nbDependencies++
         if (checkSelfUpdate) nbDependencies++
+        if (checkVulns) nbDependencies++
         coroutineScope {
             parseResults
                 .asSequence()
@@ -412,7 +428,8 @@ internal class DefaultDependencyUpdateChecker(
                                                         key = key,
                                                         dependency = dep,
                                                         currentVersion = updatedVersion.currentVersion,
-                                                        updatedVersion = updatedVersion.updatedVersion
+                                                        updatedVersion = updatedVersion.updatedVersion,
+                                                        fixedVulns = emptyList(),
                                                     )
                                                 )
                                             } else {
@@ -463,15 +480,34 @@ internal class DefaultDependencyUpdateChecker(
                 .toList()
                 .awaitAll()
         }
+        if (checkVulns) {
+            logger.info("Finding fixed vulnerabilities")
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                taskName = CHECKING_VULNS_TASK,
+                percentage = completed * 50 / nbDependencies
+            )
+            fixedVulns = vulnerabilityResolver.getFixedVulnerabilities(
+                updateResults = updatedVersions,
+            )
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                taskName = CHECKING_VULNS_TASK,
+                percentage = ++completed * 50 / nbDependencies
+            )
+        }
         return UpdateVersionResult(
             updatedVersions = updatedVersions,
+            fixedVulns = fixedVulns,
             ignoredVersions = ignoredVersions,
             updatedGradleVersion = updatedGradleVersion,
             selfUpdateInfo = selfUpdateInfo
         )
     }
 
-    private suspend fun checkUpdateInfo(updatedVersions: List<DependencyUpdateResult>): Map<UpdateInfo.Type, List<UpdateInfo>> {
+    private suspend fun checkUpdateInfo(
+        updateVersionResult: UpdateVersionResult
+    ): Map<UpdateInfo.Type, List<UpdateInfo>> {
+        val updatedVersions = updateVersionResult.updatedVersions
+        val fixedVulns = updateVersionResult.fixedVulns
         val nbUpdatedVersions = updatedVersions.size
         val nbSteps = if (configuration.searchReleaseNote) {
             nbUpdatedVersions * 2
@@ -508,6 +544,7 @@ internal class DefaultDependencyUpdateChecker(
                 dependency = result.dependency,
                 currentVersion = result.currentVersion,
                 updatedVersion = result.updatedVersion,
+                fixedVulns = fixedVulns[result.dependencyKey].orEmpty(),
                 mavenInfo = mavenInfo,
                 releaseNoteUrl = releaseNoteUrl
             )
@@ -560,6 +597,7 @@ internal class DefaultDependencyUpdateChecker(
         updatedVersion: GradleDependencyVersion.Static,
         mavenInfo: MavenInfo? = null,
         releaseNoteUrl: String? = null,
+        fixedVulns: List<Vulnerability>,
     ) = UpdateInfo(
         dependency = key,
         dependencyId = dependency.moduleId,
@@ -567,22 +605,16 @@ internal class DefaultDependencyUpdateChecker(
         url = mavenInfo?.url,
         releaseNoteUrl = releaseNoteUrl,
         currentVersion = currentVersion,
-        updatedVersion = updatedVersion
+        updatedVersion = updatedVersion,
+        fixedVulnerabilities = fixedVulns,
     )
 
     private data class UpdateVersionResult(
         val updatedVersions: List<DependencyUpdateResult>,
+        val fixedVulns: Map<String, List<Vulnerability>>,
         val updatedGradleVersion: String?,
         val selfUpdateInfo: SelfUpdateInfo?,
         val ignoredVersions: List<UpdateInfo>
-    )
-
-    private data class DependencyUpdateResult(
-        val dependencyKey: String,
-        val dependency: Dependency,
-        val repository: Repository,
-        val currentVersion: Version.Resolved,
-        val updatedVersion: GradleDependencyVersion.Static,
     )
 }
 

@@ -78,6 +78,9 @@ public interface Configuration : Serializable {
     public val searchReleaseNote: Boolean
     public val githubToken: String?
     public val verifyExistence: Boolean
+    public val searchVulnerabilities: Boolean
+    public val ossIndexUsername: String?
+    public val ossIndexApiToken: String?
 
     public companion object {
         private const val serialVersionUID = 1L
@@ -142,6 +145,9 @@ public fun Configuration(
     githubToken: String? = null,
     searchReleaseNote: Boolean = githubToken != null,
     verifyExistence: Boolean = false,
+    searchVulnerabilities: Boolean = false,
+    ossIndexUsername: String? = null,
+    ossIndexApiToken: String? = null,
 ): Configuration = Configuration(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -159,7 +165,10 @@ public fun Configuration(
     checkIgnored = checkIgnored,
     searchReleaseNote = searchReleaseNote,
     githubToken = githubToken,
-    verifyExistence = verifyExistence
+    verifyExistence = verifyExistence,
+    searchVulnerabilities = searchVulnerabilities,
+    ossIndexUsername = ossIndexUsername,
+    ossIndexApiToken = ossIndexApiToken,
 )
 
 /**
@@ -207,6 +216,9 @@ public fun Configuration(
     githubToken: String? = null,
     searchReleaseNote: Boolean = githubToken != null,
     verifyExistence: Boolean = false,
+    searchVulnerabilities: Boolean = false,
+    ossIndexUsername: String? = null,
+    ossIndexApiToken: String? = null,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -224,7 +236,10 @@ public fun Configuration(
     checkIgnored = checkIgnored,
     searchReleaseNote = searchReleaseNote,
     githubToken = githubToken,
-    verifyExistence = verifyExistence
+    verifyExistence = verifyExistence,
+    searchVulnerabilities = searchVulnerabilities,
+    ossIndexUsername = ossIndexUsername,
+    ossIndexApiToken = ossIndexApiToken,
 )
 
 internal data class ConfigurationImpl(
@@ -244,7 +259,10 @@ internal data class ConfigurationImpl(
     override val checkIgnored: Boolean = false,
     override val searchReleaseNote: Boolean = false,
     override val githubToken: String? = null,
-    override val verifyExistence: Boolean = false
+    override val verifyExistence: Boolean = false,
+    override val searchVulnerabilities: Boolean = false,
+    override val ossIndexUsername: String? = null,
+    override val ossIndexApiToken: String? = null,
 ) : Configuration {
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path

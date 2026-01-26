@@ -25,6 +25,7 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.model.vuln.Vulnerability
 import dev.drewhamilton.poko.Poko
 
 import kotlinx.serialization.SerialName
@@ -44,6 +45,7 @@ import kotlinx.serialization.Transient
  */
 @Serializable
 @Poko
+@Suppress("LongParameterList") // All needed
 public class UpdateInfo(
     public val dependency: String,
     public val dependencyId: String,
@@ -51,8 +53,24 @@ public class UpdateInfo(
     public val url: String? = null,
     public val releaseNoteUrl: String? = null,
     public val currentVersion: Version.Resolved,
-    public val updatedVersion: GradleDependencyVersion.Static
+    public val updatedVersion: GradleDependencyVersion.Static,
+    public val fixedVulnerabilities: List<Vulnerability>,
 ) {
+    internal fun withFixedVulnerabilities(
+        vulnerabilities: List<Vulnerability>
+    ): UpdateInfo {
+        return UpdateInfo(
+            dependency = dependency,
+            dependencyId = dependencyId,
+            name = name,
+            url = url,
+            releaseNoteUrl = releaseNoteUrl,
+            currentVersion = currentVersion,
+            updatedVersion = updatedVersion,
+            fixedVulnerabilities = vulnerabilities
+        )
+    }
+
     /**
      * Update info type (library or plugin).
      */
