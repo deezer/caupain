@@ -246,6 +246,8 @@ class CaupainCLI(
         help = "Verify that .pom file exists before accepting version updates (warning: may slow down checks)"
     ).flag()
 
+    private val vulnOptions by VulnOptions().cooccurring()
+
     private val timesource = TimeSource.Monotonic
 
     init {
@@ -465,7 +467,16 @@ class CaupainCLI(
             githubToken = releaseNoteOptions?.githubToken
                 ?: parsedConfiguration?.githubToken
                 ?: currentContext.readEnvvar("CAUPAIN_GITHUB_TOKEN"),
-            verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
+            verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true,
+            searchVulnerabilities = vulnOptions?.searchVulnerabilities
+                ?: parsedConfiguration?.searchVulnerabilities
+                ?: false,
+            ossIndexUsername = vulnOptions?.ossIndexUsername
+                ?: parsedConfiguration?.ossIndexUsername
+                ?: currentContext.readEnvvar("CAUPAIN_OSSINDEX_USERNAME"),
+            ossIndexApiToken = vulnOptions?.ossIndexApiToken
+                ?: parsedConfiguration?.ossIndexApiToken
+                ?: currentContext.readEnvvar("CAUPAIN_OSSINDEX_API_TOKEN"),
         )
     }
 
@@ -690,6 +701,23 @@ private class MultiplePathOptions(fileSystem: FileSystem) : OptionGroup() {
         "--output-base-name",
         help = "Report output base name, without extension. Only used if multiple output types are specified, and output is not set to standard output",
     ).default(DEFAULT_OUTPUT_BASE_NAME)
+}
+
+private class VulnOptions : OptionGroup() {
+    val searchVulnerabilities by option(
+        "--search-vulns",
+        help = "Search Nexus OSS Index for known vulnerabilities fixed in updated versions",
+    ).nullableFlag().required()
+
+    val ossIndexUsername by option(
+        "--ossindex-username",
+        help = "Nexus OSS Index username. Taken from CAUPAIN_OSSINDEX_USERNAME env var if not specified",
+    )
+
+    val ossIndexApiToken by option(
+        "--ossindex-api-token",
+        help = "Nexus OSS Index API token. Taken from CAUPAIN_OSSINDEX_API_TOKEN env var if not specified",
+    )
 }
 
 internal const val DEFAULT_OUTPUT_DIR = "build/reports"

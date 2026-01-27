@@ -166,6 +166,15 @@ open class DependenciesUpdateTask : DefaultTask() {
     @get:Internal
     val githubToken = project.objects.property<String>()
 
+    @get:Internal
+    val searchVulnerabilities = project.objects.property<Boolean>()
+
+    @get:Internal
+    val ossIndexUsername = project.objects.property<String>()
+
+    @get:Internal
+    val ossIndexApiToken = project.objects.property<String>()
+
     /**
      * The cache directory for the HTTP cache. Default is "build/cache/dependency-updates".
      */
@@ -283,6 +292,9 @@ open class DependenciesUpdateTask : DefaultTask() {
             searchReleaseNote = searchReleaseNote.getOrElse(false),
             githubToken = githubToken.orNull,
             verifyExistence = verifyExistence.get(),
+            searchVulnerabilities = searchVulnerabilities.getOrElse(false),
+            ossIndexUsername = ossIndexUsername.orNull,
+            ossIndexApiToken = ossIndexApiToken.orNull,
         )
     }
 

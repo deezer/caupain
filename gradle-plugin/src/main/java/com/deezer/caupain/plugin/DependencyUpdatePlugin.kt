@@ -74,6 +74,9 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             searchReleaseNote.convention(ext.searchReleaseNote)
             githubToken.convention(ext.githubToken)
             verifyExistence.convention(ext.verifyExistence)
+            searchVulnerabilities.convention(ext.searchVulnerabilities)
+            ossIndexUsername.convention(ext.ossIndexUsername)
+            ossIndexApiToken.convention(ext.ossIndexApiToken)
         }
         target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
             group = "verification"

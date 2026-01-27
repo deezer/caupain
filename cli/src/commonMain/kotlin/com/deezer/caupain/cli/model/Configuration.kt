@@ -57,6 +57,9 @@ interface Configuration {
     val searchReleaseNote: Boolean?
     val githubToken: String?
     val verifyExistence: Boolean?
+    val searchVulnerabilities: Boolean?
+    val ossIndexUsername: String?
+    val ossIndexApiToken: String?
 
     fun validate(logger: Logger)
 

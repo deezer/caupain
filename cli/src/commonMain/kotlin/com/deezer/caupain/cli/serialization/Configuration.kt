@@ -73,7 +73,10 @@ private data class ConfigurationImpl(
     override val checkIgnored: Boolean? = null,
     override val githubToken: String? = null,
     override val searchReleaseNote: Boolean? = null,
-    override val verifyExistence: Boolean? = null
+    override val verifyExistence: Boolean? = null,
+    override val searchVulnerabilities: Boolean? = null,
+    override val ossIndexUsername: String? = null,
+    override val ossIndexApiToken: String? = null,
 ) : Configuration {
 
     override fun validate(logger: Logger) {

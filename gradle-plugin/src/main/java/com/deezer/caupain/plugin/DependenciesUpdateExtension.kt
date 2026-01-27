@@ -128,6 +128,12 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      */
     val verifyExistence: Property<Boolean> = objects.property<Boolean>().convention(false)
 
+    val searchVulnerabilities: Property<Boolean> = objects.property<Boolean>().convention(false)
+
+    val ossIndexUsername: Property<String> = objects.property<String>()
+
+    val ossIndexApiToken: Property<String> = objects.property<String>()
+
     /**
      * Configure repositories
      */
