@@ -473,54 +473,84 @@ internal class DefaultDependencyUpdateChecker(
 
     private suspend fun checkUpdateInfo(updatedVersions: List<DependencyUpdateResult>): Map<UpdateInfo.Type, List<UpdateInfo>> {
         val nbUpdatedVersions = updatedVersions.size
-        val updateInfosMutex = Mutex()
+        val nbSteps = if (configuration.searchReleaseNote) {
+            nbUpdatedVersions * 2
+        } else {
+            nbUpdatedVersions
+        }
+        // Search Maven infos
+        val mavenInfos = getMavenInfos(updatedVersions) {
+            val percentage = ++completed * 50 / nbSteps + 50
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                taskName = GATHERING_INFO_TASK,
+                percentage = percentage
+            )
+        }
+        // Search release notes and build final infos
         val updatesInfos = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
+        for (result in updatedVersions) {
+            logger.info("Finding release note info for ${result.dependency.moduleId}")
+            val type = when (result.dependency) {
+                is Dependency.Library -> UpdateInfo.Type.LIBRARY
+                is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
+            }
+            val mavenInfo = mavenInfos[result.dependencyKey]
+            val releaseNoteUrl = if (configuration.searchReleaseNote) {
+                releaseNoteResolver.getReleaseNoteUrl(
+                    mavenInfo = mavenInfo,
+                    updatedVersion = result.updatedVersion
+                )
+            } else {
+                null
+            }
+            val updateInfo = toUpdateInfo(
+                key = result.dependencyKey,
+                dependency = result.dependency,
+                currentVersion = result.currentVersion,
+                updatedVersion = result.updatedVersion,
+                mavenInfo = mavenInfo,
+                releaseNoteUrl = releaseNoteUrl
+            )
+            val infosForType = updatesInfos[type]
+                ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
+            infosForType.add(updateInfo)
+            val percentage = ++completed * 50 / nbSteps + 50
+            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
+                taskName = GATHERING_INFO_TASK,
+                percentage = percentage
+            )
+        }
+        progressFlow.value = DependencyUpdateChecker.Progress.Determinate(DONE, 100)
+        return updatesInfos
+    }
+
+    private suspend inline fun getMavenInfos(
+        updatedVersions: List<DependencyUpdateResult>,
+        crossinline onStepFinished: () -> Unit,
+    ): Map<String, MavenInfo> {
+        val mavenInfoMutex = Mutex()
+        val mavenInfos = mutableMapOf<String, MavenInfo>()
         coroutineScope {
             updatedVersions
                 .map { result ->
                     async {
                         logger.info("Finding Maven info for ${result.dependency.moduleId}")
-                        val type = when (result.dependency) {
-                            is Dependency.Library -> UpdateInfo.Type.LIBRARY
-                            is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
-                        }
                         val mavenInfo = infoResolver.getMavenInfo(
                             dependency = result.dependency,
                             repository = result.repository,
                             updatedVersion = result.updatedVersion
                         )
-                        val releaseNoteUrl = if (configuration.searchReleaseNote) {
-                            releaseNoteResolver.getReleaseNoteUrl(
-                                mavenInfo = mavenInfo,
-                                updatedVersion = result.updatedVersion
-                            )
-                        } else {
-                            null
+                        if (mavenInfo != null) {
+                            mavenInfoMutex.withLock {
+                                mavenInfos[result.dependencyKey] = mavenInfo
+                            }
                         }
-                        val updateInfo = toUpdateInfo(
-                            key = result.dependencyKey,
-                            dependency = result.dependency,
-                            currentVersion = result.currentVersion,
-                            updatedVersion = result.updatedVersion,
-                            mavenInfo = mavenInfo,
-                            releaseNoteUrl = releaseNoteUrl
-                        )
-                        updateInfosMutex.withLock {
-                            val infosForType = updatesInfos[type]
-                                ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
-                            infosForType.add(updateInfo)
-                        }
-                        val percentage = ++completed * 50 / nbUpdatedVersions + 50
-                        progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
-                            taskName = GATHERING_INFO_TASK,
-                            percentage = percentage
-                        )
+                        onStepFinished()
                     }
                 }
                 .awaitAll()
-            progressFlow.value = DependencyUpdateChecker.Progress.Determinate(DONE, 100)
         }
-        return updatesInfos
+        return mavenInfos
     }
 
     private fun toUpdateInfo(

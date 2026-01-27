@@ -11,6 +11,9 @@
 ### Removed
 
 ### Fixed
+- Avoid GitHub API rate limiting by avoiding concurrent requests when quertying GitHub releases. As
+a consequence, GitHub release checks will be slower, so the check for releases notes is now disabled 
+by default, and will have to be enabled explicitly in the configuration or the command-line options.
 
 ### Security
 

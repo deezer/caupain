@@ -28,7 +28,8 @@ import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.github.Release
-import com.deezer.caupain.model.github.SearchResults
+import com.deezer.caupain.model.github.Repository
+import com.deezer.caupain.model.github.Tree
 import com.deezer.caupain.model.maven.MavenInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -59,6 +60,7 @@ internal class GithubReleaseNoteResolver(
             ?.url
             ?.takeUnless { it.isBlank() }
             ?.replace("git@", "https://")
+            ?.removeSuffix(".git")
             ?.let { url ->
                 try {
                     Url(url)
@@ -95,28 +97,58 @@ internal class GithubReleaseNoteResolver(
                     logger.error("Failed to fetch releases for $owner/$repository", error)
                 }
             ) {
-                getGithubResource("repos", owner, repository, "releases")
+                getGithubResource(REPOS_PATH, owner, repository, "releases")
             }
         }
         val releaseNote = releaseNotes.firstOrNull { it.matches(version) }
         if (releaseNote != null) return releaseNote.url
         // If not present, try to find the changelog file in the repository
-        val searchResults = withContext(ioDispatcher) {
-            httpClient.processRequest<SearchResults?>(
+        return getChangelogUrl(owner, repository)
+    }
+
+    private suspend fun getChangelogUrl(
+        owner: String,
+        repository: String,
+    ): String? {
+        // First get the repository info to find the default branch
+        val defaultBranch = withContext(ioDispatcher) {
+            httpClient.processRequest<Repository, String?>(
                 default = null,
+                transform = { it.defaultBranch },
                 onRecoverableError = { error ->
-                    logger.error("Failed to search for changelog in $owner/$repository", error)
+                    logger.error("Failed to find default branch for $owner/$repository", error)
                 }
             ) {
-                getGithubResource("search", "code") {
-                    parameters["q"] = "$version repo:$owner/$repository filename:CHANGELOG.md"
+                getGithubResource(REPOS_PATH, owner, repository)
+            }
+        } ?: return null
+        // Then check if a CHANGELOG.md file exists in the default branch
+        val changelogPath = withContext(ioDispatcher) {
+            httpClient.processRequest<Tree, String?>(
+                default = null,
+                transform = { tree ->
+                    tree
+                        .content
+                        .firstNotNullOfOrNull { file ->
+                            if (file.path == "CHANGELOG.md" && file.type == "blob") {
+                                file.path
+                            } else {
+                                null
+                            }
+                        }
+                },
+                onRecoverableError = { error ->
+                    logger.error("Failed to find contents for $owner/$repository", error)
                 }
+            ) {
+                getGithubResource(REPOS_PATH, owner, repository, "git", "trees", defaultBranch)
             }
         }
-        if (searchResults != null && searchResults.totalCount > 0) {
-            return searchResults.items.firstOrNull()?.url
+        return if (changelogPath == null) {
+            null
+        } else {
+            "https://github.com/$owner/$repository/blob/$defaultBranch/$changelogPath"
         }
-        return null
     }
 
     private fun checkToken(): Boolean {
@@ -130,7 +162,7 @@ internal class GithubReleaseNoteResolver(
     @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
     private suspend fun HttpClient.getGithubResource(
         vararg pathSegments: String,
-        urlBuilder: URLBuilder.() -> Unit = {}
+        urlBuilder: URLBuilder.() -> Unit = {},
     ): HttpResponse {
         return get {
             url {
@@ -147,5 +179,6 @@ internal class GithubReleaseNoteResolver(
     companion object {
         private val BASE_API_URL = Url("https://api.github.com")
         private const val GITHUB_HOST = "github.com"
+        private const val REPOS_PATH = "repos"
     }
 }

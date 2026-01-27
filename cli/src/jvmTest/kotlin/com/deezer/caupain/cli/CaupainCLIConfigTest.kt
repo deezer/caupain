@@ -198,7 +198,7 @@ class CaupainCLIConfigTest {
                 versionCatalog = null,
                 versionCatalogInfo = null,
             )
-            createCli(
+            val result = createCli(
                 expectedGradleVersion = when {
                     hasOptionsOverride -> gradleVersionCli
                     hasConf -> gradleVersionConf
@@ -327,6 +327,7 @@ class CaupainCLIConfigTest {
                         "outputBaseNameCli",
                         "--gradle-wrapper-properties",
                         gradleWrapperPathCli.toString(),
+                        "--search-release-notes",
                         "--github-token",
                         "githubTokenCli",
                         "--cache-dir",
@@ -342,6 +343,7 @@ class CaupainCLIConfigTest {
                     else -> emptyList()
                 }
             )
+            assertEquals(expected = 0, actual = result.statusCode, "CLI exited with non-zero code, error is ${result.stderr}")
             if (hasOptionsOverride) {
                 assertTrue(fileSystem.exists("outputDirCli/outputBaseNameCli.md".toPath()))
             } else if (hasConf) {

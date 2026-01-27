@@ -117,8 +117,7 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      *
      * @see githubToken
      */
-    val searchReleaseNote: Property<Boolean> =
-        objects.property<Boolean>().convention(githubToken.map { true })
+    val searchReleaseNote: Property<Boolean> = objects.property<Boolean>().convention(false)
 
     /**
      * Whether to verify that .pom files exist in the repository before accepting a version as valid.

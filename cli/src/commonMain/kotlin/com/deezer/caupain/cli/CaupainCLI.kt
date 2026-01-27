@@ -68,6 +68,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
+import com.github.ajalt.clikt.parameters.options.nullableFlag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.unique
@@ -75,6 +76,7 @@ import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
+import com.github.ajalt.mordant.platform.MultiplatformSystem
 import com.github.ajalt.mordant.widgets.progress.marquee
 import com.github.ajalt.mordant.widgets.progress.percentage
 import com.github.ajalt.mordant.widgets.progress.progressBar
@@ -457,10 +459,12 @@ class CaupainCLI(
                 ?: parsedConfiguration?.gradleStabilityLevel
                 ?: GradleStabilityLevel.STABLE,
             checkIgnored = parsedConfiguration?.checkIgnored == true,
-            githubToken = releaseNoteOptions?.githubToken ?: parsedConfiguration?.githubToken,
             searchReleaseNote = releaseNoteOptions?.searchReleaseNote
-                ?: parsedConfiguration?.let { it.searchReleaseNote ?: (it.githubToken != null) }
+                ?: parsedConfiguration?.searchReleaseNote
                 ?: false,
+            githubToken = releaseNoteOptions?.githubToken
+                ?: parsedConfiguration?.githubToken
+                ?: currentContext.readEnvvar("CAUPAIN_GITHUB_TOKEN"),
             verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
         )
     }
@@ -661,16 +665,15 @@ class CaupainCLI(
 }
 
 private class ReleaseNoteOptions : OptionGroup() {
-    val githubToken by option(
-        "--github-token",
-        help = "GitHub token for searching release notes",
-        envvar = "CAUPAIN_GITHUB_TOKEN"
-    ).required()
-
     val searchReleaseNote by option(
         "--search-release-notes",
         help = "Search for release notes for updated versions on GitHub",
-    ).flag(default = true, defaultForHelp = "true if GitHub token is provided")
+    ).nullableFlag().required()
+
+    val githubToken by option(
+        "--github-token",
+        help = "GitHub token for searching release notes. Taken from CAUPAIN_GITHUB_TOKEN environment variable if not set",
+    )
 }
 
 private class MultiplePathOptions(fileSystem: FileSystem) : OptionGroup() {
