@@ -1,11 +1,11 @@
 [versions]
 junit = "4.13.2"
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 kotlinx-coroutines = "1.10.2"
 xml-serialization = "1.0.0-rc2"
 okio = "3.16.4"
 ktor = "3.3.3"
-kotlinx-io = "0.8.2"
+kotlinx-io = "0.9.0"
 mordant = "3.0.2"
 okhttp = "5.3.2"
 detekt = "2.0.0-alpha.2"
@@ -45,7 +45,7 @@ ktor-server-conditional-headers = { module = "io.ktor:ktor-server-conditional-he
 kotlinx-io-okio = { module = "org.jetbrains.kotlinx:kotlinx-io-okio", version.ref = "kotlinx-io" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-jetbrains-annotations = "org.jetbrains:annotations:26.0.2-1"
+jetbrains-annotations = "org.jetbrains:annotations:26.1.0"
 slf4j-nop = "org.slf4j:slf4j-nop:2.0.17"
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 clikt-markdown = { module = "com.github.ajalt.clikt:clikt-markdown", version.ref = "clikt" }
@@ -59,7 +59,7 @@ semver = "io.github.z4kn4fein:semver:3.0.0"
 antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr-kotlin" }
 app-dirs = "ca.gosyer:kotlin-multiplatform-appdirs:2.0.0"
 commons-text = "org.apache.commons:commons-text:1.15.0"
-test-parameter-injector = "com.google.testparameterinjector:test-parameter-injector:1.20"
+test-parameter-injector = "com.google.testparameterinjector:test-parameter-injector:1.21"
 
 [bundles]
 clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]
@@ -74,13 +74,13 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.31.0"
 dokka = "org.jetbrains.dokka:2.1.0"
 detekt = { id = "dev.detekt", version.ref = "detekt" }
-mokkery = "dev.mokkery:3.1.1"
+mokkery = "dev.mokkery:3.2.0"
 changelog = "org.jetbrains.changelog:2.5.0"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
 tapmoc = "com.gradleup.tapmoc:0.4.0"
 build-config = "com.github.gmazzo.buildconfig:6.0.7"
 netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:12.2.0"
-kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.4"
+kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.7"
 vanniktech-maven-publish = "com.vanniktech.maven.publish:0.36.0"
 gradle-plugin-publish = "com.gradle.plugin-publish:2.0.0"
 dependency-guard = "com.dropbox.dependency-guard:0.5.0"
