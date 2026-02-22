@@ -19,14 +19,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
         include:
-            - os: macos-latest
-              TEST_TASK: macosArm64Test
-            - os: windows-latest
-              TEST_TASK: mingwX64Test
-            - os: ubuntu-latest
-              TEST_TASK: check
+          - os: macos-latest
+            TEST_TASK: macosArm64Test
+          - os: windows-latest
+            TEST_TASK: mingwX64Test
+          - os: ubuntu-latest
+            TEST_TASK: check
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
     timeout-minutes: 40
@@ -84,6 +84,10 @@ jobs:
           choco install caupain --debug --verbose --source .
           caupain --version
         if: matrix.os == 'windows-latest' && github.event_name != 'pull_request'
+      - name: Test build
+        run: |
+          ./gradlew :cli:buildCurrentArchBinary --stacktrace --no-configuration-cache  
+          ./cli/build/bin/caupain --version
       - name: Upload reports
         uses: actions/upload-artifact@v4
         if: success() || failure()

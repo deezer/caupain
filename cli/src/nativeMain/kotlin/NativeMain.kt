@@ -23,10 +23,12 @@
  */
 
 import com.deezer.caupain.cli.CaupainCLI
+import com.deezer.caupain.cli.internal.silenceKtorLogging
 import com.github.ajalt.clikt.command.main
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) {
+    silenceKtorLogging()
     runBlocking {
         CaupainCLI().main(args)
     }
