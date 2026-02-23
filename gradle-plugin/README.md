@@ -159,6 +159,7 @@ repositories {
 ### Policies
 
 Policies are used to filter available updates. You can either use a predefined policy or create your own.
+If you specify multiple policies, they will be all checked in order to determine if a version is acceptable.
 
 #### Predefined policies
 

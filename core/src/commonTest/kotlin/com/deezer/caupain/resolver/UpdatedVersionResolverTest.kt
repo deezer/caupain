@@ -24,7 +24,6 @@
 
 package com.deezer.caupain.resolver
 
-import com.deezer.caupain.model.AlwaysAcceptPolicy
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
@@ -34,6 +33,7 @@ import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.SnapshotVersion
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.policies.AlwaysAcceptPolicy
 import com.deezer.caupain.serialization.xml.DefaultXml
 import dev.mokkery.MockMode
 import dev.mokkery.matcher.any
@@ -292,7 +292,7 @@ class UpdatedVersionResolverTest {
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             onlyCheckStaticVersions = true,
-            policy = AlwaysAcceptPolicy,
+            policies = listOf(AlwaysAcceptPolicy),
             ioDispatcher = testDispatcher,
             logger = logger,
             verifyExistence = verifyExistence,

@@ -25,6 +25,8 @@
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.policies.GuavaAndroidPolicy
+import com.deezer.caupain.policies.StabilityLevelPolicy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -33,12 +35,14 @@ class PolicyTest {
     private fun Policy.testSelect(
         currentVersion: String,
         updatedVersion: String,
-        expected: Boolean
+        expected: Boolean,
+        dependencyGroup: String = "com.example",
+        dependencyName: String = "example"
     ) {
         assertEquals(
             expected = expected,
             actual = select(
-                dependency = Dependency.Library("com.example", "example"),
+                dependency = Dependency.Library(dependencyGroup, dependencyName),
                 currentVersion = Version.Simple(GradleDependencyVersion(currentVersion)),
                 updatedVersion = GradleDependencyVersion(updatedVersion) as GradleDependencyVersion.Static
             )
@@ -71,6 +75,43 @@ class PolicyTest {
             currentVersion = "1.0.0-SNAPSHOT",
             updatedVersion = "1.0.1-SNAPSHOT",
             expected = true
+        )
+    }
+
+    private fun testGuavaSelect(
+        isGuava: Boolean,
+        currentVersion: String,
+        updatedVersion: String,
+        expected: Boolean,
+    ) {
+        GuavaAndroidPolicy.testSelect(
+            currentVersion = currentVersion,
+            updatedVersion = updatedVersion,
+            expected = expected,
+            dependencyGroup = if (isGuava) "com.google.guava" else "com.example",
+            dependencyName = if (isGuava) "guava" else "example"
+        )
+    }
+
+    @Test
+    fun testGuavaPolicy() {
+        testGuavaSelect(
+            isGuava = false,
+            currentVersion = "1.0.0",
+            updatedVersion = "1.0.1",
+            expected = true
+        )
+        testGuavaSelect(
+            isGuava = true,
+            currentVersion = "30.0-android",
+            updatedVersion = "31.0-android",
+            expected = true
+        )
+        testGuavaSelect(
+            isGuava = true,
+            currentVersion = "30.0-android",
+            updatedVersion = "31.0-jre",
+            expected = false
         )
     }
 }

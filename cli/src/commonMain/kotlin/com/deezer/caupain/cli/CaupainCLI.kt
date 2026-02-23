@@ -47,8 +47,8 @@ import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Logger
-import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
+import com.deezer.caupain.policies.StabilityLevelPolicy
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.completion.completionOption
@@ -76,7 +76,6 @@ import com.github.ajalt.clikt.parameters.options.versionOption
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressTaskAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
-import com.github.ajalt.mordant.platform.MultiplatformSystem
 import com.github.ajalt.mordant.widgets.progress.marquee
 import com.github.ajalt.mordant.widgets.progress.percentage
 import com.github.ajalt.mordant.widgets.progress.progressBar
@@ -161,11 +160,11 @@ class CaupainCLI(
         hidden = !BuildConfig.CAN_USE_PLUGINS
     ).path(canBeFile = false, canBeDir = true, fileSystem = fileSystem)
 
-    private val policy by option(
+    private val policies by option(
         "-p",
         "--policy",
-        help = "Update policy (default: `stability-level`)"
-    )
+        help = "Update policy (default: `stability-level`). Multiple policies can be specified by using this option multiple times, and will be combined (a version must satisfy all policies to be accepted)."
+    ).multiple()
 
     private val listPolicies by option("--list-policies", help = "List available policies")
         .flag()
@@ -301,7 +300,6 @@ class CaupainCLI(
                 statusCode = 0,
                 message = buildString {
                     appendLine("Available policies:")
-                    appendLine("- <no-policy>: Built-in default to update to the latest version available")
                     for (policy in updateChecker.policies) {
                         append("- ")
                         append(policy.name)
@@ -440,9 +438,11 @@ class CaupainCLI(
                 ?: emptySet(),
             excludedLibraries = parsedConfiguration?.excludedLibraries.orEmpty(),
             excludedPlugins = parsedConfiguration?.excludedPlugins.orEmpty(),
-            policy = policy
-                ?: parsedConfiguration?.policy
-                ?: StabilityLevelPolicy.name,
+            policies = policies
+                .takeUnless { it.isEmpty() }
+                ?: parsedConfiguration?.policies
+                ?: parsedConfiguration?.policy?.let(::listOf)
+                ?: listOf(StabilityLevelPolicy.name),
             policyPluginsDir = policyPluginDir
                 ?: parsedConfiguration?.policyPluginDir,
             cacheDir = if (doNotCache) {

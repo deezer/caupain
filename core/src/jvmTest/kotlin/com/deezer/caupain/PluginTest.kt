@@ -98,8 +98,8 @@ class PluginTest {
             repositories = listOf(BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY),
             policyPluginsDir = pluginDir.toOkioPath(),
-            policy = "my-custom-policy",
-            versionCatalogPath = versionCatalogFile.toOkioPath()
+            policies = listOf("my-custom-policy"),
+            versionCatalogPaths = listOf(versionCatalogFile.toOkioPath())
         )
         engine = MockEngine { requestData ->
             handleRequest(this, requestData)

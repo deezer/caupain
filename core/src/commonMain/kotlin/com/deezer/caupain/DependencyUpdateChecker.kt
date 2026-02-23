@@ -255,13 +255,12 @@ internal class DefaultDependencyUpdateChecker(
         )
     }
 
-    private val policy by lazy {
-        configuration.policy.let { name ->
-            this
-                .policies
-                .firstOrNull { it.name == name }
-                ?: throw UnknownPolicyException(name)
-        }
+    private val selectedPolicies by lazy {
+        configuration
+            .policies
+            .map { name ->
+                policies?.firstOrNull { it.name == name } ?: throw UnknownPolicyException(name)
+            }
     }
 
     private val infoResolver = MavenInfoResolver(
@@ -277,7 +276,7 @@ internal class DefaultDependencyUpdateChecker(
             pluginRepositories = configuration.pluginRepositories,
             logger = logger,
             onlyCheckStaticVersions = configuration.onlyCheckStaticVersions,
-            policy = policy,
+            policies = selectedPolicies,
             ioDispatcher = ioDispatcher,
             verifyExistence = configuration.verifyExistence,
             mavenInfoResolver = infoResolver,
