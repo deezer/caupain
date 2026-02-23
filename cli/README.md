@@ -49,31 +49,57 @@ or build it yourself by cloning the repository and running `./gradlew :cli:build
 Usage: caupain [<options>]
 
 Options:
-  -i, --version-catalog=<path>                                            Version catalog path. Use multiple times to use multiple version catalogs (default: gradle/libs.versions.toml)
-  --gradle-wrapper-properties=<path>                                      Gradle wrapper properties path (default: gradle/wrapper/gradle-wrapper.properties)
-  -e, --excluded=<text>                                                   Excluded keys
-  -c, --config=<path>                                                     Configuration file (default: caupain.toml)
-  -p, --policy=<text>                                                     Update policy (default: stability-level)
-  --list-policies                                                         List available policies
-  --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)  Gradle stability level (default: stable)
-  -t, --output-type=(console|html|markdown|json)                          Output type (default: console)
-  -o, --output=<path>                                                     Report output path (or - if you want to ouput to standard output). If a file is specified, only used if a single output type is specified (default: build/reports/dependencies-update.(html|md|json))
-  --output-dir=<path>                                                     Report output dir. Only used if multiple output types are specified, and output is not set to standard output (default: build/reports)
-  --output-base-name=<text>                                               Report output base name, without extension. Only used if multiple output types are specified, and output is not set to standard output (default: dependencies-update)
-  --show-version-references                                               Show versions references update summary in the report
-  --in-place                                                              Replace versions in version catalog in place
-  --github-token=<text>                                                   GitHub token for searching release notes
-  --search-release-notes                                                  Search for release notes for updated versions on GitHub (default: true if GitHub token is provided)
-  --cache-dir=<path>                                                      Cache directory. This is not used if --no-cache is set (default: user cache dir)
-  --no-cache                                                              Disable HTTP cache
-  --clean-cache                                                           Clean the cache before running
-  -q, --quiet                                                             Suppress all output
-  -v, --verbose                                                           Verbose output
-  -d, --debug                                                             Debug output
-  --debug-http-calls                                                      Enable debugging for HTTP calls
-  --verify-existence                                                      Verify that .pom file exists before accepting version updates (warning: may slow down checks)
-  --version                                                               Show the version and exit
-  -h, --help                                                              Show this message and exit
+  -i, --version-catalog=<path>  Version catalog path. Use multiple times to use
+                                multiple version catalogs (default:
+                                gradle/libs.versions.toml)
+  --gradle-wrapper-properties=<path>
+                                Gradle wrapper properties path (default:
+                                gradle/wrapper/gradle-wrapper.properties)
+  -e, --excluded=<text>         Excluded keys
+  -c, --config=<path>           Configuration file (default: caupain.toml)
+  --policy-plugin-dir=<path>    Custom policies plugin dir
+  -p, --policy=<text>           Update policy (default: stability-level).
+                                Multiple policies can be specified by using a
+                                comma-separated list, and will be combined (a
+                                version must satisfy all policies to be
+                                accepted).
+  --list-policies               List available policies
+  --gradle-stability-level=(stable|rc|milestone|release-nightly|nightly)
+                                Gradle stability level (default: stable)
+  -t, --output-type=(console|html|markdown|json)
+                                Output type (default: console)
+  -o, --output=<file>           Report output path (or - if you want to ouput
+                                to standard output). If a file is specified,
+                                only used if a single output type is specified
+                                (default:
+                                build/reports/dependencies-update.(html|md|json))
+  --output-dir=<path>           Report output dir. Only used if multiple output
+                                types are specified, and output is not set to
+                                standard output (default: build/reports)
+  --output-base-name=<text>     Report output base name, without extension.
+                                Only used if multiple output types are
+                                specified, and output is not set to standard
+                                output (default: dependencies-update)
+  --show-version-references     Show versions references update summary in the
+                                report
+  --in-place                    Replace versions in version catalog in place
+  --search-release-notes        Search for release notes for updated versions
+                                on GitHub
+  --github-token=<text>         GitHub token for searching release notes. Taken
+                                from CAUPAIN_GITHUB_TOKEN environment variable
+                                if not set
+  --cache-dir=<path>            Cache directory. This is not used if --no-cache
+                                is set (default: user cache dir)
+  --no-cache                    Disable HTTP cache
+  --clean-cache                 Clean the cache before running
+  -q, --quiet                   Suppress all output
+  -v, --verbose                 Verbose output
+  -d, --debug                   Debug output
+  --debug-http-calls            Enable debugging for HTTP calls
+  --verify-existence            Verify that .pom file exists before accepting
+                                version updates (warning: may slow down checks)
+  --version                     Show the version and exit
+  -h, --help                    Show this message and exit
 ```
 
 For a base usage, just launch the `caupain` command in the root of your project, and it will find your
@@ -125,6 +151,8 @@ excludedPlugins = [
 ]
 # Policy name to use. See the documentation section about policies for more information
 policy = "stability-level"
+# Policy names to use. See the documentation section about policies for more information
+policies = [ "stability-level" ]
 # Policy plugin directory. This is the directory where the custom policies are located. 
 # Only applies to JVM, see the documentation section about policies for more information
 policyPluginDir = "path/to/policy/plugin/dir"
@@ -234,18 +262,22 @@ marks ignored updates.
 
 ### Policies
 
-Policies are used to filter available updates. You can either use a predefined policy or create your own.
+Policies are used to filter available updates. You can either use predefined policies or create your own.
+If you specify multiple policies, they will be all checked in order to determine if a version is acceptable.
 
 #### Predefined policies
 
-There's only one predefined policy at the moment, which is `stability-level`. This policy will
-only select an update if its stability is greater than or equal to the stability of the current version.
-
-This means that if you're using a beta version, alpha versions won't be suggested for you, and so on.
-
-This is the default policy if none is specified.
-
-If you want to see all available updates, you can use the `always` policy, which will accept all updates.
+There are three predefined policies available at the moment:
+- `stability-level`: This policy will only select an update if its stability is greater than or equal
+to the stability of the current version. This means that if you're using a beta version, alpha 
+versions won't be suggested for you, and so on. This is the default policy used if no other policy is 
+specified.
+- `guava-android`: This policy fixes a common issue in the Android world with using Guava libraries,
+which is the fact that Guava have both a `-jre` and an `-android` version with the same version number.
+Due to how Gradle computes updates, the `-jre` version is selected as an update for the `-android` 
+version, which is not what you want. This policy avoids this use case by only accepting updates that 
+have the same suffix as the current version.
+- `always`: This policy will accept all updates.
 
 #### Custom policies
 

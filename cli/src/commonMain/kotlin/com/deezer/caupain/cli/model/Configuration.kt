@@ -42,6 +42,7 @@ interface Configuration {
     val excludedLibraries: List<LibraryExclusion>?
     val excludedPlugins: List<PluginExclusion>?
     val policy: String?
+    val policies: Iterable<String>?
     val policyPluginDir: Path?
     val cacheDir: Path?
     val showVersionReferences: Boolean?

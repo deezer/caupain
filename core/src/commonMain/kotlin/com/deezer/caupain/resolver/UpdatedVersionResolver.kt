@@ -84,7 +84,7 @@ internal class DefaultUpdatedVersionResolver(
     private val pluginRepositories: List<Repository>,
     private val logger: Logger,
     private val onlyCheckStaticVersions: Boolean,
-    private val policy: Policy,
+    private val policies: Iterable<Policy>,
     ioDispatcher: CoroutineDispatcher,
     private val verifyExistence: Boolean,
     private val mavenInfoResolver: MavenInfoResolver,
@@ -134,7 +134,7 @@ internal class DefaultUpdatedVersionResolver(
                 mavenInfoResolver.getMavenInfo(item.dependency, item.repository, version)
                     ?: return false
             }
-            return policy.select(item.dependency, dependencyVersion, version)
+            return policies.all { it.select(item.dependency, dependencyVersion, version) }
         }
     }
 

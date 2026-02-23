@@ -59,6 +59,7 @@ private data class ConfigurationImpl(
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
     override val policy: String? = null,
+    override val policies: Iterable<String>?,
     override val policyPluginDir: Path? = null,
     override val cacheDir: Path? = null,
     override val showVersionReferences: Boolean? = null,
@@ -79,6 +80,9 @@ private data class ConfigurationImpl(
     override fun validate(logger: Logger) {
         if (versionCatalogPath != null && versionCatalogPaths != null) {
             logger.warn("Both versionCatalogPath and versionCatalogPaths are set. Using versionCatalogPaths.")
+        }
+        if (policy != null && policies != null) {
+            logger.warn("Both policy and policies are set. Using policies.")
         }
         if (outputType != null && outputTypes != null) {
             logger.warn("Both outputType and outputTypes are set. Using outputTypes.")
