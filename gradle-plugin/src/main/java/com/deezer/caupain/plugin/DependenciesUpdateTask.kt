@@ -35,7 +35,6 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
@@ -44,6 +43,7 @@ import com.deezer.caupain.plugin.internal.listProperty
 import com.deezer.caupain.plugin.internal.property
 import com.deezer.caupain.plugin.internal.setProperty
 import com.deezer.caupain.plugin.internal.toOkioPath
+import com.deezer.caupain.policies.StabilityLevelPolicy
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
@@ -182,7 +182,8 @@ open class DependenciesUpdateTask : DefaultTask() {
         ?: GradleConstants.DEFAULT_GRADLE_VERSIONS_URL
 
 
-    private var policy: Policy? = null
+    @get:Internal
+    private val policies = project.objects.listProperty<Policy>()
 
     init {
         group = "verification"
@@ -192,8 +193,13 @@ open class DependenciesUpdateTask : DefaultTask() {
 
     @TaskAction
     fun checkUpdates() {
-        val policy = this.policy?.let { SinglePolicy(it) } ?: StabilityLevelPolicy
-        val configuration = createConfiguration(policy.name)
+        val policies = this
+            .policies
+            .get()
+            .map(::SinglePolicy)
+            .takeUnless { it.isEmpty() }
+            ?: listOf(StabilityLevelPolicy)
+        val configuration = createConfiguration(policies.map { it.name })
         val formatters = buildList {
             formatterOutputs.get().mapTo(this) { output ->
                 when (output) {
@@ -210,7 +216,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             configuration = configuration,
             logger = LoggerAdapter(logger),
             selfUpdateResolver = PluginUpdateResolver,
-            policies = listOf(policy),
+            policies = policies,
             currentGradleVersion = GradleVersion.current().version,
             gradleVersionsUrl = gradleVersionsUrl,
         )
@@ -239,21 +245,21 @@ open class DependenciesUpdateTask : DefaultTask() {
     }
 
     /**
-     * Sets the update policy to use for the task.
+     * Adds an update policy to use for the task.
      */
     fun selectIf(policy: Policy) {
-        this.policy = policy
+        policies.add(policy)
     }
 
     /**
-     * Sets the update policy to use for the task.
+     * Adds an update policy to use for the task.
      */
     fun selectIf(policy: com.deezer.caupain.model.Policy) {
         selectIf(Policy { policy.select(it.dependency, it.currentVersion, it.updatedVersion) })
     }
 
     /**
-     * Sets the update policy to use for the task.
+     * Adds an update policy to use for the task.
      */
     fun selectIf(policy: VersionUpdateInfo.() -> Boolean) {
         selectIf(Policy { it.policy() })
@@ -266,7 +272,7 @@ open class DependenciesUpdateTask : DefaultTask() {
         customFormatter.set(formatter)
     }
 
-    private fun createConfiguration(policyId: String): Configuration {
+    private fun createConfiguration(policies: List<String>): Configuration {
         return Configuration(
             repositories = repositories.get(),
             pluginRepositories = pluginRepositories.get(),
@@ -274,7 +280,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             excludedKeys = excludedKeys.get(),
             excludedLibraries = excludedLibraries.get(),
             excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
-            policy = policyId,
+            policies = policies,
             cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
             debugHttpCalls = true,
             onlyCheckStaticVersions = onlyCheckStaticVersions.get(),

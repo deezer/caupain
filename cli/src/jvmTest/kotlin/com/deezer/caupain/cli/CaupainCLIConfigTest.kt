@@ -35,8 +35,8 @@ import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
-import com.deezer.caupain.model.StabilityLevelPolicy
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
+import com.deezer.caupain.policies.StabilityLevelPolicy
 import com.github.ajalt.clikt.command.test
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -155,7 +155,7 @@ class CaupainCLIConfigTest {
                     excludedKeys = setOf("testConf"),
                     excludedLibraries = listOf(LibraryExclusion("libGroup", "libName")),
                     excludedPlugins = listOf(PluginExclusion("pluginId")),
-                    policy = "policyConf",
+                    policies = listOf("policyConf"),
                     policyPluginDir = "policyConf".toPath(),
                     cacheDir = "cacheConf".toPath(),
                     showVersionReferences = true,
@@ -255,11 +255,11 @@ class CaupainCLIConfigTest {
                 )
                 assertEquals(
                     expected = when {
-                        hasOptionsOverride -> "policyCli"
-                        hasConf -> "policyConf"
-                        else -> StabilityLevelPolicy.name
+                        hasOptionsOverride -> listOf("policyCli")
+                        hasConf -> listOf("policyConf")
+                        else -> listOf(StabilityLevelPolicy.name)
                     },
-                    actual = conf.policy
+                    actual = conf.policies
                 )
                 assertEquals(
                     expected = when {
@@ -373,7 +373,8 @@ private data class TestConfiguration(
     override val excludedKeys: Set<String>?,
     override val excludedLibraries: List<LibraryExclusion>?,
     override val excludedPlugins: List<PluginExclusion>?,
-    override val policy: String?,
+    override val policy: String? = null,
+    override val policies: Iterable<String>?,
     override val policyPluginDir: Path?,
     override val cacheDir: Path?,
     override val showVersionReferences: Boolean?,

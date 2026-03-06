@@ -84,46 +84,16 @@ class PluginTest {
 
     private lateinit var engine: MockEngine
 
-    private val testDispatcher = UnconfinedTestDispatcher()
+    private lateinit var pluginDir: File
 
-    private lateinit var checker: DependencyUpdateChecker
+    private lateinit var versionCatalogFile: File
+
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
-        val pluginDir = temporaryFolder.newFolder("plugins")
-        copyPluginToPluginDir(pluginDir, "plugin.jar")
-        val versionCatalogFile = temporaryFolder.newFile("libs.versions.toml")
-        versionCatalogFile.writeBytes(ByteArray(0))
-        val configuration = Configuration(
-            repositories = listOf(BASE_REPOSITORY),
-            pluginRepositories = listOf(BASE_REPOSITORY),
-            policyPluginsDir = pluginDir.toOkioPath(),
-            policy = "my-custom-policy",
-            versionCatalogPath = versionCatalogFile.toOkioPath()
-        )
-        engine = MockEngine { requestData ->
-            handleRequest(this, requestData)
-                ?: respond("Not found", HttpStatusCode.NotFound)
-        }
-        checker = DefaultDependencyUpdateChecker(
-            configuration = configuration,
-            fileSystem = FileSystem.SYSTEM,
-            httpClient = HttpClient(engine) {
-                install(ContentNegotiation) {
-                    json(DefaultJson)
-                    serialization(ContentType.Any, DefaultXml)
-                }
-            },
-            ioDispatcher = testDispatcher,
-            versionCatalogParser = FixedVersionCatalogParser,
-            logger = Logger.EMPTY,
-            currentGradleVersion = null,
-            policies = null,
-            selfUpdateResolver = null
-        )
-    }
-
-    private fun copyPluginToPluginDir(pluginDir: File, pluginFileName: String) {
+        pluginDir = temporaryFolder.newFolder("plugins")
+        val pluginFileName = "plugin.jar"
         javaClass
             .getResourceAsStream(pluginFileName)
             ?.buffered()
@@ -135,6 +105,12 @@ class PluginTest {
                         input.copyTo(output)
                     }
             }
+        versionCatalogFile = temporaryFolder.newFile("libs.versions.toml")
+        versionCatalogFile.writeBytes(ByteArray(0))
+        engine = MockEngine { requestData ->
+            handleRequest(this, requestData)
+                ?: respond("Not found", HttpStatusCode.NotFound)
+        }
     }
 
     private fun handleRequest(
@@ -155,10 +131,38 @@ class PluginTest {
         engine.close()
     }
 
+    private fun createChecker(policies: List<String>): DependencyUpdateChecker {
+        val configuration = Configuration(
+            repositories = listOf(BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY),
+            policyPluginsDir = pluginDir.toOkioPath(),
+            policies = policies,
+            versionCatalogPaths = listOf(versionCatalogFile.toOkioPath())
+        )
+        return DefaultDependencyUpdateChecker(
+            configuration = configuration,
+            fileSystem = FileSystem.SYSTEM,
+            httpClient = HttpClient(engine) {
+                install(ContentNegotiation) {
+                    json(DefaultJson)
+                    serialization(ContentType.Any, DefaultXml)
+                }
+            },
+            ioDispatcher = testDispatcher,
+            versionCatalogParser = FixedVersionCatalogParser,
+            logger = Logger.EMPTY,
+            currentGradleVersion = null,
+            policies = null,
+            selfUpdateResolver = null
+        )
+    }
+
     @Test
     fun testUpdate() = runTest(testDispatcher) {
+        val checker = createChecker(listOf("my-custom-policy"))
+
         val policies = checker.policies.toList()
-        assertEquals(3, policies.size)
+        assertEquals(DEFAULT_POLICIES.size + 1, policies.size)
         assertEquals(
             expected = DEFAULT_POLICIES,
             policies.take(DEFAULT_POLICIES.size)
@@ -192,6 +196,12 @@ class PluginTest {
             expected = EXPECTED_HIT_URLS.sortedBy { it.toString() },
             actual = hitUrls.sortedBy { it.toString() }
         )
+    }
+
+    @Test
+    fun testError() = runTest(testDispatcher) {
+        val checker = createChecker(listOf("unknown-policy"))
+        assertThrows<UnknownPolicyException> { checker.checkForUpdates() }
     }
 
     companion object {

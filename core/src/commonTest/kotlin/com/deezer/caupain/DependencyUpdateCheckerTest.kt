@@ -24,7 +24,6 @@
 
 package com.deezer.caupain
 
-import com.deezer.caupain.model.AlwaysAcceptPolicy
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DEFAULT_POLICIES
 import com.deezer.caupain.model.DependenciesUpdateResult
@@ -45,6 +44,7 @@ import com.deezer.caupain.model.maven.SCMInfos
 import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
+import com.deezer.caupain.policies.AlwaysAcceptPolicy
 import com.deezer.caupain.resolver.GradleVersionResolverTest
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.deezer.caupain.serialization.DefaultJson
@@ -112,7 +112,7 @@ class DependencyUpdateCheckerTest {
             cacheDir = cacheDir,
             cleanCache = true,
             searchReleaseNote = true,
-            policy = AlwaysAcceptPolicy.name
+            policies = listOf(AlwaysAcceptPolicy.name)
         )
         for (versionCatalogPath in VERSION_CATALOGS.keys) {
             fileSystem.write(versionCatalogPath) {}
@@ -260,7 +260,7 @@ class DependencyUpdateCheckerTest {
             excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
             versionCatalogPaths = VERSION_CATALOGS.keys,
             checkIgnored = true,
-            policy = AlwaysAcceptPolicy.name
+            policies = listOf(AlwaysAcceptPolicy.name)
         )
         checker = DefaultDependencyUpdateChecker(
             configuration = configuration,

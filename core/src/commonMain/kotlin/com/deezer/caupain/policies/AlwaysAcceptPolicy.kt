@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,25 +20,27 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.deezer.caupain
+package com.deezer.caupain.policies
 
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.versionCatalog.Version
-import kotlin.test.assertIs
-import kotlin.test.fail
 
-internal fun String.toStaticVersion() =
-    GradleDependencyVersion(this) as GradleDependencyVersion.Static
+/**
+ * This is a default policy implementation that always accepts all updates.
+ */
+public object AlwaysAcceptPolicy : Policy {
+    override val name: String = "always"
 
-internal fun String.toSimpleVersion() = Version.Simple(toStaticVersion())
+    override val description: String = "Policy that always accepts an update."
 
-inline fun <reified E : Throwable> assertThrows(block: () -> Unit) {
-    try {
-        block()
-        fail("Expected a ${E::class.simpleName} to be thrown")
-    } catch (e: Throwable) {
-        assertIs<E>(e)
-    }
+    override fun select(
+        dependency: Dependency,
+        currentVersion: Version.Resolved,
+        updatedVersion: GradleDependencyVersion.Static
+    ): Boolean = true
 }

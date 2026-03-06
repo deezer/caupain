@@ -159,18 +159,23 @@ repositories {
 ### Policies
 
 Policies are used to filter available updates. You can either use a predefined policy or create your own.
+If you specify multiple policies, they will be all checked in order to determine if a version is acceptable.
 
 #### Predefined policies
 
-There's only one predefined policy at the moment, which is based on stability level.
-This policy will only select an update if its stability is greater than or equal to the stability of 
-the current version.
+#### Predefined policies
 
-This means that if you're using a beta version, alpha versions won't be suggested for you, and so on.
-
-This is the default policy if none is specified.
-
-If you want to see all available updates, you can use the `always` policy, which will accept all updates.
+There are three predefined policies available at the moment:
+- `stability-level`: This policy will only select an update if its stability is greater than or equal
+  to the stability of the current version. This means that if you're using a beta version, alpha
+  versions won't be suggested for you, and so on. This is the default policy used if no other policy is
+  specified.
+- `guava-android`: This policy fixes a common issue in the Android world with using Guava libraries,
+  which is the fact that Guava have both a `-jre` and an `-android` version with the same version number.
+  Due to how Gradle computes updates, the `-jre` version is selected as an update for the `-android`
+  version, which is not what you want. This policy avoids this use case by only accepting updates that
+  have the same suffix as the current version.
+- `always`: This policy will accept all updates.
 
 #### Configuration
 
