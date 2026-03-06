@@ -258,7 +258,7 @@ public final class com/deezer/caupain/formatting/model/VersionReferenceInfo$Comp
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class com/deezer/caupain/internal/JvmSinkKt {
+public final class com/deezer/caupain/internal/Sink_jvmKt {
 	public static final fun systemSink ()Lokio/Sink;
 }
 

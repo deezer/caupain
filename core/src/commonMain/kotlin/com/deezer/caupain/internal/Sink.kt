@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,28 @@
 
 package com.deezer.caupain.internal
 
-import io.ktor.client.engine.HttpClientEngineConfig
-import io.ktor.client.engine.curl.CurlClientEngineConfig
+import okio.BufferedSink
+import okio.Sink
 
-internal actual fun HttpClientEngineConfig.configureKtorEngine() {
-    if (this is CurlClientEngineConfig) {
-        // Set up the CA path for Curl because of https://youtrack.jetbrains.com/issue/KTOR-8339
-        caPath = "/etc/ssl/certs"
+internal fun BufferedSink.asAppendable(): Appendable = object : Appendable {
+    override fun append(value: Char): Appendable {
+        writeUtf8CodePoint(value.code)
+        return this
+    }
+
+    override fun append(value: CharSequence?): Appendable {
+        writeUtf8(value.toString())
+        return this
+    }
+
+    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): Appendable {
+        writeUtf8(value.toString(), startIndex, endIndex)
+        return this
     }
 }
+
+/**
+ * A platform-specific sink writing to the system standard output. This uses `System.out` on JVM,
+ * `stdout` on Native, and `process.stdout` on JS.
+ */
+public expect fun systemSink(): Sink

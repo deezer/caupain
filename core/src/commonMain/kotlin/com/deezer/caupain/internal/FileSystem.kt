@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,6 @@
 
 package com.deezer.caupain.internal
 
-import io.ktor.client.engine.HttpClientEngineConfig
+import okio.FileSystem
 
-internal actual fun HttpClientEngineConfig.configureKtorEngine() {
-    // This is a placeholder for non-Linux ARM64 platforms.
-}
+internal expect val DefaultFileSystem: FileSystem

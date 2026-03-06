@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,6 @@ package com.deezer.caupain.cli.internal
 
 import com.github.ajalt.clikt.completion.CompletionCandidates
 import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.parameters.arguments.ProcessedArgument
-import com.github.ajalt.clikt.parameters.arguments.RawArgument
-import com.github.ajalt.clikt.parameters.arguments.convert
 import com.github.ajalt.clikt.parameters.options.NullableOption
 import com.github.ajalt.clikt.parameters.options.RawOption
 import com.github.ajalt.clikt.parameters.options.convert
@@ -44,6 +41,7 @@ private fun pathType(context: Context, fileOkay: Boolean, folderOkay: Boolean): 
     else -> context.localization.pathTypeOther()
 }
 
+@Suppress("LongParameterList") // Copied from clikt
 internal fun convertToPath(
     stringPath: String,
     mustExist: Boolean,

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,5 +109,3 @@ internal class CLISelfUpdateResolver(
 private fun HttpMessageBuilder.bearerTokenHeader(token: String?) {
     if (token != null) header(HttpHeaders.Authorization, "Bearer $token")
 }
-
-internal expect fun getPossibleUpdateSources(fileSystem: FileSystem): List<SelfUpdateInfo.Source>

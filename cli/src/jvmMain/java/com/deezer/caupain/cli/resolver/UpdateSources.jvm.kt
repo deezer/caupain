@@ -23,35 +23,10 @@
  *
  */
 
-package com.deezer.caupain.internal
+package com.deezer.caupain.cli.resolver
 
-import okio.buffer
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import com.deezer.caupain.model.SelfUpdateInfo
+import okio.FileSystem
 
-class JVMSinkTest {
-
-    private val baseOutputStream = System.out
-    private val testOuputStream = ByteArrayOutputStream()
-
-    @BeforeTest
-    fun setup() {
-        System.setOut(PrintStream(testOuputStream))
-    }
-
-    @AfterTest
-    fun teardown() {
-        System.setOut(baseOutputStream)
-    }
-
-    @Test
-    fun testStandardOutputSink() {
-        val expected = "test\ntest"
-        systemSink().buffer().use { it.writeUtf8(expected) }
-        assertEquals(expected, testOuputStream.toString(Charsets.UTF_8))
-    }
-}
+internal actual fun getPossibleUpdateSources(fileSystem: FileSystem): List<SelfUpdateInfo.Source> =
+    emptyList()

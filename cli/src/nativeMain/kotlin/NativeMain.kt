@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,18 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 import com.deezer.caupain.cli.CaupainCLI
-import com.deezer.caupain.cli.internal.silenceKtorLogging
+import com.deezer.caupain.cli.internal.withEnvVariable
 import com.github.ajalt.clikt.command.main
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) {
-    silenceKtorLogging()
     runBlocking {
-        CaupainCLI().main(args)
+        withEnvVariable("KTOR_LOG_LEVEL", "ERROR") {
+            CaupainCLI().main(args)
+        }
     }
 }

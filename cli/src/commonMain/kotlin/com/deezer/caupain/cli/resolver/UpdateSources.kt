@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,12 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.deezer.caupain.internal
+package com.deezer.caupain.cli.resolver
 
-import kotlinx.coroutines.CoroutineDispatcher
+import com.deezer.caupain.model.SelfUpdateInfo
+import okio.FileSystem
 
-internal expect val IODispatcher: CoroutineDispatcher
+internal expect fun getPossibleUpdateSources(fileSystem: FileSystem): List<SelfUpdateInfo.Source>

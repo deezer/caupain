@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.deezer.caupain.cli.resolver
+package com.deezer.caupain.internal
 
-import com.deezer.caupain.model.SelfUpdateInfo
 import okio.FileSystem
+import okio.NodeJsFileSystem
 
-internal actual fun getPossibleUpdateSources(fileSystem: FileSystem): List<SelfUpdateInfo.Source> =
-    listOf(SelfUpdateInfo.Source.BREW)
+internal actual val DefaultFileSystem: FileSystem
+    get() = NodeJsFileSystem

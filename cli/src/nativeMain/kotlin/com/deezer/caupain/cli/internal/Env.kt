@@ -23,35 +23,25 @@
  *
  */
 
-package com.deezer.caupain.internal
+@file:OptIn(ExperimentalForeignApi::class)
 
-import okio.buffer
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
+package com.deezer.caupain.cli.internal
 
-class JVMSinkTest {
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
+import platform.posix.getenv
 
-    private val baseOutputStream = System.out
-    private val testOuputStream = ByteArrayOutputStream()
+internal expect fun setEnvVariable(name: String, value: String)
 
-    @BeforeTest
-    fun setup() {
-        System.setOut(PrintStream(testOuputStream))
-    }
+internal expect fun unsetEnvVariable(name: String)
 
-    @AfterTest
-    fun teardown() {
-        System.setOut(baseOutputStream)
-    }
-
-    @Test
-    fun testStandardOutputSink() {
-        val expected = "test\ntest"
-        systemSink().buffer().use { it.writeUtf8(expected) }
-        assertEquals(expected, testOuputStream.toString(Charsets.UTF_8))
+internal inline fun withEnvVariable(name: String, value: String, block: () -> Unit) {
+    val originalValue = getenv(name)?.toKString()
+    setEnvVariable(name, value)
+    try {
+        block()
+    } finally {
+        if (originalValue == null) unsetEnvVariable(name) else setEnvVariable(name, originalValue)
     }
 }
+
