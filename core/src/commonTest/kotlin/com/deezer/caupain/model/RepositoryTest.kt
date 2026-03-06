@@ -59,7 +59,7 @@ class RepositoryTest {
     @Test
     fun testSimpleRepository() {
         checkRequest(Repository("http://www.example.com")) {
-            assertEquals(2, headers.entries().size)
+            assertEquals(1, headers.entries().size)
         }
     }
 
