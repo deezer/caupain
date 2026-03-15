@@ -3,8 +3,10 @@
 ## Unreleased
 
 ### Added
+- New Guava version policy (#79)
 
 ### Changed
+- Multiple policies can now be applied at the same time (#79)
 
 ### Deprecated
 
@@ -14,6 +16,8 @@
 - Avoid GitHub API rate limiting by avoiding concurrent requests when quertying GitHub releases. As
 a consequence, GitHub release checks will be slower, so the check for releases notes is now disabled 
 by default, and will have to be enabled explicitly in the configuration or the command-line options.
+- Properly parse properties in POM files for version resolution (#75)
+- Silence unwanted Ktor logging (#78)
 
 ### Security
 
