@@ -7,7 +7,7 @@ com.github.ajalt.mordant:mordant-core:3.0.2
 com.github.ajalt.mordant:mordant-coroutines:3.0.2
 com.github.ajalt.mordant:mordant-markdown:3.0.2
 com.github.ajalt.mordant:mordant:3.0.2
-com.squareup.okio:okio:3.16.4
+com.squareup.okio:okio:3.17.0
 com.strumenta:antlr-kotlin-runtime:1.0.9
 dev.drewhamilton.poko:poko-annotations:0.21.3
 io.github.bishiboosh:properties-serializer:1.0.0

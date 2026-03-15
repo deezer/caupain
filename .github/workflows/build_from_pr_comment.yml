@@ -25,16 +25,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
       - name: Checkout PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - name: Konan cache
         uses: ./.github/actions/konan-cache
         with:
@@ -45,7 +45,7 @@ jobs:
           ORG_GRADLE_PROJECT_isSnapshot: true
       - name: Upload artifacts
         id: upload_artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pr-release-artifacts
           path: |
@@ -77,16 +77,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
       - name: Checkout PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - name: Konan cache
         uses: ./.github/actions/konan-cache
         with:

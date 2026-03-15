@@ -1,4 +1,4 @@
-com.squareup.okio:okio:3.16.4
+com.squareup.okio:okio:3.17.0
 com.strumenta:antlr-kotlin-runtime:1.0.9
 dev.drewhamilton.poko:poko-annotations:0.21.3
 io.github.pdvrieze.xmlutil:core-io:1.0.0-rc2

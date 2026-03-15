@@ -16,8 +16,8 @@ com.github.ajalt.mordant:mordant-jvm:3.0.2
 com.github.ajalt.mordant:mordant-markdown-jvm:3.0.2
 com.github.ajalt.mordant:mordant-markdown:3.0.2
 com.github.ajalt.mordant:mordant:3.0.2
-com.squareup.okio:okio-jvm:3.16.4
-com.squareup.okio:okio:3.16.4
+com.squareup.okio:okio-jvm:3.17.0
+com.squareup.okio:okio:3.17.0
 io.github.bishiboosh:properties-serializer-jvm:1.0.0
 io.github.bishiboosh:properties-serializer:1.0.0
 io.ktor:ktor-client-core-jvm:3.4.1
