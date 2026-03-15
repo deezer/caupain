@@ -88,9 +88,6 @@ kotlin {
                 implementation(libs.ktor.client.cio)
             }
         }
-        val nonLinuxArm64Main by creating {
-            dependsOn(commonMain.get())
-        }
         val nonJsMain by creating {
             dependsOn(commonMain.get())
         }
@@ -98,7 +95,6 @@ kotlin {
             dependsOn(commonTest.get())
         }
         jvmMain {
-            dependsOn(nonLinuxArm64Main)
             dependsOn(nonJsMain)
             dependencies {
                 implementation(libs.slf4j.nop)
@@ -113,13 +109,11 @@ kotlin {
             }
         }
         macosMain {
-            dependsOn(nonLinuxArm64Main)
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
         }
         mingwMain {
-            dependsOn(nonLinuxArm64Main)
             dependencies {
                 implementation(libs.ktor.client.winhttp)
             }
@@ -129,9 +123,7 @@ kotlin {
                 implementation(libs.ktor.client.curl)
             }
         }
-        linuxX64Main.get().dependsOn(nonLinuxArm64Main)
         jsMain {
-            dependsOn(nonLinuxArm64Main)
             dependencies {
                 implementation(libs.ktor.client.js)
                 implementation(libs.okio.node.filesystem)

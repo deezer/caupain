@@ -26,14 +26,11 @@ package com.deezer.caupain.internal
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.plugins.SendCountExceedException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import io.ktor.serialization.ContentConvertException
 import kotlinx.io.IOException
-
-internal expect fun HttpClientEngineConfig.configureKtorEngine()
 
 // We do not use it as a scope, but HttpClient does implement scope
 @Suppress("SuspendFunWithCoroutineScopeReceiver")
