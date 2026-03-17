@@ -11,9 +11,14 @@
 ### Removed
 
 ### Fixed
-- Parsing error in CLI configuration (#81)
 
 ### Security
+
+## 1.9.1 - 2026-03-17
+
+### Fixed
+
+- Parsing error in CLI configuration (#81)
 
 ## 1.9.0 - 2026-03-15
 
