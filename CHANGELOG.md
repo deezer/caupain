@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Parsing error in CLI configuration (#81)
 
 ### Security
 
