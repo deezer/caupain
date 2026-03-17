@@ -44,6 +44,10 @@ class ConfigurationParsingTest {
     fun testParsing() {
         val result = DefaultToml.decodeFromString<Configuration>(CONFIGURATION)
         assertEquals(
+            expected = listOf("versions.toml".toPath(), "other-versions.toml".toPath()),
+            actual = result.versionCatalogPaths
+        )
+        assertEquals(
             expected = listOf(
                 DefaultRepositories.mavenCentral.withComponentFilter {
                     include(group = "com.example", name = "example-lib")
@@ -71,7 +75,7 @@ class ConfigurationParsingTest {
             ),
             actual = result.pluginRepositories?.map { it.toModel() }
         )
-        assertEquals("stability-level", result.policy)
+        assertEquals(setOf("stability-level", "other-one"), result.policies)
         assertEquals("build/cache/caupain".toPath(), result.cacheDir)
         assertEquals(setOf("test"), result.excludedKeys)
         assertEquals(
@@ -88,18 +92,23 @@ class ConfigurationParsingTest {
             ),
             actual = result.excludedPlugins
         )
+        assertEquals(
+            expected = setOf(Configuration.OutputType.MARKDOWN, Configuration.OutputType.HTML),
+            actual = result.outputTypes
+        )
     }
 }
 
 @Language("TOML")
 private val CONFIGURATION = """
+versionCatalogPaths = ["versions.toml", "other-versions.toml"]
 pluginRepositories = [ 
     "gradlePluginPortal",
     { url = "http://www.example.com/plugin" }
 ]
-policy = "stability-level"
+policies = ["stability-level", "other-one", "stability-level"]
 cacheDir = "build/cache/caupain"
-outputType = "markdown"
+outputTypes = ["markdown", "html"]
 outputPath = "build/reports/dependency-updates.md"    
 excludedKeys = ["test"]
 excludedLibraries = [

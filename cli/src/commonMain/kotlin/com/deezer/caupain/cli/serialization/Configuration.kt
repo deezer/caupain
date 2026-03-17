@@ -59,7 +59,7 @@ private data class ConfigurationImpl(
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
     override val policy: String? = null,
-    override val policies: Iterable<String>?,
+    override val policies: Set<String>?,
     override val policyPluginDir: Path? = null,
     override val cacheDir: Path? = null,
     override val showVersionReferences: Boolean? = null,
