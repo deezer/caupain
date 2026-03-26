@@ -41,7 +41,6 @@ kotlin {
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 
     sourceSets {
-        macosX64 { configureTarget() }
         macosArm64 { configureTarget() }
         mingwX64 { configureTarget() }
         linuxX64 { configureTarget() }
@@ -213,7 +212,6 @@ tasks.named<JavaExec>("runJvm") {
 }
 val zipAndCopyBinaries = tasks.register<MakeBinariesZipTask>("zipAndCopyBinaries") {
     dependsOn(
-        "macosX64Binaries",
         "macosArm64Binaries",
         "mingwX64Binaries",
         "linuxX64Binaries",
