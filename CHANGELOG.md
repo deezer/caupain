@@ -9,9 +9,6 @@
 ### Deprecated
 
 ### Removed
-- Intel-based macOS builds are no longer published, as they are not supported by the latest Kotlin
-version. If you need to use Caupain on an Intel-based Mac, you can still use on of the previous 
-versions.
 
 ### Fixed
 
