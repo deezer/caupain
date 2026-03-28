@@ -40,11 +40,9 @@ kotlin {
     explicitApi()
     compilerOptions.freeCompilerArgs.addAll(
         "-Xexpect-actual-classes",
-        "-Xwhen-guards"
     )
 
     sourceSets {
-        macosX64()
         macosArm64()
         mingwX64()
         linuxX64()
@@ -135,7 +133,7 @@ kotlin {
 
     abiValidation {
         enabled.set(true)
-        filters.excluded.byNames.add("com.deezer.caupain.antlr.**")
+        filters.exclude.byNames.add("com.deezer.caupain.antlr.**")
     }
 }
 
