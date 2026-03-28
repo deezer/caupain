@@ -192,6 +192,25 @@ tasks.withType<DependenciesUpdateTask> {
 }
 ```
 
+### Specific filtering
+
+You can define filters for specific dependencies. You can use this to restrict the updates that will
+be suggested.
+
+```kotlin
+// You can use a prefix version filter. This will only accept updates with the 1. prefix, like 1.0.0,
+// 1.5.2, but not 2.0.0.
+addFilter(group = "com.google.guava", name = "guava", versionFilter = "1.+")
+// or a range version filter. This will only accept updates with a version greater than 1.2 and less
+// than or equal to 1.5.
+addFilter(group = "com.google.guava", name = "guava", versionFilter = "(1.2, 1.5]")
+// If the name is not specified, the group is interpreted as a glob and the filter will be applied
+// to all dependencies matching the glob
+addFilter(group = "com.google.**", versionFilter = "1.+")
+// You can also use this for plugins
+addFilter(pluginId = "filtered.plugin.id", name = "guava", versionFilter = "1.+")
+```
+
 ### Outputs
 
 By default, the plugins outputs both a console result and an HTML file in the `build/reports` directory.

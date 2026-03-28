@@ -91,22 +91,13 @@ sealed interface Repository {
 data class PackageSpec(val group: String, val name: String? = null)
 
 @Serializable
-enum class DefaultRepository(val key: String, val repository: ModelRepository) {
+enum class DefaultRepository(val repository: ModelRepository) {
     @SerialName("google")
-    GOOGLE(
-        "google",
-        com.deezer.caupain.model.DefaultRepositories.google
-    ),
+    GOOGLE(com.deezer.caupain.model.DefaultRepositories.google),
 
     @SerialName("mavenCentral")
-    MAVEN_CENTRAL(
-        "mavenCentral",
-        com.deezer.caupain.model.DefaultRepositories.mavenCentral
-    ),
+    MAVEN_CENTRAL(com.deezer.caupain.model.DefaultRepositories.mavenCentral),
 
     @SerialName("gradlePluginPortal")
-    GRADLE_PLUGINS(
-        "gradlePluginPortal",
-        com.deezer.caupain.model.DefaultRepositories.gradlePlugins
-    ),
+    GRADLE_PLUGINS(com.deezer.caupain.model.DefaultRepositories.gradlePlugins),
 }

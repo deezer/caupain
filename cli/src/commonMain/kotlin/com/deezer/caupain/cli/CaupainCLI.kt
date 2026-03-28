@@ -439,6 +439,7 @@ class CaupainCLI(
                 ?: emptySet(),
             excludedLibraries = parsedConfiguration?.excludedLibraries.orEmpty(),
             excludedPlugins = parsedConfiguration?.excludedPlugins.orEmpty(),
+            filters = parsedConfiguration?.filters.orEmpty(),
             policies = policies
                 ?.map { it.trim() }
                 ?: parsedConfiguration?.policies

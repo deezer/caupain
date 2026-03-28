@@ -31,6 +31,7 @@ import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
@@ -98,6 +99,12 @@ open class DependenciesUpdateTask : DefaultTask() {
      */
     @get:Internal
     val excludedPluginIds = project.objects.setProperty<String>()
+
+    /**
+     * @see DependenciesUpdateExtension.filters
+     */
+    @get:Internal
+    val filters = project.objects.listProperty<Filter>()
 
     @get:Internal
     internal val formatterOutputs = project.objects.listProperty<OutputsHandler.Output>()
