@@ -8,6 +8,7 @@ import dev.detekt.gradle.Detekt
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -37,6 +38,14 @@ tapmoc {
     kotlin(libs.versions.kotlin.get())
 }
 
+fun KotlinNativeTarget.addLinuxLinkerOptions() {
+    binaries {
+        executable(listOf(NativeBuildType.DEBUG)) {
+            linkerOpts.add("--allow-multiple-definition")
+        }
+    }
+}
+
 kotlin {
     explicitApi()
     compilerOptions.freeCompilerArgs.addAll(
@@ -46,8 +55,8 @@ kotlin {
     sourceSets {
         macosArm64()
         mingwX64()
-        linuxX64()
-        linuxArm64()
+        linuxX64 { addLinuxLinkerOptions() }
+        linuxArm64 { addLinuxLinkerOptions() }
         jvm()
         js {
             nodejs()
