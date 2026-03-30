@@ -35,8 +35,7 @@ enum class Architecture(
     private val ext: String,
     private val outExt: String?
 ) {
-    MACOS_ARM("macos-silicon", "macosArm64", "arm64", "kexe", null),
-    MACOS_X86("macos-intel", "macosX64", "amd64", "kexe", null),
+    MACOS("macos", "macosArm64", "arm64", "kexe", null),
     LINUX_X86("linux", "linuxX64", "amd64", "kexe", null),
     LINUX_ARM("linux-arm", "linuxArm64", "arm64", "kexe", null),
     WINDOWS("windows", "mingwX64", "amd64", "exe", "exe");
@@ -62,11 +61,7 @@ val Project.currentArch: Provider<Architecture>
     get() = osName.flatMap { osName ->
         osArch.map { osArch ->
             when {
-                osName == "Mac OS X" -> if (osArch == "aarch64") {
-                    Architecture.MACOS_ARM
-                } else {
-                    Architecture.MACOS_X86
-                }
+                osName == "Mac OS X" && osArch == "aarch64" -> Architecture.MACOS
 
                 osName == "Linux" -> if (osArch == "aarch64") {
                     Architecture.LINUX_ARM

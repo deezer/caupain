@@ -71,6 +71,10 @@ jobs:
           distribution: 'temurin'
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v5
+      - name: Konan cache
+        uses: ./.github/actions/konan-cache
+        with:
+          job-type: 'build'
       - name: Publish to Maven Central and Gradle Plugin Portal
         run: ./gradlew :core:publishAndReleaseToMavenCentral :gradle-plugin:publishPlugins --stacktrace --no-configuration-cache
         env:
