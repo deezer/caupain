@@ -24,7 +24,7 @@ plugins {
 }
 
 fun org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary.addLinuxLinkerOpts() {
-    linkerOpts.add("--allow-multiple-definitions")
+    linkerOpts.add("--allow-multiple-definition")
 }
 
 fun KotlinNativeTarget.configureTarget(isLinux: Boolean) =

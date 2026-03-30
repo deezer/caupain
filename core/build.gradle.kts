@@ -46,13 +46,7 @@ kotlin {
     sourceSets {
         macosArm64()
         mingwX64()
-        linuxX64 {
-            binaries {
-                executable(listOf(NativeBuildType.DEBUG)) {
-                    linkerOpts.add("--allow-multiple-definitions")
-                }
-            }
-        }
+        linuxX64()
         linuxArm64()
         jvm()
         js {
