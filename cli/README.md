@@ -156,6 +156,20 @@ policies = [ "stability-level" ]
 # Policy plugin directory. This is the directory where the custom policies are located. 
 # Only applies to JVM, see the documentation section about policies for more information
 policyPluginDir = "path/to/policy/plugin/dir"
+# Filter for specific dependencies. You can use this to restrict the updates that will be suggested.
+filters = [
+    # You can use a prefix version filter. This will only accept updates with the 1. prefix, like
+    # 1.0.0, 1.5.2, but not 2.0.0.
+    { group = "com.google.guava", name = "guava", versionFilter = "1.+" },
+    # or a range version filter. This will only accept updates with a version greater than 1.2 and 
+    # less than or equal to 1.5.
+    { group = "com.google.guava", name = "guava", versionFilter = "(1.2, 1.5]" },
+    # If the name is not specified, the group is interpreted as a glob and the filter will be 
+    # applied to all dependencies matching the glob
+    { group = "com.google.**", versionFilter = "1.+" },
+    # You can also use this for plugins
+    { id = "filtered.plugin.id", versionFilter = "1.+" },
+]
 # Cache directory. This is the directory where the HTTP cache is stored. Defaults to the user cache
 # directory.
 cacheDir = "path/to/cache/dir"

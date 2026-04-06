@@ -28,6 +28,7 @@
     PluginExclusionSerializer::class,
     LibraryExclusionSerializer::class,
     OutputTypeSerializer::class,
+    FilterSerializer::class,
 )
 
 package com.deezer.caupain.cli.serialization
@@ -35,6 +36,7 @@ package com.deezer.caupain.cli.serialization
 import com.deezer.caupain.cli.BuildConfig
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
+import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
@@ -58,6 +60,7 @@ private data class ConfigurationImpl(
     override val excludedKeys: Set<String>? = null,
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
+    override val filters: List<Filter>? = null,
     override val policy: String? = null,
     override val policies: Set<String>?,
     override val policyPluginDir: Path? = null,

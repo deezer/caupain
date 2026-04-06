@@ -50,6 +50,7 @@ import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.policies.FilterPolicy
 import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
 import com.deezer.caupain.resolver.GithubReleaseNoteResolver
 import com.deezer.caupain.resolver.GradleVersionResolver
@@ -253,11 +254,16 @@ internal class DefaultDependencyUpdateChecker(
 
     private val selectedPolicies by lazy {
         val policiesByName = this.policies.associateBy { it.name }
-        configuration
-            .policies
-            .map { name ->
-                policiesByName.getOrElse(name) { throw UnknownPolicyException(name) }
+        buildList {
+            configuration
+                .policies
+                .mapTo(this) { name ->
+                    policiesByName.getOrElse(name) { throw UnknownPolicyException(name) }
+                }
+            if (configuration.filters.isNotEmpty()) {
+                add(FilterPolicy(configuration.filters))
             }
+        }
     }
 
     private val infoResolver = MavenInfoResolver(

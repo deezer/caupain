@@ -263,6 +263,7 @@ caupain {
     }
     showVersionReferences.set(true)
     checkIgnored.set(true)
+    addFilter(group = "com.example", name = "filtered", versionFilter = "1.0.0")
     $supplementaryConfiguration
 }
 """.trimIndent()

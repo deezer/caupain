@@ -16,6 +16,9 @@ public class com/deezer/caupain/plugin/DependenciesReplaceTask : org/gradle/api/
 }
 
 public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
+	public final fun addFilter (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun addFilter (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun addFilter$default (Lcom/deezer/caupain/plugin/DependenciesUpdateExtension;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun excludeKeys ([Ljava/lang/String;)V
 	public final fun excludeLibraries ([Lcom/deezer/caupain/model/LibraryExclusion;)V
 	public final fun excludeLibrary (Ljava/lang/String;Ljava/lang/String;)V
@@ -25,6 +28,7 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getFilters ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getGithubToken ()Lorg/gradle/api/provider/Property;
 	public final fun getGradleStabilityLevel ()Lorg/gradle/api/provider/Property;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
@@ -49,6 +53,7 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun getExcludedKeys ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getExcludedLibraries ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getExcludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getFilters ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getGithubToken ()Lorg/gradle/api/provider/Property;
 	public final fun getGradleStabilityLevel ()Lorg/gradle/api/provider/Property;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;

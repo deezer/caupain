@@ -32,6 +32,8 @@ import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DefaultRepositories
 import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.Filter
+import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
@@ -156,6 +158,12 @@ class CaupainCLIConfigTest {
                     excludedLibraries = listOf(LibraryExclusion("libGroup", "libName")),
                     excludedPlugins = listOf(PluginExclusion("pluginId")),
                     policies = listOf("policyConf"),
+                    filters = listOf(
+                        Filter.PluginFilter(
+                            "com.example.plugin",
+                            GradleDependencyVersion.Prefix("1.+")
+                        )
+                    ),
                     policyPluginDir = "policyConf".toPath(),
                     cacheDir = "cacheConf".toPath(),
                     showVersionReferences = true,
@@ -254,6 +262,19 @@ class CaupainCLIConfigTest {
                     actual = conf.excludedPlugins
                 )
                 assertEquals(
+                    expected = if (hasConf) {
+                        listOf(
+                            Filter.PluginFilter(
+                                "com.example.plugin",
+                                GradleDependencyVersion.Prefix("1.+")
+                            )
+                        )
+                    } else {
+                        emptyList()
+                    },
+                    actual = conf.filters,
+                )
+                assertEquals(
                     expected = when {
                         hasOptionsOverride -> listOf("policyCli")
                         hasConf -> listOf("policyConf")
@@ -343,7 +364,11 @@ class CaupainCLIConfigTest {
                     else -> emptyList()
                 }
             )
-            assertEquals(expected = 0, actual = result.statusCode, "CLI exited with non-zero code, error is ${result.stderr}")
+            assertEquals(
+                expected = 0,
+                actual = result.statusCode,
+                "CLI exited with non-zero code, error is ${result.stderr}"
+            )
             if (hasOptionsOverride) {
                 assertTrue(fileSystem.exists("outputDirCli/outputBaseNameCli.md".toPath()))
             } else if (hasConf) {
@@ -375,6 +400,7 @@ private data class TestConfiguration(
     override val excludedPlugins: List<PluginExclusion>?,
     override val policy: String? = null,
     override val policies: Iterable<String>?,
+    override val filters: List<Filter>?,
     override val policyPluginDir: Path?,
     override val cacheDir: Path?,
     override val showVersionReferences: Boolean?,

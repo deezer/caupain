@@ -27,6 +27,8 @@ package com.deezer.caupain.cli
 import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.serialization.DefaultToml
 import com.deezer.caupain.model.DefaultRepositories
+import com.deezer.caupain.model.Filter
+import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.Repository
@@ -96,6 +98,24 @@ class ConfigurationParsingTest {
             expected = setOf(Configuration.OutputType.MARKDOWN, Configuration.OutputType.HTML),
             actual = result.outputTypes
         )
+        assertEquals(
+            expected = listOf(
+                Filter.LibraryFilter(
+                    group = "com.example",
+                    name = "example-lib",
+                    versionFilter = GradleDependencyVersion.Prefix("1.+")
+                ),
+                Filter.LibraryFilter(
+                    group = "com.example.**",
+                    versionFilter = GradleDependencyVersion.Prefix("1.+")
+                ),
+                Filter.PluginFilter(
+                    id = "com.example.plugin",
+                    versionFilter = GradleDependencyVersion.Range("[1.0,)")
+                )
+            ),
+            actual = result.filters,
+        )
     }
 }
 
@@ -107,6 +127,11 @@ pluginRepositories = [
     { url = "http://www.example.com/plugin" }
 ]
 policies = ["stability-level", "other-one", "stability-level"]
+filters = [
+    { group = "com.example", name = "example-lib", versionFilter = "1.+" },
+    { group = "com.example.**", versionFilter = "1.+" },
+    { id = "com.example.plugin", versionFilter = "[1.0,)" }
+]
 cacheDir = "build/cache/caupain"
 outputTypes = ["markdown", "html"]
 outputPath = "build/reports/dependency-updates.md"    

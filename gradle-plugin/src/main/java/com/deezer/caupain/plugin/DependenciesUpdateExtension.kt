@@ -24,6 +24,8 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.model.Filter
+import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.plugin.internal.listProperty
@@ -73,6 +75,11 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      */
     val excludedPluginIds: SetProperty<String> =
         objects.setProperty<String>().convention(emptySet())
+
+    /**
+     * The list of filters to apply to the update check. Default is empty.
+     */
+    val filters: ListProperty<Filter> = objects.listProperty<Filter>().convention(emptyList())
 
     @get:Nested
     abstract val outputsHandler: OutputsHandler
@@ -164,6 +171,20 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      */
     fun excludeLibraries(vararg libraries: LibraryExclusion) {
         excludedLibraries.addAll(libraries.asIterable())
+    }
+
+    /**
+     * Add a filter on a library to the update check.
+     */
+    fun addFilter(group: String, name: String? = null, versionFilter: String) {
+        filters.add(Filter.LibraryFilter(group, name, GradleDependencyVersion(versionFilter)))
+    }
+
+    /**
+     * Add a filter on a plugin to the update check.
+     */
+    fun addFilter(pluginId: String, versionFilter: String) {
+        filters.add(Filter.PluginFilter(pluginId, GradleDependencyVersion(versionFilter)))
     }
 
     /**

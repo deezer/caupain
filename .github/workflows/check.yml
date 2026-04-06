@@ -83,10 +83,6 @@ jobs:
           choco install caupain --debug --verbose --source .
           caupain --version
         if: matrix.os == 'windows-latest' && github.event_name != 'pull_request'
-      - name: Test build
-        run: |
-          ./gradlew :cli:buildCurrentArchBinary --stacktrace --no-configuration-cache  
-          ./cli/build/bin/caupain --version
       - name: Upload reports
         uses: actions/upload-artifact@v7
         if: success() || failure()
@@ -135,6 +131,38 @@ jobs:
           report_paths: '*/build/test-results/**/TEST-*.xml'
           annotate_only: true
 
+  build:
+    runs-on: macos-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Konan cache
+        uses: ./.github/actions/konan-cache
+        with:
+          job-type: 'build'
+      - name: Build binaries and packages
+        run: ./gradlew :cli:assembleAll :cli:buildAllDebs --stacktrace --no-configuration-cache
+        env:
+          ORG_GRADLE_PROJECT_isSnapshot: true
+      - name: Upload artifacts
+        id: upload_artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-release-artifacts
+          path: |
+            cli/build/bin/zip/*.zip
+            cli/build/distributions/*.zip
+            cli/build/distributions/*.deb
+      - name: Update summary
+        run: |
+          echo "[Binaries](${{ steps.upload_artifact.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"

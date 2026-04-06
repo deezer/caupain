@@ -26,62 +26,42 @@ package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.cli.model.DefaultRepository
 import com.deezer.caupain.cli.model.Repository
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
-import net.peanuuutz.tomlkt.asTomlDecoder
 
-@Suppress("UnnecessaryOptInAnnotation")
-@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-object RepositorySerializer : KSerializer<Repository> {
+object RepositorySerializer : TomlContentPolymorphicSerializer<Repository>(Repository::class) {
 
-    private val richRepositorySerializer = Repository.Rich.serializer()
+    override fun selectDeserializer(root: TomlElement): DeserializationStrategy<Repository> {
+        return when (root) {
+            is TomlLiteral -> TextRepositoryDeserializer
 
-    private val defaultRepositorySerializer = Repository.Default.serializer()
-
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        serialName = "com.deezer.caupain.cli.model.Repository",
-        kind = SerialKind.CONTEXTUAL,
-    )
-
-    override fun deserialize(decoder: Decoder): Repository {
-        val tomlDecoder = decoder.asTomlDecoder()
-        return when (val element = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> Repository.Default(
-                DefaultRepository
-                    .entries
-                    .firstOrNull { it.key == element.content }
-                    ?: throw SerializationException("Unknown repository: ${element.content}")
-            )
-
-            is TomlTable -> tomlDecoder
-                .toml
-                .decodeFromTomlElement(
-                    deserializer = if ("default" in element.keys) {
-                        defaultRepositorySerializer
-                    } else {
-                        richRepositorySerializer
-                    },
-                    element = element
-                )
+            is TomlTable -> if ("default" in root.keys) {
+                Repository.Default.serializer()
+            } else {
+                Repository.Rich.serializer()
+            }
 
             else ->
-                throw SerializationException("Unsupported TOML element type: ${element::class.simpleName}")
+                throw SerializationException("Unsupported TOML element type: ${root::class.simpleName}")
         }
     }
+}
 
-    override fun serialize(encoder: Encoder, value: Repository) {
-        when (value) {
-            is Repository.Default -> encoder.encodeSerializableValue(defaultRepositorySerializer, value)
-            is Repository.Rich -> encoder.encodeSerializableValue(richRepositorySerializer, value)
-        }
+private object TextRepositoryDeserializer : DeserializationStrategy<Repository.Default> {
+
+    private val defaultRepositorySerializer = DefaultRepository.serializer()
+
+    override val descriptor: SerialDescriptor
+        get() = PrimitiveSerialDescriptor("Repository.Default", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Repository.Default {
+        return Repository.Default(decoder.decodeSerializableValue(defaultRepositorySerializer))
     }
 }
