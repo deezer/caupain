@@ -60,6 +60,7 @@ antlr-kotlin-runtime = { module = "com.strumenta:antlr-kotlin-runtime", version.
 app-dirs = "ca.gosyer:kotlin-multiplatform-appdirs:2.0.0"
 commons-text = "org.apache.commons:commons-text:1.15.0"
 test-parameter-injector = "com.google.testparameterinjector:test-parameter-injector:1.21"
+kotlin-native-utils = { module = "org.jetbrains.kotlin:kotlin-native-utils", version.ref = "kotlin" }
 
 [bundles]
 clikt = ["clikt", "clikt-markdown", "mordant", "mordant-coroutines"]
