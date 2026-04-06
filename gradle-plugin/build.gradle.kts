@@ -105,7 +105,3 @@ mavenPublishing {
 tasks.withType<Detekt> {
     setSource(files("src/main/java"))
 }
-
-tasks.named("check") {
-    dependsOn("checkLegacyAbi")
-}

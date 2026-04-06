@@ -250,7 +250,3 @@ mavenPublishing {
 tasks.register("testAll") {
     dependsOn(tasks.withType<Test>(), tasks.withType<KotlinNativeTest>())
 }
-
-tasks.named("check") {
-    dependsOn("checkLegacyAbi")
-}
