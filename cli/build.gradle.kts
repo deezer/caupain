@@ -11,6 +11,7 @@ import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.konan.target.Family
 import org.redline_rpm.header.Os
 
 plugins {
@@ -27,20 +28,18 @@ fun org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary.addLinuxLinkerOpts() {
     linkerOpts.add("--allow-multiple-definition")
 }
 
-fun KotlinNativeTarget.configureTarget(isLinux: Boolean) =
+fun KotlinNativeTarget.configureTarget() {
     binaries {
         executable(listOf(NativeBuildType.RELEASE)) {
             entryPoint = "main"
             baseName = "caupain"
-            if (isLinux) addLinuxLinkerOpts()
+            if (konanTarget.family == Family.LINUX) addLinuxLinkerOpts()
         }
-        executable(listOf(NativeBuildType.DEBUG)) {
-            if (isLinux) addLinuxLinkerOpts()
-        }
-        test(listOf(NativeBuildType.DEBUG)) {
-            if (isLinux) addLinuxLinkerOpts()
+        getTest(NativeBuildType.DEBUG).apply {
+            if (konanTarget.family == Family.LINUX) addLinuxLinkerOpts()
         }
     }
+}
 
 tapmoc {
     java(17)
@@ -51,10 +50,10 @@ kotlin {
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 
     sourceSets {
-        macosArm64 { configureTarget(isLinux = false) }
-        mingwX64 { configureTarget(isLinux = false) }
-        linuxX64 { configureTarget(isLinux = true) }
-        linuxArm64 { configureTarget(isLinux = true) }
+        macosArm64 { configureTarget() }
+        mingwX64 { configureTarget() }
+        linuxX64 { configureTarget() }
+        linuxArm64 { configureTarget() }
 
         applyDefaultHierarchyTemplate()
 

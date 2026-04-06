@@ -40,10 +40,7 @@ tapmoc {
 
 fun KotlinNativeTarget.addLinuxLinkerOptions() {
     binaries {
-        executable(listOf(NativeBuildType.DEBUG)) {
-            linkerOpts.add("--allow-multiple-definition")
-        }
-        test(listOf(NativeBuildType.DEBUG)) {
+        getTest(NativeBuildType.DEBUG).apply {
             linkerOpts.add("--allow-multiple-definition")
         }
     }
