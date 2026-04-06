@@ -60,7 +60,7 @@ private data class ConfigurationImpl(
     override val excludedKeys: Set<String>? = null,
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
-    override val filters: List<Filter>?,
+    override val filters: List<Filter>? = null,
     override val policy: String? = null,
     override val policies: Set<String>?,
     override val policyPluginDir: Path? = null,

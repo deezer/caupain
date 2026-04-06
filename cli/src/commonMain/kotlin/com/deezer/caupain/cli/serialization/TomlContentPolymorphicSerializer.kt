@@ -70,7 +70,7 @@ abstract class TomlContentPolymorphicSerializer<T : Any>(private val baseClass: 
 
     final override fun deserialize(decoder: Decoder): T {
         val input = decoder.asTomlDecoder()
-        val root = decoder.decodeTomlElement()
+        val root = input.decodeTomlElement()
         return input.toml.decodeFromTomlElement(selectDeserializer(root), root)
     }
 
