@@ -295,8 +295,10 @@ public sealed interface Filter : Serializable {
      *  * end of the glob.
      *  * If the glob only consist of a `**`, it will be a match for everything.
      *  *
-     *  * @property group The group of the library to exclude. If `name` is null, then this is interpreted as a glob
-     *  * @property name The name of the library to exclude. If null, all libraries in the group are excluded.
+     *  * @property group The group of the library to match. If `name` is null, then this is
+     *  interpreted as a glob
+     *  * @property name The name of the library to filter. If null, the filter applies to all
+     *  libraries in the matching group.
      *  * @property versionFilter The filter for the version.
      */
     @Poko

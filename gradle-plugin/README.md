@@ -208,7 +208,7 @@ addFilter(group = "com.google.guava", name = "guava", versionFilter = "(1.2, 1.5
 // to all dependencies matching the glob
 addFilter(group = "com.google.**", versionFilter = "1.+")
 // You can also use this for plugins
-addFilter(pluginId = "filtered.plugin.id", name = "guava", versionFilter = "1.+")
+addFilter(pluginId = "filtered.plugin.id", versionFilter = "1.+")
 ```
 
 ### Outputs

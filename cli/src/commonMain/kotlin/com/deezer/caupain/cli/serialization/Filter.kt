@@ -29,6 +29,7 @@ import com.deezer.caupain.model.GradleDependencyVersion
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -48,11 +49,10 @@ object FilterSerializer : TomlContentPolymorphicSerializer<CoreFilter>(CoreFilte
     }
 
     override fun selectDeserializer(root: TomlElement): DeserializationStrategy<CoreFilter> {
-        return if ((root as TomlTable).containsKey("id")) {
-            PluginFilterSerializer
-        } else {
-            LibraryFilterSerializer
+        if (root !is TomlTable) {
+            throw SerializationException("Expected a table for deserializing a filter, but got ${root::class}")
         }
+        return if (root.containsKey("id")) PluginFilterSerializer else LibraryFilterSerializer
     }
 }
 

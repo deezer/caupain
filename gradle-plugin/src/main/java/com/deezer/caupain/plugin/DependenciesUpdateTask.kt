@@ -288,6 +288,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             excludedLibraries = excludedLibraries.get(),
             excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
             policies = policies,
+            filters = filters.get(),
             cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,
             debugHttpCalls = true,
             onlyCheckStaticVersions = onlyCheckStaticVersions.get(),
