@@ -35,11 +35,8 @@ import dev.mokkery.mock
 import dev.mokkery.verify
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.HttpRequestData
-import io.ktor.client.request.HttpResponseData
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -85,8 +82,16 @@ class GradleVersionResolverTest(
     fun setup() {
         logger = mock(MockMode.autoUnit)
         engine = MockEngine { requestData ->
-            handleRequest(this, requestData)
-                ?: respond("Not found", HttpStatusCode.NotFound)
+            if (hasError) throw TestException()
+            val url = requestData.url
+            if (url == GRADLE_VERSIONS_URL) {
+                respond(
+                    content = GRADLE_RELEASES,
+                    headers = headersOf(HttpHeaders.ContentType, "application/json")
+                )
+            } else {
+                respond("Not found", HttpStatusCode.NotFound)
+            }
         }
         resolver = GradleVersionResolver(
             httpClient = HttpClient(engine) {
@@ -99,22 +104,6 @@ class GradleVersionResolverTest(
             stabilityLevel = testInfo.stabilityLevel,
             ioDispatcher = testDispatcher
         )
-    }
-
-    private fun handleRequest(
-        scope: MockRequestHandleScope,
-        requestData: HttpRequestData
-    ): HttpResponseData? {
-        if (hasError) throw TestException()
-        val url = requestData.url
-        return if (url == GRADLE_VERSIONS_URL) {
-            scope.respond(
-                content = GRADLE_RELEASES,
-                headers = headersOf(HttpHeaders.ContentType, "application/json")
-            )
-        } else {
-            null
-        }
     }
 
     @AfterTest

@@ -1,17 +1,19 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-import com.deezer.caupain.Architecture
-import com.deezer.caupain.currentArch
+import com.deezer.caupain.BUILD_TARGETS
+import com.deezer.caupain.fullArchName
 import com.deezer.caupain.rename
 import com.deezer.caupain.tasks.CreateChocolateyFilesTask
 import com.deezer.caupain.tasks.MakeBinariesZipTask
 import com.deezer.caupain.tasks.RenameCurrentBinaryTask
 import com.netflix.gradle.plugins.deb.Deb
 import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
-import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.konan.target.Architecture
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.redline_rpm.header.Os
 
 plugins {
@@ -24,13 +26,22 @@ plugins {
     alias(libs.plugins.dependency.guard)
 }
 
-fun KotlinNativeTarget.configureTarget() =
+fun org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary.addLinuxLinkerOpts() {
+    linkerOpts.add("--allow-multiple-definition")
+}
+
+fun KotlinNativeTarget.configureTarget() {
     binaries {
         executable(listOf(NativeBuildType.RELEASE)) {
             entryPoint = "main"
             baseName = "caupain"
+            if (konanTarget.family == Family.LINUX) addLinuxLinkerOpts()
+        }
+        getTest(NativeBuildType.DEBUG).apply {
+            if (konanTarget.family == Family.LINUX) addLinuxLinkerOpts()
         }
     }
+}
 
 tapmoc {
     java(17)
@@ -41,7 +52,6 @@ kotlin {
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 
     sourceSets {
-        macosX64 { configureTarget() }
         macosArm64 { configureTarget() }
         mingwX64 { configureTarget() }
         linuxX64 { configureTarget() }
@@ -155,13 +165,13 @@ fun ProjectPackagingExtension.from(sourcePath: Any, configure: CopySpec.() -> Un
 }
 
 val buildAllDebs = tasks.register("buildAllDebs")
-val linuxArchs = listOf(Architecture.LINUX_X86, Architecture.LINUX_ARM)
-for (arch in linuxArchs) {
-    val buildLinuxBinariesTask = tasks.named("${arch.fullArchName}Binaries")
-    val buildDebTask = tasks.register<Deb>("build${arch.fullArchName}Deb") {
+val linuxTargets = BUILD_TARGETS.filter { it.family == Family.LINUX }
+for (target in linuxTargets) {
+    val buildLinuxBinariesTask = tasks.named("${target.fullArchName}Binaries")
+    val buildDebTask = tasks.register<Deb>("build${target.fullArchName}Deb") {
         dependsOn(buildLinuxBinariesTask)
-        archStr = arch.shortArchName
-        from(layout.buildDirectory.dir("bin/${arch.fullArchName}/releaseExecutable/caupain.kexe")) {
+        archStr = if (target.architecture == Architecture.ARM64) "arm64" else "amd64"
+        from(layout.buildDirectory.dir("bin/${target.fullArchName}/releaseExecutable/caupain.kexe")) {
             into("bin")
             rename("caupain")
             filePermissions {
@@ -204,7 +214,7 @@ tasks.register<Copy>("buildChoco") {
 
 val renameCurrentBinaryTask = tasks.register<RenameCurrentBinaryTask>("renameCurrentArchBinary")
 tasks.register("buildCurrentArchBinary") {
-    dependsOn(currentArch.map { "${it.fullArchName}Binaries" }.get())
+    dependsOn(HostManager.host.let { "${it.fullArchName}Binaries" })
     finalizedBy(renameCurrentBinaryTask)
 }
 
@@ -213,7 +223,6 @@ tasks.named<JavaExec>("runJvm") {
 }
 val zipAndCopyBinaries = tasks.register<MakeBinariesZipTask>("zipAndCopyBinaries") {
     dependsOn(
-        "macosX64Binaries",
         "macosArm64Binaries",
         "mingwX64Binaries",
         "linuxX64Binaries",

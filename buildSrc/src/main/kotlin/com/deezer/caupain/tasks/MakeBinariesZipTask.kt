@@ -24,7 +24,11 @@
 
 package com.deezer.caupain.tasks
 
-import com.deezer.caupain.Architecture
+import com.deezer.caupain.BUILD_TARGETS
+import com.deezer.caupain.fullArchName
+import com.deezer.caupain.getFilePath
+import com.deezer.caupain.getOutFileName
+import com.deezer.caupain.platformName
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -33,6 +37,8 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.support.zipTo
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.KonanTarget
 import java.io.File
 
 open class MakeBinariesZipTask : DefaultTask() {
@@ -53,8 +59,8 @@ open class MakeBinariesZipTask : DefaultTask() {
     val binFiles = baseName.flatMap { baseName ->
         binDir.map { binDir ->
             binDir.files(
-                Architecture.values().map { arch ->
-                    binDir.file(arch.getFilePath(baseName))
+                BUILD_TARGETS.map { target ->
+                    binDir.file(target.getFilePath(baseName))
                 }
             )
         }
@@ -68,13 +74,13 @@ open class MakeBinariesZipTask : DefaultTask() {
         zipDir.mkdirs()
         val outDir = File(binDir, "caupain")
         outDir.mkdirs()
-        for (arch in Architecture.values()) {
-            val binaryFile = File(binDir, arch.getFilePath(baseName))
+        for (target in BUILD_TARGETS) {
+            val binaryFile = File(binDir, target.getFilePath(baseName))
             outDir.listFiles()?.forEach { it.delete() }
-            val outFileName = arch.getOutFileName(baseName)
+            val outFileName = target.getOutFileName(baseName)
             val outFile = File(outDir, outFileName)
             binaryFile.copyTo(outFile)
-            val zipFile = File(zipDir, "caupain-$version-${arch.platformName}.zip")
+            val zipFile = File(zipDir, "caupain-$version-${target.platformName}.zip")
             zipTo(zipFile, outDir)
         }
         outDir.deleteRecursively()

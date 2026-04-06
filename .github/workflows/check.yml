@@ -43,7 +43,6 @@ jobs:
       - name: Setup gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Konan cache
-        if: matrix.os != 'ubuntu-latest'
         uses: ./.github/actions/konan-cache
         with:
           job-type: 'test'

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,44 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.deezer.caupain.tasks
+package com.deezer.caupain
 
-import com.deezer.caupain.getFilePath
-import com.deezer.caupain.getOutFileName
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Internal
-import org.gradle.kotlin.dsl.property
-import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
-@Suppress("LeakingThis") // This is only abstract to be instantiated by Gradle
-abstract class RenameCurrentBinaryTask : Copy() {
+val BUILD_TARGETS: List<KonanTarget> = listOf(
+    KonanTarget.LINUX_X64,
+    KonanTarget.LINUX_ARM64,
+    KonanTarget.MINGW_X64,
+    KonanTarget.MACOS_ARM64,
+)
 
-    @get:Input
-    val target = HostManager.host
+fun KonanTarget.getFilePath(baseName: String) =
+    "$fullArchName/releaseExecutable/$baseName.${family.exeSuffix}"
 
-    @get:Internal
-    val binDir = project
-        .objects
-        .directoryProperty()
-        .convention(project.layout.buildDirectory.dir("bin"))
-
-    @get:Input
-    val baseName = project.objects.property<String>().convention("caupain")
-
-    @get:InputFile
-    val binaryFile = baseName.flatMap { baseName ->
-        binDir.map { binDir ->
-            binDir.file(target.getFilePath(baseName))
-        }
+fun KonanTarget.getOutFileName(baseName: String): String =
+    if (family == Family.MINGW) {
+        "$baseName.exe"
+    } else {
+        baseName
     }
 
-    init {
-        from(binaryFile)
-        into(binDir)
-        rename { target.getOutFileName(baseName.get()) }
+val KonanTarget.fullArchName: String
+    get() = when (this) {
+        KonanTarget.LINUX_X64 -> "linuxX64"
+        KonanTarget.LINUX_ARM64 -> "linuxArm64"
+        KonanTarget.MINGW_X64 -> "mingwX64"
+        KonanTarget.MACOS_ARM64 -> "macosArm64"
+        else -> error("Unsupported target $this")
     }
-}
+
+val KonanTarget.platformName: String
+    get() = when (family) {
+        Family.LINUX -> "linux"
+        Family.MINGW -> "windows"
+        Family.OSX -> "macos"
+        else -> error("Unsupported target $this")
+    }
