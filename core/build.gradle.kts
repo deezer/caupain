@@ -43,6 +43,9 @@ fun KotlinNativeTarget.addLinuxLinkerOptions() {
         executable(listOf(NativeBuildType.DEBUG)) {
             linkerOpts.add("--allow-multiple-definition")
         }
+        test(listOf(NativeBuildType.DEBUG)) {
+            linkerOpts.add("--allow-multiple-definition")
+        }
     }
 }
 

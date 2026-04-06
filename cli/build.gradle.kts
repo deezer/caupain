@@ -37,6 +37,9 @@ fun KotlinNativeTarget.configureTarget(isLinux: Boolean) =
         executable(listOf(NativeBuildType.DEBUG)) {
             if (isLinux) addLinuxLinkerOpts()
         }
+        test(listOf(NativeBuildType.DEBUG)) {
+            if (isLinux) addLinuxLinkerOpts()
+        }
     }
 
 tapmoc {
