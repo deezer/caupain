@@ -164,13 +164,6 @@ jobs:
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
             cli/build/distributions/*.deb
-      - name: Set latest commit status as ${{ job.status }}
-        uses: myrotvorets/set-commit-status-action@v2.0.1
-        if: always()
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
       - name: Update summary
         run: |
           echo "[Binaries](${{ steps.upload_artifact.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
