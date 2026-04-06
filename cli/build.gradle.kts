@@ -8,10 +8,10 @@ import com.deezer.caupain.tasks.MakeBinariesZipTask
 import com.deezer.caupain.tasks.RenameCurrentBinaryTask
 import com.netflix.gradle.plugins.deb.Deb
 import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
-import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.konan.target.Family
 import org.redline_rpm.header.Os
 
 plugins {
@@ -24,13 +24,22 @@ plugins {
     alias(libs.plugins.dependency.guard)
 }
 
-fun KotlinNativeTarget.configureTarget() =
+fun org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary.addLinuxLinkerOpts() {
+    linkerOpts.add("--allow-multiple-definition")
+}
+
+fun KotlinNativeTarget.configureTarget() {
     binaries {
         executable(listOf(NativeBuildType.RELEASE)) {
             entryPoint = "main"
             baseName = "caupain"
+            if (konanTarget.family == Family.LINUX) addLinuxLinkerOpts()
+        }
+        getTest(NativeBuildType.DEBUG).apply {
+            if (konanTarget.family == Family.LINUX) addLinuxLinkerOpts()
         }
     }
+}
 
 tapmoc {
     java(17)
@@ -41,7 +50,6 @@ kotlin {
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 
     sourceSets {
-        macosX64 { configureTarget() }
         macosArm64 { configureTarget() }
         mingwX64 { configureTarget() }
         linuxX64 { configureTarget() }
@@ -213,7 +221,6 @@ tasks.named<JavaExec>("runJvm") {
 }
 val zipAndCopyBinaries = tasks.register<MakeBinariesZipTask>("zipAndCopyBinaries") {
     dependsOn(
-        "macosX64Binaries",
         "macosArm64Binaries",
         "mingwX64Binaries",
         "linuxX64Binaries",
