@@ -26,8 +26,9 @@ package com.deezer.caupain.plugin
 
 import com.autonomousapps.kit.AbstractGradleProject.Companion.PLUGIN_UNDER_TEST_VERSION
 import com.autonomousapps.kit.GradleBuilder.build
-import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.GradleBuilder.runner
+import com.google.testing.junit.testparameterinjector.KotlinTestParameters.testValues
+import com.google.testing.junit.testparameterinjector.KotlinTestParameters.testValuesIn
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
@@ -142,15 +143,8 @@ class CaupainPluginTest {
         useBaseSettings = withBaseSettings,
     ).build()
 
-    private class GradleVersionProvider : TestParameterValuesProvider() {
-        override fun provideValues(context: Context?): List<GradleVersion> = setOf(
-            GradleVersion.current(),
-            GradleVersion.version("9.0.0")
-        ).toList()
-    }
-
     @Test
-    fun testPlugin(@TestParameter(valuesProvider = GradleVersionProvider::class) gradleVersion: GradleVersion) {
+    fun testPlugin(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
         val project = createProject()
         val result = build(
             gradleVersion = gradleVersion,
@@ -179,7 +173,7 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testReplace(@TestParameter(valuesProvider = GradleVersionProvider::class) gradleVersion: GradleVersion) {
+    fun testReplace(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
         val project = createProject()
         val result = build(
             gradleVersion = gradleVersion,
@@ -198,7 +192,7 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testMultipleFiles(@TestParameter(valuesProvider = GradleVersionProvider::class) gradleVersion: GradleVersion) {
+    fun testMultipleFiles(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
         val project = createProject(
             supplementaryCaupainConfiguration = """
             versionCatalogFile.set(file("gradle/other.versions.toml"))
@@ -236,7 +230,8 @@ class CaupainPluginTest {
             )
 
             // Ensure this value is true when `--debug-jvm` is passed to Gradle, and false otherwise
-            val isDebugJvm = ManagementFactory.getRuntimeMXBean().inputArguments.toString().indexOf("-agentlib:jdwp") > 0
+            val isDebugJvm = ManagementFactory.getRuntimeMXBean().inputArguments.toString()
+                .indexOf("-agentlib:jdwp") > 0
             withDebug(isDebugJvm)
         }.buildAndFail()
         assertContains(result.output, "Caupain plugin requires Gradle 9.0 or higher")
@@ -1224,3 +1219,10 @@ private fun expectedJsonResult(
     }
 }    
 """.trimIndent().trim()
+
+private val GRADLE_TESTED_VERSIONS by lazy {
+    setOf(
+        GradleVersion.current(),
+        GradleVersion.version("9.0.0")
+    ).toList()
+}
