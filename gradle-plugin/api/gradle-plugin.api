@@ -31,6 +31,9 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun getFilters ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getGithubToken ()Lorg/gradle/api/provider/Property;
 	public final fun getGradleStabilityLevel ()Lorg/gradle/api/provider/Property;
+	public final fun getIncludedKeys ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getIncludedLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getIncludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public abstract fun getOutputsHandler ()Lcom/deezer/caupain/plugin/OutputsHandler;
 	public abstract fun getRepositories ()Lcom/deezer/caupain/plugin/RepositoryHandler;
@@ -40,6 +43,11 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun getVerifyExistence ()Lorg/gradle/api/provider/Property;
 	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
 	public final fun getVersionCatalogFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public final fun includeKeys ([Ljava/lang/String;)V
+	public final fun includeLibraries ([Lcom/deezer/caupain/model/LibraryInclusion;)V
+	public final fun includeLibrary (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun includeLibrary$default (Lcom/deezer/caupain/plugin/DependenciesUpdateExtension;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun includePluginIds ([Ljava/lang/String;)V
 	public final fun outputs (Lorg/gradle/api/Action;)V
 	public final fun repositories (Lorg/gradle/api/Action;)V
 }
@@ -56,6 +64,9 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun getFilters ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getGithubToken ()Lorg/gradle/api/provider/Property;
 	public final fun getGradleStabilityLevel ()Lorg/gradle/api/provider/Property;
+	public final fun getIncludedKeys ()Lorg/gradle/api/provider/SetProperty;
+	public final fun getIncludedLibraries ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getIncludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public final fun getPluginRepositories ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getRepositories ()Lorg/gradle/api/provider/ListProperty;

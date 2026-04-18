@@ -28,7 +28,6 @@ package com.deezer.caupain.model
 import com.deezer.caupain.Serializable
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.policies.StabilityLevelPolicy
-import dev.drewhamilton.poko.Poko
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.jvm.JvmName
@@ -43,6 +42,9 @@ import kotlin.jvm.JvmOverloads
  * @property excludedKeys A set of keys to exclude from the update process.
  * @property excludedLibraries A list of libraries to exclude from the update process.
  * @property excludedPlugins A list of plugins to exclude from the update process.
+ * @property includedKeys A set of keys to include in the update process.
+ * @property includedLibraries A list of libraries to include in the update process.
+ * @property includedPlugins A list of plugins to include in the update process.
  * @property policies The policies to use for the update process.
  * @property policyPluginsDir The directory for the policy plugins.
  * @property cacheDir The directory for the HTTP cache.
@@ -65,9 +67,14 @@ public interface Configuration : Serializable {
     @Deprecated("Use versionCatalogPaths instead")
     public val versionCatalogPath: Path
     public val versionCatalogPaths: Iterable<Path>
+
     public val excludedKeys: Set<String>
     public val excludedLibraries: List<LibraryExclusion>
     public val excludedPlugins: List<PluginExclusion>
+
+    public val includedKeys: Set<String>
+    public val includedLibraries: List<LibraryInclusion>
+    public val includedPlugins: List<PluginInclusion>
 
     public val filters: List<Filter>
 
@@ -112,6 +119,9 @@ public interface Configuration : Serializable {
  * @param excludedKeys A set of keys to exclude from the update process.
  * @param excludedLibraries A list of libraries to exclude from the update process.
  * @param excludedPlugins A list of plugins to exclude from the update process.
+ * @param includedKeys A set of keys to include in the update process.
+ * @param includedLibraries A list of libraries to include in the update process.
+ * @param includedPlugins A list of plugins to include in the update process.
  * @param filters A list of filters to apply to the found updates.
  * @param policies The policies to use for the update process.
  * @param policyPluginsDir The directory for the policy plugins.
@@ -138,6 +148,9 @@ public fun Configuration(
     excludedKeys: Set<String> = emptySet(),
     excludedLibraries: List<LibraryExclusion> = emptyList(),
     excludedPlugins: List<PluginExclusion> = emptyList(),
+    includedKeys: Set<String> = emptySet(),
+    includedLibraries: List<LibraryInclusion> = emptyList(),
+    includedPlugins: List<PluginInclusion> = emptyList(),
     filters: List<Filter> = emptyList(),
     policies: Iterable<String> = listOf(StabilityLevelPolicy.name),
     policyPluginsDir: Path? = null,
@@ -157,6 +170,9 @@ public fun Configuration(
     excludedKeys = excludedKeys,
     excludedLibraries = excludedLibraries,
     excludedPlugins = excludedPlugins,
+    includedKeys = includedKeys,
+    includedLibraries = includedLibraries,
+    includedPlugins = includedPlugins,
     filters = filters,
     policies = policies,
     policyPluginsDir = policyPluginsDir,
@@ -178,6 +194,9 @@ internal data class ConfigurationImpl(
     override val excludedKeys: Set<String> = emptySet(),
     override val excludedLibraries: List<LibraryExclusion> = emptyList(),
     override val excludedPlugins: List<PluginExclusion> = emptyList(),
+    override val includedKeys: Set<String> = emptySet(),
+    override val includedLibraries: List<LibraryInclusion> = emptyList(),
+    override val includedPlugins: List<PluginInclusion> = emptyList(),
     override val policies: Iterable<String> = listOf(StabilityLevelPolicy.name),
     override val filters: List<Filter> = emptyList(),
     override val policyPluginsDir: Path? = null,
@@ -198,123 +217,4 @@ internal data class ConfigurationImpl(
     @Deprecated("Use policies instead", ReplaceWith("policies.first()"))
     override val policy: String
         get() = policies.first()
-}
-
-/**
- * Configuration for excluded items
- */
-public sealed interface Exclusion<D : Dependency> {
-
-    /**
-     * Checks if a dependency is excluded
-     */
-    public fun isExcluded(dependency: D): Boolean
-}
-
-/**
- * Library exclusion info. If name is null, group is used as a glob, with the following rules:
- * - `?`: Wildcard that matches exactly one character, other than `.`
- * - `*`: wildcard that matches zero, one or multiple characters, other than `.`
- * - `**`: Wildcard that matches zero, one or multiple packages. For example, `**.sub.name` matches
- * `com.example.sub.name`, `com.example.sub.sub.name`. `**` must be either preceded by `.` or be at
- * the beginning of the glob. `**` must be either followed by `.` or be at the end of the glob.
- * If the glob only consist of a `**`, it will be a match for everything.
- *
- * @property group The group of the library to exclude. If `name` is null, then this is interpreted as a glob
- * @property name The name of the library to exclude. If null, all libraries in the group are excluded.
- */
-@Poko
-public class LibraryExclusion(
-    public val group: String,
-    public val name: String? = null,
-) : Exclusion<Dependency.Library>, Serializable {
-
-    private val spec = PackageSpec(group, name)
-
-    override fun isExcluded(dependency: Dependency.Library): Boolean = spec.matches(dependency)
-
-    private companion object {
-        private const val serialVersionUID = 1L
-    }
-}
-
-/**
- * Wrapper for plugin id exclusion.
- */
-@Poko
-public class PluginExclusion(public val id: String) : Exclusion<Dependency.Plugin> {
-
-    override fun isExcluded(dependency: Dependency.Plugin): Boolean = dependency.id == id
-}
-
-internal fun Configuration.isExcluded(dependencyKey: String, dependency: Dependency): Boolean {
-    if (dependencyKey in excludedKeys) return true
-    return when (dependency) {
-        is Dependency.Library -> excludedLibraries.any { it.isExcluded(dependency) }
-        is Dependency.Plugin -> excludedPlugins.any { it.isExcluded(dependency) }
-    }
-}
-
-/**
- * Filter for acceptable updates.
- */
-public sealed interface Filter : Serializable {
-
-    public val versionFilter: GradleDependencyVersion
-
-    /**
-     * Checks if a dependency matches this filter.
-     */
-    public fun matches(dependency: Dependency): Boolean
-
-    /**
-     * Filter for plugin updates.
-     */
-    @Poko
-    public class PluginFilter(
-        public val id: String,
-        override val versionFilter: GradleDependencyVersion,
-    ) : Filter {
-        override fun matches(dependency: Dependency): Boolean {
-            return dependency is Dependency.Plugin && dependency.id == id
-        }
-
-        private companion object {
-            private const val serialVersionUID = 1L
-        }
-    }
-
-    /**
-     * Filter for library updates.
-     * If name is null, group is used as a glob, with the following rules:
-     *  * - `?`: Wildcard that matches exactly one character, other than `.`
-     *  * - `*`: wildcard that matches zero, one or multiple characters, other than `.`
-     *  * - `**`: Wildcard that matches zero, one or multiple packages. For example, `**.sub.name`
-     *  * matches `com.example.sub.name`, `com.example.sub.sub.name`. `**` must be either preceded by
-     *  * `.` or be at the beginning of the glob. `**` must be either followed by `.` or be at the
-     *  * end of the glob.
-     *  * If the glob only consist of a `**`, it will be a match for everything.
-     *  *
-     *  * @property group The group of the library to match. If `name` is null, then this is
-     *  interpreted as a glob
-     *  * @property name The name of the library to filter. If null, the filter applies to all
-     *  libraries in the matching group.
-     *  * @property versionFilter The filter for the version.
-     */
-    @Poko
-    public class LibraryFilter(
-        public val group: String,
-        public val name: String? = null,
-        override val versionFilter: GradleDependencyVersion,
-    ) : Filter {
-        private val spec = PackageSpec(group, name)
-
-        override fun matches(dependency: Dependency): Boolean {
-            return dependency is Dependency.Library && spec.matches(dependency)
-        }
-
-        private companion object {
-            private const val serialVersionUID = 1L
-        }
-    }
 }

@@ -34,7 +34,9 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
@@ -99,6 +101,24 @@ open class DependenciesUpdateTask : DefaultTask() {
      */
     @get:Internal
     val excludedPluginIds = project.objects.setProperty<String>()
+
+    /**
+     * @see DependenciesUpdateExtension.includedKeys
+     */
+    @get:Internal
+    val includedKeys = project.objects.setProperty<String>()
+
+    /**
+     * @see DependenciesUpdateExtension.includedLibraries
+     */
+    @get:Internal
+    val includedLibraries = project.objects.listProperty<LibraryInclusion>()
+
+    /**
+     * @see DependenciesUpdateExtension.includedPluginIds
+     */
+    @get:Internal
+    val includedPluginIds = project.objects.setProperty<String>()
 
     /**
      * @see DependenciesUpdateExtension.filters
@@ -287,6 +307,9 @@ open class DependenciesUpdateTask : DefaultTask() {
             excludedKeys = excludedKeys.get(),
             excludedLibraries = excludedLibraries.get(),
             excludedPlugins = excludedPluginIds.get().map { PluginExclusion(it) },
+            includedKeys = includedKeys.get(),
+            includedLibraries = includedLibraries.get(),
+            includedPlugins = includedPluginIds.get().map { PluginInclusion(it) },
             policies = policies,
             filters = filters.get(),
             cacheDir = if (useCache.get()) cacheDir.get().toOkioPath() else null,

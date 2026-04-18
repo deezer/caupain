@@ -52,9 +52,15 @@ caupain {
 }
 ```
 
-### Exclusions
+### Update selection
 
-You can exclude dependencies from the update check by a variety of means:
+You can select what updates you want to be suggested by using a combination of exclusions and
+inclusions. If inclusions are defined, only updates matching the inclusions will be suggested. If
+exclusions are defined, updates matching the exclusions will not be suggested. If both are defined,
+only updates matching the inclusions and not matching the exclusions will be suggested.
+
+#### Configuration
+
 ```kotlin
 // You can exclude by key. The key matches the name used in the version catalog.
 excludeKeys("excluded1", "excluded2")
@@ -70,14 +76,31 @@ excludeLibraries(
 )
 // You can exclude plugins by their id
 excludePluginIds("excluded.plugin.id")
+// You can include by key. The key matches the name used in the version catalog.
+includeKeys("excluded1", "excluded2")
+// You can also include by group and optionally by name. If name is not specified, all dependencies 
+// in the group are included. Furthermore, if name is not specified, then group is interpreted as a glob.
+includeLibrary(group = "com.example")
+includeLibrary(group = "com.example.**")
+includeLibrary(group = "com.example.*.sub")
+includeLibrary(group = "com.example", name = "example")
+includeLibraries(
+  LibraryExclusion(group = "com.example"),
+  LibraryExclusion(group = "com.example", name = "example")
+)
+// You can include plugins by their id
+includePluginIds("included.plugin.id")
 ```
 
-You can also exclude dependencies directly in the TOML file by adding a `#ignoreUpdates` comment, 
-either on the same line as a version reference or dependency/plugin definition or as a full-line 
-comment in the line just before, like so:
+#### In-line exclusion
+
+Alongside the exclusion configuration, you can also exclude dependencies directly in the TOML file by
+adding a `#ignoreUpdates` comment, either on the same line as a version reference or dependency/plugin
+definition or as a full-line comment in the line just before, like so:
 ```toml
 [versions]
 my-excluded-version-ref = "1.0.0" #ignoreUpdates
+#ignoreUpdates
 my-regular-ref = "1.0.0"
 [libraries]
 my-excluded-lib = { module = "com.example:example", version.ref = "my-excluded-version-ref" } #ignoreUpdates
@@ -269,7 +292,7 @@ tasks.withType<DependenciesUpdateTask> {
 versionCatalogFile = file("path/to/libs.versions.toml")
 // You can also define multiple version catalogs. Warning: defining this will override the previous single path
 versionCatalogFiles.from("path/to/libs.versions.toml", "path/to/other/libs.versions.toml")
-// Whether or not to store HTTP cache for the Maven requests
+// Whether to store HTTP cache for the Maven requests
 useCache = true
 // By default, Caupain only checks updates for static versions in the version catalog (versions like 
 // 1.0.0 or 1.0.0-SNAPSHOT).
@@ -282,11 +305,11 @@ useCache = true
 onlyCheckStaticVersions = true
 // The stability level to use for Gradle version checks. Default is STABLE.
 gradleStabilityLevel = GradleStabilityLevel.STABLE
-// Whether or not to show a section in the report about the ignored available updates.
+// Whether to show a section in the report about the ignored available updates.
 checkIgnored = true
-// Github token, used to search for release notes on GitHub.
+// GitHub token, used to search for release notes on GitHub.
 githubToken = "your-token"
-// Whether or not to search for release notes on GitHub and display the link to them in the results.
+// Whether to search for release notes on GitHub and display the link to them in the results.
 // If a GitHub token is provided, this will be true by default.
 searchReleaseNotes = true
 // Whether to verify that .pom files exist in the repository before accepting a version as valid.
@@ -307,7 +330,7 @@ versions.
 This will only work if there is only one version catalog provided, and if the `onlyCheckStaticVersions`
 parameter is set to `true` (this is the default behavior).
 
-There is no corresponding configuration option for this, because it should be used with care and we
+There is no corresponding configuration option for this, because it should be used with care, and we
 want to make sure that it is not used by accident.
 
 ## Minimum Gradle version

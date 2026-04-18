@@ -27,6 +27,7 @@ package com.deezer.caupain.plugin
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.plugin.internal.listProperty
 import com.deezer.caupain.plugin.internal.property
@@ -44,6 +45,7 @@ import javax.inject.Inject
 /**
  * Configuration for the Dependencies Update plugin.
  */
+@Suppress("TooManyFunctions") // Normal for an extension
 abstract class DependenciesUpdateExtension @Inject internal constructor(objects: ObjectFactory) {
 
     @get:Nested
@@ -65,7 +67,7 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
     val excludedKeys: SetProperty<String> = objects.setProperty<String>().convention(emptySet())
 
     /**
-     * The list of libraries to exclude from the update check. Defauklt is empty.
+     * The list of libraries to exclude from the update check. Default is empty.
      */
     val excludedLibraries: ListProperty<LibraryExclusion> =
         objects.listProperty<LibraryExclusion>().convention(emptyList())
@@ -74,6 +76,23 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      * The set of plugin IDs to exclude from the update check. Default is empty.
      */
     val excludedPluginIds: SetProperty<String> =
+        objects.setProperty<String>().convention(emptySet())
+
+    /**
+     * The set of keys in the version catalog for which updates should be selected. Default is empty.
+     */
+    val includedKeys: SetProperty<String> = objects.setProperty<String>().convention(emptySet())
+
+    /**
+     * The list of libraries to include in the update check. Default is empty.
+     */
+    val includedLibraries: ListProperty<LibraryInclusion> =
+        objects.listProperty<LibraryInclusion>().convention(emptyList())
+
+    /**
+     * The set of plugin IDs to include in the update check. Default is empty.
+     */
+    val includedPluginIds: SetProperty<String> =
         objects.setProperty<String>().convention(emptySet())
 
     /**
@@ -171,6 +190,37 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
      */
     fun excludeLibraries(vararg libraries: LibraryExclusion) {
         excludedLibraries.addAll(libraries.asIterable())
+    }
+
+    /**
+     * Includes keys in the update check.
+     */
+    fun includeKeys(vararg keys: String) {
+        includedKeys.addAll(keys.asIterable())
+    }
+
+    /**
+     * Includes pluginIds in the update check.
+     */
+    fun includePluginIds(vararg pluginIds: String) {
+        includedPluginIds.addAll(pluginIds.asIterable())
+    }
+
+    /**
+     * Includes a library in the update check.
+     *
+     * @param group The group ID of the library.
+     * @param name The artifact ID of the library. If null, all libraries in the group are selected.
+     */
+    fun includeLibrary(group: String, name: String? = null) {
+        includedLibraries.add(LibraryInclusion(group, name))
+    }
+
+    /**
+     * Includes libraries in the update check.
+     */
+    fun includeLibraries(vararg libraries: LibraryInclusion) {
+        includedLibraries.addAll(libraries.asIterable())
     }
 
     /**

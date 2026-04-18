@@ -5,7 +5,7 @@
 ![Chocolatey](https://img.shields.io/chocolatey/v/caupain)
 
 This is the command-line version of the tool. It is available as a single executable file for Linux,
-MacOS (Intel and Silicon), Windows, and as a JAR file alongside its launch script.
+macOS, Windows, and as a JAR file alongside its launch script.
 
 ## Installation
 
@@ -134,21 +134,6 @@ pluginRepositories = [ "google" ]
 versionCatalogPath = "another/path/to/libs.versions.toml"
 # You can also define multiple version catalogs. Warning: defining this will override the previous single path
 versionCatalogPaths = [ "libs.versions.toml", "another/path/to/libs.versions.toml" ]
-# Excluded dependencies. These will not be checked for updates.
-# You can exclude by key. The key matches the name used in the version catalog.
-excludedKeys = [ "excluded1", "excluded2" ]
-# You can also exclude by group and optionally by name. If name is not specified, all dependencies in the group
-# are excluded. Furthermore, if name is not specified, then group is interpreted as a glob.
-excludedLibraries = [
-    { group = "com.google.guava" }, # Exclude all dependencies in the group
-    { group = "com.google.guava", name = "guava" }, # Exclude only the guava dependency
-    { group = "com.google.**" }, # Exclude all dependencies with group starting with com.google
-    { group = "com.google.*.sub" }, # Exclude all dependencies like com.google.something.sub
-]
-# You can exclude plugins by their id
-excludedPlugins = [
-    { id = "excluded.plugin.id" }
-]
 # Policy name to use. See the documentation section about policies for more information
 policy = "stability-level"
 # Policy names to use. See the documentation section about policies for more information
@@ -177,7 +162,7 @@ cacheDir = "path/to/cache/dir"
 outputType = "html"
 # Output path, for HTML, Markdown and JSON output types. Default is build/reports/dependencies-update.(html|md|json)
 outputPath = "path/to/output/file.html"
-# Whether or not to show a block in the report that summarizes the updates from the version block in
+# Whether to show a block in the report that summarizes the updates from the version block in
 # the version catalog. This allows to quickly see what to update if you use the versions block heavily.
 # Default is false.
 showVersionsReferences = true
@@ -196,11 +181,11 @@ onlyCheckStaticVersions = false
 # The stability level to use for Gradle version checks. Default is stable. Possible values are: stable,
 # rc, milestone, releaseNightly, nightly.
 gradleStabilityLevel = "stable"
-# Whether or not to show a section in the report about the ignored available updates. Default is false.
+# Whether to show a section in the report about the ignored available updates. Default is false.
 checkIgnored = true
-# Github token, used to search for release notes on GitHub.
+# GitHub token, used to search for release notes on GitHub.
 githubToken = "your-token"
-# Whether or not to search for release notes on GitHub and display the link to them in the results.
+# Whether to search for release notes on GitHub and display the link to them in the results.
 # If a GitHub token is provided, this will be true by default.
 searchReleaseNotes = true
 # Whether to verify that .pom files exist in the repository before accepting a version as valid.
@@ -253,7 +238,47 @@ excludes = [
 ]
 ```
 
-### Exclusions
+### Update selection
+
+You can select what updates you want to be suggested by using a combination of exclusions and 
+inclusions. If inclusions are defined, only updates matching the inclusions will be suggested. If 
+exclusions are defined, updates matching the exclusions will not be suggested. If both are defined,
+only updates matching the inclusions and not matching the exclusions will be suggested.
+
+#### Configuration
+
+```toml
+# You can exclude by key. The key matches the name used in the version catalog.
+excludedKeys = [ "excluded1", "excluded2" ]
+# You can also exclude by group and optionally by name. If name is not specified, all dependencies 
+# in the group are excluded. Furthermore, if name is not specified, then group is interpreted as a glob.
+excludedLibraries = [
+    { group = "com.google.guava" }, # Exclude all dependencies in the group
+    { group = "com.google.guava", name = "guava" }, # Exclude only the guava dependency
+    { group = "com.google.**" }, # Exclude all dependencies with group starting with com.google
+    { group = "com.google.*.sub" }, # Exclude all dependencies like com.google.something.sub
+]
+# You can exclude plugins by their id
+excludedPlugins = [
+    { id = "excluded.plugin.id" }
+]
+# You can include by key. The key matches the name used in the version catalog.
+includedKeys = [ "excluded1", "excluded2" ]
+# You can also include by group and optionally by name. If name is not specified, all dependencies 
+# in the group are included. Furthermore, if name is not specified, then group is interpreted as a glob.
+includedLibraries = [
+    { group = "com.google.guava" }, # Exclude all dependencies in the group
+    { group = "com.google.guava", name = "guava" }, # Exclude only the guava dependency
+    { group = "com.google.**" }, # Exclude all dependencies with group starting with com.google
+    { group = "com.google.*.sub" }, # Exclude all dependencies like com.google.something.sub
+]
+# You can include plugins by their id
+includedPlugins = [
+    { id = "excluded.plugin.id" }
+]
+```
+
+#### In-line exclusion
 
 Alongside the exclusion configuration, you can also exclude dependencies directly in the TOML file by
 adding a `#ignoreUpdates` comment, either on the same line as a version reference or dependency/plugin 
@@ -320,7 +345,7 @@ versions.
 This will only work if there is only one version catalog provided, and if the `onlyCheckStaticVersions`
 parameter is set to `true` (this is the default behavior).
 
-There is no corresponding configuration option for this, because it should be used with care and we
+There is no corresponding configuration option for this, because it should be used with care, and we
 want to make sure that it is not used by accident.
 
 ## Completions

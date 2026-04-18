@@ -35,8 +35,10 @@ import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.policies.StabilityLevelPolicy
 import com.github.ajalt.clikt.command.test
@@ -157,6 +159,9 @@ class CaupainCLIConfigTest {
                     excludedKeys = setOf("testConf"),
                     excludedLibraries = listOf(LibraryExclusion("libGroup", "libName")),
                     excludedPlugins = listOf(PluginExclusion("pluginId")),
+                    includedKeys = setOf("testConf"),
+                    includedLibraries = listOf(LibraryInclusion("libGroup", "libName")),
+                    includedPlugins = listOf(PluginInclusion("pluginId")),
                     policies = listOf("policyConf"),
                     filters = listOf(
                         Filter.PluginFilter(
@@ -260,6 +265,26 @@ class CaupainCLIConfigTest {
                         emptyList()
                     },
                     actual = conf.excludedPlugins
+                )
+                assertEquals(
+                    expected = if (hasConf) setOf("testConf") else emptySet(),
+                    actual = conf.includedKeys
+                )
+                assertEquals(
+                    expected = if (hasConf) {
+                        listOf(LibraryInclusion("libGroup", "libName"))
+                    } else {
+                        emptyList()
+                    },
+                    actual = conf.includedLibraries
+                )
+                assertEquals(
+                    expected = if (hasConf) {
+                        listOf(PluginInclusion("pluginId"))
+                    } else {
+                        emptyList()
+                    },
+                    actual = conf.includedPlugins
                 )
                 assertEquals(
                     expected = if (hasConf) {
@@ -398,6 +423,9 @@ private data class TestConfiguration(
     override val excludedKeys: Set<String>?,
     override val excludedLibraries: List<LibraryExclusion>?,
     override val excludedPlugins: List<PluginExclusion>?,
+    override val includedKeys: Set<String>?,
+    override val includedLibraries: List<LibraryInclusion>?,
+    override val includedPlugins: List<PluginInclusion>?,
     override val policy: String? = null,
     override val policies: Iterable<String>?,
     override val filters: List<Filter>?,

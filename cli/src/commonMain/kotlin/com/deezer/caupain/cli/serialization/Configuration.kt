@@ -27,6 +27,8 @@
     PathSerializer::class,
     PluginExclusionSerializer::class,
     LibraryExclusionSerializer::class,
+    PluginInclusionSerializer::class,
+    LibraryInclusionSerializer::class,
     OutputTypeSerializer::class,
     FilterSerializer::class,
 )
@@ -38,8 +40,10 @@ import com.deezer.caupain.cli.model.Configuration
 import com.deezer.caupain.cli.model.Repository
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -60,6 +64,9 @@ private data class ConfigurationImpl(
     override val excludedKeys: Set<String>? = null,
     override val excludedLibraries: List<LibraryExclusion>? = null,
     override val excludedPlugins: List<PluginExclusion>? = null,
+    override val includedKeys: Set<String>? = null,
+    override val includedLibraries: List<LibraryInclusion>? = null,
+    override val includedPlugins: List<PluginInclusion>? = null,
     override val filters: List<Filter>? = null,
     override val policy: String? = null,
     override val policies: Set<String>?,

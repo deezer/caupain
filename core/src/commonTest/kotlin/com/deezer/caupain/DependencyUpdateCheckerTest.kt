@@ -31,6 +31,7 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
@@ -257,7 +258,7 @@ class DependencyUpdateCheckerTest {
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             excludedKeys = setOf("groovy-json", "groovy-core"),
-            excludedLibraries = listOf(LibraryExclusion(group = "org.apache.commons")),
+            includedLibraries = listOf(LibraryInclusion(group = "org.codehaus.groovy")),
             versionCatalogPaths = VERSION_CATALOGS.keys,
             checkIgnored = true,
             policies = listOf(AlwaysAcceptPolicy.name)
@@ -531,7 +532,7 @@ class DependencyUpdateCheckerTest {
                         strictly = GradleDependencyVersion.Range("[3.8, 4.0["),
                         prefer = GradleDependencyVersion.Exact("3.9")
                     )
-                )
+                ),
             ),
         )
 
