@@ -267,14 +267,14 @@ includedKeys = [ "excluded1", "excluded2" ]
 # You can also include by group and optionally by name. If name is not specified, all dependencies 
 # in the group are included. Furthermore, if name is not specified, then group is interpreted as a glob.
 includedLibraries = [
-    { group = "com.google.guava" }, # Exclude all dependencies in the group
-    { group = "com.google.guava", name = "guava" }, # Exclude only the guava dependency
-    { group = "com.google.**" }, # Exclude all dependencies with group starting with com.google
-    { group = "com.google.*.sub" }, # Exclude all dependencies like com.google.something.sub
+    { group = "com.google.guava" }, # Include all dependencies in the group
+    { group = "com.google.guava", name = "guava" }, # Include only the guava dependency
+    { group = "com.google.**" }, # Include all dependencies with group starting with com.google
+    { group = "com.google.*.sub" }, # Include all dependencies like com.google.something.sub
 ]
 # You can include plugins by their id
 includedPlugins = [
-    { id = "excluded.plugin.id" }
+    { id = "included.plugin.id" }
 ]
 ```
 

@@ -85,8 +85,8 @@ includeLibrary(group = "com.example.**")
 includeLibrary(group = "com.example.*.sub")
 includeLibrary(group = "com.example", name = "example")
 includeLibraries(
-  LibraryExclusion(group = "com.example"),
-  LibraryExclusion(group = "com.example", name = "example")
+  LibraryInclusion(group = "com.example"),
+  LibraryInclusion(group = "com.example", name = "example")
 )
 // You can include plugins by their id
 includePluginIds("included.plugin.id")
