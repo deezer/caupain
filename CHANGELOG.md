@@ -4,6 +4,7 @@
 
 ### Added
 - Feature to filter selected versions in the configuration with a Maven-like pattern (#85)
+- Include options in configuration (#86)
 
 ### Changed
 
