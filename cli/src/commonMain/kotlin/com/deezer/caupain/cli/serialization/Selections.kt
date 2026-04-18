@@ -98,7 +98,10 @@ object LibraryExclusionSerializer : KSerializer<LibraryExclusion> {
 }
 
 object PluginExclusionSerializer : KSerializer<PluginExclusion> {
-    override val descriptor = PrimitiveSerialDescriptor("okio.Path", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor(
+        serialName = "com.deezer.dependencies.model.PluginExclusion",
+        kind = PrimitiveKind.STRING,
+    )
 
     override fun deserialize(decoder: Decoder): PluginExclusion =
         PluginExclusion(decoder.decodeString())
@@ -162,7 +165,10 @@ object LibraryInclusionSerializer : KSerializer<LibraryInclusion> {
 }
 
 object PluginInclusionSerializer : KSerializer<PluginInclusion> {
-    override val descriptor = PrimitiveSerialDescriptor("okio.Path", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor(
+        serialName = "com.deezer.dependencies.model.PluginInclusion",
+        kind = PrimitiveKind.STRING,
+    )
 
     override fun deserialize(decoder: Decoder): PluginInclusion =
         PluginInclusion(decoder.decodeString())
