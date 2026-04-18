@@ -36,7 +36,9 @@ import com.autonomousapps.kit.gradle.Plugin
 import com.autonomousapps.kit.gradle.android.AndroidBlock
 import com.autonomousapps.kit.gradle.android.CompileOptions
 import com.autonomousapps.kit.gradle.android.DefaultConfig
-import com.autonomousapps.kit.gradle.android.KotlinOptions
+import com.autonomousapps.kit.gradle.kotlin.CompilerJvmTarget
+import com.autonomousapps.kit.gradle.kotlin.CompilerOptions
+import com.autonomousapps.kit.gradle.kotlin.Kotlin
 import org.gradle.api.JavaVersion
 import org.intellij.lang.annotations.Language
 import java.io.File
@@ -133,7 +135,11 @@ class TestProject(
                             sourceCompatibility = JavaVersion.VERSION_11,
                             targetCompatibility = JavaVersion.VERSION_11
                         ),
-                        kotlinOptions = KotlinOptions("11")
+                    )
+                    kotlin = Kotlin(
+                        compilerOptions = CompilerOptions(
+                            compilerJvmTarget = CompilerJvmTarget(11)
+                        )
                     )
                     dependencies(
                         Dependency.versionCatalog("implementation", "libs.androidx.core.ktx"),
