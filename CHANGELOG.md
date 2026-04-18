@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Feature to filter selected versions in the configuration with a Maven-like pattern (#85)
 
 ### Changed
 
