@@ -55,6 +55,12 @@ abstract interface com.deezer.caupain.model/Configuration : com.deezer.caupain/S
         abstract fun <get-githubToken>(): kotlin/String? // com.deezer.caupain.model/Configuration.githubToken.<get-githubToken>|<get-githubToken>(){}[0]
     abstract val gradleStabilityLevel // com.deezer.caupain.model/Configuration.gradleStabilityLevel|{}gradleStabilityLevel[0]
         abstract fun <get-gradleStabilityLevel>(): com.deezer.caupain.model.gradle/GradleStabilityLevel // com.deezer.caupain.model/Configuration.gradleStabilityLevel.<get-gradleStabilityLevel>|<get-gradleStabilityLevel>(){}[0]
+    abstract val includedKeys // com.deezer.caupain.model/Configuration.includedKeys|{}includedKeys[0]
+        abstract fun <get-includedKeys>(): kotlin.collections/Set<kotlin/String> // com.deezer.caupain.model/Configuration.includedKeys.<get-includedKeys>|<get-includedKeys>(){}[0]
+    abstract val includedLibraries // com.deezer.caupain.model/Configuration.includedLibraries|{}includedLibraries[0]
+        abstract fun <get-includedLibraries>(): kotlin.collections/List<com.deezer.caupain.model/LibraryInclusion> // com.deezer.caupain.model/Configuration.includedLibraries.<get-includedLibraries>|<get-includedLibraries>(){}[0]
+    abstract val includedPlugins // com.deezer.caupain.model/Configuration.includedPlugins|{}includedPlugins[0]
+        abstract fun <get-includedPlugins>(): kotlin.collections/List<com.deezer.caupain.model/PluginInclusion> // com.deezer.caupain.model/Configuration.includedPlugins.<get-includedPlugins>|<get-includedPlugins>(){}[0]
     abstract val onlyCheckStaticVersions // com.deezer.caupain.model/Configuration.onlyCheckStaticVersions|{}onlyCheckStaticVersions[0]
         abstract fun <get-onlyCheckStaticVersions>(): kotlin/Boolean // com.deezer.caupain.model/Configuration.onlyCheckStaticVersions.<get-onlyCheckStaticVersions>|<get-onlyCheckStaticVersions>(){}[0]
     abstract val pluginRepositories // com.deezer.caupain.model/Configuration.pluginRepositories|{}pluginRepositories[0]
@@ -292,6 +298,10 @@ abstract interface com.deezer.caupain/Serializable // com.deezer.caupain/Seriali
 
 sealed interface <#A: com.deezer.caupain.model/Dependency> com.deezer.caupain.model/Exclusion { // com.deezer.caupain.model/Exclusion|null[0]
     abstract fun isExcluded(#A): kotlin/Boolean // com.deezer.caupain.model/Exclusion.isExcluded|isExcluded(1:0){}[0]
+}
+
+sealed interface <#A: com.deezer.caupain.model/Dependency> com.deezer.caupain.model/Inclusion { // com.deezer.caupain.model/Inclusion|null[0]
+    abstract fun isIncluded(#A): kotlin/Boolean // com.deezer.caupain.model/Inclusion.isIncluded|isIncluded(1:0){}[0]
 }
 
 sealed interface com.deezer.caupain.model.versionCatalog/Version { // com.deezer.caupain.model.versionCatalog/Version|null[0]
@@ -851,6 +861,20 @@ final class com.deezer.caupain.model/LibraryExclusion : com.deezer.caupain.model
     final fun toString(): kotlin/String // com.deezer.caupain.model/LibraryExclusion.toString|toString(){}[0]
 }
 
+final class com.deezer.caupain.model/LibraryInclusion : com.deezer.caupain.model/Inclusion<com.deezer.caupain.model/Dependency.Library>, com.deezer.caupain/Serializable { // com.deezer.caupain.model/LibraryInclusion|null[0]
+    constructor <init>(kotlin/String, kotlin/String? = ...) // com.deezer.caupain.model/LibraryInclusion.<init>|<init>(kotlin.String;kotlin.String?){}[0]
+
+    final val group // com.deezer.caupain.model/LibraryInclusion.group|{}group[0]
+        final fun <get-group>(): kotlin/String // com.deezer.caupain.model/LibraryInclusion.group.<get-group>|<get-group>(){}[0]
+    final val name // com.deezer.caupain.model/LibraryInclusion.name|{}name[0]
+        final fun <get-name>(): kotlin/String? // com.deezer.caupain.model/LibraryInclusion.name.<get-name>|<get-name>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/LibraryInclusion.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/LibraryInclusion.hashCode|hashCode(){}[0]
+    final fun isIncluded(com.deezer.caupain.model/Dependency.Library): kotlin/Boolean // com.deezer.caupain.model/LibraryInclusion.isIncluded|isIncluded(com.deezer.caupain.model.Dependency.Library){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/LibraryInclusion.toString|toString(){}[0]
+}
+
 final class com.deezer.caupain.model/PasswordCredentials : com.deezer.caupain.model/Credentials { // com.deezer.caupain.model/PasswordCredentials|null[0]
     constructor <init>(kotlin/String, kotlin/String) // com.deezer.caupain.model/PasswordCredentials.<init>|<init>(kotlin.String;kotlin.String){}[0]
 
@@ -875,6 +899,18 @@ final class com.deezer.caupain.model/PluginExclusion : com.deezer.caupain.model/
     final fun hashCode(): kotlin/Int // com.deezer.caupain.model/PluginExclusion.hashCode|hashCode(){}[0]
     final fun isExcluded(com.deezer.caupain.model/Dependency.Plugin): kotlin/Boolean // com.deezer.caupain.model/PluginExclusion.isExcluded|isExcluded(com.deezer.caupain.model.Dependency.Plugin){}[0]
     final fun toString(): kotlin/String // com.deezer.caupain.model/PluginExclusion.toString|toString(){}[0]
+}
+
+final class com.deezer.caupain.model/PluginInclusion : com.deezer.caupain.model/Inclusion<com.deezer.caupain.model/Dependency.Plugin> { // com.deezer.caupain.model/PluginInclusion|null[0]
+    constructor <init>(kotlin/String) // com.deezer.caupain.model/PluginInclusion.<init>|<init>(kotlin.String){}[0]
+
+    final val id // com.deezer.caupain.model/PluginInclusion.id|{}id[0]
+        final fun <get-id>(): kotlin/String // com.deezer.caupain.model/PluginInclusion.id.<get-id>|<get-id>(){}[0]
+
+    final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/PluginInclusion.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // com.deezer.caupain.model/PluginInclusion.hashCode|hashCode(){}[0]
+    final fun isIncluded(com.deezer.caupain.model/Dependency.Plugin): kotlin/Boolean // com.deezer.caupain.model/PluginInclusion.isIncluded|isIncluded(com.deezer.caupain.model.Dependency.Plugin){}[0]
+    final fun toString(): kotlin/String // com.deezer.caupain.model/PluginInclusion.toString|toString(){}[0]
 }
 
 final class com.deezer.caupain.model/Point : kotlin/Comparable<com.deezer.caupain.model/Point> { // com.deezer.caupain.model/Point|null[0]
@@ -1156,7 +1192,7 @@ final object com.deezer.caupain.policies/StabilityLevelPolicy : com.deezer.caupa
 }
 
 final fun com.deezer.caupain.internal/systemSink(): okio/Sink // com.deezer.caupain.internal/systemSink|systemSink(){}[0]
-final fun com.deezer.caupain.model/Configuration(kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/Iterable<okio/Path> = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<com.deezer.caupain.model/LibraryExclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/PluginExclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/Filter> = ..., kotlin.collections/Iterable<kotlin/String> = ..., okio/Path? = ..., okio/Path? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., com.deezer.caupain.model.gradle/GradleStabilityLevel = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.deezer.caupain.model/Configuration // com.deezer.caupain.model/Configuration|Configuration(kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.Iterable<okio.Path>;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<com.deezer.caupain.model.LibraryExclusion>;kotlin.collections.List<com.deezer.caupain.model.PluginExclusion>;kotlin.collections.List<com.deezer.caupain.model.Filter>;kotlin.collections.Iterable<kotlin.String>;okio.Path?;okio.Path?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;com.deezer.caupain.model.gradle.GradleStabilityLevel;kotlin.Boolean;kotlin.String?;kotlin.Boolean;kotlin.Boolean){}[0]
+final fun com.deezer.caupain.model/Configuration(kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/List<com.deezer.caupain.model/Repository> = ..., kotlin.collections/Iterable<okio/Path> = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<com.deezer.caupain.model/LibraryExclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/PluginExclusion> = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin.collections/List<com.deezer.caupain.model/LibraryInclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/PluginInclusion> = ..., kotlin.collections/List<com.deezer.caupain.model/Filter> = ..., kotlin.collections/Iterable<kotlin/String> = ..., okio/Path? = ..., okio/Path? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., com.deezer.caupain.model.gradle/GradleStabilityLevel = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): com.deezer.caupain.model/Configuration // com.deezer.caupain.model/Configuration|Configuration(kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.List<com.deezer.caupain.model.Repository>;kotlin.collections.Iterable<okio.Path>;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<com.deezer.caupain.model.LibraryExclusion>;kotlin.collections.List<com.deezer.caupain.model.PluginExclusion>;kotlin.collections.Set<kotlin.String>;kotlin.collections.List<com.deezer.caupain.model.LibraryInclusion>;kotlin.collections.List<com.deezer.caupain.model.PluginInclusion>;kotlin.collections.List<com.deezer.caupain.model.Filter>;kotlin.collections.Iterable<kotlin.String>;okio.Path?;okio.Path?;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;com.deezer.caupain.model.gradle.GradleStabilityLevel;kotlin.Boolean;kotlin.String?;kotlin.Boolean;kotlin.Boolean){}[0]
 final fun com.deezer.caupain.model/GradleDependencyVersion(kotlin/String): com.deezer.caupain.model/GradleDependencyVersion // com.deezer.caupain.model/GradleDependencyVersion|GradleDependencyVersion(kotlin.String){}[0]
 final fun com.deezer.caupain.model/Repository(kotlin/String, com.deezer.caupain.model/ComponentFilter? = ...): com.deezer.caupain.model/Repository // com.deezer.caupain.model/Repository|Repository(kotlin.String;com.deezer.caupain.model.ComponentFilter?){}[0]
 final fun com.deezer.caupain.model/Repository(kotlin/String, com.deezer.caupain.model/Credentials?, com.deezer.caupain.model/ComponentFilter? = ...): com.deezer.caupain.model/Repository // com.deezer.caupain.model/Repository|Repository(kotlin.String;com.deezer.caupain.model.Credentials?;com.deezer.caupain.model.ComponentFilter?){}[0]

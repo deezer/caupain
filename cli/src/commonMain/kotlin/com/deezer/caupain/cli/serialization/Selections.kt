@@ -25,7 +25,9 @@
 package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.PluginInclusion
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -96,12 +98,82 @@ object LibraryExclusionSerializer : KSerializer<LibraryExclusion> {
 }
 
 object PluginExclusionSerializer : KSerializer<PluginExclusion> {
-    override val descriptor = PrimitiveSerialDescriptor("okio.Path", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor(
+        serialName = "com.deezer.dependencies.model.PluginExclusion",
+        kind = PrimitiveKind.STRING,
+    )
 
     override fun deserialize(decoder: Decoder): PluginExclusion =
         PluginExclusion(decoder.decodeString())
 
     override fun serialize(encoder: Encoder, value: PluginExclusion) {
+        encoder.encodeString(value.id)
+    }
+}
+
+@Serializable
+private data class RichLibraryInclusion(
+    val group: String,
+    val name: String? = null,
+) {
+    constructor(libraryInclusion: LibraryInclusion) : this(
+        group = libraryInclusion.group,
+        name = libraryInclusion.name,
+    )
+
+    fun toLibraryInclusion() = LibraryInclusion(
+        group = group,
+        name = name
+    )
+}
+
+@Suppress("UnnecessaryOptInAnnotation")
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+object LibraryInclusionSerializer : KSerializer<LibraryInclusion> {
+
+    private val richSerializer = RichLibraryInclusion.serializer()
+
+    override val descriptor: SerialDescriptor = buildSerialDescriptor(
+        serialName = "com.deezer.dependencies.model.LibraryInclusion",
+        kind = SerialKind.CONTEXTUAL,
+    )
+
+    override fun deserialize(decoder: Decoder): LibraryInclusion {
+        val tomlDecoder = decoder.asTomlDecoder()
+        return when (val element = tomlDecoder.decodeTomlElement()) {
+            is TomlLiteral -> {
+                val parts = element.content.split(':')
+                LibraryInclusion(
+                    group = parts[0],
+                    name = parts.getOrNull(1)
+                )
+            }
+
+            is TomlTable -> tomlDecoder
+                .toml
+                .decodeFromTomlElement(richSerializer, element)
+                .toLibraryInclusion()
+
+            else ->
+                throw SerializationException("Unsupported toml element type: ${element::class.simpleName}")
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: LibraryInclusion) {
+        encoder.encodeSerializableValue(richSerializer, RichLibraryInclusion(value))
+    }
+}
+
+object PluginInclusionSerializer : KSerializer<PluginInclusion> {
+    override val descriptor = PrimitiveSerialDescriptor(
+        serialName = "com.deezer.dependencies.model.PluginInclusion",
+        kind = PrimitiveKind.STRING,
+    )
+
+    override fun deserialize(decoder: Decoder): PluginInclusion =
+        PluginInclusion(decoder.decodeString())
+
+    override fun serialize(encoder: Encoder, value: PluginInclusion) {
         encoder.encodeString(value.id)
     }
 }

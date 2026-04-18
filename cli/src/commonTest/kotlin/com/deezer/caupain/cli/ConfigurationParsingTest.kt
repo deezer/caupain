@@ -30,7 +30,9 @@ import com.deezer.caupain.model.DefaultRepositories
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.buildComponentFilter
 import com.deezer.caupain.model.withComponentFilter
@@ -79,20 +81,35 @@ class ConfigurationParsingTest {
         )
         assertEquals(setOf("stability-level", "other-one"), result.policies)
         assertEquals("build/cache/caupain".toPath(), result.cacheDir)
-        assertEquals(setOf("test"), result.excludedKeys)
+        assertEquals(setOf("testExcluded"), result.excludedKeys)
+        assertEquals(setOf("testIncluded"), result.includedKeys)
         assertEquals(
             expected = listOf(
-                LibraryExclusion("com.example", "example-lib"),
-                LibraryExclusion("com.example2.**")
+                LibraryExclusion("com.example.excluded", "example-lib"),
+                LibraryExclusion("com.example2.excluded.**")
             ),
             actual = result.excludedLibraries
         )
         assertEquals(
             expected = listOf(
-                PluginExclusion("com.first"),
-                PluginExclusion("com.second")
+                LibraryInclusion("com.example.included", "example-lib"),
+                LibraryInclusion("com.example2.included.**")
+            ),
+            actual = result.includedLibraries
+        )
+        assertEquals(
+            expected = listOf(
+                PluginExclusion("com.excluded.first"),
+                PluginExclusion("com.excluded.second")
             ),
             actual = result.excludedPlugins
+        )
+        assertEquals(
+            expected = listOf(
+                PluginInclusion("com.included.first"),
+                PluginInclusion("com.included.second")
+            ),
+            actual = result.includedPlugins
         )
         assertEquals(
             expected = setOf(Configuration.OutputType.MARKDOWN, Configuration.OutputType.HTML),
@@ -135,12 +152,18 @@ filters = [
 cacheDir = "build/cache/caupain"
 outputTypes = ["markdown", "html"]
 outputPath = "build/reports/dependency-updates.md"    
-excludedKeys = ["test"]
+excludedKeys = ["testExcluded"]
 excludedLibraries = [
-    { group = "com.example", name = "example-lib" },
-    { group = "com.example2.**" }
+    { group = "com.example.excluded", name = "example-lib" },
+    { group = "com.example2.excluded.**" }
 ]
-excludedPlugins = [ "com.first", "com.second" ]
+excludedPlugins = [ "com.excluded.first", "com.excluded.second" ]
+includedKeys = ["testIncluded"]
+includedLibraries = [
+    { group = "com.example.included", name = "example-lib" },
+    { group = "com.example2.included.**" }
+]
+includedPlugins = [ "com.included.first", "com.included.second" ]
 [[ repositories ]]
 default = "mavenCentral"
 includes = [

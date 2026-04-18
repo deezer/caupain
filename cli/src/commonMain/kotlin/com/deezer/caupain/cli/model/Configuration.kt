@@ -27,8 +27,10 @@ package com.deezer.caupain.cli.model
 import com.deezer.caupain.cli.serialization.ConfigurationSerializer
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.LibraryExclusion
+import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.PluginExclusion
+import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import kotlinx.serialization.Serializable
 import okio.Path
@@ -42,6 +44,9 @@ interface Configuration {
     val excludedKeys: Set<String>?
     val excludedLibraries: List<LibraryExclusion>?
     val excludedPlugins: List<PluginExclusion>?
+    val includedKeys: Set<String>?
+    val includedLibraries: List<LibraryInclusion>?
+    val includedPlugins: List<PluginInclusion>?
     val filters: List<Filter>?
     val policy: String?
     val policies: Iterable<String>?

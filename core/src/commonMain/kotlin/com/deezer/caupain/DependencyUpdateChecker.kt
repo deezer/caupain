@@ -47,6 +47,7 @@ import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.isExcluded
+import com.deezer.caupain.model.isIncluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.versionCatalog.Version
@@ -391,7 +392,7 @@ internal class DefaultDependencyUpdateChecker(
                         .asSequence()
                         .map { (key, dep) ->
                             async {
-                                val isExcluded = configuration.isExcluded(key, dep)
+                                val isExcluded = !configuration.isIncluded(key, dep)
                                         || info.ignores.isExcluded(key, dep)
                                 if (!isExcluded || configuration.checkIgnored) {
                                     val updatedVersion = versionResolver.getUpdatedVersion(
