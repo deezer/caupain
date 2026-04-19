@@ -198,8 +198,12 @@ public fun DependencyUpdateChecker(
         }
         install(HttpCache) {
             configuration.cacheDir?.let { cacheDir ->
-                fileSystem.createDirectories(cacheDir)
-                publicStorage(FileStorage(fileSystem, cacheDir))
+                try {
+                    fileSystem.createDirectories(cacheDir)
+                    publicStorage(FileStorage(fileSystem, cacheDir))
+                } catch (e: IOException) {
+                    throw UnavailableCacheException(cacheDir, e)
+                }
             }
         }
         install(HttpRequestRetry) {
@@ -617,5 +621,14 @@ public class CorruptedCacheException(
     cause: Throwable,
 ) : CaupainException(
     message = "Cache directory $cacheDir is corrupted. Please delete it and try again.",
+    cause = cause,
+)
+
+/**
+ * Exception thrown when the cache directory is unavailable or cannot be created.
+ */
+public class UnavailableCacheException(public val cacheDir: Path, cause: Throwable) : CaupainException(
+    message = "Cache directory $cacheDir is unavailable. Please check your file system " +
+            "permissions and try again, or disable the cache.",
     cause = cause,
 )

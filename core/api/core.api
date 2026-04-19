@@ -151,6 +151,11 @@ public final class com/deezer/caupain/SamePolicyNameException : com/deezer/caupa
 	public fun <init> (Ljava/lang/String;)V
 }
 
+public final class com/deezer/caupain/UnavailableCacheException : com/deezer/caupain/CaupainException {
+	public fun <init> (Lokio/Path;Ljava/lang/Throwable;)V
+	public final fun getCacheDir ()Lokio/Path;
+}
+
 public final class com/deezer/caupain/UnknownPolicyException : com/deezer/caupain/CaupainException {
 	public fun <init> (Ljava/lang/String;)V
 }

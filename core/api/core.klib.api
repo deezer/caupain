@@ -1146,6 +1146,13 @@ final class com.deezer.caupain/SamePolicyNameException : com.deezer.caupain/Caup
     constructor <init>(kotlin/String) // com.deezer.caupain/SamePolicyNameException.<init>|<init>(kotlin.String){}[0]
 }
 
+final class com.deezer.caupain/UnavailableCacheException : com.deezer.caupain/CaupainException { // com.deezer.caupain/UnavailableCacheException|null[0]
+    constructor <init>(okio/Path, kotlin/Throwable) // com.deezer.caupain/UnavailableCacheException.<init>|<init>(okio.Path;kotlin.Throwable){}[0]
+
+    final val cacheDir // com.deezer.caupain/UnavailableCacheException.cacheDir|{}cacheDir[0]
+        final fun <get-cacheDir>(): okio/Path // com.deezer.caupain/UnavailableCacheException.cacheDir.<get-cacheDir>|<get-cacheDir>(){}[0]
+}
+
 final class com.deezer.caupain/UnknownPolicyException : com.deezer.caupain/CaupainException { // com.deezer.caupain/UnknownPolicyException|null[0]
     constructor <init>(kotlin/String) // com.deezer.caupain/UnknownPolicyException.<init>|<init>(kotlin.String){}[0]
 }

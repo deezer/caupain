@@ -30,6 +30,7 @@ import com.deezer.caupain.CaupainException
 import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
+import com.deezer.caupain.UnavailableCacheException
 import com.deezer.caupain.cli.internal.OutputSink
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.internal.sink
@@ -281,84 +282,96 @@ class CaupainCLI(
             throw ReplaceNotAvailableException()
         }
 
-        val updateChecker =
-            createUpdateChecker(
-                finalConfiguration,
-                loadGradleVersion(configuration),
-                fileSystem,
-                ioDispatcher,
-                logger,
-                CLISelfUpdateResolver(
-                    logger = logger,
-                    ioDispatcher = ioDispatcher,
-                    fileSystem = fileSystem,
-                    githubToken = finalConfiguration.githubToken
+        try {
+            val updateChecker =
+                createUpdateChecker(
+                    finalConfiguration,
+                    loadGradleVersion(configuration),
+                    fileSystem,
+                    ioDispatcher,
+                    logger,
+                    CLISelfUpdateResolver(
+                        logger = logger,
+                        ioDispatcher = ioDispatcher,
+                        fileSystem = fileSystem,
+                        githubToken = finalConfiguration.githubToken
+                    )
                 )
-            )
 
-        if (listPolicies) {
-            throw PrintMessage(
-                statusCode = 0,
-                message = buildString {
-                    appendLine("Available policies:")
-                    for (policy in updateChecker.policies) {
-                        append("- ")
-                        append(policy.name)
-                        if (policy.description.isNullOrEmpty()) {
-                            appendLine()
-                        } else {
-                            append(": ")
-                            appendLine(policy.description)
+            if (listPolicies) {
+                throw PrintMessage(
+                    statusCode = 0,
+                    message = buildString {
+                        appendLine("Available policies:")
+                        for (policy in updateChecker.policies) {
+                            append("- ")
+                            append(policy.name)
+                            if (policy.description.isNullOrEmpty()) {
+                                appendLine()
+                            } else {
+                                append(": ")
+                                appendLine(policy.description)
+                            }
                         }
                     }
-                }
+                )
+            }
+
+            val progress = backgroundScope.createProgress(updateChecker.progress)
+
+            val updates = updateChecker.checkForUpdates()
+
+            val formatters = outputFormatters(configuration)
+            val formatToConsole = formatters.any { it is Formatter.Console }
+            if (formatToConsole) {
+                // Clear progress early to avoid sending progress to console while formatting
+                progress?.clear()
+                backgroundScope.cancel()
+            }
+
+            format(
+                input = Input(
+                    updateResult = updates,
+                    showVersionReferences = showVersionReferences
+                            || configuration?.showVersionReferences == true
+                ),
+                formatters = formatters,
+                configuration = configuration,
             )
-        }
 
-        val progress = backgroundScope.createProgress(updateChecker.progress)
+            if (formatToConsole) {
+                progress?.clear()
+                backgroundScope.cancel()
+            }
 
-        val updates = try {
-            updateChecker.checkForUpdates()
+            if (replace) {
+                createVersionReplacer(fileSystem, ioDispatcher, defaultDispatcher)
+                    .replaceVersions(
+                        versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
+                        updateResult = updates
+                    )
+            }
         } catch (_: CorruptedCacheException) {
-            echo(
-                "The cache is corrupted. Try to run again with --clean-cache to refresh it",
-                err = true
-            )
+            if (logLevel > LogLevel.QUIET) {
+                echo(
+                    "The cache is corrupted. Try to run again with --clean-cache to refresh it",
+                    err = true
+                )
+            }
+            throw Abort()
+        } catch (e: UnavailableCacheException) {
+            if (logLevel > LogLevel.QUIET) {
+                echo(
+                    "Cache dir at ${e.cacheDir} is not available. Check your permissions, or " +
+                            "try to specify another cache dir with --cache-dir or disable caching " +
+                            "with --no-cache",
+                    err = true
+                )
+            }
             throw Abort()
         } catch (e: CaupainException) {
-            echo(e.message, err = true)
+            if (logLevel > LogLevel.QUIET) echo(e.message, err = true)
             throw Abort()
-        }
-
-        val formatters = outputFormatters(configuration)
-        val formatToConsole = formatters.any { it is Formatter.Console }
-        if (formatToConsole) {
-            // Clear progress early to avoid sending progress to console while formatting
-            progress?.clear()
-            backgroundScope.cancel()
-        }
-
-        format(
-            input = Input(
-                updateResult = updates,
-                showVersionReferences = showVersionReferences
-                        || configuration?.showVersionReferences == true
-            ),
-            formatters = formatters,
-            configuration = configuration,
-        )
-
-        if (formatToConsole) {
-            progress?.clear()
-            backgroundScope.cancel()
-        }
-
-        if (replace) {
-            createVersionReplacer(fileSystem, ioDispatcher, defaultDispatcher)
-                .replaceVersions(
-                    versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
-                    updateResult = updates
-                )
         }
 
         if (logLevel > LogLevel.DEFAULT) {
@@ -619,18 +632,13 @@ class CaupainCLI(
 
         private fun echoError(message: String, throwable: Throwable?) {
             if (logLevel <= LogLevel.QUIET) return
-            if (throwable == null) {
+            if (throwable == null || logLevel < LogLevel.DEBUG) {
                 echo(message, err = true)
             } else {
                 echo(
                     message = buildString {
-                        append(message)
-                        if (logLevel >= LogLevel.DEBUG) {
-                            appendLine()
-                            append(throwable.stackTraceToString())
-                        } else {
-                            append(": ${throwable.message}")
-                        }
+                        appendLine(message)
+                        append(throwable.stackTraceToString())
                     },
                     err = true
                 )
