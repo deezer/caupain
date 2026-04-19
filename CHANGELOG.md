@@ -16,6 +16,7 @@ version. If you need to use Caupain on an Intel-based Mac, you can still use on 
 versions.
 
 ### Fixed
+- Check when cache cannot be created and display the correct error message
 
 ### Security
 
