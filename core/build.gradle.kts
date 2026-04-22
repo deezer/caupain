@@ -163,6 +163,7 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
 tasks.withType<KotlinCompilationTask<*>> {
     dependsOn(generateKotlinGrammarSource)
 }
+tasks.maybeCreate("prepareKotlinIdeaImport").dependsOn(generateKotlinGrammarSource)
 tasks
     .matching { it.name.endsWith("SourcesJar", ignoreCase = true) }
     .configureEach { dependsOn(generateKotlinGrammarSource) }
