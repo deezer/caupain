@@ -1,6 +1,7 @@
 # Caupain
 
 ![GitHub License](https://img.shields.io/github/license/deezer/caupain)
+[![Casual Maintenance Intended](https://casuallymaintained.tech/badge.svg)](https://casuallymaintained.tech/)
 
 [\\kɔ.pɛ̃\\](https://ipa-reader.com/?text=%5Ck%C9%94.p%C9%9B%CC%83%5C&voice=Celine)
 
