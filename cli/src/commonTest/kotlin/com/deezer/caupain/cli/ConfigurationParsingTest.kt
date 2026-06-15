@@ -133,6 +133,7 @@ class ConfigurationParsingTest {
             ),
             actual = result.filters,
         )
+        assertEquals(true, result.doNotCheckSelfUpdates)
     }
 }
 
@@ -164,6 +165,7 @@ includedLibraries = [
     { group = "com.example2.included.**" }
 ]
 includedPlugins = [ "com.included.first", "com.included.second" ]
+doNotCheckSelfUpdates = true
 [[ repositories ]]
 default = "mavenCentral"
 includes = [

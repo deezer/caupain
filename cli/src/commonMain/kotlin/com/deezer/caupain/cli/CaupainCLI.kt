@@ -295,7 +295,7 @@ class CaupainCLI(
                     fileSystem,
                     ioDispatcher,
                     logger,
-                    if (doNotCheckSelfUpdates) {
+                    if (shouldNotCheckSelfUpdates(configuration)) {
                         null
                     } else {
                         CLISelfUpdateResolver(
@@ -495,6 +495,9 @@ class CaupainCLI(
             verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
         )
     }
+
+    private fun shouldNotCheckSelfUpdates(parsedConfiguration: ParsedConfiguration?): Boolean =
+        doNotCheckSelfUpdates || parsedConfiguration?.doNotCheckSelfUpdates == true
 
     private fun validateConfiguration(
         parsedConfiguration: ParsedConfiguration?,

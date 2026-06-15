@@ -195,6 +195,8 @@ searchReleaseNotes = true
 # Note: This may slow down the checking process as it adds extra network requests.
 # Default is false.
 verifyExistence = true
+# Whether to skip the GitHub self-update check. Default is false.
+doNotCheckSelfUpdates = true
 ```
 
 #### Repository component filtering

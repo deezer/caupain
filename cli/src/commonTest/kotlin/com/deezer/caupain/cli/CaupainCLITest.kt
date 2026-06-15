@@ -250,6 +250,48 @@ class CaupainCLITest {
     }
 
     @Test
+    fun testDoNotCheckSelfUpdatesFromConfig() {
+        runTest(testDispatcher) {
+            everySuspend { checker.checkForUpdates() } returns DependenciesUpdateResult(
+                gradleUpdateInfo = null,
+                updateInfos = emptyMap(),
+                ignoredUpdateInfos = emptyList(),
+                selfUpdateInfo = null,
+                versionCatalog = null,
+                versionCatalogInfo = null,
+            )
+            val configPath = "do-not-check-self-updates.toml".toPath()
+            fileSystem.write(configPath) {
+                writeUtf8(
+                    """
+                    versionCatalogPaths = ["${versionCatalogPath}"]
+                    doNotCheckSelfUpdates = true
+                    """.trimIndent()
+                )
+            }
+            val cli = CaupainCLI(
+                fileSystem = fileSystem,
+                defaultDispatcher = testDispatcher,
+                ioDispatcher = testDispatcher,
+                createUpdateChecker = { _, _, _, _, _, selfUpdateResolver ->
+                    assertEquals(null, selfUpdateResolver)
+                    checker
+                },
+                createVersionReplacer = { _, _, _ -> replacer }
+            )
+            val result = cli.test(
+                listOf(
+                    "-c",
+                    configPath.toString(),
+                    "--gradle-wrapper-properties",
+                    wrapperPropertiesPath.toString(),
+                )
+            )
+            assertEquals(0, result.statusCode)
+        }
+    }
+
+    @Test
     fun testListPolicies() {
         runTest(testDispatcher) {
             val policies = listOf<Policy>(

@@ -65,6 +65,7 @@ interface Configuration {
     val searchReleaseNote: Boolean?
     val githubToken: String?
     val verifyExistence: Boolean?
+    val doNotCheckSelfUpdates: Boolean?
 
     fun validate(logger: Logger)
 
