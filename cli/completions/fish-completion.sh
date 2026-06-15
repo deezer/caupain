@@ -26,6 +26,7 @@ complete -c caupain -s v -l verbose -d 'Verbose output'
 complete -c caupain -s d -l debug -d 'Debug output'
 complete -c caupain -l debug-http-calls -d 'Enable debugging for HTTP calls'
 complete -c caupain -l verify-existence -d 'Verify that .pom file exists before accepting version updates (warning: may slow down checks)'
+complete -c caupain -l do-not-check-self-updates -d 'Do not check for Caupain updates on GitHub'
 complete -c caupain -l version -d 'Show the version and exit'
 complete -c caupain -s h -l help -d 'Show this message and exit'
 

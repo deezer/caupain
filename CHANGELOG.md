@@ -5,6 +5,7 @@
 ### Added
 - Feature to filter selected versions in the configuration with a Maven-like pattern (#85)
 - Include options in configuration (#86)
+- CLI flag `--do-not-check-self-updates` to skip the GitHub self-update check (#89)
 
 ### Changed
 

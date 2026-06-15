@@ -98,6 +98,7 @@ Options:
   --debug-http-calls            Enable debugging for HTTP calls
   --verify-existence            Verify that .pom file exists before accepting
                                 version updates (warning: may slow down checks)
+  --do-not-check-self-updates   Do not check for Caupain updates on GitHub
   --version                     Show the version and exit
   -h, --help                    Show this message and exit
 ```

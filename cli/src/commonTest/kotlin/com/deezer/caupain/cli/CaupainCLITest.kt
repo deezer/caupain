@@ -216,6 +216,40 @@ class CaupainCLITest {
     }
 
     @Test
+    fun testDoNotCheckSelfUpdates() {
+        runTest(testDispatcher) {
+            everySuspend { checker.checkForUpdates() } returns DependenciesUpdateResult(
+                gradleUpdateInfo = null,
+                updateInfos = emptyMap(),
+                ignoredUpdateInfos = emptyList(),
+                selfUpdateInfo = null,
+                versionCatalog = null,
+                versionCatalogInfo = null,
+            )
+            val cli = CaupainCLI(
+                fileSystem = fileSystem,
+                defaultDispatcher = testDispatcher,
+                ioDispatcher = testDispatcher,
+                createUpdateChecker = { _, _, _, _, _, selfUpdateResolver ->
+                    assertEquals(null, selfUpdateResolver)
+                    checker
+                },
+                createVersionReplacer = { _, _, _ -> replacer }
+            )
+            val result = cli.test(
+                listOf(
+                    "-i",
+                    versionCatalogPath.toString(),
+                    "--do-not-check-self-updates",
+                    "--gradle-wrapper-properties",
+                    wrapperPropertiesPath.toString(),
+                )
+            )
+            assertEquals(0, result.statusCode)
+        }
+    }
+
+    @Test
     fun testListPolicies() {
         runTest(testDispatcher) {
             val policies = listOf<Policy>(
