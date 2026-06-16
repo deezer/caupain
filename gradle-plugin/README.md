@@ -318,6 +318,8 @@ searchReleaseNotes = true
 // Note: This may slow down the checking process as it adds extra network requests.
 // Default is false.
 verifyExistence = true
+// Whether to skip checking for updates to the Caupain Gradle plugin itself. Default is false.
+doNotCheckSelfUpdates = true
 ```
 
 ## In-place update

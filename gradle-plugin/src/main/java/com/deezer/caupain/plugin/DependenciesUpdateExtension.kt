@@ -155,6 +155,12 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
     val verifyExistence: Property<Boolean> = objects.property<Boolean>().convention(false)
 
     /**
+     * Whether to skip checking for updates to the Caupain Gradle plugin itself.
+     * Default is false.
+     */
+    val doNotCheckSelfUpdates: Property<Boolean> = objects.property<Boolean>().convention(false)
+
+    /**
      * Configure repositories
      */
     fun repositories(action: Action<RepositoryHandler>) {

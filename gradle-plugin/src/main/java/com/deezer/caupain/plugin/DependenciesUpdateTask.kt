@@ -170,6 +170,12 @@ open class DependenciesUpdateTask : DefaultTask() {
     val verifyExistence = project.objects.property<Boolean>()
 
     /**
+     * @see DependenciesUpdateExtension.doNotCheckSelfUpdates
+     */
+    @get:Internal
+    val doNotCheckSelfUpdates = project.objects.property<Boolean>()
+
+    /**
      * @see DependenciesUpdateExtension.gradleStabilityLevel
      */
     @get:Internal
@@ -242,7 +248,11 @@ open class DependenciesUpdateTask : DefaultTask() {
         val checker = DependencyUpdateChecker(
             configuration = configuration,
             logger = LoggerAdapter(logger),
-            selfUpdateResolver = PluginUpdateResolver,
+            selfUpdateResolver = if (doNotCheckSelfUpdates.get()) {
+                null
+            } else {
+                PluginUpdateResolver
+            },
             policies = policies,
             currentGradleVersion = GradleVersion.current().version,
             gradleVersionsUrl = gradleVersionsUrl,

@@ -173,6 +173,29 @@ class CaupainPluginTest {
     }
 
     @Test
+    fun testDoNotCheckSelfUpdates(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)
+    ) {
+        val project = createProject(
+            supplementaryCaupainConfiguration = "doNotCheckSelfUpdates.set(true)",
+        )
+        val result = build(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--no-configuration-cache",
+            "--stacktrace",
+            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+        )
+        assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
+        assertEquals(
+            expected = expectedJsonResultWithoutSelfUpdate(gradleVersion.version),
+            actual = jsonOutputFile.readText().trim()
+        )
+        assertEquals(9, mockWebserverRule.server.requestCount)
+    }
+
+    @Test
     fun testReplace(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
         val project = createProject()
         val result = build(
@@ -1217,6 +1240,82 @@ private fun expectedJsonResult(
             "plugins"
         ]
     }
+}    
+""".trimIndent().trim()
+
+@Language("JSON")
+private fun expectedJsonResultWithoutSelfUpdate(
+    gradleVersion: String,
+) = """
+{
+    "gradleUpdateInfo": {
+        "currentVersion": "$gradleVersion",
+        "updatedVersion": "99.0.0"
+    },
+    "updateInfos": {
+        "libraries": [
+            {
+                "dependency": "androidx-core-ktx",
+                "dependencyId": "androidx.core:core-ktx",
+                "name": "Core Kotlin Extensions",
+                "url": "https://developer.android.com/jetpack/androidx/releases/core#1.17.0",
+                "releaseNoteUrl": null,
+                "currentVersion": "1.16.0",
+                "updatedVersion": "1.17.0"
+            }
+        ],
+        "plugins": [
+            {
+                "dependency": "kotlin-android",
+                "dependencyId": "org.jetbrains.kotlin.android",
+                "name": "Kotlin Gradle Plugin",
+                "url": "https://kotlinlang.org/",
+                "releaseNoteUrl": null,
+                "currentVersion": "2.0.21",
+                "updatedVersion": "2.1.20"
+            }
+        ]
+    },
+    "ignoredUpdateInfos": [
+        {
+            "dependency": "ignored",
+            "dependencyId": "com.example:ignored",
+            "name": null,
+            "url": null,
+            "releaseNoteUrl": null,
+            "currentVersion": "1.0.0",
+            "updatedVersion": "1.1.0"
+        }
+    ],
+    "versionReferenceInfo": [
+        {
+            "id": "coreKtx",
+            "libraryKeys": [
+                "androidx-core-ktx"
+            ],
+            "updatedLibraries": {
+                "androidx-core-ktx": "1.17.0"
+            },
+            "pluginKeys": [],
+            "updatedPlugins": {},
+            "currentVersion": "1.16.0",
+            "updatedVersion": "1.17.0"
+        },
+        {
+            "id": "kotlin",
+            "libraryKeys": [],
+            "updatedLibraries": {},
+            "pluginKeys": [
+                "kotlin-android"
+            ],
+            "updatedPlugins": {
+                "kotlin-android": "2.1.20"
+            },
+            "currentVersion": "2.0.21",
+            "updatedVersion": "2.1.20"
+        }
+    ],
+    "selfUpdateInfo": null
 }    
 """.trimIndent().trim()
 

@@ -5,6 +5,8 @@
 ### Added
 - Feature to filter selected versions in the configuration with a Maven-like pattern (#85)
 - Include options in configuration (#86)
+- CLI flag `--do-not-check-self-updates` and TOML option to skip the GitHub self-update check (#89)
+- Gradle plugin `doNotCheckSelfUpdates` option to skip self-update check (#89)
 
 ### Changed
 

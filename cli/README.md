@@ -98,6 +98,7 @@ Options:
   --debug-http-calls            Enable debugging for HTTP calls
   --verify-existence            Verify that .pom file exists before accepting
                                 version updates (warning: may slow down checks)
+  --do-not-check-self-updates   Do not check for Caupain updates on GitHub
   --version                     Show the version and exit
   -h, --help                    Show this message and exit
 ```
@@ -194,6 +195,8 @@ searchReleaseNotes = true
 # Note: This may slow down the checking process as it adds extra network requests.
 # Default is false.
 verifyExistence = true
+# Whether to skip the GitHub self-update check. Default is false.
+doNotCheckSelfUpdates = true
 ```
 
 #### Repository component filtering

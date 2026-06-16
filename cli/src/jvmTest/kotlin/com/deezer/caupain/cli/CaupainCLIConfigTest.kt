@@ -185,6 +185,7 @@ class CaupainCLIConfigTest {
                     searchReleaseNote = false,
                     githubToken = "githubTokenConf",
                     verifyExistence = true,
+                    doNotCheckSelfUpdates = true,
                 )
             }
             when {
@@ -443,7 +444,8 @@ private data class TestConfiguration(
     override val checkIgnored: Boolean?,
     override val searchReleaseNote: Boolean?,
     override val githubToken: String?,
-    override val verifyExistence: Boolean?
+    override val verifyExistence: Boolean?,
+    override val doNotCheckSelfUpdates: Boolean?,
 ) : ParsedConfiguration {
 
     var didValidate = false

@@ -109,7 +109,7 @@ class CaupainCLI(
         DefaultToml.decodeFromPath(path, fs)
     },
     @Suppress("NoNameShadowing") // Ok to repeat here for clarity
-    private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
+    private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver?) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
             currentGradleVersion = gradleVersion,
@@ -247,6 +247,11 @@ class CaupainCLI(
         help = "Verify that .pom file exists before accepting version updates (warning: may slow down checks)"
     ).flag()
 
+    private val doNotCheckSelfUpdates by option(
+        "--do-not-check-self-updates",
+        help = "Do not check for Caupain updates on GitHub",
+    ).flag()
+
     private val timesource = TimeSource.Monotonic
 
     init {
@@ -290,12 +295,16 @@ class CaupainCLI(
                     fileSystem,
                     ioDispatcher,
                     logger,
-                    CLISelfUpdateResolver(
-                        logger = logger,
-                        ioDispatcher = ioDispatcher,
-                        fileSystem = fileSystem,
-                        githubToken = finalConfiguration.githubToken
-                    )
+                    if (shouldNotCheckSelfUpdates(configuration)) {
+                        null
+                    } else {
+                        CLISelfUpdateResolver(
+                            logger = logger,
+                            ioDispatcher = ioDispatcher,
+                            fileSystem = fileSystem,
+                            githubToken = finalConfiguration.githubToken
+                        )
+                    }
                 )
 
             if (listPolicies) {
@@ -486,6 +495,9 @@ class CaupainCLI(
             verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
         )
     }
+
+    private fun shouldNotCheckSelfUpdates(parsedConfiguration: ParsedConfiguration?): Boolean =
+        doNotCheckSelfUpdates || parsedConfiguration?.doNotCheckSelfUpdates == true
 
     private fun validateConfiguration(
         parsedConfiguration: ParsedConfiguration?,
