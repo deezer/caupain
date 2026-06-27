@@ -96,10 +96,10 @@ kotlin {
                 implementation(libs.ktor.client.cio)
             }
         }
-        val nonJsMain by creating {
+        val nonJsMain = create("nonJsMain") {
             dependsOn(commonMain.get())
         }
-        val nonJsTest by creating {
+        val nonJsTest = create("nonJsTest") {
             dependsOn(commonTest.get())
         }
         jvmMain {
@@ -142,7 +142,6 @@ kotlin {
     }
 
     abiValidation {
-        enabled.set(true)
         filters.exclude.byNames.add("com.deezer.caupain.antlr.**")
     }
 }

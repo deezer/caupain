@@ -125,6 +125,7 @@ public interface DependencyVersionsReplacer {
         /**
          * Version catalog version.
          */
+        @Suppress("AbstractClassCanBeInterface") // Used for serialization
         @Serializable
         public sealed class Version {
 

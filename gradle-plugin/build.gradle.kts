@@ -26,9 +26,7 @@ buildConfig {
 }
 
 kotlin {
-    abiValidation {
-        enabled.set(true)
-    }
+    abiValidation()
 }
 
 gradleTestKitSupport {

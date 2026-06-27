@@ -170,12 +170,6 @@ public abstract class com/deezer/caupain/formatting/SinkFormatter {
 }
 
 public final class com/deezer/caupain/formatting/console/ConsoleFormatter {
-	public static final field IGNORED_TITLE Ljava/lang/String;
-	public static final field LIBRARY_TITLE Ljava/lang/String;
-	public static final field NO_UPDATES Ljava/lang/String;
-	public static final field PLUGIN_TITLE Ljava/lang/String;
-	public static final field UPDATES_TITLE Ljava/lang/String;
-	public static final field VERSIONS_TITLE Ljava/lang/String;
 	public fun <init> (Lcom/deezer/caupain/formatting/console/ConsolePrinter;)V
 	public final fun format (Lcom/deezer/caupain/formatting/model/Input;)V
 }

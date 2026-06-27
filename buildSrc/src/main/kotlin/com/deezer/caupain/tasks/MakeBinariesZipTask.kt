@@ -25,7 +25,6 @@
 package com.deezer.caupain.tasks
 
 import com.deezer.caupain.BUILD_TARGETS
-import com.deezer.caupain.fullArchName
 import com.deezer.caupain.getFilePath
 import com.deezer.caupain.getOutFileName
 import com.deezer.caupain.platformName
@@ -36,10 +35,9 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.property
-import org.gradle.kotlin.dsl.support.zipTo
-import org.jetbrains.kotlin.konan.target.Family
-import org.jetbrains.kotlin.konan.target.KonanTarget
 import java.io.File
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 open class MakeBinariesZipTask : DefaultTask() {
 
@@ -72,17 +70,15 @@ open class MakeBinariesZipTask : DefaultTask() {
         val binDir = this.binDir.get().asFile
         val zipDir = this.zipDir.get().asFile
         zipDir.mkdirs()
-        val outDir = File(binDir, "caupain")
-        outDir.mkdirs()
         for (target in BUILD_TARGETS) {
             val binaryFile = File(binDir, target.getFilePath(baseName))
-            outDir.listFiles()?.forEach { it.delete() }
-            val outFileName = target.getOutFileName(baseName)
-            val outFile = File(outDir, outFileName)
-            binaryFile.copyTo(outFile)
             val zipFile = File(zipDir, "caupain-$version-${target.platformName}.zip")
-            zipTo(zipFile, outDir)
+            ZipOutputStream(zipFile.outputStream().buffered()).use { zipOut ->
+                zipOut.putNextEntry(ZipEntry(target.getOutFileName(baseName)))
+                binaryFile.inputStream().buffered().use { input ->
+                    input.copyTo(zipOut)
+                }
+            }
         }
-        outDir.deleteRecursively()
     }
 }

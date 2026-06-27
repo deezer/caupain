@@ -129,7 +129,6 @@ public final class com/deezer/caupain/plugin/OutputsHandler$Output$Console : com
 }
 
 public abstract class com/deezer/caupain/plugin/OutputsHandler$Output$File : com/deezer/caupain/plugin/OutputsHandler$Output {
-	protected abstract fun createFormatter ()Lcom/deezer/caupain/formatting/SinkFormatter;
 	public final fun format (Lcom/deezer/caupain/formatting/model/Input;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getFile ()Lorg/gradle/api/provider/Provider;
 }

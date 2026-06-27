@@ -90,7 +90,7 @@ kotlin {
                 implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
-        val nonLinuxOrMacTest by creating {
+        val nonLinuxOrMacTest = create("nonLinuxOrMacTest") {
             dependsOn(commonTest.get())
         }
         jvmTest {
