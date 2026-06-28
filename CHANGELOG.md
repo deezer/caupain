@@ -7,6 +7,7 @@
 - Include options in configuration (#86)
 - CLI flag `--do-not-check-self-updates` and TOML option to skip the GitHub self-update check (#89)
 - Gradle plugin `doNotCheckSelfUpdates` option to skip self-update check (#89)
+- Possibility to avoid checking self-updates (#90, thanks to [@zavijavasoft](https://github.com/zavijavasoft))
 
 ### Changed
 
