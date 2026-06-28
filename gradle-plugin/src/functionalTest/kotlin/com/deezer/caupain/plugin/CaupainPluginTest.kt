@@ -27,18 +27,15 @@ package com.deezer.caupain.plugin
 import com.autonomousapps.kit.AbstractGradleProject.Companion.PLUGIN_UNDER_TEST_VERSION
 import com.autonomousapps.kit.GradleBuilder.build
 import com.autonomousapps.kit.GradleBuilder.runner
-import com.google.testing.junit.testparameterinjector.KotlinTestParameters.testValues
 import com.google.testing.junit.testparameterinjector.KotlinTestParameters.testValuesIn
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
-import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import io.ktor.http.HttpHeaders
 import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
 import mockwebserver3.junit4.MockWebServerRule
 import okhttp3.Headers
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
@@ -49,7 +46,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import java.io.File
 import java.io.StringWriter
-import java.lang.management.ManagementFactory
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
@@ -150,7 +146,6 @@ class CaupainPluginTest {
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
-            "--no-configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
         )
@@ -173,6 +168,29 @@ class CaupainPluginTest {
     }
 
     @Test
+    fun testConfigurationCache(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
+        val project = createProject()
+        build(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--configuration-cache",
+            "--stacktrace",
+            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+        )
+        val output = StringWriter()
+        runner(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--configuration-cache",
+            "--stacktrace",
+            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+        ).forwardStdOutput(output).build()
+        assertContains(output.toString(), "Reusing configuration cache")
+    }
+
+    @Test
     fun testDoNotCheckSelfUpdates(
         @TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)
     ) {
@@ -183,7 +201,6 @@ class CaupainPluginTest {
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
-            "--no-configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
         )
@@ -202,7 +219,6 @@ class CaupainPluginTest {
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":replaceOutdatedDependencies",
-            "--no-configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
         )
@@ -227,7 +243,6 @@ class CaupainPluginTest {
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
-            "--no-configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
         ).forwardStdError(errorOutput).build()
@@ -241,22 +256,15 @@ class CaupainPluginTest {
     @Test
     fun testGradleTooOld() {
         val project = createProject()
-        val result = GradleRunner.create().apply {
-            withGradleVersion("8.14.3")
-            withProjectDir(project.rootDir)
-            withArguments(
-                ":checkDependencyUpdates",
-                "--no-configuration-cache",
-                "--stacktrace",
-                "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}",
-                "-s"
-            )
-
-            // Ensure this value is true when `--debug-jvm` is passed to Gradle, and false otherwise
-            val isDebugJvm = ManagementFactory.getRuntimeMXBean().inputArguments.toString()
-                .indexOf("-agentlib:jdwp") > 0
-            withDebug(isDebugJvm)
-        }.buildAndFail()
+        val result = runner(
+            gradleVersion = GradleVersion.version("8.14.3"),
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--no-configuration-cache",
+            "--stacktrace",
+            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}",
+            "-s"
+        ).buildAndFail()
         assertContains(result.output, "Caupain plugin requires Gradle 9.0 or higher")
     }
 }
