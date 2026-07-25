@@ -2,9 +2,11 @@
 
 import com.deezer.caupain.BUILD_TARGETS
 import com.deezer.caupain.fullArchName
+import com.deezer.caupain.getFilePath
+import com.deezer.caupain.getOutFileName
+import com.deezer.caupain.platformName
 import com.deezer.caupain.rename
 import com.deezer.caupain.tasks.CreateChocolateyFilesTask
-import com.deezer.caupain.tasks.MakeBinariesZipTask
 import com.deezer.caupain.tasks.RenameCurrentBinaryTask
 import com.netflix.gradle.plugins.deb.Deb
 import com.netflix.gradle.plugins.packaging.ProjectPackagingExtension
@@ -221,13 +223,19 @@ tasks.register("buildCurrentArchBinary") {
 tasks.named<JavaExec>("runJvm") {
     workingDir = rootProject.projectDir
 }
-val zipAndCopyBinaries = tasks.register<MakeBinariesZipTask>("zipAndCopyBinaries") {
-    dependsOn(
-        "macosArm64Binaries",
-        "mingwX64Binaries",
-        "linuxX64Binaries",
-        "linuxArm64Binaries",
-    )
+val zipAndCopyTasks = BUILD_TARGETS.map { target ->
+    tasks.register<Zip>("${target.fullArchName}ZipAndCopyBinary") {
+        from(project.layout.buildDirectory.file("bin/${target.getFilePath("caupain")}"))
+        rename { target.getOutFileName("caupain") }
+        useFileSystemPermissions()
+        isPreserveFileTimestamps = true
+        destinationDirectory.set(project.layout.buildDirectory.dir("bin/zip"))
+        archiveFileName.set("caupain-$version-${target.platformName}.zip")
+        dependsOn("${target.fullArchName}Binaries")
+    }
+}
+val zipAndCopyBinaries = tasks.register("zipAndCopyBinaries") {
+    dependsOn(zipAndCopyTasks)
 }
 tasks.register("assembleAll") {
     dependsOn(zipAndCopyBinaries, "jvmDistZip")
