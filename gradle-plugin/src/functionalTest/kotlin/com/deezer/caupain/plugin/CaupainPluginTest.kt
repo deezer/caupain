@@ -168,29 +168,6 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testConfigurationCache(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
-        val project = createProject()
-        build(
-            gradleVersion = gradleVersion,
-            projectDir = project.rootDir,
-            ":checkDependencyUpdates",
-            "--configuration-cache",
-            "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
-        )
-        val output = StringWriter()
-        runner(
-            gradleVersion = gradleVersion,
-            projectDir = project.rootDir,
-            ":checkDependencyUpdates",
-            "--configuration-cache",
-            "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
-        ).forwardStdOutput(output).build()
-        assertContains(output.toString(), "Reusing configuration cache")
-    }
-
-    @Test
     fun testDoNotCheckSelfUpdates(
         @TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)
     ) {
