@@ -59,6 +59,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         val checkTaskProvider = target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
             group = "verification"
             description = "Check for dependency updates"
+            notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
             versionCatalogFiles.convention(versionCatalogFilesProvider)
             excludedKeys.convention(ext.excludedKeys)
             excludedLibraries.convention(ext.excludedLibraries)
@@ -83,6 +84,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
             group = "verification"
             description = "Check for dependency updates"
+            notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
             versionCatalogFile.convention(
                 versionCatalogFilesProvider.map { files ->
                     files.firstNotNullOf { it as? RegularFile }
