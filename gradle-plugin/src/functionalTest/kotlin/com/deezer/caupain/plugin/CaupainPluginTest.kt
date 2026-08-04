@@ -48,6 +48,8 @@ import java.io.File
 import java.io.StringWriter
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.fail
 
 @RunWith(TestParameterInjector::class)
 class CaupainPluginTest {
@@ -174,17 +176,25 @@ class CaupainPluginTest {
         )
     ) {
         val project = createProject()
-        val output = build(
+        build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
-        ).output
-        assertContains(
-            output.toString(),
-            "Configuration cache entry discarded because incompatible task was found: 'task `:checkDependencyUpdates`"
+        )
+        val result = build(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--configuration-cache",
+            "--stacktrace",
+            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+        )
+        assertNotEquals(
+            illegal = TaskOutcome.FROM_CACHE,
+            actual = result.task(":checkDependencyUpdates")?.outcome
         )
     }
 

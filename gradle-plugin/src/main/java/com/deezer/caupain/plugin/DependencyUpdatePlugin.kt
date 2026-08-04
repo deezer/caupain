@@ -83,8 +83,7 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         }
         target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
             group = "verification"
-            description = "Check for dependency updates"
-            notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
+            description = "Replace dependency updates in-line with their latest versions"
             versionCatalogFile.convention(
                 versionCatalogFilesProvider.map { files ->
                     files.firstNotNullOf { it as? RegularFile }
