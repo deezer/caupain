@@ -10,6 +10,7 @@
 - Possibility to avoid checking self-updates (#90, thanks to [@zavijavasoft](https://github.com/zavijavasoft))
 
 ### Changed
+- Disabled configuration cache for dependency check task to avoid configuration cache issues (#93)
 
 ### Deprecated
 
@@ -20,6 +21,7 @@ versions.
 
 ### Fixed
 - Check when cache cannot be created and display the correct error message
+- Add back executable flags on Linux executables after unzipping the distribution (#92)
 
 ### Security
 
