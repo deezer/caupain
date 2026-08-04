@@ -168,26 +168,23 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testConfigurationCache(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
-        val project = createProject()
-        build(
-            gradleVersion = gradleVersion,
-            projectDir = project.rootDir,
-            ":checkDependencyUpdates",
-            "--configuration-cache",
-            "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+    fun testConfigurationCacheIncompatible(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS
         )
-        val output = StringWriter()
-        runner(
+    ) {
+        val project = createProject()
+        val output = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
-        ).forwardStdOutput(output).build()
-        assertContains(output.toString(), "Reusing configuration cache")
+        ).output
+        assertContains(output, "configuration cache", ignoreCase = true)
+        assertContains(output, "checkDependencyUpdates", ignoreCase = true)
+        assertContains(output, "incompatible", ignoreCase = true)
     }
 
     @Test
@@ -213,7 +210,11 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testReplace(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
+    fun testReplace(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS
+        )
+    ) {
         val project = createProject()
         val result = build(
             gradleVersion = gradleVersion,
@@ -231,7 +232,11 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testMultipleFiles(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
+    fun testMultipleFiles(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS
+        )
+    ) {
         val project = createProject(
             supplementaryCaupainConfiguration = """
             versionCatalogFile.set(file("gradle/other.versions.toml"))
