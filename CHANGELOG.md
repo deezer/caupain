@@ -3,6 +3,21 @@
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## 1.10.0 - 2026-08-04
+
+### Added
+
 - Feature to filter selected versions in the configuration with a Maven-like pattern (#85)
 - Include options in configuration (#86)
 - CLI flag `--do-not-check-self-updates` and TOML option to skip the GitHub self-update check (#89)
@@ -10,20 +25,19 @@
 - Possibility to avoid checking self-updates (#90, thanks to [@zavijavasoft](https://github.com/zavijavasoft))
 
 ### Changed
+
 - Disabled configuration cache for dependency check task to avoid configuration cache issues (#93)
 
-### Deprecated
-
 ### Removed
+
 - Intel-based macOS builds are no longer published, as they are not supported by the latest Kotlin
 version. If you need to use Caupain on an Intel-based Mac, you can still use on of the previous 
 versions.
 
 ### Fixed
+
 - Check when cache cannot be created and display the correct error message
 - Add back executable flags on Linux executables after unzipping the distribution (#92)
-
-### Security
 
 ## 1.9.1 - 2026-03-17
 
