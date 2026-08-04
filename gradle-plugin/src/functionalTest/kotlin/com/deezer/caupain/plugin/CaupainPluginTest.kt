@@ -168,6 +168,27 @@ class CaupainPluginTest {
     }
 
     @Test
+    fun testConfigurationCacheIncompatible(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS
+        )
+    ) {
+        val project = createProject()
+        val output = build(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--configuration-cache",
+            "--stacktrace",
+            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+        ).output
+        assertContains(
+            output.toString(),
+            "Configuration cache entry discarded because incompatible task was found: 'task `:checkDependencyUpdates`"
+        )
+    }
+
+    @Test
     fun testDoNotCheckSelfUpdates(
         @TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)
     ) {
@@ -190,7 +211,11 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testReplace(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
+    fun testReplace(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS
+        )
+    ) {
         val project = createProject()
         val result = build(
             gradleVersion = gradleVersion,
@@ -208,7 +233,11 @@ class CaupainPluginTest {
     }
 
     @Test
-    fun testMultipleFiles(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
+    fun testMultipleFiles(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS
+        )
+    ) {
         val project = createProject(
             supplementaryCaupainConfiguration = """
             versionCatalogFile.set(file("gradle/other.versions.toml"))
