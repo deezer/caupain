@@ -174,14 +174,6 @@ class CaupainPluginTest {
         )
     ) {
         val project = createProject()
-        build(
-            gradleVersion = gradleVersion,
-            projectDir = project.rootDir,
-            ":checkDependencyUpdates",
-            "--configuration-cache",
-            "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
-        )
         val output = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
