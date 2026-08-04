@@ -25,7 +25,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
       - name: Checkout PR branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
       - name: Set up JDK 17
@@ -34,7 +34,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6.2.0
       - name: Konan cache
         uses: ./.github/actions/konan-cache
         with:
