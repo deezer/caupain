@@ -27,6 +27,7 @@ package com.deezer.caupain.plugin
 import com.autonomousapps.kit.AbstractGradleProject.Companion.PLUGIN_UNDER_TEST_VERSION
 import com.autonomousapps.kit.GradleBuilder.build
 import com.autonomousapps.kit.GradleBuilder.runner
+import com.autonomousapps.kit.GradleProject
 import com.google.testing.junit.testparameterinjector.KotlinTestParameters.testValuesIn
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -36,6 +37,8 @@ import mockwebserver3.MockResponse
 import mockwebserver3.RecordedRequest
 import mockwebserver3.junit4.MockWebServerRule
 import okhttp3.Headers
+import okio.buffer
+import okio.source
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
 import org.intellij.lang.annotations.Language
@@ -46,10 +49,13 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import java.io.File
 import java.io.StringWriter
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.io.path.walk
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.fail
 
 @RunWith(TestParameterInjector::class)
 class CaupainPluginTest {
@@ -184,18 +190,17 @@ class CaupainPluginTest {
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
         )
-        val result = build(
+        val output = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--configuration-cache",
             "--stacktrace",
             "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
-        )
-        assertNotEquals(
-            illegal = TaskOutcome.FROM_CACHE,
-            actual = result.task(":checkDependencyUpdates")?.outcome
-        )
+        ).output
+        assertContains(output, "configuration cache", ignoreCase = true)
+        assertContains(output, "checkDependencyUpdates", ignoreCase = true)
+        assertContains(output, "incompatible", ignoreCase = true)
     }
 
     @Test
