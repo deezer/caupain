@@ -25,6 +25,7 @@
 package com.deezer.caupain.model.versionCatalog
 
 import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.KeyedDependency
 import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.Serializable
 
@@ -38,6 +39,10 @@ public class VersionCatalog(
     public val libraries: Map<String, Dependency.Library> = emptyMap(),
     public val plugins: Map<String, Dependency.Plugin> = emptyMap()
 ) {
-    internal val dependencies: Map<String, Dependency>
-        get() = libraries + plugins
+    internal val nbDependencies: Int
+        get() = libraries.size + plugins.size
+
+    internal val dependencies: Sequence<KeyedDependency>
+        get() = libraries.asSequence().map(::KeyedDependency) +
+                plugins.asSequence().map(::KeyedDependency)
 }

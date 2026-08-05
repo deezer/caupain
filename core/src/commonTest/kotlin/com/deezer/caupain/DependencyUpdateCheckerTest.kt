@@ -132,7 +132,7 @@ class DependencyUpdateCheckerTest {
                 }
             },
             ioDispatcher = testDispatcher,
-            versionCatalogParser = FixedVersionCatalogParser,
+            versionCatalogParser = FixedVersionCatalogParser(),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
             currentGradleVersion = "8.11",
@@ -273,7 +273,7 @@ class DependencyUpdateCheckerTest {
                 }
             },
             ioDispatcher = testDispatcher,
-            versionCatalogParser = FixedVersionCatalogParser,
+            versionCatalogParser = FixedVersionCatalogParser(),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
             currentGradleVersion = "8.11",
@@ -303,6 +303,54 @@ class DependencyUpdateCheckerTest {
         )
     }
 
+    @Test
+    fun testShadowConflict() = runTest(testDispatcher) {
+        val catalogPath = "libs.versions.toml".toPath()
+        fileSystem.write(catalogPath) {}
+        val configuration = Configuration(
+            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
+            versionCatalogPaths = listOf(catalogPath),
+            checkIgnored = true,
+            policies = listOf(AlwaysAcceptPolicy.name)
+        )
+        checker = DefaultDependencyUpdateChecker(
+            configuration = configuration,
+            fileSystem = fileSystem,
+            httpClient = HttpClient(engine) {
+                install(ContentNegotiation) {
+                    json(DefaultJson)
+                    serialization(ContentType.Any, DefaultXml)
+                }
+            },
+            ioDispatcher = testDispatcher,
+            versionCatalogParser = FixedVersionCatalogParser(
+                catalog = VERSION_CATALOG_SHADOW,
+                info = VersionCatalogInfo()
+            ),
+            logger = Logger.EMPTY,
+            policies = DEFAULT_POLICIES,
+            currentGradleVersion = "8.11",
+            selfUpdateResolver = FixedSelfUpdateResolver
+        )
+        assertEquals(
+            expected = mapOf(
+                UpdateInfo.Type.LIBRARY to listOf(
+                    UpdateInfo(
+                        dependency = "testName",
+                        dependencyId = "org.codehaus.groovy:groovy",
+                        name = "Groovy core",
+                        url = "https://groovy-lang.org/",
+                        currentVersion = "3.0.5-alpha-1".toSimpleVersion(),
+                        updatedVersion = "3.0.6".toStaticVersion()
+                    ),
+                ),
+                UpdateInfo.Type.PLUGIN to emptyList(),
+            ),
+            actual = checker.checkForUpdates().updateInfos
+        )
+    }
+
     companion object {
         private inline fun <reified T> MockRequestHandleScope.respondElement(element: T): HttpResponseData {
             return respond(
@@ -328,13 +376,16 @@ class DependencyUpdateCheckerTest {
             password = PASSWORD
         )
 
-        private object FixedVersionCatalogParser : VersionCatalogParser {
+        private class FixedVersionCatalogParser(
+            private val catalog: VersionCatalog? = null,
+            private val info: VersionCatalogInfo = VersionCatalogInfo(
+                ignores = VersionCatalogInfo.Ignores(libraryKeys = setOf("groovy-other"))
+            )
+        ) : VersionCatalogParser {
             override suspend fun parseDependencyInfo(versionCatalogPath: Path): VersionCatalogParseResult =
                 VersionCatalogParseResult(
-                    versionCatalog = VERSION_CATALOGS[versionCatalogPath]!!,
-                    info = VersionCatalogInfo(
-                        ignores = VersionCatalogInfo.Ignores(libraryKeys = setOf("groovy-other"))
-                    ),
+                    versionCatalog = catalog ?: VERSION_CATALOGS[versionCatalogPath]!!,
+                    info = info,
                 )
         }
 
@@ -512,6 +563,21 @@ class DependencyUpdateCheckerTest {
                 "versions" to Dependency.Plugin(
                     id = "com.github.ben-manes.versions",
                     version = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT"))
+                )
+            )
+        )
+
+        private val VERSION_CATALOG_SHADOW = VersionCatalog(
+            libraries = mapOf(
+                "testName" to Dependency.Library(
+                    module = "org.codehaus.groovy:groovy",
+                    version = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1"))
+                ),
+            ),
+            plugins = mapOf(
+                "testName" to Dependency.Plugin(
+                    id = "com.github.ben-manes.versions",
+                    version = Version.Simple(GradleDependencyVersion.Exact("1.0.0"))
                 )
             )
         )

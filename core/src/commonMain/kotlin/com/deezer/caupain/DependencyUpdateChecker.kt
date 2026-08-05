@@ -384,7 +384,7 @@ internal class DefaultDependencyUpdateChecker(
         var selfUpdateInfo: SelfUpdateInfo? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val ignoredVersions = mutableListOf<UpdateInfo>()
-        var nbDependencies = parseResults.sumOf { it.versionCatalog.dependencies.size }
+        var nbDependencies = parseResults.sumOf { it.versionCatalog.nbDependencies }
         if (checkGradleUpdate) nbDependencies++
         if (checkSelfUpdate) nbDependencies++
         coroutineScope {
@@ -393,7 +393,6 @@ internal class DefaultDependencyUpdateChecker(
                 .flatMap { (versionCatalog, info) ->
                     versionCatalog
                         .dependencies
-                        .asSequence()
                         .map { (key, dep) ->
                             async {
                                 val isExcluded = !configuration.isIncluded(key, dep)
@@ -407,6 +406,7 @@ internal class DefaultDependencyUpdateChecker(
                                         logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
                                         updatedVersionsMutex.withLock {
                                             val result = DependencyUpdateResult(
+                                                type = dep.type,
                                                 dependencyKey = key,
                                                 dependency = dep,
                                                 repository = updatedVersion.repository,
@@ -497,11 +497,7 @@ internal class DefaultDependencyUpdateChecker(
         val updatesInfos = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
         for (result in updatedVersions) {
             logger.info("Finding release note info for ${result.dependency.moduleId}")
-            val type = when (result.dependency) {
-                is Dependency.Library -> UpdateInfo.Type.LIBRARY
-                is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
-            }
-            val mavenInfo = mavenInfos[result.dependencyKey]
+            val mavenInfo = mavenInfos[DependencyKey(result)]
             val releaseNoteUrl = if (configuration.searchReleaseNote) {
                 releaseNoteResolver.getReleaseNoteUrl(
                     mavenInfo = mavenInfo,
@@ -518,9 +514,9 @@ internal class DefaultDependencyUpdateChecker(
                 mavenInfo = mavenInfo,
                 releaseNoteUrl = releaseNoteUrl
             )
-            val infosForType = updatesInfos[type]
-                ?: mutableListOf<UpdateInfo>().also { updatesInfos[type] = it }
-            infosForType.add(updateInfo)
+            updatesInfos
+                .getOrPut(result.type) { mutableListOf() }
+                .add(updateInfo)
             val percentage = ++completed * 50 / nbSteps + 50
             progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                 taskName = GATHERING_INFO_TASK,
@@ -534,9 +530,9 @@ internal class DefaultDependencyUpdateChecker(
     private suspend inline fun getMavenInfos(
         updatedVersions: List<DependencyUpdateResult>,
         crossinline onStepFinished: () -> Unit,
-    ): Map<String, MavenInfo> {
+    ): Map<DependencyKey, MavenInfo> {
         val mavenInfoMutex = Mutex()
-        val mavenInfos = mutableMapOf<String, MavenInfo>()
+        val mavenInfos = mutableMapOf<DependencyKey, MavenInfo>()
         coroutineScope {
             updatedVersions
                 .map { result ->
@@ -549,7 +545,7 @@ internal class DefaultDependencyUpdateChecker(
                         )
                         if (mavenInfo != null) {
                             mavenInfoMutex.withLock {
-                                mavenInfos[result.dependencyKey] = mavenInfo
+                                mavenInfos[DependencyKey(result)] = mavenInfo
                             }
                         }
                         onStepFinished()
@@ -585,12 +581,25 @@ internal class DefaultDependencyUpdateChecker(
     )
 
     private data class DependencyUpdateResult(
+        val type: UpdateInfo.Type,
         val dependencyKey: String,
         val dependency: Dependency,
         val repository: Repository,
         val currentVersion: Version.Resolved,
         val updatedVersion: GradleDependencyVersion.Static,
     )
+
+    private data class DependencyKey(val type: UpdateInfo.Type, val key: String) {
+        constructor(result: DependencyUpdateResult) : this(result.type, result.dependencyKey)
+    }
+
+    companion object {
+        private val Dependency.type: UpdateInfo.Type
+            get() = when (this) {
+                is Dependency.Library -> UpdateInfo.Type.LIBRARY
+                is Dependency.Plugin -> UpdateInfo.Type.PLUGIN
+            }
+    }
 }
 
 /**
@@ -627,8 +636,9 @@ public class CorruptedCacheException(
 /**
  * Exception thrown when the cache directory is unavailable or cannot be created.
  */
-public class UnavailableCacheException(public val cacheDir: Path, cause: Throwable) : CaupainException(
-    message = "Cache directory $cacheDir is unavailable. Please check your file system " +
-            "permissions and try again, or disable the cache.",
-    cause = cause,
-)
+public class UnavailableCacheException(public val cacheDir: Path, cause: Throwable) :
+    CaupainException(
+        message = "Cache directory $cacheDir is unavailable. Please check your file system " +
+                "permissions and try again, or disable the cache.",
+        cause = cause,
+    )
