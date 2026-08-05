@@ -11,6 +11,7 @@
 ### Removed
 
 ### Fixed
+- Avoid shadowing when plugin and library have the same key (#96)
 
 ### Security
 
