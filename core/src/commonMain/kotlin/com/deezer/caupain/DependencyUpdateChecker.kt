@@ -384,7 +384,7 @@ internal class DefaultDependencyUpdateChecker(
         var selfUpdateInfo: SelfUpdateInfo? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val ignoredVersions = mutableListOf<UpdateInfo>()
-        var nbDependencies = parseResults.sumOf { it.versionCatalog.dependencies.size }
+        var nbDependencies = parseResults.sumOf { it.versionCatalog.nbDependencies }
         if (checkGradleUpdate) nbDependencies++
         if (checkSelfUpdate) nbDependencies++
         coroutineScope {
@@ -393,7 +393,6 @@ internal class DefaultDependencyUpdateChecker(
                 .flatMap { (versionCatalog, info) ->
                     versionCatalog
                         .dependencies
-                        .asSequence()
                         .map { (key, dep) ->
                             async {
                                 val isExcluded = !configuration.isIncluded(key, dep)

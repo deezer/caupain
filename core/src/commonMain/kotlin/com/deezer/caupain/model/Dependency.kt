@@ -123,6 +123,16 @@ public sealed interface Dependency {
     }
 }
 
+internal data class KeyedDependency(
+    val key: String,
+    val dependency: Dependency,
+) {
+    constructor(entry: Map.Entry<String, Dependency>) : this(
+        key = entry.key,
+        dependency = entry.value,
+    )
+}
+
 internal val Dependency.group: String?
     get() = when (this) {
         is Library -> group
