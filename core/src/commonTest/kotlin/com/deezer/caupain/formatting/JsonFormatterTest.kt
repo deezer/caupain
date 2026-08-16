@@ -76,7 +76,9 @@ class JsonFormatterTest : FileFormatterTest() {
             {
                 "gradleUpdateInfo": {
                     "currentVersion": "1.0",
-                    "updatedVersion": "1.1"
+                    "updatedVersion": "1.1",
+                    "checksum": null,
+                    "isSnapshot": false
                 },
                 "updateInfos": {
                     "libraries": [

@@ -28,6 +28,7 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DEFAULT_POLICIES
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.LibraryExclusion
@@ -38,7 +39,7 @@ import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.github.Release
-import com.deezer.caupain.model.gradle.GradleConstants
+import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.SCMInfos
@@ -135,7 +136,7 @@ class DependencyUpdateCheckerTest {
             versionCatalogParser = FixedVersionCatalogParser(),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
-            currentGradleVersion = "8.11",
+            gradleConfiguration = GradleConfiguration(version = "8.11"),
             selfUpdateResolver = FixedSelfUpdateResolver
         )
     }
@@ -180,7 +181,7 @@ class DependencyUpdateCheckerTest {
             )
 
             GRADLE_VERSION_URL -> scope.respond(
-                content = GradleVersionResolverTest.GRADLE_RELEASES,
+                content = GradleVersionResolverTest.GRADLE_CURRENT,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
             )
 
@@ -201,7 +202,8 @@ class DependencyUpdateCheckerTest {
             expected = DependenciesUpdateResult(
                 gradleUpdateInfo = GradleUpdateInfo(
                     currentVersion = "8.11",
-                    updatedVersion = "8.14.2",
+                    updatedVersion = "9.6.1",
+                    checksum = "9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14"
                 ),
                 updateInfos = mapOf(
                     UpdateInfo.Type.LIBRARY to listOf(
@@ -276,7 +278,7 @@ class DependencyUpdateCheckerTest {
             versionCatalogParser = FixedVersionCatalogParser(),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
-            currentGradleVersion = "8.11",
+            gradleConfiguration = GradleConfiguration(version = "8.11"),
             selfUpdateResolver = FixedSelfUpdateResolver
         )
         val result = checker.checkForUpdates()
@@ -330,7 +332,7 @@ class DependencyUpdateCheckerTest {
             ),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
-            currentGradleVersion = "8.11",
+            gradleConfiguration = GradleConfiguration(version = "8.11"),
             selfUpdateResolver = FixedSelfUpdateResolver
         )
         assertEquals(
@@ -538,7 +540,9 @@ class DependencyUpdateCheckerTest {
             )
         )
 
-        private val GRADLE_VERSION_URL = Url(GradleConstants.DEFAULT_GRADLE_VERSIONS_URL)
+        private val GRADLE_VERSION_URL = URLBuilder(GradleConfiguration.DEFAULT_BASE_VERSION_URL)
+            .appendPathSegments(GradleStabilityLevel.STABLE.urlSuffix)
+            .build()
 
         private val VERSION_CATALOG_MAIN = VersionCatalog(
             versions = mapOf(

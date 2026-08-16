@@ -21,10 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:UseSerializers(UrlSerializer::class)
 
 package com.deezer.caupain.cli.model
 
+import io.ktor.http.Url
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 @Serializable
-data class GradleWrapperProperties(val distributionUrl: String? = null)
+data class GradleWrapperProperties(
+    val distributionUrl: Url? = null,
+    val distributionSha256Sum: String? = null,
+    val distributionBase: String? = null,
+    val distributionPath: String? = null,
+    val zipStoreBase: String? = null,
+    val zipStorePath: String? = null,
+    val networkTimeout: Int? = null,
+    val validateDistributionUrl: Boolean? = null,
+    val retries: Int? = null,
+    val retryBackOffMs: Int? = null,
+)
+
+private object UrlSerializer : KSerializer<Url> {
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("url", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Url) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): Url = Url(decoder.decodeString())
+}

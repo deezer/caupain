@@ -68,12 +68,16 @@ public class UpdateInfo(
  *
  * @property currentVersion The current Gradle version.
  * @property updatedVersion The updated Gradle version
+ * @property checksum The checksum of the updated Gradle version.
+ * @property isSnapshot Whether the updated Gradle version is a snapshot version.
  */
 @Serializable
 @Poko
 public class GradleUpdateInfo(
     public val currentVersion: String,
-    public val updatedVersion: String
+    public val updatedVersion: String,
+    public val checksum: String? = null,
+    public val isSnapshot: Boolean = false,
 ) {
     @Transient
     public val url: String = "https://docs.gradle.org/$updatedVersion/release-notes.html"
