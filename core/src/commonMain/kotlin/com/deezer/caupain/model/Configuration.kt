@@ -225,7 +225,7 @@ internal data class ConfigurationImpl(
  */
 public data class GradleConfiguration(
     val version: String,
-    val needsSHASum: Boolean = false,
+    val needsChecksum: Boolean = false,
     val baseVersionsUrl: Url = DEFAULT_BASE_VERSION_URL,
     val globalVersionsUrl: Url? = null,
 ) {

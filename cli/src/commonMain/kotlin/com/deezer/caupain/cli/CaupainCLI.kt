@@ -532,7 +532,7 @@ class CaupainCLI(
             ?: return null
         return GradleConfiguration(
             version = currentVersion,
-            needsSHASum = wrapperProperties.distributionSha256Sum != null,
+            needsChecksum = wrapperProperties.distributionSha256Sum != null,
         )
     }
 

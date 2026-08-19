@@ -39,7 +39,6 @@ import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.plugin.internal.DefaultJson
@@ -258,7 +257,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             policies = policies,
             gradleConfiguration = GradleConfiguration(
                 version = GradleVersion.current().version,
-                needsSHASum = wrapperExecutor.configuration.distributionSha256Sum != null,
+                needsChecksum = wrapperExecutor.configuration.distributionSha256Sum != null,
                 baseVersionsUrl = URLBuilder(DistributionLocator.getBaseUrl())
                     .appendPathSegments("versions")
                     .build(),

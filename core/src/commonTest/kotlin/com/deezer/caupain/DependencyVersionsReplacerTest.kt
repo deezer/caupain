@@ -27,6 +27,7 @@ package com.deezer.caupain
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Point
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
@@ -50,6 +51,8 @@ class DependencyVersionsReplacerTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
+    private val mockGradleWrapperVersionReplacer = MockGradleWrapperVersionReplacer()
+
     private lateinit var replacer: DependencyVersionsReplacer
 
     @BeforeTest
@@ -58,7 +61,8 @@ class DependencyVersionsReplacerTest {
         replacer = DefaultDependencyVersionsReplacer(
             fileSystem = fileSystem,
             ioDispatcher = testDispatcher,
-            defaultDispatcher = testDispatcher
+            defaultDispatcher = testDispatcher,
+            gradleVersionReplacer = mockGradleWrapperVersionReplacer,
         )
     }
 
@@ -71,7 +75,7 @@ class DependencyVersionsReplacerTest {
     @Test
     fun testReplacer() = runTest(testDispatcher) {
         val updateResult = DependenciesUpdateResult(
-            gradleUpdateInfo = null,
+            gradleUpdateInfo = GRADLE_UPDATE_INFO,
             updateInfos = UPDATE_INFOS,
             ignoredUpdateInfos = emptyList(),
             selfUpdateInfo = null,
@@ -90,6 +94,7 @@ class DependencyVersionsReplacerTest {
             readUtf8()
         }
         assertEquals(REPLACED_FILE, updatedFileContent)
+        assertEquals(GRADLE_UPDATE_INFO, mockGradleWrapperVersionReplacer.argument)
     }
 }
 
@@ -272,3 +277,18 @@ private val UPDATE_INFOS = mapOf(
         ),
     )
 )
+
+private val GRADLE_UPDATE_INFO = GradleUpdateInfo(
+    currentVersion = "1.0",
+    updatedVersion = "1.1"
+)
+
+private class MockGradleWrapperVersionReplacer : GradleWrapperVersionReplacer {
+
+    var argument: GradleUpdateInfo? = null
+        private set
+
+    override suspend fun replaceGradleWrapperVersion(updateInfo: GradleUpdateInfo) {
+        argument = updateInfo
+    }
+}

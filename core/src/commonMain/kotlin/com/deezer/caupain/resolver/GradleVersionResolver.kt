@@ -36,7 +36,6 @@ import io.ktor.client.request.get
 import io.ktor.http.URLBuilder
 import io.ktor.http.Url
 import io.ktor.http.appendPathSegments
-import io.ktor.utils.io.ioDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -119,7 +118,7 @@ internal class GradleVersionResolver(
             GradleUpdateInfo(
                 currentVersion = configuration.version,
                 updatedVersion = requireNotNull(updatedVersion.version).toString(),
-                checksum = updatedVersion.checksum,
+                checksum = if (configuration.needsChecksum) updatedVersion.checksum else null,
                 isSnapshot = updatedVersion.level >= GradleStabilityLevel.RELEASE_NIGHTLY
             )
         }
