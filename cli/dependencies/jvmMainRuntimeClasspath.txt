@@ -30,8 +30,8 @@ com.strumenta:antlr-kotlin-runtime-jvm:1.0.13
 com.strumenta:antlr-kotlin-runtime:1.0.13
 dev.drewhamilton.poko:poko-annotations-jvm:0.23.1
 dev.drewhamilton.poko:poko-annotations:0.23.1
-io.github.bishiboosh:properties-serializer-jvm:1.0.0
-io.github.bishiboosh:properties-serializer:1.0.0
+io.github.bishiboosh:properties-serializer-jvm:1.1.1
+io.github.bishiboosh:properties-serializer:1.1.1
 io.github.pdvrieze.xmlutil:core-io-jvm:1.0.2
 io.github.pdvrieze.xmlutil:core-io:1.0.2
 io.github.pdvrieze.xmlutil:core-jvm:1.0.2

@@ -91,7 +91,7 @@ open class DependenciesReplaceTask : DefaultTask() {
             wrapperArguments.get().asFile.bufferedWriter().use { writer ->
                 Properties().apply {
                     setProperty(CAN_UPDATE_WRAPPER, "true")
-                    setProperty(GRADLE_UPDATE_VERSION, updateInfo.updatedVersion)
+                    setProperty(GRADLE_UPDATE_VERSION, updateInfo.updatedVersion.version)
                     updateInfo.checksum?.let { setProperty(GRADLE_UPDATE_CHECKSUM, it) }
                     store(writer, null)
                 }
@@ -99,9 +99,9 @@ open class DependenciesReplaceTask : DefaultTask() {
         }
     }
 
-    companion object {
-        internal const val CAN_UPDATE_WRAPPER = "update"
-        internal const val GRADLE_UPDATE_VERSION = "version"
-        internal const val GRADLE_UPDATE_CHECKSUM = "checksum"
+    internal companion object {
+        const val CAN_UPDATE_WRAPPER = "update"
+        const val GRADLE_UPDATE_VERSION = "version"
+        const val GRADLE_UPDATE_CHECKSUM = "checksum"
     }
 }
