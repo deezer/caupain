@@ -31,6 +31,7 @@ import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
+import com.deezer.caupain.model.gradle.GradleVersion
 import com.deezer.caupain.toSimpleVersion
 import com.deezer.caupain.toStaticVersion
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -79,7 +80,10 @@ class ConsoleFormatterTest {
     @Test
     fun testFormat() {
         val updates = Input(
-            gradleUpdateInfo = GradleUpdateInfo("1.0", "1.1"),
+            gradleUpdateInfo = GradleUpdateInfo(
+                currentVersion = GradleVersion("1.0"),
+                updatedVersion = GradleVersion("1.1")
+            ),
             updateInfos = mapOf(
                 UpdateInfo.Type.LIBRARY to listOf(
                     UpdateInfo(

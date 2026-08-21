@@ -1205,10 +1205,15 @@ private fun expectedJsonResult(
 ) = """
 {
     "gradleUpdateInfo": {
-        "currentVersion": "$gradleVersion",
-        "updatedVersion": "99.0.0",
-        "checksum": null,
-        "isSnapshot": false
+        "currentVersion": {
+            "version": "$gradleVersion",
+            "isSnapshot": false
+        },
+        "updatedVersion": {
+            "version": "99.0.0",
+            "isSnapshot": false
+        },
+        "checksum": null
     },
     "updateInfos": {
         "libraries": [
@@ -1289,10 +1294,15 @@ private fun expectedJsonResultWithoutSelfUpdate(
 ) = """
 {
     "gradleUpdateInfo": {
-        "currentVersion": "$gradleVersion",
-        "updatedVersion": "99.0.0",
-        "checksum": null,
-        "isSnapshot": false
+        "currentVersion": {
+            "version": "$gradleVersion",
+            "isSnapshot": false
+        },
+        "updatedVersion": {
+            "version": "99.0.0",
+            "isSnapshot": false
+        },
+        "checksum": null
     },
     "updateInfos": {
         "libraries": [

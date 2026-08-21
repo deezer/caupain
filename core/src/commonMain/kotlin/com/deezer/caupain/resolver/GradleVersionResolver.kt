@@ -50,6 +50,8 @@ internal class GradleVersionResolver(
     private val stabilityLevel: GradleStabilityLevel,
     private val ioDispatcher: CoroutineDispatcher
 ) {
+    // We do not use it as a scope, but HttpClient does implement scope
+    @Suppress("SuspendFunWithCoroutineScopeReceiver")
     private suspend fun HttpClient.getVersions(url: Url): Sequence<GradleToolVersion> {
         return processRequest<List<GradleToolVersion>, Sequence<GradleToolVersion>>(
             default = emptySequence(),
@@ -65,6 +67,8 @@ internal class GradleVersionResolver(
         )
     }
 
+    // We do not use it as a scope, but HttpClient does implement scope
+    @Suppress("SuspendFunWithCoroutineScopeReceiver")
     private suspend fun HttpClient.getVersion(url: Url): GradleToolVersion? {
         return processRequest<GradleToolVersion, GradleToolVersion?>(
             default = null,

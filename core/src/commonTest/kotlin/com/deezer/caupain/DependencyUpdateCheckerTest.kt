@@ -40,6 +40,7 @@ import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
 import com.deezer.caupain.model.github.Release
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
+import com.deezer.caupain.model.gradle.GradleVersion
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.maven.Metadata
 import com.deezer.caupain.model.maven.SCMInfos
@@ -136,7 +137,7 @@ class DependencyUpdateCheckerTest {
             versionCatalogParser = FixedVersionCatalogParser(),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
-            gradleConfiguration = GradleConfiguration(version = "8.11"),
+            gradleConfiguration = GradleConfiguration(version = "8.11", needsChecksum = true),
             selfUpdateResolver = FixedSelfUpdateResolver
         )
     }
@@ -201,8 +202,8 @@ class DependencyUpdateCheckerTest {
         assertEquals(
             expected = DependenciesUpdateResult(
                 gradleUpdateInfo = GradleUpdateInfo(
-                    currentVersion = "8.11",
-                    updatedVersion = "9.6.1",
+                    currentVersion = GradleVersion("8.11"),
+                    updatedVersion = GradleVersion("9.6.1"),
                     checksum = "9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14"
                 ),
                 updateInfos = mapOf(

@@ -130,7 +130,7 @@ public class HtmlFormatter(
         if (updateInfo == null) return
         h2 { +"Gradle" }
         p {
-            +"Gradle current version is ${updateInfo.currentVersion} whereas last version is ${updateInfo.updatedVersion}."
+            +"Gradle current version is ${updateInfo.currentVersion.version} whereas last version is ${updateInfo.updatedVersion.version}."
             +" See "
             a(href = updateInfo.url) { +"release note" }
             +"."

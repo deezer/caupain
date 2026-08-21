@@ -81,7 +81,7 @@ public class GradleUpdateInfo(
     public val checksum: String? = null,
 ) {
     @Transient
-    public val url: String = "https://docs.gradle.org/$updatedVersion/release-notes.html"
+    public val url: String = "https://docs.gradle.org/${updatedVersion.version}/release-notes.html"
 }
 
 /**

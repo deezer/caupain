@@ -75,10 +75,15 @@ class JsonFormatterTest : FileFormatterTest() {
         private val FULL_RESULT = """
             {
                 "gradleUpdateInfo": {
-                    "currentVersion": "1.0",
-                    "updatedVersion": "1.1",
-                    "checksum": null,
-                    "isSnapshot": false
+                    "currentVersion": {
+                        "version": "1.0",
+                        "isSnapshot": false
+                    },
+                    "updatedVersion": {
+                        "version": "1.1",
+                        "isSnapshot": false
+                    },
+                    "checksum": null
                 },
                 "updateInfos": {
                     "libraries": [

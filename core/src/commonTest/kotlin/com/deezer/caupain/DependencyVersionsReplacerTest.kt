@@ -31,6 +31,7 @@ import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Point
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
+import com.deezer.caupain.model.gradle.GradleVersion
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -279,8 +280,8 @@ private val UPDATE_INFOS = mapOf(
 )
 
 private val GRADLE_UPDATE_INFO = GradleUpdateInfo(
-    currentVersion = "1.0",
-    updatedVersion = "1.1"
+    currentVersion = GradleVersion("1.0"),
+    updatedVersion = GradleVersion("1.1")
 )
 
 private class MockGradleWrapperVersionReplacer : GradleWrapperVersionReplacer {

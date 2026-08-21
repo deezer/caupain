@@ -141,7 +141,7 @@ class GradleVersionResolverTest(
     fun testUpdate() = runTest(testDispatcher) {
         assertEquals(
             expected = testInfo.expectedVersion,
-            actual = resolver.getUpdatedVersion()?.updatedVersion
+            actual = resolver.getUpdatedVersion()?.updatedVersion?.version
         )
     }
 
