@@ -28,6 +28,7 @@ package com.deezer.caupain.model
 import com.deezer.caupain.Serializable
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.policies.StabilityLevelPolicy
+import dev.drewhamilton.poko.Poko
 import io.ktor.http.Url
 import okio.Path
 import okio.Path.Companion.toPath
@@ -223,14 +224,15 @@ internal data class ConfigurationImpl(
 /**
  * Configuration for Gradle version checking
  */
-public data class GradleConfiguration(
-    val version: String,
-    val needsChecksum: Boolean = false,
-    val baseVersionsUrl: Url = DEFAULT_BASE_VERSION_URL,
-    val globalVersionsUrl: Url? = null,
+@Poko
+public class GradleConfiguration(
+    public val version: String,
+    public val needsChecksum: Boolean = false,
+    public val baseVersionsUrl: Url = DEFAULT_BASE_VERSION_URL,
+    public val globalVersionsUrl: Url? = null,
 ) {
-    public companion object {
-        public val DEFAULT_BASE_VERSION_URL: Url =
+    internal companion object {
+        val DEFAULT_BASE_VERSION_URL: Url =
             Url("https://services.gradle.org/versions/")
     }
 }

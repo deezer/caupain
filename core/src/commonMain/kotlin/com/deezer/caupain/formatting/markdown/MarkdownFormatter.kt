@@ -104,9 +104,9 @@ public class MarkdownFormatter(
         if (updateInfo == null) return
         appendLine("## Gradle")
         append("Gradle current version is ")
-        append(updateInfo.currentVersion)
+        append(updateInfo.currentVersion.version)
         append(" whereas last version is ")
-        append(updateInfo.updatedVersion)
+        append(updateInfo.updatedVersion.version)
         append(". See [")
         append(updateInfo.url)
         append("](")

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,41 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.model.gradle
 
-import io.github.bishiboosh.properties.Properties
-import io.github.bishiboosh.properties.decodeFromSource
-import io.github.bishiboosh.properties.encodeToSink
-import kotlinx.io.buffered
-import kotlinx.io.okio.asKotlinxIoRawSink
-import kotlinx.io.okio.asKotlinxIoRawSource
-import okio.FileSystem
-import okio.Path
+import dev.drewhamilton.poko.Poko
+import kotlinx.serialization.Serializable
 
-inline fun <reified T> decodeFromProperties(
-    fileSystem: FileSystem,
-    path: Path
-): T = fileSystem
-    .source(path)
-    .asKotlinxIoRawSource()
-    .buffered()
-    .use { Properties.decodeFromSource(it) }
-
-inline fun <reified T> encodeToProperties(
-    fileSystem: FileSystem,
-    path: Path,
-    value: T
+/**
+ * Gradle version
+ */
+@Poko
+@Serializable
+public class GradleVersion(
+    public val version: String,
+    public val isSnapshot: Boolean = isGradleSnapshotVersion(version)
 ) {
-    fileSystem
-        .sink(path)
-        .asKotlinxIoRawSink()
-        .buffered()
-        .use { Properties.encodeToSink(it, value) }
+    private companion object {
+        val GRADLE_VERSION_PATTERN =
+            Regex("((\\d+)(\\.\\d+)+)(-(\\p{Alpha}+)-(\\w+))?(-(SNAPSHOT|\\d{14}([-+]\\d{4})?))?")
+
+        fun isGradleSnapshotVersion(version: String): Boolean {
+            val matchResult = GRADLE_VERSION_PATTERN.matchEntire(version)
+            return when {
+                matchResult == null -> false
+
+                matchResult
+                    .groups[9]
+                    ?.value
+                    ?.let { it == "snapshot" || it == "commit" } == true -> true
+
+                matchResult.groups[8] != null -> true
+
+                else -> false
+            }
+        }
+    }
 }

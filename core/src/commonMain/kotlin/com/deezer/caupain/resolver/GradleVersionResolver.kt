@@ -31,6 +31,7 @@ import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.gradle.GradleToolVersion
+import com.deezer.caupain.model.gradle.GradleVersion
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.http.URLBuilder
@@ -116,10 +117,9 @@ internal class GradleVersionResolver(
         }
         return max?.let { updatedVersion ->
             GradleUpdateInfo(
-                currentVersion = configuration.version,
-                updatedVersion = requireNotNull(updatedVersion.version).toString(),
+                currentVersion = GradleVersion(configuration.version),
+                updatedVersion = requireNotNull(updatedVersion.toGradleVersion()),
                 checksum = if (configuration.needsChecksum) updatedVersion.checksum else null,
-                isSnapshot = updatedVersion.level >= GradleStabilityLevel.RELEASE_NIGHTLY
             )
         }
     }

@@ -30,11 +30,14 @@ import com.deezer.caupain.CaupainException
 import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
+import com.deezer.caupain.GradleWrapperVersionReplacer
 import com.deezer.caupain.UnavailableCacheException
+import com.deezer.caupain.cli.internal.GradleWrapperPropertiesWriter
 import com.deezer.caupain.cli.internal.OutputSink
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.internal.sink
 import com.deezer.caupain.cli.model.Formatter
+import com.deezer.caupain.cli.model.GRADLE_DISTRIBUTION_REGEX
 import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
 import com.deezer.caupain.cli.serialization.DefaultToml
@@ -121,8 +124,9 @@ class CaupainCLI(
         )
     },
     @Suppress("NoNameShadowing") // Ok to repeat here for clarity
-    private val createVersionReplacer: (FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { filesystem, ioDispatcher, defaultDispatcher ->
+    private val createVersionReplacer: (GradleWrapperVersionReplacer, FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { gradleVersionReplacer, filesystem, ioDispatcher, defaultDispatcher ->
         DependencyVersionsReplacer(
+            gradleVersionReplacer = gradleVersionReplacer,
             fileSystem = filesystem,
             ioDispatcher = ioDispatcher,
             defaultDispatcher = defaultDispatcher
@@ -355,11 +359,23 @@ class CaupainCLI(
             }
 
             if (replace) {
-                createVersionReplacer(fileSystem, ioDispatcher, defaultDispatcher)
-                    .replaceVersions(
-                        versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
-                        updateResult = updates
-                    )
+                val gradleWrapperPropertiesPath = gradleWrapperPropertiesPath
+                    ?: configuration?.gradleWrapperPropertiesPath
+                    ?: DEFAULT_GRADLE_PROPERTIES_PATH
+                val gradleWrapperPropertiesWriter = GradleWrapperPropertiesWriter(
+                    fileSystem = fileSystem,
+                    ioDispatcher = ioDispatcher,
+                    gradleWrapperPropertiesPath = gradleWrapperPropertiesPath,
+                )
+                createVersionReplacer(
+                    gradleWrapperPropertiesWriter,
+                    fileSystem,
+                    ioDispatcher,
+                    defaultDispatcher
+                ).replaceVersions(
+                    versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
+                    updateResult = updates
+                )
             }
         } catch (_: CorruptedCacheException) {
             if (logLevel > LogLevel.QUIET) {
@@ -691,7 +707,6 @@ class CaupainCLI(
         private const val HTML_TYPE = "html"
         private const val MARKDOWN_TYPE = "markdown"
         private const val JSON_TYPE = "json"
-        private val GRADLE_DISTRIBUTION_REGEX = Regex("gradle-(.*)-.*.zip")
 
         private val DEFAULT_GRADLE_PROPERTIES_PATH =
             "gradle/wrapper/gradle-wrapper.properties".toPath()

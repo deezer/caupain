@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,12 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.cli.internal
 
-import io.github.bishiboosh.properties.Properties
-import io.github.bishiboosh.properties.decodeFromSource
-import io.github.bishiboosh.properties.encodeToSink
-import kotlinx.io.buffered
-import kotlinx.io.okio.asKotlinxIoRawSink
-import kotlinx.io.okio.asKotlinxIoRawSource
-import okio.FileSystem
-import okio.Path
-
-inline fun <reified T> decodeFromProperties(
-    fileSystem: FileSystem,
-    path: Path
-): T = fileSystem
-    .source(path)
-    .asKotlinxIoRawSource()
-    .buffered()
-    .use { Properties.decodeFromSource(it) }
-
-inline fun <reified T> encodeToProperties(
-    fileSystem: FileSystem,
-    path: Path,
-    value: T
-) {
-    fileSystem
-        .sink(path)
-        .asKotlinxIoRawSink()
-        .buffered()
-        .use { Properties.encodeToSink(it, value) }
+internal actual fun MatchResult.replaceGroup(groupIndex: Int, replacement: String): String {
+    val group  = groups[groupIndex] ?: return value
+    return value.replaceRange(group.range, replacement)
 }

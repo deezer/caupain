@@ -45,4 +45,10 @@ internal data class GradleToolVersion(
             !milestoneFor.isNullOrBlank() -> GradleStabilityLevel.MILESTONE
             else -> GradleStabilityLevel.STABLE
         }
+
+    private val isSnapshot: Boolean
+        get() = nightly || releaseNightly
+
+    fun toGradleVersion(): GradleVersion? =
+        version?.let { GradleVersion(it.toString(), isSnapshot) }
 }
