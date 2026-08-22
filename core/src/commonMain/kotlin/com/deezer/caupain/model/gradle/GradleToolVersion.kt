@@ -29,12 +29,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class GradleToolVersion(
-    val version: GradleDependencyVersion.Static,
+    val version: GradleDependencyVersion.Static? = null,
     val nightly: Boolean = false,
     val releaseNightly: Boolean = false,
     val rcFor: String? = null,
     val milestoneFor: String? = null,
-    val broken: Boolean = false
+    val broken: Boolean = false,
+    val checksum: String? = null,
 ) {
     val level: GradleStabilityLevel
         get() = when {
@@ -44,4 +45,10 @@ internal data class GradleToolVersion(
             !milestoneFor.isNullOrBlank() -> GradleStabilityLevel.MILESTONE
             else -> GradleStabilityLevel.STABLE
         }
+
+    private val isSnapshot: Boolean
+        get() = nightly || releaseNightly
+
+    fun toGradleVersion(): GradleVersion? =
+        version?.let { GradleVersion(it.toString(), isSnapshot) }
 }

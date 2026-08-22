@@ -42,7 +42,9 @@ public final class com/deezer/caupain/DependencyUpdateChecker$Progress$Indetermi
 }
 
 public final class com/deezer/caupain/DependencyUpdateCheckerKt {
+	public static final fun DependencyUpdateChecker (Lcom/deezer/caupain/model/Configuration;Lcom/deezer/caupain/model/GradleConfiguration;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;)Lcom/deezer/caupain/DependencyUpdateChecker;
 	public static final fun DependencyUpdateChecker (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;Ljava/lang/String;)Lcom/deezer/caupain/DependencyUpdateChecker;
+	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Lcom/deezer/caupain/model/GradleConfiguration;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
 	public static synthetic fun DependencyUpdateChecker$default (Lcom/deezer/caupain/model/Configuration;Ljava/lang/String;Lcom/deezer/caupain/model/Logger;Lcom/deezer/caupain/resolver/SelfUpdateResolver;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyUpdateChecker;
 }
 
@@ -58,8 +60,9 @@ public final class com/deezer/caupain/DependencyVersionsReplacer$DefaultImpls {
 public final class com/deezer/caupain/DependencyVersionsReplacer$Input {
 	public static final field Companion Lcom/deezer/caupain/DependencyVersionsReplacer$Input$Companion;
 	public fun <init> (Lcom/deezer/caupain/model/DependenciesUpdateResult;)V
-	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;Ljava/util/Map;)V
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;Ljava/util/Map;Lcom/deezer/caupain/model/GradleUpdateInfo;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGradleUpdateInfo ()Lcom/deezer/caupain/model/GradleUpdateInfo;
 	public final fun getOriginalLibraryVersions ()Ljava/util/Map;
 	public final fun getOriginalPluginVersions ()Ljava/util/Map;
 	public final fun getPositions ()Lcom/deezer/caupain/model/VersionCatalogInfo$Positions;
@@ -139,8 +142,14 @@ public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$R
 }
 
 public final class com/deezer/caupain/DependencyVersionsReplacerKt {
+	public static final fun DependencyVersionsReplacer (Lcom/deezer/caupain/GradleWrapperVersionReplacer;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/deezer/caupain/DependencyVersionsReplacer;
 	public static final fun DependencyVersionsReplacer (Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/deezer/caupain/DependencyVersionsReplacer;
+	public static synthetic fun DependencyVersionsReplacer$default (Lcom/deezer/caupain/GradleWrapperVersionReplacer;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyVersionsReplacer;
 	public static synthetic fun DependencyVersionsReplacer$default (Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyVersionsReplacer;
+}
+
+public abstract interface class com/deezer/caupain/GradleWrapperVersionReplacer {
+	public abstract fun replaceGradleWrapperVersion (Lcom/deezer/caupain/model/GradleUpdateInfo;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class com/deezer/caupain/NoVersionCatalogException : com/deezer/caupain/CaupainException {
@@ -430,6 +439,18 @@ public final class com/deezer/caupain/model/Filter$PluginFilter : com/deezer/cau
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/deezer/caupain/model/GradleConfiguration {
+	public fun <init> (Ljava/lang/String;ZLio/ktor/http/Url;Lio/ktor/http/Url;)V
+	public synthetic fun <init> (Ljava/lang/String;ZLio/ktor/http/Url;Lio/ktor/http/Url;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBaseVersionsUrl ()Lio/ktor/http/Url;
+	public final fun getGlobalVersionsUrl ()Lio/ktor/http/Url;
+	public final fun getNeedsChecksum ()Z
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class com/deezer/caupain/model/GradleDependencyVersion {
 	public static final field Companion Lcom/deezer/caupain/model/GradleDependencyVersion$Companion;
 	public abstract fun contains (Lcom/deezer/caupain/model/GradleDependencyVersion$Static;)Z
@@ -546,10 +567,12 @@ public final class com/deezer/caupain/model/GradleDependencyVersionKt {
 
 public final class com/deezer/caupain/model/GradleUpdateInfo {
 	public static final field Companion Lcom/deezer/caupain/model/GradleUpdateInfo$Companion;
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Lcom/deezer/caupain/model/gradle/GradleVersion;Lcom/deezer/caupain/model/gradle/GradleVersion;Ljava/lang/String;)V
+	public synthetic fun <init> (Lcom/deezer/caupain/model/gradle/GradleVersion;Lcom/deezer/caupain/model/gradle/GradleVersion;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCurrentVersion ()Ljava/lang/String;
-	public final fun getUpdatedVersion ()Ljava/lang/String;
+	public final fun getChecksum ()Ljava/lang/String;
+	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/gradle/GradleVersion;
+	public final fun getUpdatedVersion ()Lcom/deezer/caupain/model/gradle/GradleVersion;
 	public final fun getUrl ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -906,6 +929,27 @@ public final class com/deezer/caupain/model/gradle/GradleStabilityLevel : java/l
 
 public final class com/deezer/caupain/model/gradle/GradleStabilityLevel$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class com/deezer/caupain/model/gradle/GradleVersion {
+	public fun <init> (Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getVersion ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isSnapshot ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class com/deezer/caupain/model/gradle/GradleVersion$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lcom/deezer/caupain/model/gradle/GradleVersion$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lcom/deezer/caupain/model/gradle/GradleVersion;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lcom/deezer/caupain/model/gradle/GradleVersion;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
 }
 
 public abstract interface class com/deezer/caupain/model/versionCatalog/Version {

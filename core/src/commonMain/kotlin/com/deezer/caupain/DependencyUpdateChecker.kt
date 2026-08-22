@@ -37,6 +37,7 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DEFAULT_POLICIES
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
+import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.KtorLoggerAdapter
@@ -45,7 +46,6 @@ import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
-import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.isExcluded
 import com.deezer.caupain.model.isIncluded
 import com.deezer.caupain.model.loadPolicies
@@ -72,6 +72,9 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
+import io.ktor.http.appendPathSegments
 import io.ktor.serialization.kotlinx.json.jsonIo
 import io.ktor.serialization.kotlinx.serialization
 import kotlinx.atomicfu.atomic
@@ -171,8 +174,8 @@ public interface DependencyUpdateChecker {
 /**
  * Creates a new [DependencyUpdateChecker] instance with the specified parameters.
  */
-@OptIn(ExperimentalSerializationApi::class)
-@Suppress("LongParameterList") // Needed to reflect parameters
+@Deprecated("Use the overload that takes a GradleConfiguration instead of currentGradleVersion and gradleVersionsUrl")
+@Suppress("LongParameterList") // Needed to reflect parameters and deprecated anyway
 public fun DependencyUpdateChecker(
     configuration: Configuration,
     currentGradleVersion: String?,
@@ -181,10 +184,40 @@ public fun DependencyUpdateChecker(
     fileSystem: FileSystem = DefaultFileSystem,
     ioDispatcher: CoroutineDispatcher = IODispatcher,
     policies: List<Policy>? = null,
-    gradleVersionsUrl: String = GradleConstants.DEFAULT_GRADLE_VERSIONS_URL,
+    gradleVersionsUrl: String = URLBuilder(GradleConfiguration.DEFAULT_BASE_VERSION_URL)
+        .appendPathSegments("all")
+        .buildString(),
+): DependencyUpdateChecker = DependencyUpdateChecker(
+    configuration = configuration,
+    gradleConfiguration = currentGradleVersion?.let { version ->
+        GradleConfiguration(
+            version = version,
+            globalVersionsUrl = Url(gradleVersionsUrl),
+        )
+    },
+    logger = logger,
+    selfUpdateResolver = selfUpdateResolver,
+    fileSystem = fileSystem,
+    ioDispatcher = ioDispatcher,
+    policies = policies
+)
+
+/**
+ * Creates a new [DependencyUpdateChecker] instance with the specified parameters.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Suppress("LongParameterList") // Needed to reflect parameters
+public fun DependencyUpdateChecker(
+    configuration: Configuration,
+    gradleConfiguration: GradleConfiguration?,
+    logger: Logger = Logger.EMPTY,
+    selfUpdateResolver: SelfUpdateResolver? = null,
+    fileSystem: FileSystem = DefaultFileSystem,
+    ioDispatcher: CoroutineDispatcher = IODispatcher,
+    policies: List<Policy>? = null,
 ): DependencyUpdateChecker = DefaultDependencyUpdateChecker(
     configuration = configuration,
-    currentGradleVersion = currentGradleVersion,
+    gradleConfiguration = gradleConfiguration,
     fileSystem = fileSystem,
     httpClient = HttpClient {
         install(ContentNegotiation) {
@@ -225,13 +258,11 @@ public fun DependencyUpdateChecker(
     logger = logger,
     selfUpdateResolver = selfUpdateResolver,
     policies = policies,
-    gradleVersionsUrl = gradleVersionsUrl
 )
 
 @Suppress("LongParameterList") // Needed to reflect parameters
 internal class DefaultDependencyUpdateChecker(
     private val configuration: Configuration,
-    private val currentGradleVersion: String?,
     override val httpClient: HttpClient,
     private val fileSystem: FileSystem,
     ioDispatcher: CoroutineDispatcher,
@@ -239,7 +270,7 @@ internal class DefaultDependencyUpdateChecker(
     private val logger: Logger,
     private val selfUpdateResolver: SelfUpdateResolver?,
     policies: List<Policy>?,
-    gradleVersionsUrl: String = GradleConstants.DEFAULT_GRADLE_VERSIONS_URL,
+    private val gradleConfiguration: GradleConfiguration?,
 ) : DependencyUpdateChecker {
 
     override val policies = policies?.asSequence() ?: sequence {
@@ -291,13 +322,15 @@ internal class DefaultDependencyUpdateChecker(
         )
     }
 
-    private val gradleVersionResolver = GradleVersionResolver(
-        httpClient = httpClient,
-        logger = logger,
-        gradleVersionsUrl = gradleVersionsUrl,
-        stabilityLevel = configuration.gradleStabilityLevel,
-        ioDispatcher = ioDispatcher
-    )
+    private val gradleVersionResolver = gradleConfiguration?.let { configuration ->
+        GradleVersionResolver(
+            httpClient = httpClient,
+            logger = logger,
+            configuration = configuration,
+            stabilityLevel = this.configuration.gradleStabilityLevel,
+            ioDispatcher = ioDispatcher
+        )
+    }
 
     private val releaseNoteResolver = GithubReleaseNoteResolver(
         httpClient = httpClient,
@@ -353,14 +386,7 @@ internal class DefaultDependencyUpdateChecker(
         }
         // Sort and return
         return DependenciesUpdateResult(
-            gradleUpdateInfo = if (updatedVersionsResult.updatedGradleVersion != null && currentGradleVersion != null) {
-                GradleUpdateInfo(
-                    currentVersion = currentGradleVersion,
-                    updatedVersion = updatedVersionsResult.updatedGradleVersion
-                )
-            } else {
-                null
-            },
+            gradleUpdateInfo = updatedVersionsResult.gradleUpdateInfo,
             updateInfos = buildMap {
                 for (type in UpdateInfo.Type.entries) {
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
@@ -377,10 +403,10 @@ internal class DefaultDependencyUpdateChecker(
 
     @Suppress("LongMethod")
     private suspend fun checkUpdatedVersions(parseResults: List<VersionCatalogParseResult>): UpdateVersionResult {
-        val checkGradleUpdate = currentGradleVersion != null
+        val checkGradleUpdate = gradleVersionResolver != null
         val checkSelfUpdate = selfUpdateResolver != null
         val updatedVersionsMutex = Mutex()
-        var updatedGradleVersion: String? = null
+        var gradleUpdateInfo: GradleUpdateInfo? = null
         var selfUpdateInfo: SelfUpdateInfo? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
         val ignoredVersions = mutableListOf<UpdateInfo>()
@@ -438,11 +464,11 @@ internal class DefaultDependencyUpdateChecker(
                 }
                 .plus(
                     async {
-                        if (currentGradleVersion != null) {
+                        if (gradleVersionResolver != null) {
                             logger.info("Finding updated Gradle version")
-                            updatedGradleVersion = gradleVersionResolver
-                                .getUpdatedVersion(currentGradleVersion)
-                                ?.also { logger.debug("Found updated Gradle version $it") }
+                            gradleUpdateInfo = gradleVersionResolver
+                                .getUpdatedVersion()
+                                ?.also { logger.debug("Found updated Gradle version ${it.updatedVersion}") }
                             val percentage = ++completed * 50 / nbDependencies
                             progressFlow.value = DependencyUpdateChecker.Progress.Determinate(
                                 taskName = FINDING_UPDATES_TASK,
@@ -473,7 +499,7 @@ internal class DefaultDependencyUpdateChecker(
         return UpdateVersionResult(
             updatedVersions = updatedVersions,
             ignoredVersions = ignoredVersions,
-            updatedGradleVersion = updatedGradleVersion,
+            gradleUpdateInfo = gradleUpdateInfo,
             selfUpdateInfo = selfUpdateInfo
         )
     }
@@ -575,7 +601,7 @@ internal class DefaultDependencyUpdateChecker(
 
     private data class UpdateVersionResult(
         val updatedVersions: List<DependencyUpdateResult>,
-        val updatedGradleVersion: String?,
+        val gradleUpdateInfo: GradleUpdateInfo?,
         val selfUpdateInfo: SelfUpdateInfo?,
         val ignoredVersions: List<UpdateInfo>
     )

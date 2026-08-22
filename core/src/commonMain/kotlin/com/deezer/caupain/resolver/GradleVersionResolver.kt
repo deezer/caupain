@@ -25,53 +25,106 @@
 package com.deezer.caupain.resolver
 
 import com.deezer.caupain.internal.processRequest
+import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.gradle.GradleToolVersion
+import com.deezer.caupain.model.gradle.GradleVersion
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
+import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 
 internal class GradleVersionResolver(
-    httpClient: HttpClient,
-    logger: Logger,
-    gradleVersionsUrl: String,
-    stabilityLevel: GradleStabilityLevel,
-    ioDispatcher: CoroutineDispatcher
+    private val httpClient: HttpClient,
+    private val logger: Logger,
+    private val configuration: GradleConfiguration,
+    private val stabilityLevel: GradleStabilityLevel,
+    private val ioDispatcher: CoroutineDispatcher
 ) {
-    private val versionResolver = object : AbstractVersionResolver<GradleDependencyVersion>(
-        httpClient = httpClient,
-        ioDispatcher = ioDispatcher
-    ) {
-        override fun GradleDependencyVersion.isUpdatedVersion(version: GradleDependencyVersion.Static): Boolean =
-            isUpdate(version)
-
-        @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
-        override suspend fun HttpClient.getAvailableVersions(item: GradleDependencyVersion): Sequence<GradleDependencyVersion> {
-            return processRequest<List<GradleToolVersion>, Sequence<GradleDependencyVersion>>(
-                default = emptySequence(),
-                onRecoverableError = { error ->
-                    logger.error("Failed to fetch Gradle versions from $gradleVersionsUrl", error)
-                },
-                transform = { versions ->
-                    versions
-                        .asSequence()
-                        .filter { it.level <= stabilityLevel }
-                        .map { it.version }
-                },
-                executeRequest = { get(gradleVersionsUrl) }
-            )
-        }
-
-        override suspend fun canSelectVersion(
-            item: GradleDependencyVersion,
-            version: GradleDependencyVersion.Static
-        ): Boolean = true
+    // We do not use it as a scope, but HttpClient does implement scope
+    @Suppress("SuspendFunWithCoroutineScopeReceiver")
+    private suspend fun HttpClient.getVersions(url: Url): Sequence<GradleToolVersion> {
+        return processRequest<List<GradleToolVersion>, Sequence<GradleToolVersion>>(
+            default = emptySequence(),
+            onRecoverableError = { error ->
+                logger.error("Failed to fetch Gradle versions from $url", error)
+            },
+            transform = { versions ->
+                versions
+                    .asSequence()
+                    .filter { it.version != null && it.level <= stabilityLevel }
+            },
+            executeRequest = { get(url) }
+        )
     }
 
+    // We do not use it as a scope, but HttpClient does implement scope
+    @Suppress("SuspendFunWithCoroutineScopeReceiver")
+    private suspend fun HttpClient.getVersion(url: Url): GradleToolVersion? {
+        return processRequest<GradleToolVersion, GradleToolVersion?>(
+            default = null,
+            onRecoverableError = { error ->
+                logger.error("Failed to fetch Gradle versions from $url", error)
+            },
+            transform = { version ->
+                version.takeIf { it.version != null && it.level <= stabilityLevel }
+            },
+            executeRequest = { get(url) }
+        )
+    }
 
-    suspend fun getUpdatedVersion(currentGradleVersion: String): String? = versionResolver
-        .findUpdatedVersion(GradleDependencyVersion(currentGradleVersion))
-        ?.toString()
+    suspend fun getUpdatedVersion(): GradleUpdateInfo? {
+        val versions = withContext(ioDispatcher) {
+            if (configuration.globalVersionsUrl != null) {
+                httpClient.getVersions(configuration.globalVersionsUrl)
+            } else {
+                coroutineScope {
+                    GradleStabilityLevel
+                        .entries
+                        .asSequence()
+                        .filter { it <= stabilityLevel }
+                        .map { level ->
+                            URLBuilder(configuration.baseVersionsUrl)
+                                .appendPathSegments(level.urlSuffix)
+                                .build()
+                        }
+                        .map { url ->
+                            async { httpClient.getVersion(url) }
+                        }
+                        .toList()
+                        .awaitAll()
+                        .asSequence()
+                        .filterNotNull()
+                }
+            }
+        }
+        var max: GradleToolVersion? = null
+        val currentVersion = GradleDependencyVersion(configuration.version)
+        for (version in versions) {
+            @Suppress("ComplexCondition")
+            if (
+                version.version != null
+                && currentVersion.isUpdate(version.version)
+                && (max?.version == null || version.version > max.version)
+            ) {
+                max = version
+            }
+        }
+        return max?.let { updatedVersion ->
+            GradleUpdateInfo(
+                currentVersion = GradleVersion(configuration.version),
+                updatedVersion = requireNotNull(updatedVersion.toGradleVersion()),
+                checksum = if (configuration.needsChecksum) updatedVersion.checksum else null,
+            )
+        }
+    }
 }

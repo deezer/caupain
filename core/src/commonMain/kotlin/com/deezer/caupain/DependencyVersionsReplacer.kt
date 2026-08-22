@@ -29,6 +29,7 @@ import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
 import dev.drewhamilton.poko.Poko
@@ -85,6 +86,7 @@ public interface DependencyVersionsReplacer {
      * Version replacement input, which contains a mix of info from dependencies updates and original
      * version catalog.
      */
+    @Suppress("LongParameterList") // This is a data class, so it's ok to have many parameters
     @Serializable
     @Poko
     public class Input(
@@ -93,7 +95,8 @@ public interface DependencyVersionsReplacer {
         public val originalPluginVersions: Map<String, Version>,
         public val updatedPluginsVersions: Map<String, GradleDependencyVersion.Static>,
         public val positions: VersionCatalogInfo.Positions,
-        public val versions: Map<String, SimpleVersionCatalogVersion>
+        public val versions: Map<String, SimpleVersionCatalogVersion>,
+        public val gradleUpdateInfo: GradleUpdateInfo?,
     ) {
         public constructor(result: DependenciesUpdateResult) : this(
             originalLibraryVersions = result
@@ -119,7 +122,8 @@ public interface DependencyVersionsReplacer {
                 ?.versions
                 ?.filterValueIsInstance<String, ResolvedVersionCatalogVersion, SimpleVersionCatalogVersion>()
                 .orEmpty(),
-            positions = result.versionCatalogInfo?.positions ?: VersionCatalogInfo.Positions()
+            positions = result.versionCatalogInfo?.positions ?: VersionCatalogInfo.Positions(),
+            gradleUpdateInfo = result.gradleUpdateInfo
         )
 
         /**
@@ -156,20 +160,56 @@ public interface DependencyVersionsReplacer {
 }
 
 /**
+ * Interface for replacing the Gradle wrapper version in a Gradle project.
+ */
+public interface GradleWrapperVersionReplacer {
+
+    /**
+     * Replaces the Gradle wrapper version in the Gradle project with the updated version from the
+     * provided [GradleUpdateInfo].
+     */
+    public suspend fun replaceGradleWrapperVersion(updateInfo: GradleUpdateInfo)
+}
+
+private object NoOpGradleWrapperVersionReplacer : GradleWrapperVersionReplacer {
+    override suspend fun replaceGradleWrapperVersion(updateInfo: GradleUpdateInfo) {
+        // No-op
+    }
+}
+
+/**
  * Creates a new instance of [DependencyVersionsReplacer].
  */
+public fun DependencyVersionsReplacer(
+    gradleVersionReplacer: GradleWrapperVersionReplacer,
+    fileSystem: FileSystem = DefaultFileSystem,
+    ioDispatcher: CoroutineDispatcher = IODispatcher,
+    defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+): DependencyVersionsReplacer = DefaultDependencyVersionsReplacer(
+    gradleVersionReplacer = gradleVersionReplacer,
+    fileSystem = fileSystem,
+    ioDispatcher = ioDispatcher,
+    defaultDispatcher = defaultDispatcher,
+)
+
+/**
+ * Creates a new instance of [DependencyVersionsReplacer].
+ */
+@Deprecated("Use the version with gradleVersionReplacer instead")
 public fun DependencyVersionsReplacer(
     fileSystem: FileSystem = DefaultFileSystem,
     ioDispatcher: CoroutineDispatcher = IODispatcher,
     defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): DependencyVersionsReplacer = DefaultDependencyVersionsReplacer(
+    gradleVersionReplacer = NoOpGradleWrapperVersionReplacer,
     fileSystem = fileSystem,
     ioDispatcher = ioDispatcher,
-    defaultDispatcher = defaultDispatcher
+    defaultDispatcher = defaultDispatcher,
 )
 
 @OptIn(ExperimentalUuidApi::class)
 internal class DefaultDependencyVersionsReplacer(
+    private val gradleVersionReplacer: GradleWrapperVersionReplacer,
     private val fileSystem: FileSystem,
     private val ioDispatcher: CoroutineDispatcher = IODispatcher,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
@@ -182,24 +222,27 @@ internal class DefaultDependencyVersionsReplacer(
         val replacements = withContext(defaultDispatcher) {
             computeReplacements(input)
         }
-        if (replacements.isEmpty()) return
-        withContext(ioDispatcher) {
-            // Now, let's read the file and apply the replacements
-            val tmpOutPath = createTempPath(versionCatalogPath, ".tmp")
-            writeReplacedFile(tmpOutPath, versionCatalogPath, replacements)
-            // Finally, replace the original file with the temporary one
-            val backupPath = createTempPath(versionCatalogPath, ".bak")
-            fileSystem.atomicMove(versionCatalogPath, backupPath)
-            try {
-                fileSystem.atomicMove(tmpOutPath, versionCatalogPath)
-            } catch (e: IOException) {
-                // If the move fails, we need to restore the original file and delete the temporary file
-                fileSystem.atomicMove(backupPath, versionCatalogPath)
-                fileSystem.delete(tmpOutPath)
-                throw e
+        if (replacements.isNotEmpty()) {
+            withContext(ioDispatcher) {
+                // Now, let's read the file and apply the replacements
+                val tmpOutPath = createTempPath(versionCatalogPath, ".tmp")
+                writeReplacedFile(tmpOutPath, versionCatalogPath, replacements)
+                // Finally, replace the original file with the temporary one
+                val backupPath = createTempPath(versionCatalogPath, ".bak")
+                fileSystem.atomicMove(versionCatalogPath, backupPath)
+                try {
+                    fileSystem.atomicMove(tmpOutPath, versionCatalogPath)
+                } catch (e: IOException) {
+                    // If the move fails, we need to restore the original file and delete the temporary file
+                    fileSystem.atomicMove(backupPath, versionCatalogPath)
+                    fileSystem.delete(tmpOutPath)
+                    throw e
+                }
+                fileSystem.delete(backupPath)
             }
-            fileSystem.delete(backupPath)
         }
+        // Update Gradle if needed
+        input.gradleUpdateInfo?.let { gradleVersionReplacer.replaceGradleWrapperVersion(it) }
     }
 
     private fun computeReplacements(input: DependencyVersionsReplacer.Input): List<Replacement> =
@@ -228,6 +271,7 @@ internal class DefaultDependencyVersionsReplacer(
             }
         }.values.sorted()
 
+    @Suppress("LongParameterList")
     private fun MutableMap<ReplacementKey, Replacement>.addReplacementIfNecessary(
         type: Type,
         key: String,

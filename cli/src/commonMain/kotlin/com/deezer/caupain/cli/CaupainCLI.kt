@@ -30,11 +30,14 @@ import com.deezer.caupain.CaupainException
 import com.deezer.caupain.CorruptedCacheException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
+import com.deezer.caupain.GradleWrapperVersionReplacer
 import com.deezer.caupain.UnavailableCacheException
+import com.deezer.caupain.cli.internal.GradleWrapperPropertiesWriter
 import com.deezer.caupain.cli.internal.OutputSink
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.internal.sink
 import com.deezer.caupain.cli.model.Formatter
+import com.deezer.caupain.cli.model.GRADLE_DISTRIBUTION_REGEX
 import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
 import com.deezer.caupain.cli.serialization.DefaultToml
@@ -47,6 +50,7 @@ import com.deezer.caupain.formatting.json.JsonFormatter
 import com.deezer.caupain.formatting.markdown.MarkdownFormatter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
+import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.policies.StabilityLevelPolicy
@@ -109,10 +113,10 @@ class CaupainCLI(
         DefaultToml.decodeFromPath(path, fs)
     },
     @Suppress("NoNameShadowing") // Ok to repeat here for clarity
-    private val createUpdateChecker: (Configuration, String?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver?) -> DependencyUpdateChecker = { config, gradleVersion, fs, ioDispatcher, logger, selfUpdateResolver ->
+    private val createUpdateChecker: (Configuration, GradleConfiguration?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver?) -> DependencyUpdateChecker = { config, gradleConfig, fs, ioDispatcher, logger, selfUpdateResolver ->
         DependencyUpdateChecker(
             configuration = config,
-            currentGradleVersion = gradleVersion,
+            gradleConfiguration = gradleConfig,
             fileSystem = fs,
             ioDispatcher = ioDispatcher,
             logger = logger,
@@ -120,8 +124,9 @@ class CaupainCLI(
         )
     },
     @Suppress("NoNameShadowing") // Ok to repeat here for clarity
-    private val createVersionReplacer: (FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { filesystem, ioDispatcher, defaultDispatcher ->
+    private val createVersionReplacer: (GradleWrapperVersionReplacer, FileSystem, CoroutineDispatcher, CoroutineDispatcher) -> DependencyVersionsReplacer = { gradleVersionReplacer, filesystem, ioDispatcher, defaultDispatcher ->
         DependencyVersionsReplacer(
+            gradleVersionReplacer = gradleVersionReplacer,
             fileSystem = filesystem,
             ioDispatcher = ioDispatcher,
             defaultDispatcher = defaultDispatcher
@@ -291,7 +296,7 @@ class CaupainCLI(
             val updateChecker =
                 createUpdateChecker(
                     finalConfiguration,
-                    loadGradleVersion(configuration),
+                    loadGradleConfiguration(configuration),
                     fileSystem,
                     ioDispatcher,
                     logger,
@@ -354,11 +359,23 @@ class CaupainCLI(
             }
 
             if (replace) {
-                createVersionReplacer(fileSystem, ioDispatcher, defaultDispatcher)
-                    .replaceVersions(
-                        versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
-                        updateResult = updates
-                    )
+                val gradleWrapperPropertiesPath = gradleWrapperPropertiesPath
+                    ?: configuration?.gradleWrapperPropertiesPath
+                    ?: DEFAULT_GRADLE_PROPERTIES_PATH
+                val gradleWrapperPropertiesWriter = GradleWrapperPropertiesWriter(
+                    fileSystem = fileSystem,
+                    ioDispatcher = ioDispatcher,
+                    gradleWrapperPropertiesPath = gradleWrapperPropertiesPath,
+                )
+                createVersionReplacer(
+                    gradleWrapperPropertiesWriter,
+                    fileSystem,
+                    ioDispatcher,
+                    defaultDispatcher
+                ).replaceVersions(
+                    versionCatalogPath = finalConfiguration.versionCatalogPaths.single(),
+                    updateResult = updates
+                )
             }
         } catch (_: CorruptedCacheException) {
             if (logLevel > LogLevel.QUIET) {
@@ -512,18 +529,27 @@ class CaupainCLI(
         }
     }
 
-    private suspend fun loadGradleVersion(parsedConfiguration: ParsedConfiguration?): String? {
-        return withContext(ioDispatcher) {
+    private suspend fun loadGradleConfiguration(parsedConfiguration: ParsedConfiguration?): GradleConfiguration? {
+        val wrapperProperties = withContext(ioDispatcher) {
             val gradleWrapperPropertiesPath = gradleWrapperPropertiesPath
                 ?: parsedConfiguration?.gradleWrapperPropertiesPath
                 ?: DEFAULT_GRADLE_PROPERTIES_PATH
             if (!fileSystem.exists(gradleWrapperPropertiesPath)) return@withContext null
-            val distributionUrl = decodeFromProperties<GradleWrapperProperties>(
+            decodeFromProperties<GradleWrapperProperties>(
                 fileSystem = fileSystem,
                 path = gradleWrapperPropertiesPath
-            ).distributionUrl ?: return@withContext null
-            GRADLE_URL_REGEX.find(distributionUrl)?.groupValues?.getOrNull(1)
+            )
         }
+        val currentVersion = wrapperProperties
+            ?.distributionUrl
+            ?.segments
+            ?.last()
+            ?.let { GRADLE_DISTRIBUTION_REGEX.find(it)?.groupValues?.getOrNull(1) }
+            ?: return null
+        return GradleConfiguration(
+            version = currentVersion,
+            needsChecksum = wrapperProperties.distributionSha256Sum != null,
+        )
     }
 
     private suspend fun loadConfiguration(): ParsedConfiguration? {
@@ -681,8 +707,6 @@ class CaupainCLI(
         private const val HTML_TYPE = "html"
         private const val MARKDOWN_TYPE = "markdown"
         private const val JSON_TYPE = "json"
-        private val GRADLE_URL_REGEX =
-            Regex("https://services.gradle.org/distributions/gradle-(.*)-.*.zip")
 
         private val DEFAULT_GRADLE_PROPERTIES_PATH =
             "gradle/wrapper/gradle-wrapper.properties".toPath()

@@ -31,15 +31,19 @@ import kotlinx.serialization.Serializable
  * Represents the stability level of a Gradle version.
  */
 @Serializable
-public enum class GradleStabilityLevel {
+public enum class GradleStabilityLevel(internal val urlSuffix: String) {
     @SerialName("stable")
-    STABLE,
+    STABLE("current"),
+
     @SerialName("rc")
-    RC,
+    RC("release-candidate"),
+
     @SerialName("milestone")
-    MILESTONE,
+    MILESTONE("milestone"),
+
     @SerialName("releaseNightly")
-    RELEASE_NIGHTLY,
+    RELEASE_NIGHTLY("release-nightly"),
+
     @SerialName("nightly")
-    NIGHTLY
+    NIGHTLY("nightly")
 }

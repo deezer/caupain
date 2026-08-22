@@ -151,7 +151,7 @@ class PluginTest {
             ioDispatcher = testDispatcher,
             versionCatalogParser = FixedVersionCatalogParser,
             logger = Logger.EMPTY,
-            currentGradleVersion = null,
+            gradleConfiguration = null,
             policies = null,
             selfUpdateResolver = null
         )

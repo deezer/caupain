@@ -32,13 +32,13 @@ import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.Filter
+import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.Repository
-import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.plugin.internal.DefaultJson
@@ -47,6 +47,8 @@ import com.deezer.caupain.plugin.internal.property
 import com.deezer.caupain.plugin.internal.setProperty
 import com.deezer.caupain.plugin.internal.toOkioPath
 import com.deezer.caupain.policies.StabilityLevelPolicy
+import io.ktor.http.URLBuilder
+import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
@@ -61,7 +63,9 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
 import org.gradle.util.GradleVersion
+import org.gradle.util.internal.DistributionLocator
 import org.gradle.work.DisableCachingByDefault
+import org.gradle.wrapper.WrapperExecutor
 import java.util.UUID
 
 /**
@@ -70,6 +74,9 @@ import java.util.UUID
 @OptIn(ExperimentalSerializationApi::class)
 @DisableCachingByDefault(because = "Will never be up to date")
 open class DependenciesUpdateTask : DefaultTask() {
+
+    @get:Internal
+    private val rootProjectDir = project.rootProject.layout.projectDirectory
 
     @get:Internal
     val repositories = project.objects.listProperty<Repository>()
@@ -209,14 +216,14 @@ open class DependenciesUpdateTask : DefaultTask() {
         .convention(project.layout.buildDirectory.dir("cache/dependency-updates"))
 
     @get:Internal
-    private val gradleVersionsUrl = project
-        .findProperty("caupain.gradleVersionsUrl")
-        ?.toString()
-        ?: GradleConstants.DEFAULT_GRADLE_VERSIONS_URL
-
+    private val policies = project.objects.listProperty<Policy>()
 
     @get:Internal
-    private val policies = project.objects.listProperty<Policy>()
+    private val checkGradleVersion = project
+        .providers
+        .gradleProperty("caupain.internal.checkGradleVersion")
+        .map { it.toBoolean() }
+        .orElse(true)
 
     init {
         group = "verification"
@@ -245,6 +252,7 @@ open class DependenciesUpdateTask : DefaultTask() {
             }
             if (customFormatter.isPresent) add(customFormatter.get())
         }
+        val wrapperExecutor = WrapperExecutor.forProjectDirectory(rootProjectDir.asFile)
         val checker = DependencyUpdateChecker(
             configuration = configuration,
             logger = LoggerAdapter(logger),
@@ -254,8 +262,17 @@ open class DependenciesUpdateTask : DefaultTask() {
                 PluginUpdateResolver
             },
             policies = policies,
-            currentGradleVersion = GradleVersion.current().version,
-            gradleVersionsUrl = gradleVersionsUrl,
+            gradleConfiguration = if (checkGradleVersion.get()) {
+                GradleConfiguration(
+                    version = GradleVersion.current().version,
+                    needsChecksum = wrapperExecutor.configuration.distributionSha256Sum != null,
+                    baseVersionsUrl = URLBuilder(DistributionLocator.getBaseUrl())
+                        .appendPathSegments("versions")
+                        .build(),
+                )
+            } else {
+                null
+            }
         )
         val updates = runBlocking {
             val updates = checker.checkForUpdates()

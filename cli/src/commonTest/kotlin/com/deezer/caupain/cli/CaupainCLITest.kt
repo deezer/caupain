@@ -26,6 +26,7 @@ package com.deezer.caupain.cli
 
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
+import com.deezer.caupain.cli.internal.GradleWrapperPropertiesWriter
 import com.deezer.caupain.model.DependenciesUpdateResult
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
@@ -33,6 +34,7 @@ import com.deezer.caupain.model.Policy
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.VersionCatalogInfo
+import com.deezer.caupain.model.gradle.GradleVersion
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.github.ajalt.clikt.command.test
@@ -54,6 +56,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CaupainCLITest {
@@ -99,11 +102,18 @@ class CaupainCLITest {
         fileSystem = fileSystem,
         defaultDispatcher = testDispatcher,
         ioDispatcher = testDispatcher,
-        createUpdateChecker = { _, gradleVersion, _, _, _, _ ->
-            assertEquals("8.11", gradleVersion)
+        createUpdateChecker = { _, gradleConfig, _, _, _, _ ->
+            assertEquals("8.11", gradleConfig?.version)
             checker
         },
-        createVersionReplacer = { _, _, _ -> replacer }
+        createVersionReplacer = { wrapperPropsWriter, _, _, _ ->
+            assertEquals(
+                expected = wrapperPropertiesPath,
+                actual = assertIs<GradleWrapperPropertiesWriter>(wrapperPropsWriter)
+                    .gradleWrapperPropertiesPath
+            )
+            replacer
+        }
     )
 
     @Test
@@ -133,8 +143,8 @@ class CaupainCLITest {
                     )
                 ),
                 gradleUpdateInfo = GradleUpdateInfo(
-                    currentVersion = "8.11",
-                    updatedVersion = "8.13"
+                    currentVersion = GradleVersion("8.11"),
+                    updatedVersion = GradleVersion("8.13")
                 ),
                 versionCatalog = VersionCatalog(
                     versions = mapOf("groovy" to "3.0.5-alpha-1".toSimpleVersion()),
@@ -234,7 +244,9 @@ class CaupainCLITest {
                     assertEquals(null, selfUpdateResolver)
                     checker
                 },
-                createVersionReplacer = { _, _, _ -> replacer }
+                createVersionReplacer = { _, _, _, _ ->
+                    replacer
+                }
             )
             val result = cli.test(
                 listOf(
@@ -277,7 +289,7 @@ class CaupainCLITest {
                     assertEquals(null, selfUpdateResolver)
                     checker
                 },
-                createVersionReplacer = { _, _, _ -> replacer }
+                createVersionReplacer = { _, _, _, _ -> replacer }
             )
             val result = cli.test(
                 listOf(
@@ -363,8 +375,8 @@ private val EXPECTED_RESULT = """
     <p>Caupain current version is 1.0.0 whereas last version is 1.1.0.<br>You can update Caupain via :
       <ul>
         <li>plugins</li>
-        <li><a href="https://github.com/deezer/caupain/releases">Github releases</a></li>
-        <li>Hombrew</li>
+        <li><a href="https://github.com/deezer/caupain/releases">GitHub releases</a></li>
+        <li>Homebrew</li>
         <li>apt</li>
       </ul>
     </p>

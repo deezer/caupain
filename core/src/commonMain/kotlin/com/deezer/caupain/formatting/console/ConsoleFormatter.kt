@@ -70,7 +70,7 @@ public class ConsoleFormatter(
 
     private fun printGradleUpdate(updateInfo: GradleUpdateInfo?) {
         if (updateInfo != null) {
-            consolePrinter.print("Gradle: ${updateInfo.currentVersion} -> ${updateInfo.updatedVersion}")
+            consolePrinter.print("Gradle: ${updateInfo.currentVersion.version} -> ${updateInfo.updatedVersion.version}")
         }
     }
 

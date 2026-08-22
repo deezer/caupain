@@ -54,8 +54,8 @@ private val FULL_RESULT = """
 Caupain current version is 1.0.0 whereas last version is 1.1.0
 You can update Caupain via :
 - plugins
-- [Github releases](https://github.com/deezer/caupain/releases)
-- Hombrew
+- [GitHub releases](https://github.com/deezer/caupain/releases)
+- Homebrew
 - apt
 ## Gradle
 Gradle current version is 1.0 whereas last version is 1.1. See [https://docs.gradle.org/1.1/release-notes.html](https://docs.gradle.org/1.1/release-notes.html).

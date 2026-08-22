@@ -124,12 +124,12 @@ class CaupainCLIConfigTest {
             assertEquals(configurationPath, path)
             parsedConfiguration
         },
-        createUpdateChecker = { config, gradleVersion, _, _, _, _ ->
-            assertEquals(expectedGradleVersion, gradleVersion)
+        createUpdateChecker = { config, gradleConf, _, _, _, _ ->
+            assertEquals(expectedGradleVersion, gradleConf?.version)
             checkConfiguration(config)
             checker
         },
-        createVersionReplacer = { _, _, _ -> replacer },
+        createVersionReplacer = { _, _, _, _ -> replacer },
         appDirs = TestAppDirs
     )
 

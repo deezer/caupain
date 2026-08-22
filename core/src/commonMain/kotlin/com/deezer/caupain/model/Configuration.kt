@@ -28,6 +28,8 @@ package com.deezer.caupain.model
 import com.deezer.caupain.Serializable
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.policies.StabilityLevelPolicy
+import dev.drewhamilton.poko.Poko
+import io.ktor.http.Url
 import okio.Path
 import okio.Path.Companion.toPath
 import kotlin.jvm.JvmName
@@ -217,4 +219,20 @@ internal data class ConfigurationImpl(
     @Deprecated("Use policies instead", ReplaceWith("policies.first()"))
     override val policy: String
         get() = policies.first()
+}
+
+/**
+ * Configuration for Gradle version checking
+ */
+@Poko
+public class GradleConfiguration(
+    public val version: String,
+    public val needsChecksum: Boolean = false,
+    public val baseVersionsUrl: Url = DEFAULT_BASE_VERSION_URL,
+    public val globalVersionsUrl: Url? = null,
+) {
+    internal companion object {
+        val DEFAULT_BASE_VERSION_URL: Url =
+            Url("https://services.gradle.org/versions/")
+    }
 }

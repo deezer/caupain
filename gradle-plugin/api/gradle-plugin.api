@@ -12,6 +12,7 @@ public class com/deezer/caupain/plugin/DependenciesReplaceTask : org/gradle/api/
 	public fun <init> ()V
 	public final fun getSerializedUpdates ()Lorg/gradle/api/file/RegularFileProperty;
 	public final fun getVersionCatalogFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public final fun getWrapperArguments ()Lorg/gradle/api/file/RegularFileProperty;
 	public final fun replaceDependencies ()V
 }
 

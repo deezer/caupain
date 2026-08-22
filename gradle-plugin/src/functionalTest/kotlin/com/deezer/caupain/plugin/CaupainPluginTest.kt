@@ -26,6 +26,7 @@ package com.deezer.caupain.plugin
 
 import com.autonomousapps.kit.AbstractGradleProject.Companion.PLUGIN_UNDER_TEST_VERSION
 import com.autonomousapps.kit.GradleBuilder.build
+import com.autonomousapps.kit.GradleBuilder.buildAndFail
 import com.autonomousapps.kit.GradleBuilder.runner
 import com.google.testing.junit.testparameterinjector.KotlinTestParameters.testValuesIn
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -46,8 +47,10 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import java.io.File
 import java.io.StringWriter
+import java.util.Properties
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @RunWith(TestParameterInjector::class)
 class CaupainPluginTest {
@@ -57,6 +60,9 @@ class CaupainPluginTest {
 
     @get:Rule
     val mockWebserverRule = MockWebServerRule()
+
+    private val gradleServicesBaseUrlPropertyArgument: String
+        get() = "-Dorg.gradle.internal.services.base.url=${mockWebserverRule.server.url("gradle")}"
 
     private lateinit var htmlOutputFile: File
     private lateinit var markdownOutputFile: File
@@ -98,11 +104,13 @@ class CaupainPluginTest {
                     "/maven-plugins/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
                     "/maven-plugins/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
                     "/maven/com/example/ignored/maven-metadata.xml" -> IGNORED_METADATA
-                    "/gradle" -> return MockResponse(
+                    "/gradle/versions/current" -> return MockResponse(
                         code = 200,
                         body = GRADLE_VERSION_JSON,
                         headers = Headers.headersOf("Content-Type", "application/json")
                     )
+
+                    "/gradle/distributions/gradle-99.0.0-bin.zip" -> return MockResponse(200)
 
                     else -> null
                 }
@@ -142,12 +150,17 @@ class CaupainPluginTest {
     @Test
     fun testPlugin(@TestParameter gradleVersion: GradleVersion = testValuesIn(GRADLE_TESTED_VERSIONS)) {
         val project = createProject()
+        build(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":wrapper"
+        )
         val result = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            gradleServicesBaseUrlPropertyArgument,
         )
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertContains(result.output, expectedConsoleResult(gradleVersion.version, pluginVersion))
@@ -180,7 +193,7 @@ class CaupainPluginTest {
             ":checkDependencyUpdates",
             "--configuration-cache",
             "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            gradleServicesBaseUrlPropertyArgument,
         ).output
         assertContains(output, "configuration cache", ignoreCase = true)
         assertContains(output, "checkDependencyUpdates", ignoreCase = true)
@@ -199,7 +212,7 @@ class CaupainPluginTest {
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            gradleServicesBaseUrlPropertyArgument,
         )
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertEquals(
@@ -213,22 +226,50 @@ class CaupainPluginTest {
     fun testReplace(
         @TestParameter gradleVersion: GradleVersion = testValuesIn(
             GRADLE_TESTED_VERSIONS
-        )
+        ),
+        @TestParameter checkGradle: Boolean,
     ) {
         val project = createProject()
+        if (checkGradle) {
+            build(
+                gradleVersion = gradleVersion,
+                projectDir = project.rootDir,
+                ":wrapper"
+            )
+        }
         val result = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":replaceOutdatedDependencies",
             "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            gradleServicesBaseUrlPropertyArgument,
+            "-Pcaupain.internal.checkGradleVersion=$checkGradle"
         )
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result.task(":replaceOutdatedDependencies")?.outcome)
+        if (checkGradle) {
+            assertEquals(TaskOutcome.SUCCESS, result.task(":updateWrapper")?.outcome)
+        } else {
+            assertEquals(TaskOutcome.SKIPPED, result.task(":updateWrapper")?.outcome)
+        }
         assertEquals(
             expected = createVersionCatalog(updated = true),
             actual = File(project.rootDir, "gradle/libs.versions.toml").readText()
         )
+        if (checkGradle) {
+            val wrapperPropertiesFile =
+                File(project.rootDir, "gradle/wrapper/gradle-wrapper.properties")
+            val wrapperProperties = wrapperPropertiesFile.bufferedReader().use { reader ->
+                Properties().apply { load(reader) }
+            }
+            assertEquals(
+                expected = mockWebserverRule
+                    .server
+                    .url("gradle/distributions/gradle-99.0.0-bin.zip")
+                    .toString(),
+                actual = wrapperProperties.getProperty("distributionUrl")
+            )
+        }
     }
 
     @Test
@@ -249,7 +290,7 @@ class CaupainPluginTest {
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}"
+            gradleServicesBaseUrlPropertyArgument,
         ).forwardStdError(errorOutput).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertContains(
@@ -261,15 +302,14 @@ class CaupainPluginTest {
     @Test
     fun testGradleTooOld() {
         val project = createProject()
-        val result = runner(
+        val result = buildAndFail(
             gradleVersion = GradleVersion.version("8.14.3"),
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--no-configuration-cache",
             "--stacktrace",
-            "-Pcaupain.gradleVersionsUrl=${mockWebserverRule.server.url("gradle")}",
             "-s"
-        ).buildAndFail()
+        )
         assertContains(result.output, "Caupain plugin requires Gradle 9.0 or higher")
     }
 }
@@ -989,7 +1029,7 @@ private val CAUPAIN_METADATA = """
 
 @Language("JSON")
 private val GRADLE_VERSION_JSON = """
-[{
+{
   "version" : "99.0.0",
   "buildTime" : "20250225092214+0000",
   "current" : true,
@@ -1000,10 +1040,8 @@ private val GRADLE_VERSION_JSON = """
   "rcFor" : "",
   "milestoneFor" : "",
   "broken" : false,
-  "downloadUrl" : "https://services.gradle.org/distributions/gradle-8.13-bin.zip",
-  "checksumUrl" : "https://services.gradle.org/distributions/gradle-8.13-bin.zip.sha256",
-  "wrapperChecksumUrl" : "https://services.gradle.org/distributions/gradle-8.13-wrapper.jar.sha256"
-}]    
+  "checksum": "84fbba45c7f4c64abc77460e1c00f541e9f960e3c7ed2538f1ede19eacd873ae"
+}    
 """.trimIndent()
 
 @Language("HTML")
@@ -1180,8 +1218,15 @@ private fun expectedJsonResult(
 ) = """
 {
     "gradleUpdateInfo": {
-        "currentVersion": "$gradleVersion",
-        "updatedVersion": "99.0.0"
+        "currentVersion": {
+            "version": "$gradleVersion",
+            "isSnapshot": false
+        },
+        "updatedVersion": {
+            "version": "99.0.0",
+            "isSnapshot": false
+        },
+        "checksum": null
     },
     "updateInfos": {
         "libraries": [
@@ -1262,8 +1307,15 @@ private fun expectedJsonResultWithoutSelfUpdate(
 ) = """
 {
     "gradleUpdateInfo": {
-        "currentVersion": "$gradleVersion",
-        "updatedVersion": "99.0.0"
+        "currentVersion": {
+            "version": "$gradleVersion",
+            "isSnapshot": false
+        },
+        "updatedVersion": {
+            "version": "99.0.0",
+            "isSnapshot": false
+        },
+        "checksum": null
     },
     "updateInfos": {
         "libraries": [

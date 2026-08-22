@@ -36,7 +36,9 @@ import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.GradleInternal
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.util.GradleVersion
+import java.util.Properties
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -56,48 +58,83 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         ext.initDefaultRepositories(target)
         val versionCatalogFilesProvider = ext.versionCatalogFilesProvider(target)
 
-        val checkTaskProvider = target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
-            group = "verification"
-            description = "Check for dependency updates"
-            notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
-            versionCatalogFiles.convention(versionCatalogFilesProvider)
-            excludedKeys.convention(ext.excludedKeys)
-            excludedLibraries.convention(ext.excludedLibraries)
-            excludedPluginIds.convention(ext.excludedPluginIds)
-            includedKeys.convention(ext.includedKeys)
-            includedLibraries.convention(ext.includedLibraries)
-            includedPluginIds.convention(ext.includedPluginIds)
-            filters.convention(ext.filters)
-            formatterOutputs.convention(ext.outputsHandler.outputs)
-            showVersionReferences.convention(ext.showVersionReferences)
-            repositories.convention(ext.repositories.libraries)
-            pluginRepositories.convention(ext.repositories.plugins)
-            useCache.convention(ext.useCache)
-            onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
-            gradleStabilityLevel.convention(ext.gradleStabilityLevel)
-            checkIgnored.convention(ext.checkIgnored)
-            searchReleaseNote.convention(ext.searchReleaseNote)
-            githubToken.convention(ext.githubToken)
-            verifyExistence.convention(ext.verifyExistence)
-            doNotCheckSelfUpdates.convention(ext.doNotCheckSelfUpdates)
+        val checkTaskProvider =
+            target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
+                group = "verification"
+                description = "Check for dependency updates"
+                notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
+                versionCatalogFiles.convention(versionCatalogFilesProvider)
+                excludedKeys.convention(ext.excludedKeys)
+                excludedLibraries.convention(ext.excludedLibraries)
+                excludedPluginIds.convention(ext.excludedPluginIds)
+                includedKeys.convention(ext.includedKeys)
+                includedLibraries.convention(ext.includedLibraries)
+                includedPluginIds.convention(ext.includedPluginIds)
+                filters.convention(ext.filters)
+                formatterOutputs.convention(ext.outputsHandler.outputs)
+                showVersionReferences.convention(ext.showVersionReferences)
+                repositories.convention(ext.repositories.libraries)
+                pluginRepositories.convention(ext.repositories.plugins)
+                useCache.convention(ext.useCache)
+                onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
+                gradleStabilityLevel.convention(ext.gradleStabilityLevel)
+                checkIgnored.convention(ext.checkIgnored)
+                searchReleaseNote.convention(ext.searchReleaseNote)
+                githubToken.convention(ext.githubToken)
+                verifyExistence.convention(ext.verifyExistence)
+                doNotCheckSelfUpdates.convention(ext.doNotCheckSelfUpdates)
+            }
+        val wrapperUpdateTask = target.tasks.register<Wrapper>("updateWrapper") {
+            notCompatibleWithConfigurationCache(
+                "Use specific condition to launch and changes parameter in startup"
+            )
         }
-        target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
-            group = "verification"
-            description = "Replace dependency updates in-line with their latest versions"
-            versionCatalogFile.convention(
-                versionCatalogFilesProvider.map { files ->
-                    files.firstNotNullOf { it as? RegularFile }
+        val replaceTask =
+            target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
+                group = "verification"
+                description = "Replace dependency updates in-line with their latest versions"
+                versionCatalogFile.convention(
+                    versionCatalogFilesProvider.map { files ->
+                        files.firstNotNullOf { it as? RegularFile }
+                    }
+                )
+                serializedUpdates.fileProvider(
+                    checkTaskProvider.map { checkTask ->
+                        checkTask
+                            .outputs
+                            .files
+                            .filter { it.name == DependenciesUpdateTask.SERIALIZED_UPDATES_FILE_NAME }
+                            .singleFile
+                    }
+                )
+                wrapperArguments.set(
+                    target.layout.buildDirectory.file("caupain/wrapper-update.properties")
+                )
+                finalizedBy(wrapperUpdateTask)
+            }
+        val replaceTaskOutputProperties = replaceTask
+            .flatMap { it.wrapperArguments }
+            .filter { it.asFile.exists() }
+            .map { file ->
+                file.asFile.bufferedReader().use { reader ->
+                    Properties().apply { load(reader) }
                 }
-            )
-            serializedUpdates.fileProvider(
-                checkTaskProvider.map { checkTask ->
-                    checkTask
-                        .outputs
-                        .files
-                        .filter { it.name == DependenciesUpdateTask.SERIALIZED_UPDATES_FILE_NAME }
-                        .singleFile
-                }
-            )
+            }
+        wrapperUpdateTask.configure { task ->
+            task.onlyIf {
+                replaceTaskOutputProperties
+                    .orNull
+                    ?.getProperty(DependenciesReplaceTask.CAN_UPDATE_WRAPPER)
+                    ?.toBoolean() == true
+            }
+            task.doFirst {
+                val properties = replaceTaskOutputProperties.get()
+                task.gradleVersion =
+                    properties.getProperty(DependenciesReplaceTask.GRADLE_UPDATE_VERSION)
+                task.distributionSha256Sum =
+                    properties.getProperty(DependenciesReplaceTask.GRADLE_UPDATE_CHECKSUM)
+            }
+            task.dependsOn(replaceTask)
         }
     }
 

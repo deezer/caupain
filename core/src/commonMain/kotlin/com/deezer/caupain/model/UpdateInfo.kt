@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.model
 
+import com.deezer.caupain.model.gradle.GradleVersion
 import com.deezer.caupain.model.versionCatalog.Version
 import dev.drewhamilton.poko.Poko
 
@@ -58,8 +59,10 @@ public class UpdateInfo(
      */
     @Serializable
     public enum class Type(public val title: String) {
-        @SerialName("libraries") LIBRARY("Libraries"),
-        @SerialName("plugins") PLUGIN("Plugins")
+        @SerialName("libraries")
+        LIBRARY("Libraries"),
+        @SerialName("plugins")
+        PLUGIN("Plugins")
     }
 }
 
@@ -68,15 +71,17 @@ public class UpdateInfo(
  *
  * @property currentVersion The current Gradle version.
  * @property updatedVersion The updated Gradle version
+ * @property checksum The checksum of the updated Gradle version.
  */
 @Serializable
 @Poko
 public class GradleUpdateInfo(
-    public val currentVersion: String,
-    public val updatedVersion: String
+    public val currentVersion: GradleVersion,
+    public val updatedVersion: GradleVersion,
+    public val checksum: String? = null,
 ) {
     @Transient
-    public val url: String = "https://docs.gradle.org/$updatedVersion/release-notes.html"
+    public val url: String = "https://docs.gradle.org/${updatedVersion.version}/release-notes.html"
 }
 
 /**
@@ -98,9 +103,13 @@ public class SelfUpdateInfo(
      */
     @Serializable
     public enum class Source(public val description: String, public val link: String? = null) {
-        @SerialName("plugins") PLUGINS("plugins"),
-        @SerialName("githubReleases") GITHUB_RELEASES("Github releases", "https://github.com/deezer/caupain/releases"),
-        @SerialName("brew") BREW("Hombrew"),
-        @SerialName("apt") APT("apt")
+        @SerialName("plugins")
+        PLUGINS("plugins"),
+        @SerialName("githubReleases")
+        GITHUB_RELEASES("GitHub releases", "https://github.com/deezer/caupain/releases"),
+        @SerialName("brew")
+        BREW("Homebrew"),
+        @SerialName("apt")
+        APT("apt")
     }
 }
