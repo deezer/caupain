@@ -343,7 +343,7 @@ of the tool.
 If needed, you can use the `--in-place` option to update the version catalog in place. This will
 replace the versions in the version catalog with the latest versions found by Caupain. This is
 useful if you want to quickly update your version catalog without having to manually change the
-versions.
+versions. This will also update the Gradle wrapper properties file if the Gradle version is updated.
 
 This will only work if there is only one version catalog provided, and if the `onlyCheckStaticVersions`
 parameter is set to `true` (this is the default behavior).
