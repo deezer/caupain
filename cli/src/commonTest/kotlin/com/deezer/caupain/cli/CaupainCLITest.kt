@@ -375,8 +375,8 @@ private val EXPECTED_RESULT = """
     <p>Caupain current version is 1.0.0 whereas last version is 1.1.0.<br>You can update Caupain via :
       <ul>
         <li>plugins</li>
-        <li><a href="https://github.com/deezer/caupain/releases">Github releases</a></li>
-        <li>Hombrew</li>
+        <li><a href="https://github.com/deezer/caupain/releases">GitHub releases</a></li>
+        <li>Homebrew</li>
         <li>apt</li>
       </ul>
     </p>

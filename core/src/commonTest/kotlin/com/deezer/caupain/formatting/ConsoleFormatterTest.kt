@@ -140,7 +140,7 @@ class ConsoleFormatterTest {
         assertEquals(
             listOf(
                 ConsoleFormatter.UPDATES_TITLE,
-                "Caupain can be updated from version 1.0.0 to version 1.1.0 via plugins, Github releases, Hombrew, apt",
+                "Caupain can be updated from version 1.0.0 to version 1.1.0 via plugins, GitHub releases, Homebrew, apt",
                 "Gradle: 1.0 -> 1.1",
                 ConsoleFormatter.VERSIONS_TITLE,
                 "- deezer: 1.0.0 -> 2.0.0 (1/2 libraries updated, 1/2 plugins updated)",
