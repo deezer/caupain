@@ -49,7 +49,7 @@ data class GradleWrapperProperties(
     val retryBackOffMs: Int? = null,
 )
 
-val GRADLE_DISTRIBUTION_REGEX = Regex("gradle-(.*)-.*.zip")
+val GRADLE_DISTRIBUTION_REGEX = Regex("""gradle-(.+)-[^-]+\.zip""")
 
 private object UrlSerializer : KSerializer<Url> {
 
