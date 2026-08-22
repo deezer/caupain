@@ -106,9 +106,9 @@ public class SelfUpdateInfo(
         @SerialName("plugins")
         PLUGINS("plugins"),
         @SerialName("githubReleases")
-        GITHUB_RELEASES("Github releases", "https://github.com/deezer/caupain/releases"),
+        GITHUB_RELEASES("GitHub releases", "https://github.com/deezer/caupain/releases"),
         @SerialName("brew")
-        BREW("Hombrew"),
+        BREW("Homebrew"),
         @SerialName("apt")
         APT("apt")
     }
