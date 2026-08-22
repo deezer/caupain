@@ -77,7 +77,7 @@ import java.util.UUID
 open class DependenciesUpdateTask : DefaultTask() {
 
     @get:Internal
-    val rootProjectDir = project.rootProject.layout.projectDirectory
+    private val rootProjectDir = project.rootProject.layout.projectDirectory
 
     @get:Internal
     val repositories = project.objects.listProperty<Repository>()

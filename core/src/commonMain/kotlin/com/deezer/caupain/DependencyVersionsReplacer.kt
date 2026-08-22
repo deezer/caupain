@@ -171,6 +171,12 @@ public interface GradleWrapperVersionReplacer {
     public suspend fun replaceGradleWrapperVersion(updateInfo: GradleUpdateInfo)
 }
 
+private object NoOpGradleWrapperVersionReplacer : GradleWrapperVersionReplacer {
+    override suspend fun replaceGradleWrapperVersion(updateInfo: GradleUpdateInfo) {
+        // No-op
+    }
+}
+
 /**
  * Creates a new instance of [DependencyVersionsReplacer].
  */
@@ -181,6 +187,21 @@ public fun DependencyVersionsReplacer(
     defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ): DependencyVersionsReplacer = DefaultDependencyVersionsReplacer(
     gradleVersionReplacer = gradleVersionReplacer,
+    fileSystem = fileSystem,
+    ioDispatcher = ioDispatcher,
+    defaultDispatcher = defaultDispatcher,
+)
+
+/**
+ * Creates a new instance of [DependencyVersionsReplacer].
+ */
+@Deprecated("Use the version with gradleVersionReplacer instead")
+public fun DependencyVersionsReplacer(
+    fileSystem: FileSystem = DefaultFileSystem,
+    ioDispatcher: CoroutineDispatcher = IODispatcher,
+    defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+): DependencyVersionsReplacer = DefaultDependencyVersionsReplacer(
+    gradleVersionReplacer = NoOpGradleWrapperVersionReplacer,
     fileSystem = fileSystem,
     ioDispatcher = ioDispatcher,
     defaultDispatcher = defaultDispatcher,
