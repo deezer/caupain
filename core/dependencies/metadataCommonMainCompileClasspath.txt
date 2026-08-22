@@ -1,9 +1,9 @@
 com.squareup.okio:okio:3.18.1
-com.strumenta:antlr-kotlin-runtime:1.0.12
+com.strumenta:antlr-kotlin-runtime:1.0.13
 dev.drewhamilton.poko:poko-annotations:0.23.1
-io.github.pdvrieze.xmlutil:core-io:1.0.1
-io.github.pdvrieze.xmlutil:core:1.0.1
-io.github.pdvrieze.xmlutil:serialization:1.0.1
+io.github.pdvrieze.xmlutil:core-io:1.0.2
+io.github.pdvrieze.xmlutil:core:1.0.2
+io.github.pdvrieze.xmlutil:serialization:1.0.2
 io.github.z4kn4fein:semver:3.1.0
 io.ktor:ktor-client-content-negotiation:3.5.2
 io.ktor:ktor-client-core:3.5.2

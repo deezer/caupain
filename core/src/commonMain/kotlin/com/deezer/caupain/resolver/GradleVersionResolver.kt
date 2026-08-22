@@ -35,9 +35,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 
 internal class GradleVersionResolver(
     httpClient: HttpClient,
-    private val logger: Logger,
-    private val gradleVersionsUrl: String,
-    private val stabilityLevel: GradleStabilityLevel,
+    logger: Logger,
+    gradleVersionsUrl: String,
+    stabilityLevel: GradleStabilityLevel,
     ioDispatcher: CoroutineDispatcher
 ) {
     private val versionResolver = object : AbstractVersionResolver<GradleDependencyVersion>(

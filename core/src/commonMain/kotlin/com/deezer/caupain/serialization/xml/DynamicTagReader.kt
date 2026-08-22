@@ -35,7 +35,7 @@ import nl.adaptivity.xmlutil.prefix
 import nl.adaptivity.xmlutil.serialization.structure.XmlDescriptor
 
 internal class DynamicTagReader(
-    private val idPropertyName: String,
+    idPropertyName: String,
     reader: XmlReader,
     descriptor: XmlDescriptor
 ) : XmlDelegatingReader(reader) {

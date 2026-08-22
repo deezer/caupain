@@ -84,10 +84,10 @@ internal class DefaultUpdatedVersionResolver(
     private val pluginRepositories: List<Repository>,
     private val logger: Logger,
     private val onlyCheckStaticVersions: Boolean,
-    private val policies: Iterable<Policy>,
+    policies: Iterable<Policy>,
     ioDispatcher: CoroutineDispatcher,
-    private val verifyExistence: Boolean,
-    private val mavenInfoResolver: MavenInfoResolver,
+    verifyExistence: Boolean,
+    mavenInfoResolver: MavenInfoResolver,
 ) : UpdatedVersionResolver {
 
     private val versionResolver = object : AbstractVersionResolver<DependencyRequestInfo>(
