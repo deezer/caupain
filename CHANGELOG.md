@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+- In-place replacement now also updates Gradle wrapper properties (#98)
 
 ### Deprecated
 
