@@ -112,8 +112,9 @@ open class DependencyUpdatePlugin : Plugin<Project> {
                 )
                 finalizedBy(wrapperUpdateTask)
             }
-        val replaceTaskOuputProperties = replaceTask
+        val replaceTaskOutputProperties = replaceTask
             .flatMap { it.wrapperArguments }
+            .filter { it.asFile.exists() }
             .map { file ->
                 file.asFile.bufferedReader().use { reader ->
                     Properties().apply { load(reader) }
@@ -121,13 +122,13 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             }
         wrapperUpdateTask.configure { task ->
             task.onlyIf {
-                replaceTaskOuputProperties
-                    .get()
-                    .getProperty(DependenciesReplaceTask.CAN_UPDATE_WRAPPER)
+                replaceTaskOutputProperties
+                    .orNull
+                    ?.getProperty(DependenciesReplaceTask.CAN_UPDATE_WRAPPER)
                     ?.toBoolean() == true
             }
             task.doFirst {
-                val properties = replaceTaskOuputProperties.get()
+                val properties = replaceTaskOutputProperties.get()
                 task.gradleVersion =
                     properties.getProperty(DependenciesReplaceTask.GRADLE_UPDATE_VERSION)
                 task.distributionSha256Sum =

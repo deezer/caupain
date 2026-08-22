@@ -50,6 +50,7 @@ import java.io.StringWriter
 import java.util.Properties
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @RunWith(TestParameterInjector::class)
 class CaupainPluginTest {
@@ -108,6 +109,7 @@ class CaupainPluginTest {
                         body = GRADLE_VERSION_JSON,
                         headers = Headers.headersOf("Content-Type", "application/json")
                     )
+
                     "/gradle/distributions/gradle-99.0.0-bin.zip" -> return MockResponse(200)
 
                     else -> null
@@ -224,39 +226,50 @@ class CaupainPluginTest {
     fun testReplace(
         @TestParameter gradleVersion: GradleVersion = testValuesIn(
             GRADLE_TESTED_VERSIONS
-        )
+        ),
+        @TestParameter checkGradle: Boolean,
     ) {
         val project = createProject()
-        build(
-            gradleVersion = gradleVersion,
-            projectDir = project.rootDir,
-            ":wrapper"
-        )
+        if (checkGradle) {
+            build(
+                gradleVersion = gradleVersion,
+                projectDir = project.rootDir,
+                ":wrapper"
+            )
+        }
         val result = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":replaceOutdatedDependencies",
             "--stacktrace",
             gradleServicesBaseUrlPropertyArgument,
+            "-Pcaupain.internal.checkGradleVersion=$checkGradle"
         )
         assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result.task(":replaceOutdatedDependencies")?.outcome)
+        if (checkGradle) {
+            assertEquals(TaskOutcome.SUCCESS, result.task(":updateWrapper")?.outcome)
+        } else {
+            assertEquals(TaskOutcome.SKIPPED, result.task(":updateWrapper")?.outcome)
+        }
         assertEquals(
             expected = createVersionCatalog(updated = true),
             actual = File(project.rootDir, "gradle/libs.versions.toml").readText()
         )
-        val wrapperPropertiesFile =
-            File(project.rootDir, "gradle/wrapper/gradle-wrapper.properties")
-        val wrapperProperties = wrapperPropertiesFile.bufferedReader().use { reader ->
-            Properties().apply { load(reader) }
+        if (checkGradle) {
+            val wrapperPropertiesFile =
+                File(project.rootDir, "gradle/wrapper/gradle-wrapper.properties")
+            val wrapperProperties = wrapperPropertiesFile.bufferedReader().use { reader ->
+                Properties().apply { load(reader) }
+            }
+            assertEquals(
+                expected = mockWebserverRule
+                    .server
+                    .url("gradle/distributions/gradle-99.0.0-bin.zip")
+                    .toString(),
+                actual = wrapperProperties.getProperty("distributionUrl")
+            )
         }
-        assertEquals(
-            expected = mockWebserverRule
-                .server
-                .url("gradle/distributions/gradle-99.0.0-bin.zip")
-                .toString(),
-            actual = wrapperProperties.getProperty("distributionUrl")
-        )
     }
 
     @Test

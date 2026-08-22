@@ -39,6 +39,7 @@ import com.deezer.caupain.model.LibraryInclusion
 import com.deezer.caupain.model.PluginExclusion
 import com.deezer.caupain.model.PluginInclusion
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.gradle.GradleConstants
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.plugin.internal.DefaultJson
@@ -218,6 +219,13 @@ open class DependenciesUpdateTask : DefaultTask() {
     @get:Internal
     private val policies = project.objects.listProperty<Policy>()
 
+    @get:Internal
+    private val checkGradleVersion = project
+        .providers
+        .gradleProperty("caupain.internal.checkGradleVersion")
+        .map { it.toBoolean() }
+        .orElse(true)
+
     init {
         group = "verification"
         description = "Check for dependency updates"
@@ -255,13 +263,17 @@ open class DependenciesUpdateTask : DefaultTask() {
                 PluginUpdateResolver
             },
             policies = policies,
-            gradleConfiguration = GradleConfiguration(
-                version = GradleVersion.current().version,
-                needsChecksum = wrapperExecutor.configuration.distributionSha256Sum != null,
-                baseVersionsUrl = URLBuilder(DistributionLocator.getBaseUrl())
-                    .appendPathSegments("versions")
-                    .build(),
-            )
+            gradleConfiguration = if (checkGradleVersion.get()) {
+                GradleConfiguration(
+                    version = GradleVersion.current().version,
+                    needsChecksum = wrapperExecutor.configuration.distributionSha256Sum != null,
+                    baseVersionsUrl = URLBuilder(DistributionLocator.getBaseUrl())
+                        .appendPathSegments("versions")
+                        .build(),
+                )
+            } else {
+                null
+            }
         )
         val updates = runBlocking {
             val updates = checker.checkForUpdates()
