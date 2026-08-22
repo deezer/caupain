@@ -73,7 +73,6 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public final fun getPluginRepositories ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getRepositories ()Lorg/gradle/api/provider/ListProperty;
-	public final fun getRootProjectDir ()Lorg/gradle/api/file/Directory;
 	public final fun getSearchReleaseNote ()Lorg/gradle/api/provider/Property;
 	public final fun getUseCache ()Lorg/gradle/api/provider/Property;
 	public final fun getVerifyExistence ()Lorg/gradle/api/provider/Property;

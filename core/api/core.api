@@ -143,7 +143,9 @@ public final class com/deezer/caupain/DependencyVersionsReplacer$Input$Version$R
 
 public final class com/deezer/caupain/DependencyVersionsReplacerKt {
 	public static final fun DependencyVersionsReplacer (Lcom/deezer/caupain/GradleWrapperVersionReplacer;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/deezer/caupain/DependencyVersionsReplacer;
+	public static final fun DependencyVersionsReplacer (Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;)Lcom/deezer/caupain/DependencyVersionsReplacer;
 	public static synthetic fun DependencyVersionsReplacer$default (Lcom/deezer/caupain/GradleWrapperVersionReplacer;Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyVersionsReplacer;
+	public static synthetic fun DependencyVersionsReplacer$default (Lokio/FileSystem;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlinx/coroutines/CoroutineDispatcher;ILjava/lang/Object;)Lcom/deezer/caupain/DependencyVersionsReplacer;
 }
 
 public abstract interface class com/deezer/caupain/GradleWrapperVersionReplacer {
