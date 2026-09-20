@@ -2,6 +2,7 @@
 
 import com.vanniktech.maven.publish.GradlePublishPlugin
 import dev.detekt.gradle.Detekt
+import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
@@ -62,6 +63,11 @@ gradlePlugin {
             description = "Plugin to check for dependency updates from version catalog"
             tags = listOf("dependencies", "update", "version-catalog")
             implementationClass = "com.deezer.caupain.plugin.DependencyUpdatePlugin"
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }

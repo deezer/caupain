@@ -143,7 +143,8 @@ internal class DefaultUpdatedVersionResolver(
         versionReferences: Map<String, Version.Resolved>,
     ): UpdatedVersionResolver.Result? {
         logger.info("Finding updated version for ${dependency.moduleId}")
-        val currentVersion = dependency.version?.resolve(versionReferences)
+        val resolvedDependency = dependency.resolved(versionReferences)
+        val currentVersion = resolvedDependency.version as? Version.Resolved
         if (currentVersion == null || onlyCheckStaticVersions && !currentVersion.isStatic) {
             return null
         }
@@ -153,7 +154,7 @@ internal class DefaultUpdatedVersionResolver(
         }
         return repositories
             .asFlow()
-            .filter { dependency in it }
+            .filter { resolvedDependency in it }
             .mapNotNull { repository ->
                 versionResolver.findUpdatedVersion(
                     DependencyRequestInfo(

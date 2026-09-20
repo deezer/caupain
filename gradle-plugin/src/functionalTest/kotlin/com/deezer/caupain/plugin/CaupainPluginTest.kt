@@ -50,7 +50,6 @@ import java.io.StringWriter
 import java.util.Properties
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @RunWith(TestParameterInjector::class)
 class CaupainPluginTest {
@@ -128,23 +127,23 @@ class CaupainPluginTest {
     }
 
     private fun createProject(
-        repositoryUrl: String = mockWebserverRule.server.url("maven-plugins").toString(),
+        pluginRepositoryUrl: String = mockWebserverRule.server.url("maven-plugins").toString(),
         forbiddenRepositoryUrl: String = mockWebserverRule.server.url("maven-forbidden").toString(),
         supplementaryCaupainConfiguration: String = "",
-        filteredPluginRepositoryUrl: String = mockWebserverRule.server.url("maven-androidx")
+        filteredRepositoryUrl: String = mockWebserverRule.server.url("maven-androidx")
             .toString(),
-        fallbackPluginRepositoryUrl: String = mockWebserverRule.server.url("maven").toString(),
-        withBaseSettings: Boolean = false,
+        fallbackRepositoryUrl: String = mockWebserverRule.server.url("maven").toString(),
+        configureLibraryRepositories: Boolean = false,
     ) = TestProject(
-        filteredPluginRepositoryUrl = filteredPluginRepositoryUrl,
-        fallbackPluginRepositoryUrl = fallbackPluginRepositoryUrl,
-        repositoryUrl = repositoryUrl,
+        filteredRepositoryUrl = filteredRepositoryUrl,
+        fallbackRepositoryUrl = fallbackRepositoryUrl,
+        pluginRepositoryUrl = pluginRepositoryUrl,
         forbiddenRepositoryUrl = forbiddenRepositoryUrl,
         htmlOutputFile = htmlOutputFile,
         markdownOutputFile = markdownOutputFile,
         jsonOutputFile = jsonOutputFile,
+        configureLibraryRepositories = configureLibraryRepositories,
         supplementaryCaupainConfiguration = supplementaryCaupainConfiguration,
-        useBaseSettings = withBaseSettings,
     ).build()
 
     @Test
@@ -181,23 +180,60 @@ class CaupainPluginTest {
     }
 
     @Test
+    fun testIsolatedProjects(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS.filter { it >= GRADLE_ISOLATED_PROJECTS_MIN_VERSION }
+        ),
+    ) {
+        val project = createProject(configureLibraryRepositories = true)
+        val result = build(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--stacktrace",
+            "--isolated-projects",
+            gradleServicesBaseUrlPropertyArgument,
+        )
+        assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
+        assertContains(result.output, expectedConsoleResult(gradleVersion.version, pluginVersion))
+    }
+
+    @Test
+    fun testIsolatedProjectsWithDefaults(
+        @TestParameter gradleVersion: GradleVersion = testValuesIn(
+            GRADLE_TESTED_VERSIONS.filter { it >= GRADLE_ISOLATED_PROJECTS_MIN_VERSION }
+        ),
+    ) {
+        val project = createProject(configureLibraryRepositories = false)
+        val result = buildAndFail(
+            gradleVersion = gradleVersion,
+            projectDir = project.rootDir,
+            ":checkDependencyUpdates",
+            "--stacktrace",
+            "--isolated-projects",
+            gradleServicesBaseUrlPropertyArgument,
+        )
+        assertEquals(TaskOutcome.FAILED, result.task(":checkDependencyUpdates")?.outcome)
+        assertContains(result.output, "com.deezer.caupain.plugin.isolatedProjects.useDefault")
+    }
+
+    @Test
     fun testConfigurationCacheIncompatible(
         @TestParameter gradleVersion: GradleVersion = testValuesIn(
             GRADLE_TESTED_VERSIONS
         )
     ) {
         val project = createProject()
-        val output = build(
+        val result = build(
             gradleVersion = gradleVersion,
             projectDir = project.rootDir,
             ":checkDependencyUpdates",
             "--configuration-cache",
+            "--configuration-cache-problems=fail",
             "--stacktrace",
             gradleServicesBaseUrlPropertyArgument,
-        ).output
-        assertContains(output, "configuration cache", ignoreCase = true)
-        assertContains(output, "checkDependencyUpdates", ignoreCase = true)
-        assertContains(output, "incompatible", ignoreCase = true)
+        )
+        assertEquals(TaskOutcome.SUCCESS, result.task(":checkDependencyUpdates")?.outcome)
     }
 
     @Test
@@ -1384,9 +1420,12 @@ private fun expectedJsonResultWithoutSelfUpdate(
 }    
 """.trimIndent().trim()
 
+private val GRADLE_ISOLATED_PROJECTS_MIN_VERSION = GradleVersion.version("9.7.0")
+
 private val GRADLE_TESTED_VERSIONS by lazy {
     setOf(
         GradleVersion.current(),
+        GRADLE_ISOLATED_PROJECTS_MIN_VERSION,
         GradleVersion.version("9.0.0")
     ).toList()
 }

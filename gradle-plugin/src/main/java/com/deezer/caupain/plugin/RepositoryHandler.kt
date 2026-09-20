@@ -26,12 +26,15 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.Serializable
 import com.deezer.caupain.model.ComponentFilterBuilder
+import com.deezer.caupain.model.DefaultRepositories
 import com.deezer.caupain.model.HeaderCredentials
 import com.deezer.caupain.model.PasswordCredentials
 import com.deezer.caupain.model.Repository
 import com.deezer.caupain.model.buildComponentFilter
 import com.deezer.caupain.model.withComponentFilter
+import com.deezer.caupain.plugin.internal.combine
 import com.deezer.caupain.plugin.internal.listProperty
 import com.deezer.caupain.plugin.internal.property
 import org.gradle.api.Action
@@ -48,53 +51,92 @@ open class RepositoryHandler @Inject constructor(
     private val objects: ObjectFactory,
     private val providers: ProviderFactory,
 ) {
+    internal val libraryRepositoryInfos: ListProperty<RepositoryInfo> = objects.listProperty()
+
+    internal val pluginRepositoryInfos: ListProperty<RepositoryInfo> = objects.listProperty()
+
+    internal val isCompatibleWithConfigCache: Provider<Boolean> = combine(
+        libraryRepositoryInfos.map { infos ->
+            infos.all { it.isCompatibleWithConfigCache }
+        },
+        pluginRepositoryInfos.map { infos ->
+            infos.all { it.isCompatibleWithConfigCache }
+        },
+    ) { areLibraryRepositoriesCompatible, arePluginRepositoriesCompatible ->
+        areLibraryRepositoriesCompatible && arePluginRepositoriesCompatible
+    }
+
 
     /**
      * Libraries repositories to check for updates.
      */
-    val libraries: ListProperty<Repository> = objects.listProperty()
+    val libraries: Provider<List<Repository>> = libraryRepositoryInfos.map { infos ->
+        infos.map { it.repository }
+    }
 
     /**
      * Plugin repositories
      */
-    val plugins: ListProperty<Repository> = objects.listProperty()
+    val plugins: Provider<List<Repository>> = pluginRepositoryInfos.map { infos ->
+        infos.map { it.repository }
+    }
 
     fun libraries(action: Action<RepositoryCategoryHandler>) {
-        action.execute(RepositoryCategoryHandler(objects, providers, libraries))
+        action.execute(
+            RepositoryCategoryHandler(
+                objects = objects,
+                providers = providers,
+                listProperty = libraryRepositoryInfos,
+            )
+        )
     }
 
     fun plugins(action: Action<RepositoryCategoryHandler>) {
-        action.execute(RepositoryCategoryHandler(objects, providers, plugins))
-    }
-
-    internal fun setupConvention(
-        libraryRepositories: Provider<out Iterable<Repository>>,
-        pluginRepositories: Provider<out Iterable<Repository>>
-    ) {
-        libraries.convention(libraryRepositories)
-        plugins.convention(pluginRepositories)
+        action.execute(
+            RepositoryCategoryHandler(
+                objects = objects,
+                providers = providers,
+                listProperty = pluginRepositoryInfos,
+            )
+        )
     }
 }
 
 class RepositoryCategoryHandler internal constructor(
     private val objects: ObjectFactory,
     private val providers: ProviderFactory,
-    private val listProperty: ListProperty<Repository>
+    private val listProperty: ListProperty<RepositoryInfo>,
 ) {
 
     fun repository(repository: Repository) {
-        listProperty.add(repository)
+        listProperty.add(
+            RepositoryInfo(
+                repository = repository,
+                isCompatibleWithConfigCache = repository.isCompatibleWithConfigCache,
+            )
+        )
     }
 
     fun repository(
         repository: Repository,
         configureComponentFilter: Action<ComponentFilterBuilder>
     ) {
-        listProperty.add(repository.withComponentFilter { configureComponentFilter.execute(this) })
+        listProperty.add(
+            RepositoryInfo(
+                repository = repository
+                    .withComponentFilter { configureComponentFilter.execute(this) },
+                isCompatibleWithConfigCache = repository.isCompatibleWithConfigCache,
+            )
+        )
     }
 
     fun repository(url: String) {
-        listProperty.add(Repository(url))
+        listProperty.add(
+            RepositoryInfo(
+                repository = Repository(url),
+                isCompatibleWithConfigCache = true,
+            )
+        )
     }
 
     fun repository(url: String, configure: Action<RepositoryConfigurationHandler>) {
@@ -106,7 +148,12 @@ class RepositoryCategoryHandler internal constructor(
     }
 
     fun repository(url: String, user: String, password: String) {
-        listProperty.add(Repository(url, user, password))
+        listProperty.add(
+            RepositoryInfo(
+                repository = Repository(url, user, password),
+                isCompatibleWithConfigCache = true,
+            )
+        )
     }
 
     fun repository(
@@ -116,15 +163,23 @@ class RepositoryCategoryHandler internal constructor(
         configureComponentFilter: Action<ComponentFilterBuilder>
     ) {
         listProperty.add(
-            Repository(
-                url = url,
-                user = user,
-                password = password,
-                componentFilter = buildComponentFilter {
-                    configureComponentFilter.execute(this)
-                }
+            RepositoryInfo(
+                repository = Repository(
+                    url = url,
+                    user = user,
+                    password = password,
+                    componentFilter = buildComponentFilter {
+                        configureComponentFilter.execute(this)
+                    }
+                ),
+                isCompatibleWithConfigCache = true,
             )
         )
+    }
+
+    companion object {
+        private val Repository.isCompatibleWithConfigCache: Boolean
+            get() = this in DefaultRepositories.all
     }
 }
 
@@ -161,18 +216,26 @@ open class RepositoryConfigurationHandler internal constructor(
         filterBuilder.include(group, name)
     }
 
-    fun toRepository(url: String): Provider<Repository> {
+    internal fun toRepository(url: String): Provider<RepositoryInfo> {
         val credentialsProvider = credentialsHandler?.toCredentials()
             ?: headerCredentialsHandler?.toCredentials()
         return credentialsProvider
             ?.map { credentials ->
-                Repository(
-                    url = url,
-                    credentials = credentials,
-                    componentFilter = filterBuilder.build()
+                RepositoryInfo(
+                    repository = Repository(
+                        url = url,
+                        credentials = credentials,
+                        componentFilter = filterBuilder.build()
+                    ),
+                    isCompatibleWithConfigCache = false,
                 )
             }
-            ?: providers.provider { Repository(url, filterBuilder.build()) }
+            ?: providers.provider {
+                RepositoryInfo(
+                    repository = Repository(url, filterBuilder.build()),
+                    isCompatibleWithConfigCache = true,
+                )
+            }
     }
 }
 
@@ -195,5 +258,28 @@ open class HeaderCredentialsHandler internal constructor(objects: ObjectFactory)
         value.map { value ->
             HeaderCredentials(name, value)
         }
+    }
+}
+
+internal class RepositoryInfo(
+    val repository: Repository,
+    val isCompatibleWithConfigCache: Boolean,
+) : Serializable {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RepositoryInfo
+
+        return repository == other.repository
+    }
+
+    override fun hashCode(): Int {
+        return repository.hashCode()
+    }
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }

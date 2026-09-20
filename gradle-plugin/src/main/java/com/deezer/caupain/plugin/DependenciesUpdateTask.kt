@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.plugin
 
+import com.deezer.caupain.CaupainException
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
 import com.deezer.caupain.formatting.console.ConsoleFormatter
@@ -54,6 +55,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.encodeToStream
 import okio.Path.Companion.toOkioPath
 import org.gradle.api.DefaultTask
+import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
@@ -67,13 +69,16 @@ import org.gradle.util.internal.DistributionLocator
 import org.gradle.work.DisableCachingByDefault
 import org.gradle.wrapper.WrapperExecutor
 import java.util.UUID
+import javax.inject.Inject
 
 /**
  * Dependencies Update task.
  */
 @OptIn(ExperimentalSerializationApi::class)
 @DisableCachingByDefault(because = "Will never be up to date")
-open class DependenciesUpdateTask : DefaultTask() {
+open class DependenciesUpdateTask @Inject constructor(
+    private val buildFeatures: BuildFeatures,
+) : DefaultTask() {
 
     @get:Internal
     private val rootProjectDir = project.rootProject.layout.projectDirectory
@@ -225,6 +230,21 @@ open class DependenciesUpdateTask : DefaultTask() {
         .map { it.toBoolean() }
         .orElse(true)
 
+    @get:Internal
+    private val stopOnEmptyRepositories = buildFeatures
+        .isolatedProjects
+        .active
+        .zip(
+            project
+                .providers
+                .gradleProperty(ISOLATED_PROJECTS_USE_DEFAULT)
+                .map { it.toBoolean() }
+                .orElse(false)
+        ) { useIsolatedProjects, useDefault ->
+            useIsolatedProjects && !useDefault
+        }
+
+
     init {
         group = "verification"
         description = "Check for dependency updates"
@@ -327,9 +347,18 @@ open class DependenciesUpdateTask : DefaultTask() {
     }
 
     private fun createConfiguration(policies: List<String>): Configuration {
+        val repositories = repositories
+            .get()
+            .takeUnless { it.isEmpty() }
+        val pluginRepositories = pluginRepositories
+            .get()
+            .takeUnless { it.isEmpty() }
+        if ((repositories == null || pluginRepositories == null) && stopOnEmptyRepositories.get()) {
+            throw NoConfiguredRepositories()
+        }
         return Configuration(
-            repositories = repositories.get(),
-            pluginRepositories = pluginRepositories.get(),
+            repositories = repositories ?: Configuration.DEFAULT_REPOSITORIES,
+            pluginRepositories = pluginRepositories ?: Configuration.DEFAULT_PLUGIN_REPOSITORIES,
             versionCatalogPaths = versionCatalogFiles.map { it.toOkioPath() },
             excludedKeys = excludedKeys.get(),
             excludedLibraries = excludedLibraries.get(),
@@ -396,7 +425,19 @@ open class DependenciesUpdateTask : DefaultTask() {
         }
     }
 
+    private class NoConfiguredRepositories : CaupainException(
+        "No repositories or plugin repositories have been defined for the dependencies update. This" +
+                " is probably because you are using isolated projects, and so we cannot query the" +
+                " build scripts for their repositories. You should either define repositories in " +
+                "the dependencies update extension, or disable this warning by setting the Gradle" +
+                " property '$ISOLATED_PROJECTS_USE_DEFAULT' to 'true'. However, if you do so," +
+                " default repositories (Maven, Google, Gradle Plugin Portal) will be used instead," +
+                " which may not be correct for your project."
+    )
+
     internal companion object {
         internal const val SERIALIZED_UPDATES_FILE_NAME = "updates_for_replacement.json"
+        internal const val ISOLATED_PROJECTS_USE_DEFAULT =
+            "com.deezer.caupain.plugin.isolatedProjects.useDefault"
     }
 }
