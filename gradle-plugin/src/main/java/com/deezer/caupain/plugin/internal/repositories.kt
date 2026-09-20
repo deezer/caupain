@@ -28,6 +28,9 @@ import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.Dependency.Library
 import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.Repository
+import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.plugin.RepositoryInfo
+import org.gradle.api.Action
 import org.gradle.api.artifacts.ModuleIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -39,7 +42,9 @@ import org.gradle.api.internal.artifacts.repositories.ArtifactResolutionDetails
 import org.gradle.api.internal.artifacts.repositories.ContentFilteringRepository
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal
+import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 import com.deezer.caupain.model.Credentials as ModelCredentials
 import com.deezer.caupain.model.HeaderCredentials as ModelHeaderCredentials
@@ -47,39 +52,41 @@ import com.deezer.caupain.model.PasswordCredentials as ModelPasswordCredentials
 
 private val ACCEPTED_SCHEMES = setOf("http", "https")
 
-internal fun RepositoryHandler.toRepositories(objects: ObjectFactory): Provider<List<Repository>> {
-    val repositoriesProvider = objects.listProperty<Repository>()
-    for (repository in this) {
+internal fun RepositoryHandler.toRepositories(
+    objects: ObjectFactory,
+    providers: ProviderFactory,
+): Provider<List<RepositoryInfo>> {
+    val repositoriesProvider = objects.listProperty<RepositoryInfo>()
+    configureEach { repository ->
         if (repository is MavenArtifactRepository && repository.url.scheme in ACCEPTED_SCHEMES) {
-            val credentials =
-                (repository as? AuthenticationSupportedInternal)?.configuredCredentials
-            if (credentials == null) {
-                repositoriesProvider.add(RepositoryDelegate(repository))
-            } else {
-                repositoriesProvider.add(
-                    credentials
-                        .asOptional()
-                        .map { optionalCredentials ->
-                            RepositoryDelegate(
-                                delegate = repository,
-                                credentials = optionalCredentials.getOrNull()
-                            )
-                        }
-                )
-            }
+            val credentialsInfoProvider = repository.getCredentialsInfoProvider(providers)
+            val filterActionInfo = repository.getFilterActionInfo()
+
+            repositoriesProvider.add(
+                credentialsInfoProvider.map { optionalCredentialsInfo ->
+                    val credentialsInfo = optionalCredentialsInfo.getOrNull()
+                    RepositoryInfo(
+                        repository = RepositoryDelegate(
+                            filterAction = filterActionInfo?.action,
+                            url = repository.url.toString(),
+                            credentials = credentialsInfo?.credentials,
+                        ),
+                        isCompatibleWithConfigCache =
+                            filterActionInfo?.isCompatibleWithConfigCache != false
+                                    && credentialsInfo?.isCompatibleWithConfigCache != false,
+                    )
+                }
+            )
         }
     }
     return repositoriesProvider
 }
 
-private class RepositoryDelegate(
-    delegate: MavenArtifactRepository,
+internal class RepositoryDelegate(
+    private val filterAction: Action<in ArtifactResolutionDetails>?,
+    override val url: String,
     credentials: Credentials? = null,
 ) : Repository {
-
-    private val filterAction = (delegate as? ContentFilteringRepository)?.contentFilter
-
-    override val url: String = delegate.url.toString()
 
     override val credentials = credentials?.toModelCredentials()
 
@@ -161,13 +168,10 @@ private class ArtifactResolutionDetailsAdapter(
     override fun getModuleId(): ModuleIdentifier = ModuleIdentifierAdapter(dependency)
 
     override fun getComponentId(): ModuleComponentIdentifier? =
-        if (dependency.version == null) {
-            null
-        } else {
-            ModuleComponentIdentifierAdapter(dependency)
-        }
+        if (isVersionListing) null else ModuleComponentIdentifierAdapter(dependency)
 
-    override fun isVersionListing(): Boolean = dependency.version != null
+    override fun isVersionListing(): Boolean =
+        (dependency.version as? Version.Resolved)?.isStatic != true
 
     override fun notFound() {
         isFound = false
@@ -185,3 +189,48 @@ private val Dependency.name: String?
         is Library -> name
         is Plugin -> "$id.gradle.plugin"
     }
+
+private data class FilterActionInfo(
+    val action: Action<in ArtifactResolutionDetails>,
+    val isCompatibleWithConfigCache: Boolean,
+)
+
+private fun MavenArtifactRepository.getFilterActionInfo(): FilterActionInfo? {
+    if (this !is ContentFilteringRepository) return null
+    val action = contentFilter
+    val isCompatibleWithConfigCache = if (action.javaClass.isAnonymousClass) {
+        true
+    } else {
+        // Check if getting filter twice returns the same action, it means we're not dealing with a
+        // new instance each time
+        action === contentFilter
+    }
+    return FilterActionInfo(action, isCompatibleWithConfigCache)
+}
+
+private data class CredentialsInfo(
+    val credentials: Credentials,
+    val isCompatibleWithConfigCache: Boolean,
+)
+
+private fun MavenArtifactRepository.getCredentialsInfoProvider(
+    providers: ProviderFactory
+): Provider<Optional<CredentialsInfo>> {
+    if (this !is AuthenticationSupportedInternal) return providers.provider { Optional.empty() }
+    val credentialsProvider = configuredCredentials.asOptional()
+    val configCacheCompatibilityProvider = isUsingCredentialsProvider.orElse(true)
+    return credentialsProvider.flatMap { optionalCredentials ->
+        if (optionalCredentials.isPresent) {
+            configCacheCompatibilityProvider.map { isCompatibleWithConfigCache ->
+                Optional.of(
+                    CredentialsInfo(
+                        credentials = optionalCredentials.get(),
+                        isCompatibleWithConfigCache = isCompatibleWithConfigCache,
+                    )
+                )
+            }
+        } else {
+            providers.provider { Optional.empty() }
+        }
+    }
+}

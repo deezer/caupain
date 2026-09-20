@@ -45,15 +45,15 @@ import java.io.File
 import java.util.zip.ZipInputStream
 
 class TestProject(
-    private val filteredPluginRepositoryUrl: String,
-    private val fallbackPluginRepositoryUrl: String,
-    private val repositoryUrl: String,
+    private val filteredRepositoryUrl: String,
+    private val fallbackRepositoryUrl: String,
+    private val pluginRepositoryUrl: String,
     private val forbiddenRepositoryUrl: String,
     private val htmlOutputFile: File,
     private val markdownOutputFile: File,
     private val jsonOutputFile: File,
+    private val configureLibraryRepositories: Boolean = false,
     private val supplementaryCaupainConfiguration: String = "",
-    private val useBaseSettings: Boolean = false,
 ) : AbstractGradleProject() {
 
     private val pluginVersion = PLUGIN_UNDER_TEST_VERSION
@@ -63,20 +63,10 @@ class TestProject(
             .withRootProject {
                 withVersionCatalog(createVersionCatalog())
                 gradleProperties = GradleProperties.minimalAndroidProperties()
-                if (useBaseSettings) {
-                    withSettingsScript {
-                        rootProjectName = "Fake project"
-                        subprojects = setOf("app")
-                    }
-                } else {
-                    withFile(
-                        path = "settings.gradle.kts",
-                        content = createSettingsFile(
-                            filteredPluginRepositoryUrl,
-                            fallbackPluginRepositoryUrl
-                        )
-                    )
-                }
+                withFile(
+                    path = "settings.gradle.kts",
+                    content = createSettingsFile()
+                )
                 withBuildScript {
                     imports = Imports.of(
                         "com.deezer.caupain.model.StabilityLevelPolicy",
@@ -91,16 +81,7 @@ class TestProject(
                     )
                     withKotlin(
                         buildString {
-                            appendLine(
-                                createExtensionCode(
-                                    repositoryUrl = repositoryUrl,
-                                    forbiddenRepositoryUrl = forbiddenRepositoryUrl,
-                                    htmlOutputFile = htmlOutputFile,
-                                    markdownOutputFile = markdownOutputFile,
-                                    jsonOutputFile = jsonOutputFile,
-                                    supplementaryConfiguration = supplementaryCaupainConfiguration
-                                )
-                            )
+                            appendLine(createExtensionCode())
                             appendLine(
                                 """
                                         tasks.withType<DependenciesUpdateTask> {
@@ -154,33 +135,9 @@ class TestProject(
             }
             .write()
     }
-}
 
-internal fun createVersionCatalog(updated: Boolean = false) = """
-    [versions]
-    agp = "8.9.1"
-    kotlin = "${if (updated) "2.1.20" else "2.0.21"}"
-    coreKtx = "${if (updated) "1.17.0" else "1.16.0"}"
-    activityKtx = "1.10.1"
-    ignored = "1.0.0" #ignoreUpdates
-    
-    [libraries]
-    androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-    androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
-    ignored = { group = "com.example", name = "ignored", version.ref = "ignored" }
-    
-    [plugins]
-    android-application = { id = "com.android.application", version.ref = "agp" }
-    kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }    
-    """.trimIndent()
-
-private val FUNCTIONAL_TEST_REPO: String
-    get() = "maven(url = \"${AbstractGradleProject.FUNC_TEST_REPO.replace("\\", "\\\\")}\")"
-
-private fun createSettingsFile(
-    filteredRepositoryUrl: String,
-    fallbackRepositoryUrl: String
-) = """
+    @Language("kotlin")
+    private fun createSettingsFile() = """
     pluginManagement {
         repositories {
             $FUNCTIONAL_TEST_REPO
@@ -203,7 +160,8 @@ private fun createSettingsFile(
             $FUNCTIONAL_TEST_REPO
             maven {
                 setUrl("$filteredRepositoryUrl")
-                content { 
+                mavenContent {
+                    releasesOnly()
                     includeGroupAndSubgroups("androidx.core")
                 }
                 credentials {
@@ -227,52 +185,84 @@ private fun createSettingsFile(
     include(":app")
     """.trimIndent()
 
-@Language("kotlin")
-private fun createExtensionCode(
-    repositoryUrl: String,
-    forbiddenRepositoryUrl: String,
-    htmlOutputFile: File,
-    markdownOutputFile: File,
-    jsonOutputFile: File,
-    supplementaryConfiguration: String = ""
-) = """
-caupain {
-    repositories {
-        plugins {
-            repository("$forbiddenRepositoryUrl") {
-                exclude("**")
+    @Language("kotlin")
+    private fun createLibraryRepositoryConfiguration() = """
+    libraries {
+        repository("$filteredRepositoryUrl", "user", "password") {
+            include(group = "androidx.core")
+            include(group = "androidx.core.**")
+        }
+        repository("$fallbackRepositoryUrl") {
+            headerCredentials {
+                name = "X-Specific-Header"
+                value = "value"
             }
-            repository("$repositoryUrl") {
-                headerCredentials {
-                    name = "X-Plugin-Header"
-                    value = "value"
+        }
+    }   
+    """.trimIndent()
+
+    @Language("kotlin")
+    private fun createExtensionCode() = """
+    caupain {
+        repositories {
+            plugins {
+                repository("$forbiddenRepositoryUrl") {
+                    exclude("**")
+                }
+                repository("$pluginRepositoryUrl") {
+                    headerCredentials {
+                        name = "X-Plugin-Header"
+                        value = "value"
+                    }
                 }
             }
+            ${if (configureLibraryRepositories) createLibraryRepositoryConfiguration() else ""}
         }
+        outputs {
+            console {
+                enabled.set(true)
+            }
+            html {
+                enabled.set(true)
+                outputFile.set(File("${htmlOutputFile.canonicalPath}"))
+            }
+            markdown {
+                enabled.set(true)
+                outputFile.set(File("${markdownOutputFile.canonicalPath}"))
+            }
+            json {
+                enabled.set(true)
+                outputFile.set(File("${jsonOutputFile.canonicalPath}"))
+            }
+        }
+        showVersionReferences.set(true)
+        checkIgnored.set(true)
+        addFilter(group = "com.example", name = "filtered", versionFilter = "1.0.0")
+        $supplementaryCaupainConfiguration
     }
-    outputs {
-        console {
-            enabled.set(true)
-        }
-        html {
-            enabled.set(true)
-            outputFile.set(File("${htmlOutputFile.canonicalPath}"))
-        }
-        markdown {
-            enabled.set(true)
-            outputFile.set(File("${markdownOutputFile.canonicalPath}"))
-        }
-        json {
-            enabled.set(true)
-            outputFile.set(File("${jsonOutputFile.canonicalPath}"))
-        }
-    }
-    showVersionReferences.set(true)
-    checkIgnored.set(true)
-    addFilter(group = "com.example", name = "filtered", versionFilter = "1.0.0")
-    $supplementaryConfiguration
-}
 """.trimIndent()
+}
+
+internal fun createVersionCatalog(updated: Boolean = false) = """
+    [versions]
+    agp = "8.9.1"
+    kotlin = "${if (updated) "2.1.20" else "2.0.21"}"
+    coreKtx = "${if (updated) "1.17.0" else "1.16.0"}"
+    activityKtx = "1.10.1"
+    ignored = "1.0.0" #ignoreUpdates
+    
+    [libraries]
+    androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+    androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+    ignored = { group = "com.example", name = "ignored", version.ref = "ignored" }
+    
+    [plugins]
+    android-application = { id = "com.android.application", version.ref = "agp" }
+    kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }    
+    """.trimIndent()
+
+private val FUNCTIONAL_TEST_REPO: String
+    get() = "maven(url = \"${AbstractGradleProject.FUNC_TEST_REPO.replace("\\", "\\\\")}\")"
 
 private val KOTLIN_SOURCE = """
 package com.deezer.fakeproject

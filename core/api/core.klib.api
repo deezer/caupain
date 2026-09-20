@@ -429,6 +429,8 @@ sealed interface com.deezer.caupain.model/Dependency { // com.deezer.caupain.mod
     abstract val version // com.deezer.caupain.model/Dependency.version|{}version[0]
         abstract fun <get-version>(): com.deezer.caupain.model.versionCatalog/Version? // com.deezer.caupain.model/Dependency.version.<get-version>|<get-version>(){}[0]
 
+    abstract fun resolved(kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.model/Dependency // com.deezer.caupain.model/Dependency.resolved|resolved(kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
+
     final class Library : com.deezer.caupain.model/Dependency { // com.deezer.caupain.model/Dependency.Library|null[0]
         constructor <init>(kotlin/String? = ..., kotlin/String? = ..., com.deezer.caupain.model.versionCatalog/Version? = ...) // com.deezer.caupain.model/Dependency.Library.<init>|<init>(kotlin.String?;kotlin.String?;com.deezer.caupain.model.versionCatalog.Version?){}[0]
 
@@ -443,6 +445,7 @@ sealed interface com.deezer.caupain.model/Dependency { // com.deezer.caupain.mod
 
         final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/Dependency.Library.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.deezer.caupain.model/Dependency.Library.hashCode|hashCode(){}[0]
+        final fun resolved(kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.model/Dependency // com.deezer.caupain.model/Dependency.Library.resolved|resolved(kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
         final fun toString(): kotlin/String // com.deezer.caupain.model/Dependency.Library.toString|toString(){}[0]
 
         final object Companion { // com.deezer.caupain.model/Dependency.Library.Companion|null[0]
@@ -462,6 +465,7 @@ sealed interface com.deezer.caupain.model/Dependency { // com.deezer.caupain.mod
 
         final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.model/Dependency.Plugin.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // com.deezer.caupain.model/Dependency.Plugin.hashCode|hashCode(){}[0]
+        final fun resolved(kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.model/Dependency // com.deezer.caupain.model/Dependency.Plugin.resolved|resolved(kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
         final fun toString(): kotlin/String // com.deezer.caupain.model/Dependency.Plugin.toString|toString(){}[0]
 
         final object Companion { // com.deezer.caupain.model/Dependency.Plugin.Companion|null[0]
@@ -1210,6 +1214,8 @@ final object com.deezer.caupain.model.gradle/GradleConstants { // com.deezer.cau
 }
 
 final object com.deezer.caupain.model/DefaultRepositories { // com.deezer.caupain.model/DefaultRepositories|null[0]
+    final val all // com.deezer.caupain.model/DefaultRepositories.all|{}all[0]
+        final fun <get-all>(): kotlin.collections/List<com.deezer.caupain.model/Repository> // com.deezer.caupain.model/DefaultRepositories.all.<get-all>|<get-all>(){}[0]
     final val google // com.deezer.caupain.model/DefaultRepositories.google|{}google[0]
         final fun <get-google>(): com.deezer.caupain.model/Repository // com.deezer.caupain.model/DefaultRepositories.google.<get-google>|<get-google>(){}[0]
     final val gradlePlugins // com.deezer.caupain.model/DefaultRepositories.gradlePlugins|{}gradlePlugins[0]
