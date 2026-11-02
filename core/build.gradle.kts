@@ -71,6 +71,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlinx.serialization.xml)
                 implementation(libs.kotlinx.serialization.toml)
+                implementation(libs.kotlinx.serialization.json.io)
                 api(libs.okio)
                 implementation(libs.bundles.ktor)
                 api(libs.ktor.client.core)
