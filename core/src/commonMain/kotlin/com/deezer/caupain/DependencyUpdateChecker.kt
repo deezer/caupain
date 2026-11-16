@@ -392,6 +392,7 @@ internal class DefaultDependencyUpdateChecker(
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
                 }
             },
+            upToDateDependencies = updatedVersionsResult.upToDateDependencies,
             ignoredUpdateInfos = updatedVersionsResult
                 .ignoredVersions
                 .sortedBy { it.dependencyId },
@@ -409,6 +410,7 @@ internal class DefaultDependencyUpdateChecker(
         var gradleUpdateInfo: GradleUpdateInfo? = null
         var selfUpdateInfo: SelfUpdateInfo? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
+        val upToDateDependencies = mutableSetOf<Dependency>()
         val ignoredVersions = mutableListOf<UpdateInfo>()
         var nbDependencies = parseResults.sumOf { it.versionCatalog.nbDependencies }
         if (checkGradleUpdate) nbDependencies++
@@ -421,6 +423,7 @@ internal class DefaultDependencyUpdateChecker(
                         .dependencies
                         .map { (key, dep) ->
                             async {
+                                var hasUpdate = false
                                 val isExcluded = !configuration.isIncluded(key, dep)
                                         || info.ignores.isExcluded(key, dep)
                                 if (!isExcluded || configuration.checkIgnored) {
@@ -430,6 +433,7 @@ internal class DefaultDependencyUpdateChecker(
                                     )
                                     if (updatedVersion != null) {
                                         logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
+                                        hasUpdate = true
                                         updatedVersionsMutex.withLock {
                                             val result = DependencyUpdateResult(
                                                 type = dep.type,
@@ -452,6 +456,11 @@ internal class DefaultDependencyUpdateChecker(
                                                 updatedVersions.add(result)
                                             }
                                         }
+                                    }
+                                }
+                                if (configuration.reportUpToDate && !hasUpdate) {
+                                    updatedVersionsMutex.withLock {
+                                        upToDateDependencies.add(dep)
                                     }
                                 }
                                 val percentage = ++completed * 50 / nbDependencies
@@ -498,6 +507,7 @@ internal class DefaultDependencyUpdateChecker(
         }
         return UpdateVersionResult(
             updatedVersions = updatedVersions,
+            upToDateDependencies = upToDateDependencies.toList(),
             ignoredVersions = ignoredVersions,
             gradleUpdateInfo = gradleUpdateInfo,
             selfUpdateInfo = selfUpdateInfo
@@ -601,6 +611,7 @@ internal class DefaultDependencyUpdateChecker(
 
     private data class UpdateVersionResult(
         val updatedVersions: List<DependencyUpdateResult>,
+        val upToDateDependencies: List<Dependency>,
         val gradleUpdateInfo: GradleUpdateInfo?,
         val selfUpdateInfo: SelfUpdateInfo?,
         val ignoredVersions: List<UpdateInfo>

@@ -206,6 +206,7 @@ class DependencyUpdateCheckerTest {
                     updatedVersion = GradleVersion("9.6.1"),
                     checksum = "9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14"
                 ),
+                upToDateDependencies = emptyList(),
                 updateInfos = mapOf(
                     UpdateInfo.Type.LIBRARY to listOf(
                         UpdateInfo(
@@ -351,6 +352,42 @@ class DependencyUpdateCheckerTest {
                 UpdateInfo.Type.PLUGIN to emptyList(),
             ),
             actual = checker.checkForUpdates().updateInfos
+        )
+    }
+
+    @Test
+    fun testUpToDate() = runTest(testDispatcher) {
+        val configuration = Configuration(
+            repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
+            pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
+            versionCatalogPaths = listOf(BASE_VERSION_CATALOG_PATH),
+            reportUpToDate = true,
+        )
+        checker = DefaultDependencyUpdateChecker(
+            configuration = configuration,
+            fileSystem = fileSystem,
+            httpClient = HttpClient(engine) {
+                install(ContentNegotiation) {
+                    json(DefaultJson)
+                    serialization(ContentType.Any, DefaultXml)
+                }
+            },
+            ioDispatcher = testDispatcher,
+            versionCatalogParser = FixedVersionCatalogParser(),
+            logger = Logger.EMPTY,
+            policies = DEFAULT_POLICIES,
+            gradleConfiguration = null,
+            selfUpdateResolver = FixedSelfUpdateResolver
+        )
+        assertEquals(
+            expected = listOf(
+                Dependency.Library(
+                    group = "org.codehaus.groovy",
+                    name = "groovy-other",
+                    version = "1.0".toSimpleVersion(),
+                )
+            ),
+            actual = checker.checkForUpdates().upToDateDependencies
         )
     }
 
@@ -607,8 +644,10 @@ class DependencyUpdateCheckerTest {
             ),
         )
 
+        private val BASE_VERSION_CATALOG_PATH = "libs.versions.toml".toPath()
+
         private val VERSION_CATALOGS = mapOf(
-            "libs.versions.toml".toPath() to VERSION_CATALOG_MAIN,
+            BASE_VERSION_CATALOG_PATH to VERSION_CATALOG_MAIN,
             "libs-other.versions.toml".toPath() to VERSION_CATALOG_OTHER
         )
 

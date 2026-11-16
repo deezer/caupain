@@ -184,6 +184,7 @@ class PluginTest {
                     ),
                     UpdateInfo.Type.PLUGIN to emptyList(),
                 ),
+                upToDateDependencies = emptyList(),
                 ignoredUpdateInfos = emptyList(),
                 versionCatalog = VERSION_CATALOG,
                 versionCatalogInfo = VersionCatalogInfo(),
