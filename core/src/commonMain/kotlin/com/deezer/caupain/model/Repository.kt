@@ -301,4 +301,9 @@ public object DefaultRepositories {
      * Represents the Gradle Plugin repository.
      */
     public val gradlePlugins: Repository = Repository("https://plugins.gradle.org/m2")
+
+    /**
+     * Returns a list of all default repositories.
+     */
+    public val all: List<Repository> = listOf(google, mavenCentral, gradlePlugins)
 }

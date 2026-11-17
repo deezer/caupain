@@ -24,7 +24,6 @@
 
 package com.deezer.caupain.plugin
 
-import com.deezer.caupain.model.Repository
 import com.deezer.caupain.plugin.internal.asOptional
 import com.deezer.caupain.plugin.internal.create
 import com.deezer.caupain.plugin.internal.register
@@ -32,20 +31,32 @@ import com.deezer.caupain.plugin.internal.setProperty
 import com.deezer.caupain.plugin.internal.toRepositories
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
+import org.gradle.api.internal.ConfigurationCacheDegradation
 import org.gradle.api.internal.GradleInternal
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.wrapper.Wrapper
 import org.gradle.util.GradleVersion
 import java.util.Properties
+import javax.inject.Inject
 import kotlin.jvm.optionals.getOrNull
 
 /**
  * Plugin to check for dependency updates.
  */
 @Suppress("UnstableApiUsage")
-open class DependencyUpdatePlugin : Plugin<Project> {
+open class DependencyUpdatePlugin @Inject constructor(
+    private val buildFeatures: BuildFeatures,
+    private val objects: ObjectFactory,
+    private val providers: ProviderFactory,
+) : Plugin<Project> {
 
     override fun apply(target: Project) {
         require(target == target.rootProject) {
@@ -55,63 +66,30 @@ open class DependencyUpdatePlugin : Plugin<Project> {
             "Caupain plugin requires Gradle 9.0 or higher"
         }
         val ext = target.extensions.create<DependenciesUpdateExtension>("caupain")
-        ext.initDefaultRepositories(target)
+        if (!buildFeatures.isolatedProjects.active.get()) {
+            ext.initDefaultRepositories(target)
+        }
         val versionCatalogFilesProvider = ext.versionCatalogFilesProvider(target)
 
-        val checkTaskProvider =
-            target.tasks.register<DependenciesUpdateTask>("checkDependencyUpdates") {
-                group = "verification"
-                description = "Check for dependency updates"
-                notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
-                versionCatalogFiles.convention(versionCatalogFilesProvider)
-                excludedKeys.convention(ext.excludedKeys)
-                excludedLibraries.convention(ext.excludedLibraries)
-                excludedPluginIds.convention(ext.excludedPluginIds)
-                includedKeys.convention(ext.includedKeys)
-                includedLibraries.convention(ext.includedLibraries)
-                includedPluginIds.convention(ext.includedPluginIds)
-                filters.convention(ext.filters)
-                formatterOutputs.convention(ext.outputsHandler.outputs)
-                showVersionReferences.convention(ext.showVersionReferences)
-                repositories.convention(ext.repositories.libraries)
-                pluginRepositories.convention(ext.repositories.plugins)
-                useCache.convention(ext.useCache)
-                onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
-                gradleStabilityLevel.convention(ext.gradleStabilityLevel)
-                checkIgnored.convention(ext.checkIgnored)
-                searchReleaseNote.convention(ext.searchReleaseNote)
-                githubToken.convention(ext.githubToken)
-                verifyExistence.convention(ext.verifyExistence)
-                doNotCheckSelfUpdates.convention(ext.doNotCheckSelfUpdates)
-            }
+        val checkTaskProvider = target.tasks.registerCheckTask(
+            ext = ext,
+            versionCatalogFilesProvider = versionCatalogFilesProvider,
+        )
         val wrapperUpdateTask = target.tasks.register<Wrapper>("updateWrapper") {
             notCompatibleWithConfigurationCache(
                 "Use specific condition to launch and changes parameter in startup"
             )
+            ConfigurationCacheDegradation.requireDegradation(
+                this,
+                "Use specific condition to launch and changes parameter in startup"
+            )
         }
-        val replaceTask =
-            target.tasks.register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
-                group = "verification"
-                description = "Replace dependency updates in-line with their latest versions"
-                versionCatalogFile.convention(
-                    versionCatalogFilesProvider.map { files ->
-                        files.firstNotNullOf { it as? RegularFile }
-                    }
-                )
-                serializedUpdates.fileProvider(
-                    checkTaskProvider.map { checkTask ->
-                        checkTask
-                            .outputs
-                            .files
-                            .filter { it.name == DependenciesUpdateTask.SERIALIZED_UPDATES_FILE_NAME }
-                            .singleFile
-                    }
-                )
-                wrapperArguments.set(
-                    target.layout.buildDirectory.file("caupain/wrapper-update.properties")
-                )
-                finalizedBy(wrapperUpdateTask)
-            }
+        val replaceTask = target.tasks.registerReplaceTask(
+            versionCatalogFilesProvider = versionCatalogFilesProvider,
+            checkTaskProvider = checkTaskProvider,
+            wrapperUpdateTaskProvider = wrapperUpdateTask,
+            layout = target.layout,
+        )
         val replaceTaskOutputProperties = replaceTask
             .flatMap { it.wrapperArguments }
             .filter { it.asFile.exists() }
@@ -138,36 +116,128 @@ open class DependencyUpdatePlugin : Plugin<Project> {
         }
     }
 
-    private fun DependenciesUpdateExtension.initDefaultRepositories(target: Project) {
-        val collectedRepositories = target.objects.setProperty<Repository>()
-        val collectedPluginRepositories = target.objects.setProperty<Repository>()
+    private fun TaskContainer.registerCheckTask(
+        ext: DependenciesUpdateExtension,
+        versionCatalogFilesProvider: Provider<Iterable<FileSystemLocation>>,
+    ): TaskProvider<DependenciesUpdateTask> {
+        return register<DependenciesUpdateTask>("checkDependencyUpdates") {
+            group = "verification"
+            description = "Check for dependency updates"
+            notCompatibleWithConfigurationCache("Uses Gradle internal API for repositories")
+            versionCatalogFiles.convention(versionCatalogFilesProvider)
+            excludedKeys.convention(ext.excludedKeys)
+            excludedLibraries.convention(ext.excludedLibraries)
+            excludedPluginIds.convention(ext.excludedPluginIds)
+            includedKeys.convention(ext.includedKeys)
+            includedLibraries.convention(ext.includedLibraries)
+            includedPluginIds.convention(ext.includedPluginIds)
+            filters.convention(ext.filters)
+            formatterOutputs.convention(ext.outputsHandler.outputs)
+            showVersionReferences.convention(ext.showVersionReferences)
+            repositories.convention(ext.repositories.libraries)
+            pluginRepositories.convention(ext.repositories.plugins)
+            useCache.convention(ext.useCache)
+            onlyCheckStaticVersions.convention(ext.onlyCheckStaticVersions)
+            gradleStabilityLevel.convention(ext.gradleStabilityLevel)
+            checkIgnored.convention(ext.checkIgnored)
+            searchReleaseNote.convention(ext.searchReleaseNote)
+            githubToken.convention(ext.githubToken)
+            verifyExistence.convention(ext.verifyExistence)
+            doNotCheckSelfUpdates.convention(ext.doNotCheckSelfUpdates)
+            if (buildFeatures.configurationCache.active.get()) {
+                ConfigurationCacheDegradation.requireDegradation(
+                    this,
+                    ext.repositories.isCompatibleWithConfigCache.map { isCompatible ->
+                        if (isCompatible) {
+                            null
+                        } else {
+                            "Configured repositories are not compatible with configuration cache"
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    private fun TaskContainer.registerReplaceTask(
+        versionCatalogFilesProvider: Provider<Iterable<FileSystemLocation>>,
+        checkTaskProvider: TaskProvider<DependenciesUpdateTask>,
+        wrapperUpdateTaskProvider: TaskProvider<Wrapper>,
+        layout: ProjectLayout,
+    ): TaskProvider<DependenciesReplaceTask> {
+        return register<DependenciesReplaceTask>("replaceOutdatedDependencies") {
+            group = "verification"
+            description = "Replace dependency updates in-line with their latest versions"
+            versionCatalogFile.convention(
+                versionCatalogFilesProvider.map { files ->
+                    files.firstNotNullOf { it as? RegularFile }
+                }
+            )
+            serializedUpdates.fileProvider(
+                checkTaskProvider.map { checkTask ->
+                    checkTask
+                        .outputs
+                        .files
+                        .filter { it.name == DependenciesUpdateTask.SERIALIZED_UPDATES_FILE_NAME }
+                        .singleFile
+                }
+            )
+            wrapperArguments.set(
+                layout.buildDirectory.file("caupain/wrapper-update.properties")
+            )
+            finalizedBy(wrapperUpdateTaskProvider)
+        }
+    }
+
+    private fun DependenciesUpdateExtension.initDefaultRepositories(rootProject: Project) {
+        val defaultLibraryRepositories = objects.setProperty<RepositoryInfo>()
+        val defaultPluginRepositories = objects.setProperty<RepositoryInfo>()
 
         // First, collect repositories from settings
-        val settings = (target.gradle as GradleInternal).settings
-        collectedRepositories.addAll(
-            settings.dependencyResolutionManagement.repositories.toRepositories(target.objects)
+        val settings = (rootProject.gradle as GradleInternal).settings
+        defaultLibraryRepositories.addAll(
+            settings
+                .dependencyResolutionManagement
+                .repositories
+                .toRepositories(
+                    objects = objects,
+                    providers = providers,
+                )
         )
-        collectedPluginRepositories.addAll(
-            settings.pluginManagement.repositories.toRepositories(target.objects)
+        defaultPluginRepositories.addAll(
+            settings
+                .pluginManagement
+                .repositories
+                .toRepositories(
+                    objects = objects,
+                    providers = providers,
+                )
         )
         // Then go into projects to gather specific repositories
-        target.allprojects { project ->
+        rootProject.allprojects { project ->
             project.afterEvaluate { evaluatedProject ->
-                collectedPluginRepositories.addAll(
+                defaultPluginRepositories.addAll(
                     evaluatedProject
                         .buildscript
                         .repositories
-                        .toRepositories(target.objects)
+                        .toRepositories(
+                            objects = objects,
+                            providers = providers,
+                        )
                 )
-                collectedRepositories.addAll(
+                defaultLibraryRepositories.addAll(
                     evaluatedProject
                         .repositories
-                        .toRepositories(target.objects)
+                        .toRepositories(
+                            objects = objects,
+                            providers = providers,
+                        )
                 )
             }
         }
 
-        repositories.setupConvention(collectedRepositories, collectedPluginRepositories)
+        repositories.libraryRepositoryInfos.convention(defaultLibraryRepositories)
+        repositories.pluginRepositoryInfos.convention(defaultPluginRepositories)
     }
 
     private fun DependenciesUpdateExtension.versionCatalogFilesProvider(project: Project): Provider<Iterable<FileSystemLocation>> {

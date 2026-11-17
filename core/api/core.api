@@ -350,6 +350,7 @@ public abstract interface class com/deezer/caupain/model/Credentials : java/io/S
 
 public final class com/deezer/caupain/model/DefaultRepositories {
 	public static final field INSTANCE Lcom/deezer/caupain/model/DefaultRepositories;
+	public final fun getAll ()Ljava/util/List;
 	public final fun getGoogle ()Lcom/deezer/caupain/model/Repository;
 	public final fun getGradlePlugins ()Lcom/deezer/caupain/model/Repository;
 	public final fun getMavenCentral ()Lcom/deezer/caupain/model/Repository;
@@ -372,6 +373,7 @@ public final class com/deezer/caupain/model/DependenciesUpdateResult {
 public abstract interface class com/deezer/caupain/model/Dependency {
 	public abstract fun getModuleId ()Ljava/lang/String;
 	public abstract fun getVersion ()Lcom/deezer/caupain/model/versionCatalog/Version;
+	public abstract fun resolved (Ljava/util/Map;)Lcom/deezer/caupain/model/Dependency;
 }
 
 public final class com/deezer/caupain/model/Dependency$Library : com/deezer/caupain/model/Dependency {
@@ -385,6 +387,7 @@ public final class com/deezer/caupain/model/Dependency$Library : com/deezer/caup
 	public final fun getName ()Ljava/lang/String;
 	public fun getVersion ()Lcom/deezer/caupain/model/versionCatalog/Version;
 	public fun hashCode ()I
+	public fun resolved (Ljava/util/Map;)Lcom/deezer/caupain/model/Dependency;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -401,6 +404,7 @@ public final class com/deezer/caupain/model/Dependency$Plugin : com/deezer/caupa
 	public fun getModuleId ()Ljava/lang/String;
 	public fun getVersion ()Lcom/deezer/caupain/model/versionCatalog/Version;
 	public fun hashCode ()I
+	public fun resolved (Ljava/util/Map;)Lcom/deezer/caupain/model/Dependency;
 	public fun toString ()Ljava/lang/String;
 }
 

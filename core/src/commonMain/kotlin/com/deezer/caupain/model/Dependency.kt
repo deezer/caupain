@@ -58,6 +58,11 @@ public sealed interface Dependency {
     public val version: Version?
 
     /**
+     * Returns a new dependency with resolved versions from the given version references.
+     */
+    public fun resolved(versionReferences: Map<String, Version.Resolved>): Dependency
+
+    /**
      * Library dependency
      */
     @Serializable(LibrarySerializer::class)
@@ -97,6 +102,18 @@ public sealed interface Dependency {
         )
 
         internal constructor(library: String) : this(libraryParts = library.split(':'))
+
+        override fun resolved(versionReferences: Map<String, Version.Resolved>): Dependency {
+            return if (version is Version.Reference) {
+                Library(
+                    group = group,
+                    name = name,
+                    version = version.resolve(versionReferences)
+                )
+            } else {
+                this
+            }
+        }
     }
 
     /**
@@ -120,6 +137,17 @@ public sealed interface Dependency {
         )
 
         internal constructor(plugin: String) : this(plugin.split(':'))
+
+        override fun resolved(versionReferences: Map<String, Version.Resolved>): Dependency {
+            return if (version is Version.Reference) {
+                Plugin(
+                    id = id,
+                    version = version.resolve(versionReferences)
+                )
+            } else {
+                this
+            }
+        }
     }
 }
 
