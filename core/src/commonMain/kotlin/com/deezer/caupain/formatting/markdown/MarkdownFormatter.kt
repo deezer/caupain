@@ -229,8 +229,16 @@ public class MarkdownFormatter(
         append("## ")
         appendLine("Up-to-date")
         appendTable(
-            headers = listOf(ID_TITLE),
-            rows = dependencies.map { listOf(it.moduleId) }
+            headers = listOf(TYPE_TITLE, ID_TITLE),
+            rows = dependencies.map { dep ->
+                listOf(
+                    when (dep) {
+                        is Dependency.Library -> "Library"
+                        is Dependency.Plugin -> "Plugin"
+                    },
+                    dep.moduleId
+                )
+            }
         )
     }
 
@@ -271,6 +279,7 @@ public class MarkdownFormatter(
 
     private companion object {
         private const val ID_TITLE = "Id"
+        private const val TYPE_TITLE = "Type"
         private const val CURRENT_VERSION_TITLE = "Current version"
         private const val UPDATED_VERSION_TITLE = "Updated version"
         private const val LINE_BREAK = "<br/>"

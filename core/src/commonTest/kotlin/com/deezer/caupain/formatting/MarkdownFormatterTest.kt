@@ -76,8 +76,8 @@ Gradle current version is 1.0 whereas last version is 1.1. See [https://docs.gra
 | -------------------------- | --------------- | --------------- |
 | com.deezer:ignored-library | 1.0.0           | 2.0.0           |
 ## Up-to-date
-| Id                    |
-| --------------------- |
-| com.deezer:up-to-date |
-| com.deezer.up.to.date |
+| Type    | Id                    |
+| ------- | --------------------- |
+| Library | com.deezer:up-to-date |
+| Plugin  | com.deezer.up.to.date |
 """.trimIndent()

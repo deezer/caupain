@@ -161,8 +161,8 @@ class ConsoleFormatterTest {
                 ConsoleFormatter.IGNORED_TITLE,
                 "- com.deezer:ignored-library: 1.0.0 -> 2.0.0",
                 ConsoleFormatter.UP_TO_DATE_TITLE,
-                "- com.deezer:up-to-date",
-                "- com.deezer.up.to.date",
+                "- Library com.deezer:up-to-date",
+                "- Plugin com.deezer.up.to.date",
             ),
             printer.output
         )

@@ -131,8 +131,12 @@ public class ConsoleFormatter(
         if (dependencies.isNotEmpty()) {
             consolePrinter.print(title)
             for (dep in dependencies) {
+                val type = when (dep) {
+                    is Dependency.Library -> "Library"
+                    is Dependency.Plugin -> "Plugin"
+                }
                 consolePrinter.print(
-                    "- ${dep.moduleId}"
+                    "- $type ${dep.moduleId}"
                 )
             }
         }

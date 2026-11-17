@@ -303,10 +303,17 @@ public class HtmlFormatter(
         p {
             table {
                 tr {
+                    th { +TYPE_TITLE }
                     th { +ID_TITLE }
                 }
                 for (dep in dependencies) {
                     tr {
+                        td {
+                            +when (dep) {
+                                is Dependency.Library -> "Library"
+                                is Dependency.Plugin -> "Plugin"
+                            }
+                        }
                         td { +dep.moduleId }
                     }
                 }
@@ -316,6 +323,7 @@ public class HtmlFormatter(
 
     private companion object {
         private const val ID_TITLE = "Id"
+        private const val TYPE_TITLE = "Type"
         private const val CURRENT_VERSION_TITLE = "Current version"
         private const val UPDATED_VERSION_TITLE = "Updated version"
 
