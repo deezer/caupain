@@ -64,6 +64,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlinx.serialization.toml)
+                implementation(project.dependencies.platform(libs.kotlinx.serialization.bom))
             }
         }
     }

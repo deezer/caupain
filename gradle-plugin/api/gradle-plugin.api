@@ -38,6 +38,7 @@ public abstract class com/deezer/caupain/plugin/DependenciesUpdateExtension {
 	public final fun getIncludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public abstract fun getOutputsHandler ()Lcom/deezer/caupain/plugin/OutputsHandler;
+	public final fun getReportUpToDateDependencies ()Lorg/gradle/api/provider/Property;
 	public abstract fun getRepositories ()Lcom/deezer/caupain/plugin/RepositoryHandler;
 	public final fun getSearchReleaseNote ()Lorg/gradle/api/provider/Property;
 	public final fun getShowVersionReferences ()Lorg/gradle/api/provider/Property;
@@ -72,6 +73,7 @@ public class com/deezer/caupain/plugin/DependenciesUpdateTask : org/gradle/api/D
 	public final fun getIncludedPluginIds ()Lorg/gradle/api/provider/SetProperty;
 	public final fun getOnlyCheckStaticVersions ()Lorg/gradle/api/provider/Property;
 	public final fun getPluginRepositories ()Lorg/gradle/api/provider/ListProperty;
+	public final fun getReportUpToDateDependencies ()Lorg/gradle/api/provider/Property;
 	public final fun getRepositories ()Lorg/gradle/api/provider/ListProperty;
 	public final fun getSearchReleaseNote ()Lorg/gradle/api/provider/Property;
 	public final fun getUseCache ()Lorg/gradle/api/provider/Property;
