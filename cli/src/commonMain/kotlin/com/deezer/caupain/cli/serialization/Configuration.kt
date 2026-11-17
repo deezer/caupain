@@ -86,7 +86,7 @@ private data class ConfigurationImpl(
     override val searchReleaseNote: Boolean? = null,
     override val verifyExistence: Boolean? = null,
     override val doNotCheckSelfUpdates: Boolean? = null,
-    override val reportUpToDate: Boolean? = null,
+    override val reportUpToDateDependencies: Boolean? = null,
 ) : Configuration {
 
     override fun validate(logger: Logger) {

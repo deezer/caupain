@@ -515,7 +515,7 @@ class CaupainCLI(
                 ?: parsedConfiguration?.githubToken
                 ?: currentContext.readEnvvar("CAUPAIN_GITHUB_TOKEN"),
             verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true,
-            reportUpToDate = reportUpToDate || parsedConfiguration?.reportUpToDate == true,
+            reportUpToDateDependencies = reportUpToDate || parsedConfiguration?.reportUpToDateDependencies == true,
         )
     }
 

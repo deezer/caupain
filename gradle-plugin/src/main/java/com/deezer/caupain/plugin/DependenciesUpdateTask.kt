@@ -380,7 +380,7 @@ open class DependenciesUpdateTask @Inject constructor(
             searchReleaseNote = searchReleaseNote.getOrElse(false),
             githubToken = githubToken.orNull,
             verifyExistence = verifyExistence.get(),
-            reportUpToDate = reportUpToDateDependencies.get(),
+            reportUpToDateDependencies = reportUpToDateDependencies.get(),
         )
     }
 

@@ -61,7 +61,7 @@ import kotlin.jvm.JvmOverloads
  * @property githubToken The GitHub token to use for API requests, if any.
  * @property verifyExistence Whether to verify that .pom files exist in the repository before accepting a version
  * as valid.
- * @property reportUpToDate whether to include up-to-date dependencies in the final report
+ * @property reportUpToDateDependencies whether to include up-to-date dependencies in the final report
  */
 public interface Configuration : Serializable {
     public val repositories: List<Repository>
@@ -94,7 +94,7 @@ public interface Configuration : Serializable {
     public val searchReleaseNote: Boolean
     public val githubToken: String?
     public val verifyExistence: Boolean
-    public val reportUpToDate: Boolean
+    public val reportUpToDateDependencies: Boolean
 
     public companion object {
         private const val serialVersionUID = 1L
@@ -142,7 +142,7 @@ public interface Configuration : Serializable {
  * if the GitHub token is provided, otherwise false.
  * @param verifyExistence Whether to verify that .pom files exist in the repository before accepting a version
  * as valid.
- * @param reportUpToDate whether to include up-to-date dependencies in the final report
+ * @param reportUpToDateDependencies whether to include up-to-date dependencies in the final report
  */
 @Suppress("LongParameterList") // Needed to reflect parameters
 @JvmOverloads
@@ -168,7 +168,7 @@ public fun Configuration(
     githubToken: String? = null,
     searchReleaseNote: Boolean = githubToken != null,
     verifyExistence: Boolean = false,
-    reportUpToDate: Boolean = false,
+    reportUpToDateDependencies: Boolean = false,
 ): Configuration = ConfigurationImpl(
     repositories = repositories,
     pluginRepositories = pluginRepositories,
@@ -191,7 +191,7 @@ public fun Configuration(
     searchReleaseNote = searchReleaseNote,
     githubToken = githubToken,
     verifyExistence = verifyExistence,
-    reportUpToDate = reportUpToDate,
+    reportUpToDateDependencies = reportUpToDateDependencies,
 )
 
 internal data class ConfigurationImpl(
@@ -216,7 +216,7 @@ internal data class ConfigurationImpl(
     override val searchReleaseNote: Boolean = false,
     override val githubToken: String? = null,
     override val verifyExistence: Boolean = false,
-    override val reportUpToDate: Boolean = false,
+    override val reportUpToDateDependencies: Boolean = false,
 ) : Configuration {
     @Deprecated("Use versionCatalogPaths instead", ReplaceWith("versionCatalogPaths.first()"))
     override val versionCatalogPath: Path

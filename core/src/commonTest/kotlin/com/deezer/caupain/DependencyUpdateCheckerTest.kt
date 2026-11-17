@@ -361,7 +361,7 @@ class DependencyUpdateCheckerTest {
             repositories = listOf(SIGNED_REPOSITORY, BASE_REPOSITORY),
             pluginRepositories = listOf(BASE_REPOSITORY, SIGNED_REPOSITORY),
             versionCatalogPaths = listOf(BASE_VERSION_CATALOG_PATH),
-            reportUpToDate = true,
+            reportUpToDateDependencies = true,
         )
         checker = DefaultDependencyUpdateChecker(
             configuration = configuration,

@@ -460,7 +460,7 @@ internal class DefaultDependencyUpdateChecker(
                                         }
                                     }
                                 }
-                                if (configuration.reportUpToDate && !hasUpdate) {
+                                if (configuration.reportUpToDateDependencies && !hasUpdate) {
                                     updatedVersionsMutex.withLock {
                                         upToDateDependencies.add(dep)
                                     }

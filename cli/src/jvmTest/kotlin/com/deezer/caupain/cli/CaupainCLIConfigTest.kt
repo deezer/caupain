@@ -186,7 +186,7 @@ class CaupainCLIConfigTest {
                     githubToken = "githubTokenConf",
                     verifyExistence = true,
                     doNotCheckSelfUpdates = true,
-                    reportUpToDate = true,
+                    reportUpToDateDependencies = true,
                 )
             }
             when {
@@ -353,7 +353,7 @@ class CaupainCLIConfigTest {
                     actual = conf.githubToken
                 )
                 assertEquals(hasConf, conf.verifyExistence)
-                assertEquals(hasConf || hasOptionsOverride, conf.reportUpToDate)
+                assertEquals(hasConf || hasOptionsOverride, conf.reportUpToDateDependencies)
             }.test(
                 when {
                     hasOptionsOverride -> listOf(
@@ -450,7 +450,7 @@ private data class TestConfiguration(
     override val githubToken: String?,
     override val verifyExistence: Boolean?,
     override val doNotCheckSelfUpdates: Boolean?,
-    override val reportUpToDate: Boolean?,
+    override val reportUpToDateDependencies: Boolean?,
 ) : ParsedConfiguration {
 
     var didValidate = false
