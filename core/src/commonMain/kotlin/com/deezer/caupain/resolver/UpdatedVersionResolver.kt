@@ -73,7 +73,15 @@ public interface UpdatedVersionResolver {
         /**
          * Indicates that there is no updated version
          */
-        public data object UpToDate : Result
+        @Poko
+        public class UpToDate(
+            public val currentVersion: Version.Resolved
+        ) : Result
+
+        /**
+         * Indicates that the dependency check has been ignored
+         */
+        public data object Ignored : Result
 
         /**
          * Indicates that an update has been found
@@ -170,7 +178,7 @@ internal class DefaultUpdatedVersionResolver(
         val resolvedDependency = dependency.resolved(versionReferences)
         val currentVersion = resolvedDependency.version as? Version.Resolved
         if (currentVersion == null || onlyCheckStaticVersions && !currentVersion.isStatic) {
-            return UpdatedVersionResolver.Result.UpToDate
+            return UpdatedVersionResolver.Result.Ignored
         }
         val repositories = when (dependency) {
             is Dependency.Library -> repositories
@@ -191,7 +199,7 @@ internal class DefaultUpdatedVersionResolver(
                     )
                     .map { updatedVersion ->
                         if (updatedVersion == null) {
-                            UpdatedVersionResolver.Result.UpToDate
+                            UpdatedVersionResolver.Result.UpToDate(currentVersion)
                         } else {
                             UpdatedVersionResolver.Result.Updated(
                                 currentVersion = currentVersion,

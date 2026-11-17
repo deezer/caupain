@@ -1167,9 +1167,17 @@ public final class com/deezer/caupain/resolver/UpdatedVersionResolver$Result$Fai
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class com/deezer/caupain/resolver/UpdatedVersionResolver$Result$UpToDate : com/deezer/caupain/resolver/UpdatedVersionResolver$Result {
-	public static final field INSTANCE Lcom/deezer/caupain/resolver/UpdatedVersionResolver$Result$UpToDate;
+public final class com/deezer/caupain/resolver/UpdatedVersionResolver$Result$Ignored : com/deezer/caupain/resolver/UpdatedVersionResolver$Result {
+	public static final field INSTANCE Lcom/deezer/caupain/resolver/UpdatedVersionResolver$Result$Ignored;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/deezer/caupain/resolver/UpdatedVersionResolver$Result$UpToDate : com/deezer/caupain/resolver/UpdatedVersionResolver$Result {
+	public fun <init> (Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentVersion ()Lcom/deezer/caupain/model/versionCatalog/Version$Resolved;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

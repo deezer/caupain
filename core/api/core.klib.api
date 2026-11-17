@@ -141,6 +141,17 @@ abstract interface com.deezer.caupain.resolver/UpdatedVersionResolver { // com.d
     abstract suspend fun getUpdatedVersion(com.deezer.caupain.model/Dependency, kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.resolver/UpdatedVersionResolver.Result // com.deezer.caupain.resolver/UpdatedVersionResolver.getUpdatedVersion|getUpdatedVersion(com.deezer.caupain.model.Dependency;kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
 
     sealed interface Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result|null[0]
+        final class UpToDate : com.deezer.caupain.resolver/UpdatedVersionResolver.Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate|null[0]
+            constructor <init>(com.deezer.caupain.model.versionCatalog/Version.Resolved) // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.<init>|<init>(com.deezer.caupain.model.versionCatalog.Version.Resolved){}[0]
+
+            final val currentVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.currentVersion|{}currentVersion[0]
+                final fun <get-currentVersion>(): com.deezer.caupain.model.versionCatalog/Version.Resolved // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
+
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.toString|toString(){}[0]
+        }
+
         final class Updated : com.deezer.caupain.resolver/UpdatedVersionResolver.Result, kotlin/Comparable<com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated> { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated|null[0]
             constructor <init>(com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static, com.deezer.caupain.model/Repository) // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.<init>|<init>(com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static;com.deezer.caupain.model.Repository){}[0]
 
@@ -163,10 +174,10 @@ abstract interface com.deezer.caupain.resolver/UpdatedVersionResolver { // com.d
             final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Failure.toString|toString(){}[0]
         }
 
-        final object UpToDate : com.deezer.caupain.resolver/UpdatedVersionResolver.Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate|null[0]
-            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.equals|equals(kotlin.Any?){}[0]
-            final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.hashCode|hashCode(){}[0]
-            final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.toString|toString(){}[0]
+        final object Ignored : com.deezer.caupain.resolver/UpdatedVersionResolver.Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Ignored|null[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Ignored.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Ignored.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Ignored.toString|toString(){}[0]
         }
     }
 }

@@ -220,10 +220,27 @@ class UpdatedVersionResolverTest {
     }
 
     @Test
+    fun testPrefixIgnored() = runTest(testDispatcher) {
+        val resolver = createResolver()
+        assertEquals(
+            expected = UpdatedVersionResolver.Result.Ignored,
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "com.example:prefix",
+                    version = Version.Simple(
+                        GradleDependencyVersion("1.0+")
+                    )
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+    }
+
+    @Test
     fun testUpToDate() = runTest(testDispatcher) {
         val resolver = createResolver()
         assertEquals(
-            expected = UpdatedVersionResolver.Result.UpToDate,
+            expected = UpdatedVersionResolver.Result.UpToDate("1.0".toSimpleVersion()),
             actual = resolver.getUpdatedVersion(
                 dependency = Dependency.Library(
                     module = "com.example:up-to-date",
@@ -282,7 +299,7 @@ class UpdatedVersionResolverTest {
 
         // groovy-nio has 3.0.5 as the latest, but this version doesn't have pom
         assertEquals(
-            expected = UpdatedVersionResolver.Result.UpToDate,
+            expected = UpdatedVersionResolver.Result.UpToDate("3.0.5-alpha-1".toSimpleVersion()),
             actual = resolver.getUpdatedVersion(
                 dependency = Dependency.Library(
                     module = "org.codehaus.groovy:groovy-nio",

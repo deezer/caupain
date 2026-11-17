@@ -508,7 +508,8 @@ internal class DefaultDependencyUpdateChecker(
         updatedVersions: MutableList<DependencyUpdateResult>,
     ) {
         when (result) {
-            is UpdatedVersionResolver.Result.Failure -> Unit
+            is UpdatedVersionResolver.Result.Failure,
+            is UpdatedVersionResolver.Result.Ignored -> Unit
 
             is UpdatedVersionResolver.Result.UpToDate ->
                 if (configuration.reportUpToDateDependencies) {
