@@ -28,7 +28,7 @@
  *
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.tools.serialization
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -47,7 +47,7 @@ import net.peanuuutz.tomlkt.asTomlDecoder
 import kotlin.reflect.KClass
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-abstract class TomlContentPolymorphicSerializer<T : Any>(private val baseClass: KClass<T>) :
+public abstract class TomlContentPolymorphicSerializer<T : Any>(private val baseClass: KClass<T>) :
     KSerializer<T> {
 
     override val descriptor: SerialDescriptor =

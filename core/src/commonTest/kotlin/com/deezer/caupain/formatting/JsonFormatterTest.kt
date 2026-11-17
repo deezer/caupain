@@ -126,7 +126,6 @@ class JsonFormatterTest : FileFormatterTest() {
                         "type": "library",
                         "group": "com.deezer",
                         "name": "up-to-date",
-                        "module": null,
                         "version": "1.0"
                     },
                     {

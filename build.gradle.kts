@@ -85,4 +85,9 @@ subprojects {
             mustRunAfter(fixKMPMetadata)
         }
     }
+    tasks.matching {
+        it.name.startsWith("exportCommonSourceSetsMetadataLocationsFor")
+    }.configureEach {
+        mustRunAfter(fixKMPMetadata)
+    }
 }

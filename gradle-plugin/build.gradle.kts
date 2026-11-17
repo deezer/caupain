@@ -46,6 +46,7 @@ dependencies {
     functionalTestImplementation(libs.mockwebserver.junit)
     functionalTestImplementation(libs.kotlinx.coroutines.test)
     functionalTestImplementation(libs.test.parameter.injector)
+    functionalTestImplementation(projects.tools)
 }
 
 dependencyGuard {

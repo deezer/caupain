@@ -21,13 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:UseSerializers(LibraryTomlSerializer::class, PluginTomlSerializer::class)
 
 package com.deezer.caupain.model.versionCatalog
 
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.KeyedDependency
+import com.deezer.caupain.model.LibraryTomlSerializer
+import com.deezer.caupain.model.PluginTomlSerializer
 import dev.drewhamilton.poko.Poko
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 
 /**
  * Gradle version catalog.
