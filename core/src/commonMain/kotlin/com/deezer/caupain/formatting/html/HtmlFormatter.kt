@@ -305,6 +305,7 @@ public class HtmlFormatter(
                 tr {
                     th { +TYPE_TITLE }
                     th { +ID_TITLE }
+                    th { +CURRENT_VERSION_TITLE }
                 }
                 for (dep in dependencies) {
                     tr {
@@ -315,6 +316,7 @@ public class HtmlFormatter(
                             }
                         }
                         td { +dep.moduleId }
+                        td { +dep.version.toString() }
                     }
                 }
             }

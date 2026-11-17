@@ -181,6 +181,8 @@ class DependencyUpdateCheckerTest {
                 headers = headersOf(HttpHeaders.ContentType, "application/vnd.github+json")
             )
 
+            UP_TO_DATE_METADATA_URL -> scope.respondElement(UP_TO_DATE_METADATA)
+
             GRADLE_VERSION_URL -> scope.respond(
                 content = GradleVersionResolverTest.GRADLE_CURRENT,
                 headers = headersOf(HttpHeaders.ContentType, "application/json")
@@ -382,8 +384,8 @@ class DependencyUpdateCheckerTest {
         assertEquals(
             expected = listOf(
                 Dependency.Library(
-                    group = "org.codehaus.groovy",
-                    name = "groovy-other",
+                    group = "com.example",
+                    name = "up-to-date",
                     version = "1.0".toSimpleVersion(),
                 )
             ),
@@ -578,6 +580,15 @@ class DependencyUpdateCheckerTest {
             )
         )
 
+        private val UP_TO_DATE_METADATA = metadata(
+            latest = "1.0",
+            versions = listOf("0.9", "1.0")
+        )
+        private val UP_TO_DATE_METADATA_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("com", "example", "up-to-date", "maven-metadata.xml")
+            .build()
+
         private val GRADLE_VERSION_URL = URLBuilder(GradleConfiguration.DEFAULT_BASE_VERSION_URL)
             .appendPathSegments(GradleStabilityLevel.STABLE.urlSuffix)
             .build()
@@ -598,8 +609,12 @@ class DependencyUpdateCheckerTest {
                 ),
                 "groovy-other" to Dependency.Library(
                     module = "org.codehaus.groovy:groovy-other",
-                    version = Version.Simple(GradleDependencyVersion.Exact("1.0"))
+                    version = "1.0".toSimpleVersion()
                 ),
+                "up-to-date" to Dependency.Library(
+                    module = "com.example:up-to-date",
+                    version = "1.0".toSimpleVersion()
+                )
             ),
             plugins = mapOf(
                 "versions" to Dependency.Plugin(

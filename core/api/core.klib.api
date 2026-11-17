@@ -71,8 +71,8 @@ abstract interface com.deezer.caupain.model/Configuration : com.deezer.caupain/S
         abstract fun <get-policy>(): kotlin/String // com.deezer.caupain.model/Configuration.policy.<get-policy>|<get-policy>(){}[0]
     abstract val policyPluginsDir // com.deezer.caupain.model/Configuration.policyPluginsDir|{}policyPluginsDir[0]
         abstract fun <get-policyPluginsDir>(): okio/Path? // com.deezer.caupain.model/Configuration.policyPluginsDir.<get-policyPluginsDir>|<get-policyPluginsDir>(){}[0]
-    abstract val reportUpToDate // com.deezer.caupain.model/Configuration.reportUpToDate|{}reportUpToDate[0]
-        abstract fun <get-reportUpToDate>(): kotlin/Boolean // com.deezer.caupain.model/Configuration.reportUpToDate.<get-reportUpToDate>|<get-reportUpToDate>(){}[0]
+    abstract val reportUpToDateDependencies // com.deezer.caupain.model/Configuration.reportUpToDateDependencies|{}reportUpToDateDependencies[0]
+        abstract fun <get-reportUpToDateDependencies>(): kotlin/Boolean // com.deezer.caupain.model/Configuration.reportUpToDateDependencies.<get-reportUpToDateDependencies>|<get-reportUpToDateDependencies>(){}[0]
     abstract val repositories // com.deezer.caupain.model/Configuration.repositories|{}repositories[0]
         abstract fun <get-repositories>(): kotlin.collections/List<com.deezer.caupain.model/Repository> // com.deezer.caupain.model/Configuration.repositories.<get-repositories>|<get-repositories>(){}[0]
     abstract val searchReleaseNote // com.deezer.caupain.model/Configuration.searchReleaseNote|{}searchReleaseNote[0]
@@ -138,22 +138,36 @@ abstract interface com.deezer.caupain.resolver/SelfUpdateResolver { // com.deeze
 }
 
 abstract interface com.deezer.caupain.resolver/UpdatedVersionResolver { // com.deezer.caupain.resolver/UpdatedVersionResolver|null[0]
-    abstract suspend fun getUpdatedVersion(com.deezer.caupain.model/Dependency, kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.resolver/UpdatedVersionResolver.Result? // com.deezer.caupain.resolver/UpdatedVersionResolver.getUpdatedVersion|getUpdatedVersion(com.deezer.caupain.model.Dependency;kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
+    abstract suspend fun getUpdatedVersion(com.deezer.caupain.model/Dependency, kotlin.collections/Map<kotlin/String, com.deezer.caupain.model.versionCatalog/Version.Resolved>): com.deezer.caupain.resolver/UpdatedVersionResolver.Result // com.deezer.caupain.resolver/UpdatedVersionResolver.getUpdatedVersion|getUpdatedVersion(com.deezer.caupain.model.Dependency;kotlin.collections.Map<kotlin.String,com.deezer.caupain.model.versionCatalog.Version.Resolved>){}[0]
 
-    final class Result : kotlin/Comparable<com.deezer.caupain.resolver/UpdatedVersionResolver.Result> { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result|null[0]
-        constructor <init>(com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static, com.deezer.caupain.model/Repository) // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.<init>|<init>(com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static;com.deezer.caupain.model.Repository){}[0]
+    sealed interface Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result|null[0]
+        final class Updated : com.deezer.caupain.resolver/UpdatedVersionResolver.Result, kotlin/Comparable<com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated> { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated|null[0]
+            constructor <init>(com.deezer.caupain.model.versionCatalog/Version.Resolved, com.deezer.caupain.model/GradleDependencyVersion.Static, com.deezer.caupain.model/Repository) // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.<init>|<init>(com.deezer.caupain.model.versionCatalog.Version.Resolved;com.deezer.caupain.model.GradleDependencyVersion.Static;com.deezer.caupain.model.Repository){}[0]
 
-        final val currentVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.currentVersion|{}currentVersion[0]
-            final fun <get-currentVersion>(): com.deezer.caupain.model.versionCatalog/Version.Resolved // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
-        final val repository // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.repository|{}repository[0]
-            final fun <get-repository>(): com.deezer.caupain.model/Repository // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.repository.<get-repository>|<get-repository>(){}[0]
-        final val updatedVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.updatedVersion|{}updatedVersion[0]
-            final fun <get-updatedVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Static // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.updatedVersion.<get-updatedVersion>|<get-updatedVersion>(){}[0]
+            final val currentVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.currentVersion|{}currentVersion[0]
+                final fun <get-currentVersion>(): com.deezer.caupain.model.versionCatalog/Version.Resolved // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.currentVersion.<get-currentVersion>|<get-currentVersion>(){}[0]
+            final val repository // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.repository|{}repository[0]
+                final fun <get-repository>(): com.deezer.caupain.model/Repository // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.repository.<get-repository>|<get-repository>(){}[0]
+            final val updatedVersion // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.updatedVersion|{}updatedVersion[0]
+                final fun <get-updatedVersion>(): com.deezer.caupain.model/GradleDependencyVersion.Static // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.updatedVersion.<get-updatedVersion>|<get-updatedVersion>(){}[0]
 
-        final fun compareTo(com.deezer.caupain.resolver/UpdatedVersionResolver.Result): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.compareTo|compareTo(com.deezer.caupain.resolver.UpdatedVersionResolver.Result){}[0]
-        final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.equals|equals(kotlin.Any?){}[0]
-        final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.hashCode|hashCode(){}[0]
-        final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.toString|toString(){}[0]
+            final fun compareTo(com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.compareTo|compareTo(com.deezer.caupain.resolver.UpdatedVersionResolver.Result.Updated){}[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Updated.toString|toString(){}[0]
+        }
+
+        final object Failure : com.deezer.caupain.resolver/UpdatedVersionResolver.Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Failure|null[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Failure.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Failure.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.Failure.toString|toString(){}[0]
+        }
+
+        final object UpToDate : com.deezer.caupain.resolver/UpdatedVersionResolver.Result { // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate|null[0]
+            final fun equals(kotlin/Any?): kotlin/Boolean // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.equals|equals(kotlin.Any?){}[0]
+            final fun hashCode(): kotlin/Int // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.hashCode|hashCode(){}[0]
+            final fun toString(): kotlin/String // com.deezer.caupain.resolver/UpdatedVersionResolver.Result.UpToDate.toString|toString(){}[0]
+        }
     }
 }
 

@@ -136,7 +136,7 @@ public class ConsoleFormatter(
                     is Dependency.Plugin -> "Plugin"
                 }
                 consolePrinter.print(
-                    "- $type ${dep.moduleId}"
+                    "- $type ${dep.moduleId}: ${dep.version}"
                 )
             }
         }

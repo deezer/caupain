@@ -28,8 +28,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.SendCountExceedException
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import io.ktor.serialization.ContentConvertException
+import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
 
 // We do not use it as a scope, but HttpClient does implement scope
@@ -57,6 +59,32 @@ internal suspend inline fun <reified T, R> HttpClient.processRequest(
         default
     }
 }
+
+@Suppress(
+    // Is transformed to Result
+    "TooGenericExceptionCaught",
+    // We do not use it as a scope, but HttpClient does implement scope
+    "SuspendFunWithCoroutineScopeReceiver",
+)
+internal suspend inline fun <reified T, R> HttpClient.processRequest(
+    transform: (T) -> R,
+    executeRequest: suspend HttpClient.() -> HttpResponse
+): Result<R> {
+    return try {
+        val response = executeRequest()
+        if (response.status.isSuccess()) {
+            Result.success(transform(response.body<T>()))
+        } else {
+            Result.failure(HttpException(response.status))
+        }
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (exception: Throwable) {
+        Result.failure(exception)
+    }
+}
+
+internal class HttpException(status: HttpStatusCode) : Exception("HTTP exception with status $status")
 
 // We do not use it as a scope, but HttpClient does implement scope
 @Suppress("SuspendFunWithCoroutineScopeReceiver")

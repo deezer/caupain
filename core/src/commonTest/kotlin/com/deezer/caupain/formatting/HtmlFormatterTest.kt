@@ -208,14 +208,17 @@ private const val FULL_RESULT = """
         <tr>
           <th>Type</th>
           <th>Id</th>
+          <th>Current version</th>
         </tr>
         <tr>
           <td>Library</td>
           <td>com.deezer:up-to-date</td>
+          <td>1.0</td>
         </tr>
         <tr>
           <td>Plugin</td>
           <td>com.deezer.up.to.date</td>
+          <td>1.0</td>
         </tr>
       </table>
     </p>

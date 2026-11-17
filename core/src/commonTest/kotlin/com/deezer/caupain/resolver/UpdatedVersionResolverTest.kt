@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.DependencyUpdateCheckerTest
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.Logger
@@ -35,6 +36,7 @@ import com.deezer.caupain.model.maven.Versioning
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.policies.AlwaysAcceptPolicy
 import com.deezer.caupain.serialization.xml.DefaultXml
+import com.deezer.caupain.toSimpleVersion
 import dev.mokkery.MockMode
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
@@ -127,6 +129,7 @@ class UpdatedVersionResolverTest {
             GROOVY_CORE_POM_3_0_6_URL -> scope.respondElement(EMPTY_MAVEN_INFO)
             GROOVY_CORE_POM_3_0_5_URL -> scope.respondElement(EMPTY_MAVEN_INFO)
             GROOVY_NIO_POM_3_0_5_URL -> scope.respond("Not found", HttpStatusCode.NotFound)
+            UP_TO_DATE_METADATA_URL -> scope.respondElement(UP_TO_DATE_METADATA)
             else -> null
         }
     }
@@ -144,7 +147,7 @@ class UpdatedVersionResolverTest {
     fun testUpdate() = runTest(testDispatcher) {
         val resolver = createResolver()
         assertEquals(
-            expected = UpdatedVersionResolver.Result(
+            expected = UpdatedVersionResolver.Result.Updated(
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
                 updatedVersion = GradleDependencyVersion.Exact("3.0.6"),
                 repository = BASE_REPOSITORY
@@ -157,8 +160,9 @@ class UpdatedVersionResolverTest {
                 versionReferences = VERSION_REFERENCES
             )
         )
-        assertNull(
-            resolver.getUpdatedVersion(
+        assertEquals(
+            expected = UpdatedVersionResolver.Result.Failure,
+            actual = resolver.getUpdatedVersion(
                 dependency = Dependency.Library(
                     module = "org.codehaus.groovy:groovy-json",
                     version = Version.Reference("groovy")
@@ -167,7 +171,7 @@ class UpdatedVersionResolverTest {
             )
         )
         assertEquals(
-            expected = UpdatedVersionResolver.Result(
+            expected = UpdatedVersionResolver.Result.Updated(
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
                 updatedVersion = GradleDependencyVersion.Exact("3.0.5"),
                 repository = SIGNED_REPOSITORY
@@ -181,7 +185,7 @@ class UpdatedVersionResolverTest {
             )
         )
         assertEquals(
-            expected = UpdatedVersionResolver.Result(
+            expected = UpdatedVersionResolver.Result.Updated(
                 currentVersion = Version.Simple(GradleDependencyVersion.Snapshot("0.45.0-SNAPSHOT")),
                 updatedVersion = GradleDependencyVersion.Exact("1.0.0"),
                 repository = SIGNED_REPOSITORY
@@ -202,8 +206,9 @@ class UpdatedVersionResolverTest {
     fun testError() = runTest(testDispatcher) {
         val resolver = createResolver()
         hasError = true
-        assertNull(
-            resolver.getUpdatedVersion(
+        assertEquals(
+            expected = UpdatedVersionResolver.Result.Failure,
+            actual = resolver.getUpdatedVersion(
                 dependency = Dependency.Library(
                     module = "org.codehaus.groovy:groovy",
                     version = Version.Reference("groovy")
@@ -215,11 +220,26 @@ class UpdatedVersionResolverTest {
     }
 
     @Test
+    fun testUpToDate() = runTest(testDispatcher) {
+        val resolver = createResolver()
+        assertEquals(
+            expected = UpdatedVersionResolver.Result.UpToDate,
+            actual = resolver.getUpdatedVersion(
+                dependency = Dependency.Library(
+                    module = "com.example:up-to-date",
+                    version = "1.0".toSimpleVersion()
+                ),
+                versionReferences = VERSION_REFERENCES
+            )
+        )
+    }
+
+    @Test
     fun testTimeout() = runTest(testDispatcher) {
         val resolver = createResolver()
         delay = 2.seconds
         assertEquals(
-            expected = UpdatedVersionResolver.Result(
+            expected = UpdatedVersionResolver.Result.Updated(
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
                 updatedVersion = GradleDependencyVersion.Exact("3.0.5"),
                 repository = SIGNED_REPOSITORY
@@ -241,7 +261,7 @@ class UpdatedVersionResolverTest {
     fun testVerifyExistence_WhenPomExists() = runTest(testDispatcher) {
         val resolver = createResolver(verifyExistence = true)
         assertEquals(
-            expected = UpdatedVersionResolver.Result(
+            expected = UpdatedVersionResolver.Result.Updated(
                 currentVersion = Version.Simple(GradleDependencyVersion.Exact("3.0.5-alpha-1")),
                 updatedVersion = GradleDependencyVersion.Exact("3.0.6"),
                 repository = BASE_REPOSITORY
@@ -261,8 +281,9 @@ class UpdatedVersionResolverTest {
         val resolver = createResolver(verifyExistence = true)
 
         // groovy-nio has 3.0.5 as the latest, but this version doesn't have pom
-        assertNull(
-            resolver.getUpdatedVersion(
+        assertEquals(
+            expected = UpdatedVersionResolver.Result.UpToDate,
+            actual = resolver.getUpdatedVersion(
                 dependency = Dependency.Library(
                     module = "org.codehaus.groovy:groovy-nio",
                     version = Version.Reference("groovy")
@@ -362,6 +383,15 @@ class UpdatedVersionResolverTest {
         private val GROOVY_NIO_METADATA_URL = URLBuilder()
             .takeFrom(SIGNED_URL)
             .appendPathSegments("org", "codehaus", "groovy", "groovy-nio", "maven-metadata.xml")
+            .build()
+
+        private val UP_TO_DATE_METADATA = metadata(
+            latest = "1.0",
+            versions = listOf("0.9", "1.0")
+        )
+        private val UP_TO_DATE_METADATA_URL = URLBuilder()
+            .takeFrom(BASE_URL)
+            .appendPathSegments("com", "example", "up-to-date", "maven-metadata.xml")
             .build()
 
         private val VERSIONS_METADATA = metadata(

@@ -454,10 +454,12 @@ private val EXPECTED_RESULT = """
         <tr>
           <th>Type</th>
           <th>Id</th>
+          <th>Current version</th>
         </tr>
         <tr>
           <td>Library</td>
           <td>org.codehaus.groovy:groovy-other</td>
+          <td>1.0</td>
         </tr>
       </table>
     </p>

@@ -51,6 +51,7 @@ import com.deezer.caupain.model.isIncluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.policies.FilterPolicy
 import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
 import com.deezer.caupain.resolver.GithubReleaseNoteResolver
@@ -425,44 +426,24 @@ internal class DefaultDependencyUpdateChecker(
                         .dependencies
                         .map { (key, dep) ->
                             async {
-                                var hasUpdate = false
                                 val isExcluded = !configuration.isIncluded(key, dep)
                                         || info.ignores.isExcluded(key, dep)
                                 if (!isExcluded || configuration.checkIgnored) {
-                                    val updatedVersion = versionResolver.getUpdatedVersion(
+                                    val updateCheckResult = versionResolver.getUpdatedVersion(
                                         dep,
                                         versionCatalog.versions
                                     )
-                                    if (updatedVersion != null) {
-                                        logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
-                                        hasUpdate = true
-                                        updatedVersionsMutex.withLock {
-                                            val result = DependencyUpdateResult(
-                                                type = dep.type,
-                                                dependencyKey = key,
-                                                dependency = dep,
-                                                repository = updatedVersion.repository,
-                                                currentVersion = updatedVersion.currentVersion,
-                                                updatedVersion = updatedVersion.updatedVersion
-                                            )
-                                            if (isExcluded) {
-                                                ignoredVersions.add(
-                                                    toUpdateInfo(
-                                                        key = key,
-                                                        dependency = dep,
-                                                        currentVersion = updatedVersion.currentVersion,
-                                                        updatedVersion = updatedVersion.updatedVersion
-                                                    )
-                                                )
-                                            } else {
-                                                updatedVersions.add(result)
-                                            }
-                                        }
-                                    }
-                                }
-                                if (configuration.reportUpToDateDependencies && !hasUpdate) {
                                     updatedVersionsMutex.withLock {
-                                        upToDateDependencies.add(dep)
+                                        processUpdateCheckResult(
+                                            result = updateCheckResult,
+                                            dependency = dep,
+                                            key = key,
+                                            isExcluded = isExcluded,
+                                            versionCatalog = versionCatalog,
+                                            upToDateDependencies = upToDateDependencies,
+                                            ignoredVersions = ignoredVersions,
+                                            updatedVersions = updatedVersions,
+                                        )
                                     }
                                 }
                                 val percentage = ++completed * 50 / nbDependencies
@@ -514,6 +495,53 @@ internal class DefaultDependencyUpdateChecker(
             gradleUpdateInfo = gradleUpdateInfo,
             selfUpdateInfo = selfUpdateInfo
         )
+    }
+
+    private fun processUpdateCheckResult(
+        result: UpdatedVersionResolver.Result,
+        key: String,
+        dependency: Dependency,
+        isExcluded: Boolean,
+        versionCatalog: VersionCatalog,
+        upToDateDependencies: MutableSet<Dependency>,
+        ignoredVersions: MutableList<UpdateInfo>,
+        updatedVersions: MutableList<DependencyUpdateResult>,
+    ) {
+        when (result) {
+            is UpdatedVersionResolver.Result.Failure -> Unit
+
+            is UpdatedVersionResolver.Result.UpToDate ->
+                if (configuration.reportUpToDateDependencies) {
+                    upToDateDependencies.add(
+                        dependency.resolved(versionCatalog.versions)
+                    )
+                }
+
+            is UpdatedVersionResolver.Result.Updated -> {
+                logger.info("Found updated version ${result.updatedVersion} for ${dependency.moduleId}")
+                if (isExcluded) {
+                    ignoredVersions.add(
+                        toUpdateInfo(
+                            key = key,
+                            dependency = dependency,
+                            currentVersion = result.currentVersion,
+                            updatedVersion = result.updatedVersion
+                        )
+                    )
+                } else {
+                    updatedVersions.add(
+                        DependencyUpdateResult(
+                            type = dependency.type,
+                            dependencyKey = key,
+                            dependency = dependency,
+                            repository = result.repository,
+                            currentVersion = result.currentVersion,
+                            updatedVersion = result.updatedVersion
+                        )
+                    )
+                }
+            }
+        }
     }
 
     private suspend fun checkUpdateInfo(updatedVersions: List<DependencyUpdateResult>): Map<UpdateInfo.Type, List<UpdateInfo>> {

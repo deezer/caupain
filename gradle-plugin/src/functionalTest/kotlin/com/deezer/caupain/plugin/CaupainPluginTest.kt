@@ -103,6 +103,7 @@ class CaupainPluginTest {
                     "/maven-plugins/org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.20/kotlin-gradle-plugin-2.1.20.pom" -> ANDROID_KOTLIN_PLUGIN_REAL_POM
                     "/maven-plugins/com/deezer/caupain/com.deezer.caupain.gradle.plugin/maven-metadata.xml" -> CAUPAIN_METADATA
                     "/maven/com/example/ignored/maven-metadata.xml" -> IGNORED_METADATA
+                    "/maven/com/example/up-to-date/maven-metadata.xml" -> UP_TO_DATE_METADATA
                     "/gradle/versions/current" -> return MockResponse(
                         code = 200,
                         body = GRADLE_VERSION_JSON,
@@ -176,7 +177,7 @@ class CaupainPluginTest {
             expected = expectedJsonResult(gradleVersion.version, pluginVersion),
             actual = jsonOutputFile.readText().trim()
         )
-        assertEquals(10, mockWebserverRule.server.requestCount)
+        assertEquals(11, mockWebserverRule.server.requestCount)
     }
 
     @Test
@@ -255,7 +256,7 @@ class CaupainPluginTest {
             expected = expectedJsonResultWithoutSelfUpdate(gradleVersion.version),
             actual = jsonOutputFile.readText().trim()
         )
-        assertEquals(9, mockWebserverRule.server.requestCount)
+        assertEquals(10, mockWebserverRule.server.requestCount)
     }
 
     @Test
@@ -1046,6 +1047,24 @@ private val IGNORED_METADATA = """
 """.trimIndent()
 
 @Language("XML")
+private val UP_TO_DATE_METADATA = """
+<?xml version='1.0' encoding='UTF-8'?>
+<metadata>
+  <groupId>com.example</groupId>
+  <artifactId>up-to-date</artifactId>
+  <versioning>
+    <latest>1.0.0</latest>
+    <release>1.0.0</release>
+    <versions>
+      <version>1.0.0</version>
+      <version>0.9.0</version>
+    </versions>
+    <lastUpdated>20250409170101</lastUpdated>
+  </versioning>
+</metadata>
+""".trimIndent()
+
+@Language("XML")
 private val CAUPAIN_METADATA = """
     <?xml version='1.0' encoding='US-ASCII'?>
     <metadata>
@@ -1203,14 +1222,12 @@ private fun expectedHtmlResult(
         <tr>
           <th>Type</th>
           <th>Id</th>
+          <th>Current version</th>
         </tr>
         <tr>
           <td>Library</td>
-          <td>androidx.activity:activity-ktx</td>
-        </tr>
-        <tr>
-          <td>Plugin</td>
-          <td>com.android.application</td>
+          <td>com.example:up-to-date</td>
+          <td>1.0.0</td>
         </tr>
       </table>
     </p>
@@ -1235,8 +1252,7 @@ Plugin updates:
 Ignored updates:
 - com.example:ignored: 1.0.0 -> 1.1.0
 Up-to-date dependencies:
-- Library androidx.activity:activity-ktx
-- Plugin com.android.application
+- Library com.example:up-to-date: 1.0.0
 """.trimIndent().trim()
 
 @Language("Markdown")
@@ -1268,10 +1284,9 @@ Gradle current version is $gradleVersion whereas last version is 99.0.0. See [ht
 | ------------------- | --------------- | --------------- |
 | com.example:ignored | 1.0.0           | 1.1.0           |
 ## Up-to-date
-| Type    | Id                             |
-| ------- | ------------------------------ |
-| Library | androidx.activity:activity-ktx |
-| Plugin  | com.android.application        |
+| Type    | Id                     | Current version |
+| ------- | ---------------------- | --------------- |
+| Library | com.example:up-to-date | 1.0.0           |
 """.trimIndent().trim()
 
 @Language("JSON")
@@ -1329,18 +1344,9 @@ private fun expectedJsonResult(
     "upToDateDependencies": [
         {
             "type": "library",
-            "group": "androidx.activity",
-            "name": "activity-ktx",
-            "version": {
-                "ref": "activityKtx"
-            }
-        },
-        {
-            "type": "plugin",
-            "id": "com.android.application",
-            "version": {
-                "ref": "agp"
-            }
+            "group": "com.example",
+            "name": "up-to-date",
+            "version": "1.0.0"
         }
     ],
     "versionReferenceInfo": [
@@ -1435,18 +1441,9 @@ private fun expectedJsonResultWithoutSelfUpdate(
     "upToDateDependencies": [
         {
             "type": "library",
-            "group": "androidx.activity",
-            "name": "activity-ktx",
-            "version": {
-                "ref": "activityKtx"
-            }
-        },
-        {
-            "type": "plugin",
-            "id": "com.android.application",
-            "version": {
-                "ref": "agp"
-            }
+            "group": "com.example",
+            "name": "up-to-date",
+            "version": "1.0.0"
         }
     ],
     "versionReferenceInfo": [

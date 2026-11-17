@@ -229,14 +229,15 @@ public class MarkdownFormatter(
         append("## ")
         appendLine("Up-to-date")
         appendTable(
-            headers = listOf(TYPE_TITLE, ID_TITLE),
+            headers = listOf(TYPE_TITLE, ID_TITLE, CURRENT_VERSION_TITLE),
             rows = dependencies.map { dep ->
                 listOf(
                     when (dep) {
                         is Dependency.Library -> "Library"
                         is Dependency.Plugin -> "Plugin"
                     },
-                    dep.moduleId
+                    dep.moduleId,
+                    dep.version.toString(),
                 )
             }
         )
