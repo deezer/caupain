@@ -26,6 +26,7 @@ package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.cli.model.DefaultRepository
 import com.deezer.caupain.cli.model.Repository
+import com.deezer.caupain.tools.serialization.TomlContentPolymorphicSerializer
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind

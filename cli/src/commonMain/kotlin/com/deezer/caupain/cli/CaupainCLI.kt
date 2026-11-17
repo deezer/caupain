@@ -257,6 +257,11 @@ class CaupainCLI(
         help = "Do not check for Caupain updates on GitHub",
     ).flag()
 
+    private val reportUpToDate by option(
+        "--report-up-to-date",
+        help = "Display up-to-date dependencies in the reports",
+    ).flag()
+
     private val timesource = TimeSource.Monotonic
 
     init {
@@ -509,7 +514,8 @@ class CaupainCLI(
             githubToken = releaseNoteOptions?.githubToken
                 ?: parsedConfiguration?.githubToken
                 ?: currentContext.readEnvvar("CAUPAIN_GITHUB_TOKEN"),
-            verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
+            verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true,
+            reportUpToDate = reportUpToDate || parsedConfiguration?.reportUpToDate == true,
         )
     }
 

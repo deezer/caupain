@@ -1197,6 +1197,23 @@ private fun expectedHtmlResult(
         </tr>
       </table>
     </p>
+    <h2>Up-to-date</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Type</th>
+          <th>Id</th>
+        </tr>
+        <tr>
+          <td>Library</td>
+          <td>androidx.activity:activity-ktx</td>
+        </tr>
+        <tr>
+          <td>Plugin</td>
+          <td>com.android.application</td>
+        </tr>
+      </table>
+    </p>
   </body>
 </html>    
 """.trimIndent().trim()
@@ -1214,7 +1231,12 @@ Versions updates:
 Library updates:
 - androidx.core:core-ktx: 1.16.0 -> 1.17.0
 Plugin updates:
-- org.jetbrains.kotlin.android: 2.0.21 -> 2.1.20    
+- org.jetbrains.kotlin.android: 2.0.21 -> 2.1.20
+Ignored updates:
+- com.example:ignored: 1.0.0 -> 1.1.0
+Up-to-date dependencies:
+- Library androidx.activity:activity-ktx
+- Plugin com.android.application
 """.trimIndent().trim()
 
 @Language("Markdown")
@@ -1245,6 +1267,11 @@ Gradle current version is $gradleVersion whereas last version is 99.0.0. See [ht
 | Id                  | Current version | Updated version |
 | ------------------- | --------------- | --------------- |
 | com.example:ignored | 1.0.0           | 1.1.0           |
+## Up-to-date
+| Type    | Id                             |
+| ------- | ------------------------------ |
+| Library | androidx.activity:activity-ktx |
+| Plugin  | com.android.application        |
 """.trimIndent().trim()
 
 @Language("JSON")
@@ -1297,6 +1324,23 @@ private fun expectedJsonResult(
             "releaseNoteUrl": null,
             "currentVersion": "1.0.0",
             "updatedVersion": "1.1.0"
+        }
+    ],
+    "upToDateDependencies": [
+        {
+            "type": "library",
+            "group": "androidx.activity",
+            "name": "activity-ktx",
+            "version": {
+                "ref": "activityKtx"
+            }
+        },
+        {
+            "type": "plugin",
+            "id": "com.android.application",
+            "version": {
+                "ref": "agp"
+            }
         }
     ],
     "versionReferenceInfo": [
@@ -1386,6 +1430,23 @@ private fun expectedJsonResultWithoutSelfUpdate(
             "releaseNoteUrl": null,
             "currentVersion": "1.0.0",
             "updatedVersion": "1.1.0"
+        }
+    ],
+    "upToDateDependencies": [
+        {
+            "type": "library",
+            "group": "androidx.activity",
+            "name": "activity-ktx",
+            "version": {
+                "ref": "activityKtx"
+            }
+        },
+        {
+            "type": "plugin",
+            "id": "com.android.application",
+            "version": {
+                "ref": "agp"
+            }
         }
     ],
     "versionReferenceInfo": [

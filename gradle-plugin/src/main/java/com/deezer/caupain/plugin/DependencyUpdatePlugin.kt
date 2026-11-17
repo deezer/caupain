@@ -144,6 +144,7 @@ open class DependencyUpdatePlugin @Inject constructor(
             githubToken.convention(ext.githubToken)
             verifyExistence.convention(ext.verifyExistence)
             doNotCheckSelfUpdates.convention(ext.doNotCheckSelfUpdates)
+            reportUpToDateDependencies.convention(ext.reportUpToDateDependencies)
             if (buildFeatures.configurationCache.active.get()) {
                 ConfigurationCacheDegradation.requireDegradation(
                     this,

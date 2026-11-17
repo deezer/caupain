@@ -270,7 +270,7 @@ internal class DefaultDependencyUpdateChecker(
     private val logger: Logger,
     private val selfUpdateResolver: SelfUpdateResolver?,
     policies: List<Policy>?,
-    private val gradleConfiguration: GradleConfiguration?,
+    gradleConfiguration: GradleConfiguration?,
 ) : DependencyUpdateChecker {
 
     override val policies = policies?.asSequence() ?: sequence {
@@ -392,7 +392,9 @@ internal class DefaultDependencyUpdateChecker(
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
                 }
             },
-            upToDateDependencies = updatedVersionsResult.upToDateDependencies,
+            upToDateDependencies = updatedVersionsResult
+                .upToDateDependencies
+                .sortedWith(UpToDateDependenciesComparator),
             ignoredUpdateInfos = updatedVersionsResult
                 .ignoredVersions
                 .sortedBy { it.dependencyId },
@@ -507,7 +509,7 @@ internal class DefaultDependencyUpdateChecker(
         }
         return UpdateVersionResult(
             updatedVersions = updatedVersions,
-            upToDateDependencies = upToDateDependencies.toList(),
+            upToDateDependencies = upToDateDependencies,
             ignoredVersions = ignoredVersions,
             gradleUpdateInfo = gradleUpdateInfo,
             selfUpdateInfo = selfUpdateInfo
@@ -611,7 +613,7 @@ internal class DefaultDependencyUpdateChecker(
 
     private data class UpdateVersionResult(
         val updatedVersions: List<DependencyUpdateResult>,
-        val upToDateDependencies: List<Dependency>,
+        val upToDateDependencies: Set<Dependency>,
         val gradleUpdateInfo: GradleUpdateInfo?,
         val selfUpdateInfo: SelfUpdateInfo?,
         val ignoredVersions: List<UpdateInfo>
@@ -679,3 +681,14 @@ public class UnavailableCacheException(public val cacheDir: Path, cause: Throwab
                 "permissions and try again, or disable the cache.",
         cause = cause,
     )
+
+private object UpToDateDependenciesComparator : Comparator<Dependency> {
+
+    override fun compare(a: Dependency, b: Dependency): Int {
+        return when (a) {
+            is Dependency.Library if b is Dependency.Plugin -> -1
+            is Dependency.Plugin if b is Dependency.Library -> 1
+            else -> a.moduleId.compareTo(b.moduleId)
+        }
+    }
+}
