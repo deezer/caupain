@@ -25,6 +25,7 @@
 package com.deezer.caupain.formatting.model
 
 import com.deezer.caupain.model.DependenciesUpdateResult
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
@@ -32,6 +33,7 @@ import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import dev.drewhamilton.poko.Poko
+import kotlinx.html.emptyMap
 import kotlinx.serialization.Serializable
 
 /**
@@ -43,6 +45,7 @@ public class Input(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
     public val ignoredUpdateInfos: List<UpdateInfo>,
+    public val upToDateDependencies: List<Dependency>,
     public val versionReferenceInfo: List<VersionReferenceInfo>?,
     public val selfUpdateInfo: SelfUpdateInfo?
 ) {
@@ -52,6 +55,7 @@ public class Input(
     public val isEmpty: Boolean
         get() = (updateInfos.isEmpty() || updateInfos.values.all { it.isEmpty() })
                 && ignoredUpdateInfos.isEmpty()
+                && upToDateDependencies.isEmpty()
                 && versionReferenceInfo.isNullOrEmpty()
                 && gradleUpdateInfo == null
                 && selfUpdateInfo == null
@@ -63,6 +67,7 @@ public class Input(
         gradleUpdateInfo = updateResult.gradleUpdateInfo,
         updateInfos = updateResult.updateInfos,
         ignoredUpdateInfos = updateResult.ignoredUpdateInfos,
+        upToDateDependencies = updateResult.upToDateDependencies,
         selfUpdateInfo = updateResult.selfUpdateInfo,
         versionReferenceInfo = if (showVersionReferences && updateResult.versionCatalog != null) {
             computeVersionReferenceInfos(updateResult.versionCatalog, updateResult.updateInfos)
@@ -70,6 +75,17 @@ public class Input(
             null
         }
     )
+
+    public companion object {
+        internal val EMPTY = Input(
+            gradleUpdateInfo = null,
+            updateInfos = emptyMap(),
+            ignoredUpdateInfos = emptyList(),
+            upToDateDependencies = emptyList(),
+            versionReferenceInfo = null,
+            selfUpdateInfo = null,
+        )
+    }
 }
 
 private data class SimpleDependencyInfo(val key: String, val type: Type) {

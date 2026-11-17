@@ -22,29 +22,29 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalSerializationApi::class)
-
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.Dependency.Library
 import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.versionCatalog.Version
 import dev.drewhamilton.poko.Poko
-import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonContentPolymorphicSerializer
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
+import net.peanuuutz.tomlkt.TomlDecoder
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
-import net.peanuuutz.tomlkt.asTomlDecoder
 
 /**
  * Describes a dependency from the version catalog.
  */
+@Serializable
 public sealed interface Dependency {
 
     /**
@@ -204,9 +204,9 @@ internal object LibrarySerializer : KSerializer<Library> {
 
     private val richSerializer = RichLibrary.serializer()
 
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        serialName = "com.deezer.dependencies.model.versionCatalog.Dependency",
-        kind = SerialKind.CONTEXTUAL
+    override val descriptor: SerialDescriptor = SerialDescriptor(
+        serialName = "library",
+        original = richSerializer.descriptor,
     )
 
     override fun serialize(encoder: Encoder, value: Library) {
@@ -214,16 +214,20 @@ internal object LibrarySerializer : KSerializer<Library> {
     }
 
     override fun deserialize(decoder: Decoder): Library {
-        val tomlDecoder = decoder.asTomlDecoder()
-        return when (val element = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> Library(library = element.content)
+        return if (decoder is TomlDecoder) {
+            // When parsing from version catalog, library can be just a string
+            when (val element = decoder.decodeTomlElement()) {
+                is TomlLiteral -> Library(library = element.content)
 
-            is TomlTable -> tomlDecoder
-                .toml
-                .decodeFromTomlElement(richSerializer, element)
-                .toLibrary()
+                is TomlTable -> decoder
+                    .toml
+                    .decodeFromTomlElement(richSerializer, element)
+                    .toLibrary()
 
-            else -> error("Unsupported TOML element type: ${element::class.simpleName}")
+                else -> error("Unsupported TOML element type: ${element::class.simpleName}")
+            }
+        } else {
+            decoder.decodeSerializableValue(richSerializer).toLibrary()
         }
     }
 }
@@ -248,9 +252,9 @@ internal object PluginSerializer : KSerializer<Plugin> {
 
     private val richSerializer = RichPlugin.serializer()
 
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        serialName = "com.deezer.dependencies.model.versionCatalog.Plugin",
-        kind = SerialKind.CONTEXTUAL
+    override val descriptor: SerialDescriptor = SerialDescriptor(
+        serialName = "plugin",
+        original = richSerializer.descriptor,
     )
 
     override fun serialize(encoder: Encoder, value: Plugin) {
@@ -258,16 +262,20 @@ internal object PluginSerializer : KSerializer<Plugin> {
     }
 
     override fun deserialize(decoder: Decoder): Plugin {
-        val tomlDecoder = decoder.asTomlDecoder()
-        return when (val element = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> Plugin(element.content)
+        return if (decoder is TomlDecoder) {
+            // When parsing from version catalog, plugin can be just a string
+            when (val element = decoder.decodeTomlElement()) {
+                is TomlLiteral -> Plugin(element.content)
 
-            is TomlTable -> tomlDecoder
-                .toml
-                .decodeFromTomlElement(richSerializer, element)
-                .toPlugin()
+                is TomlTable -> decoder
+                    .toml
+                    .decodeFromTomlElement(richSerializer, element)
+                    .toPlugin()
 
-            else -> error("Unsupported TOML element type: ${element::class.simpleName}")
+                else -> error("Unsupported TOML element type: ${element::class.simpleName}")
+            }
+        } else {
+            decoder.decodeSerializableValue(richSerializer).toPlugin()
         }
     }
 }

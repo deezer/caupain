@@ -29,6 +29,7 @@ import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.asAppendable
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
@@ -59,6 +60,7 @@ public class MarkdownFormatter(
                         appendDependencyUpdates(type, currentUpdates)
                     }
                     appendIgnoredUpdates(input.ignoredUpdateInfos)
+                    appendUpToDateDependencies(input.upToDateDependencies)
                 }
             }
     }
@@ -219,6 +221,16 @@ public class MarkdownFormatter(
                     update.updatedVersion.toString()
                 )
             }
+        )
+    }
+
+    private fun Appendable.appendUpToDateDependencies(dependencies: List<Dependency>) {
+        if (dependencies.isEmpty()) return
+        append("## ")
+        appendLine("Up-to-date")
+        appendTable(
+            headers = listOf(ID_TITLE),
+            rows = dependencies.map { listOf(it.moduleId) }
         )
     }
 

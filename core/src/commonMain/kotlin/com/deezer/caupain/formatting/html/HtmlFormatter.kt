@@ -29,6 +29,7 @@ import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.asAppendable
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
@@ -89,6 +90,7 @@ public class HtmlFormatter(
                             appendDependencyUpdates(type, currentUpdates)
                         }
                         appendIgnoredUpdates(input.ignoredUpdateInfos)
+                        appendUpToDateDependencies(input.upToDateDependencies)
                     }
                 }
             }
@@ -289,6 +291,23 @@ public class HtmlFormatter(
                         td { +update.dependencyId }
                         td { +update.currentVersion.toString() }
                         td { +update.updatedVersion.toString() }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun FlowContent.appendUpToDateDependencies(dependencies: List<Dependency>) {
+        if (dependencies.isEmpty()) return
+        h2 { +"Up-to-date" }
+        p {
+            table {
+                tr {
+                    th { +ID_TITLE }
+                }
+                for (dep in dependencies) {
+                    tr {
+                        td { +dep.moduleId }
                     }
                 }
             }

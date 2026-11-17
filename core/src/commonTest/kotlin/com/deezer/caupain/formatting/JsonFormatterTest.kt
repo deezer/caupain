@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.intellij.lang.annotations.Language
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class JsonFormatterTest : FileFormatterTest() {
 
     override val extension: String = "json"
@@ -52,6 +51,7 @@ class JsonFormatterTest : FileFormatterTest() {
                 "gradleUpdateInfo": null,
                 "updateInfos": {},
                 "ignoredUpdateInfos": [],
+                "upToDateDependencies": [],
                 "versionReferenceInfo": null,
                 "selfUpdateInfo": null
             }
@@ -66,6 +66,7 @@ class JsonFormatterTest : FileFormatterTest() {
                     "plugins": []
                 },
                 "ignoredUpdateInfos": [],
+                "upToDateDependencies": [],
                 "versionReferenceInfo": null,
                 "selfUpdateInfo": null
             }
@@ -118,6 +119,20 @@ class JsonFormatterTest : FileFormatterTest() {
                         "releaseNoteUrl": null,
                         "currentVersion": "1.0.0",
                         "updatedVersion": "2.0.0"
+                    }
+                ],
+                "upToDateDependencies": [
+                    {
+                        "type": "library",
+                        "group": "com.deezer",
+                        "name": "up-to-date",
+                        "module": null,
+                        "version": "1.0"
+                    },
+                    {
+                        "type": "plugin",
+                        "id": "com.deezer.up.to.date",
+                        "version": "1.0"
                     }
                 ],
                 "versionReferenceInfo": [
