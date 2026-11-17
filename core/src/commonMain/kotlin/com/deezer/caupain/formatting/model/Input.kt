@@ -33,7 +33,6 @@ import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import dev.drewhamilton.poko.Poko
-import kotlinx.html.emptyMap
 import kotlinx.serialization.Serializable
 
 /**

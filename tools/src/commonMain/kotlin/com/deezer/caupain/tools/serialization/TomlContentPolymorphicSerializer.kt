@@ -42,10 +42,22 @@ import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializerOrNull
+import net.peanuuutz.tomlkt.TomlConfigBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlDecoder
 import kotlin.reflect.KClass
 
+/**
+ * Base class for encoding and decoding subclasses of [baseClass] without a
+ * [classDiscriminator][TomlConfigBuilder.classDiscriminator].
+ *
+ * The standard process of polymorphic serialization requires an extra
+ * property to denote the underlying type, so that if two subclasses have the
+ * exact same properties, it is possible to create an instance with the correct
+ * type. However, this is not the common case. Normally different subclasses
+ * would just have different properties. In this situation, a special serializer
+ * is needed to support serialization without the discriminator.
+ */
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 public abstract class TomlContentPolymorphicSerializer<T : Any>(private val baseClass: KClass<T>) :
     KSerializer<T> {
