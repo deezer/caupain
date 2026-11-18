@@ -60,7 +60,10 @@ public class MarkdownFormatter(
                         appendDependencyUpdates(type, currentUpdates)
                     }
                     appendIgnoredUpdates(input.ignoredUpdateInfos)
-                    appendUpToDateDependencies(input.upToDateDependencies)
+                    appendUpToDateDependencies(
+                        dependencies = input.upToDateDependencies,
+                        gradleUpdateInfo = input.gradleUpdateInfo,
+                    )
                 }
             }
     }
@@ -103,7 +106,7 @@ public class MarkdownFormatter(
     }
 
     private fun Appendable.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
-        if (updateInfo == null) return
+        if (updateInfo?.hasUpdate != true) return
         appendLine("## Gradle")
         append("Gradle current version is ")
         append(updateInfo.currentVersion.version)
@@ -224,21 +227,29 @@ public class MarkdownFormatter(
         )
     }
 
-    private fun Appendable.appendUpToDateDependencies(dependencies: List<Dependency>) {
-        if (dependencies.isEmpty()) return
+    private fun Appendable.appendUpToDateDependencies(
+        dependencies: List<Dependency>,
+        gradleUpdateInfo: GradleUpdateInfo?,
+    ) {
+        if (dependencies.isEmpty() && gradleUpdateInfo?.hasUpdate != false) return
         append("## ")
         appendLine("Up-to-date")
         appendTable(
             headers = listOf(TYPE_TITLE, ID_TITLE, CURRENT_VERSION_TITLE),
-            rows = dependencies.map { dep ->
-                listOf(
-                    when (dep) {
-                        is Dependency.Library -> "Library"
-                        is Dependency.Plugin -> "Plugin"
-                    },
-                    dep.moduleId,
-                    dep.version.toString(),
-                )
+            rows = buildList {
+                dependencies.mapTo(this) { dep ->
+                    listOf(
+                        when (dep) {
+                            is Dependency.Library -> "Library"
+                            is Dependency.Plugin -> "Plugin"
+                        },
+                        dep.moduleId,
+                        dep.version.toString(),
+                    )
+                }
+                if (gradleUpdateInfo?.hasUpdate == false) {
+                    add(listOf("Gradle", "Wrapper", gradleUpdateInfo.currentVersion.version))
+                }
             }
         )
     }

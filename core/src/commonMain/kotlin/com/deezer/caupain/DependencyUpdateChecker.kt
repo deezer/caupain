@@ -328,6 +328,7 @@ internal class DefaultDependencyUpdateChecker(
             httpClient = httpClient,
             logger = logger,
             configuration = configuration,
+            reportUpToDate = this.configuration.reportUpToDateDependencies,
             stabilityLevel = this.configuration.gradleStabilityLevel,
             ioDispatcher = ioDispatcher
         )

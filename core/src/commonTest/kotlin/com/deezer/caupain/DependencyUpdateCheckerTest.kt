@@ -378,9 +378,10 @@ class DependencyUpdateCheckerTest {
             versionCatalogParser = FixedVersionCatalogParser(),
             logger = Logger.EMPTY,
             policies = DEFAULT_POLICIES,
-            gradleConfiguration = null,
+            gradleConfiguration = GradleConfiguration(version = "9.6.1"),
             selfUpdateResolver = FixedSelfUpdateResolver
         )
+        val result = checker.checkForUpdates()
         assertEquals(
             expected = listOf(
                 Dependency.Library(
@@ -389,7 +390,14 @@ class DependencyUpdateCheckerTest {
                     version = "1.0".toSimpleVersion(),
                 )
             ),
-            actual = checker.checkForUpdates().upToDateDependencies
+            actual = result.upToDateDependencies
+        )
+        assertEquals(
+            expected = GradleUpdateInfo(
+                currentVersion = GradleVersion("9.6.1"),
+                updatedVersion = GradleVersion("9.6.1"),
+            ),
+            actual = result.gradleUpdateInfo,
         )
     }
 

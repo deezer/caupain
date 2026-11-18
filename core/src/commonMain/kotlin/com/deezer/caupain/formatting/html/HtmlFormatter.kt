@@ -90,7 +90,10 @@ public class HtmlFormatter(
                             appendDependencyUpdates(type, currentUpdates)
                         }
                         appendIgnoredUpdates(input.ignoredUpdateInfos)
-                        appendUpToDateDependencies(input.upToDateDependencies)
+                        appendUpToDateDependencies(
+                            dependencies = input.upToDateDependencies,
+                            gradleUpdateInfo = input.gradleUpdateInfo,
+                        )
                     }
                 }
             }
@@ -129,7 +132,7 @@ public class HtmlFormatter(
     }
 
     private fun FlowContent.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
-        if (updateInfo == null) return
+        if (updateInfo?.hasUpdate != true) return
         h2 { +"Gradle" }
         p {
             +"Gradle current version is ${updateInfo.currentVersion.version} whereas last version is ${updateInfo.updatedVersion.version}."
@@ -297,8 +300,11 @@ public class HtmlFormatter(
         }
     }
 
-    private fun FlowContent.appendUpToDateDependencies(dependencies: List<Dependency>) {
-        if (dependencies.isEmpty()) return
+    private fun FlowContent.appendUpToDateDependencies(
+        dependencies: List<Dependency>,
+        gradleUpdateInfo: GradleUpdateInfo?,
+    ) {
+        if (dependencies.isEmpty() && gradleUpdateInfo?.hasUpdate != false) return
         h2 { +"Up-to-date" }
         p {
             table {
@@ -317,6 +323,13 @@ public class HtmlFormatter(
                         }
                         td { +dep.moduleId }
                         td { +dep.version.toString() }
+                    }
+                }
+                if (gradleUpdateInfo?.hasUpdate == false) {
+                    tr {
+                        td { +"Gradle" }
+                        td { +"Wrapper" }
+                        td { +gradleUpdateInfo.currentVersion.version }
                     }
                 }
             }
