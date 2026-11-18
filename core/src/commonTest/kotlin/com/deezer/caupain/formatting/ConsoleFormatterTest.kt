@@ -28,18 +28,17 @@ import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
 import com.deezer.caupain.model.gradle.GradleVersion
 import com.deezer.caupain.toSimpleVersion
 import com.deezer.caupain.toStaticVersion
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ConsoleFormatterTest {
 
     private lateinit var printer: TestConsolePrinter
@@ -54,7 +53,7 @@ class ConsoleFormatterTest {
 
     @Test
     fun testEmpty() {
-        formatter.format(Input(null, emptyMap(), emptyList(), null, null))
+        formatter.format(Input.EMPTY)
         assertEquals(listOf(ConsoleFormatter.NO_UPDATES), printer.output)
         assertEquals(emptyList(), printer.error)
     }
@@ -69,6 +68,7 @@ class ConsoleFormatterTest {
                     UpdateInfo.Type.PLUGIN to emptyList()
                 ),
                 ignoredUpdateInfos = emptyList(),
+                upToDateDependencies = emptyList(),
                 versionReferenceInfo = null,
                 selfUpdateInfo = null
             )
@@ -119,6 +119,16 @@ class ConsoleFormatterTest {
                     "2.0.0".toStaticVersion()
                 )
             ),
+            upToDateDependencies = listOf(
+                Dependency.Library(
+                    module = "com.deezer:up-to-date",
+                    version = "1.0".toSimpleVersion(),
+                ),
+                Dependency.Plugin(
+                    id = "com.deezer.up.to.date",
+                    version = "1.0".toSimpleVersion()
+                )
+            ),
             versionReferenceInfo = listOf(
                 VersionReferenceInfo(
                     id = "deezer",
@@ -149,7 +159,10 @@ class ConsoleFormatterTest {
                 ConsoleFormatter.PLUGIN_TITLE,
                 "- com.deezer:plugin: 1.0.0 -> 2.0.0",
                 ConsoleFormatter.IGNORED_TITLE,
-                "- com.deezer:ignored-library: 1.0.0 -> 2.0.0"
+                "- com.deezer:ignored-library: 1.0.0 -> 2.0.0",
+                ConsoleFormatter.UP_TO_DATE_TITLE,
+                "- Library com.deezer:up-to-date: 1.0",
+                "- Plugin com.deezer.up.to.date: 1.0",
             ),
             printer.output
         )

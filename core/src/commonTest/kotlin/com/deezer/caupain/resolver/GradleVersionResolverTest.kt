@@ -66,14 +66,13 @@ class GradleVersionResolverTest(
         TestInfo(GradleStabilityLevel.NIGHTLY, "9.8.0-20260814002830+0000"),
     ),
     private val useGlobalVersionUrl: Boolean = burstValues(true, false),
+    private val reportUpToDateDependencies: Boolean = burstValues(true, false),
 ) {
     private lateinit var engine: MockEngine
 
     private var hasError = false
 
     private val testDispatcher = UnconfinedTestDispatcher()
-
-    private lateinit var resolver: GradleVersionResolver
 
     private lateinit var logger: Logger
 
@@ -115,20 +114,6 @@ class GradleVersionResolverTest(
                 }
             }
         }
-        resolver = GradleVersionResolver(
-            httpClient = HttpClient(engine) {
-                install(ContentNegotiation) {
-                    json(DefaultJson, ContentType.Application.Json)
-                }
-            },
-            logger = logger,
-            configuration = GradleConfiguration(
-                version = "8.12",
-                globalVersionsUrl = if (useGlobalVersionUrl) GLOBAL_VERSION_URL else null,
-            ),
-            stabilityLevel = testInfo.stabilityLevel,
-            ioDispatcher = testDispatcher
-        )
     }
 
     @AfterTest
@@ -137,18 +122,48 @@ class GradleVersionResolverTest(
         hasError = false
     }
 
+    private fun createResolver(currentVersion: String = "8.12"): GradleVersionResolver {
+        return GradleVersionResolver(
+            httpClient = HttpClient(engine) {
+                install(ContentNegotiation) {
+                    json(DefaultJson, ContentType.Application.Json)
+                }
+            },
+            logger = logger,
+            configuration = GradleConfiguration(
+                version = currentVersion,
+                globalVersionsUrl = if (useGlobalVersionUrl) GLOBAL_VERSION_URL else null,
+            ),
+            reportUpToDate = reportUpToDateDependencies,
+            stabilityLevel = testInfo.stabilityLevel,
+            ioDispatcher = testDispatcher
+        )
+    }
+
     @Test
     fun testUpdate() = runTest(testDispatcher) {
         assertEquals(
             expected = testInfo.expectedVersion,
-            actual = resolver.getUpdatedVersion()?.updatedVersion?.version
+            actual = createResolver().getUpdatedVersion()?.updatedVersion?.version
         )
+    }
+
+    @Test
+    fun testUpToDate() = runTest(testDispatcher) {
+        val currentVersion = "10.0.0"
+        val result = createResolver(currentVersion = currentVersion).getUpdatedVersion()
+        if (reportUpToDateDependencies) {
+            assertEquals(expected = currentVersion, actual = result?.currentVersion?.version)
+            assertEquals(expected = currentVersion, actual = result?.updatedVersion?.version)
+        } else {
+            assertNull(result)
+        }
     }
 
     @Test
     fun testUpdateError() = runTest(testDispatcher) {
         hasError = true
-        assertNull(resolver.getUpdatedVersion())
+        assertNull(createResolver().getUpdatedVersion())
         verify {
             logger.error(message = any(), throwable = any<TestException>())
         }

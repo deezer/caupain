@@ -22,20 +22,16 @@
  * SOFTWARE.
  */
 
-@file:OptIn(InternalSerializationApi::class)
-
 package com.deezer.caupain.model
 
 import com.deezer.caupain.model.Dependency.Library
 import com.deezer.caupain.model.Dependency.Plugin
 import com.deezer.caupain.model.versionCatalog.Version
 import dev.drewhamilton.poko.Poko
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.SerialKind
-import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -45,6 +41,7 @@ import net.peanuuutz.tomlkt.asTomlDecoder
 /**
  * Describes a dependency from the version catalog.
  */
+@Serializable
 public sealed interface Dependency {
 
     /**
@@ -65,7 +62,8 @@ public sealed interface Dependency {
     /**
      * Library dependency
      */
-    @Serializable(LibrarySerializer::class)
+    @Serializable
+    @SerialName("library")
     @Poko
     public class Library(
         public val group: String? = null,
@@ -119,7 +117,8 @@ public sealed interface Dependency {
     /**
      * Plugin dependency
      */
-    @Serializable(PluginSerializer::class)
+    @Serializable
+    @SerialName("plugin")
     @Poko
     public class Plugin(
         public val id: String,
@@ -200,13 +199,13 @@ private data class RichLibrary(
     }
 }
 
-internal object LibrarySerializer : KSerializer<Library> {
+internal object LibraryTomlSerializer : KSerializer<Library> {
 
     private val richSerializer = RichLibrary.serializer()
 
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        serialName = "com.deezer.dependencies.model.versionCatalog.Dependency",
-        kind = SerialKind.CONTEXTUAL
+    override val descriptor: SerialDescriptor = SerialDescriptor(
+        serialName = "com.deezer.caupain.model.LibrarySerializer",
+        original = richSerializer.descriptor,
     )
 
     override fun serialize(encoder: Encoder, value: Library) {
@@ -244,13 +243,13 @@ private data class RichPlugin(
     )
 }
 
-internal object PluginSerializer : KSerializer<Plugin> {
+internal object PluginTomlSerializer : KSerializer<Plugin> {
 
     private val richSerializer = RichPlugin.serializer()
 
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(
-        serialName = "com.deezer.dependencies.model.versionCatalog.Plugin",
-        kind = SerialKind.CONTEXTUAL
+    override val descriptor: SerialDescriptor = SerialDescriptor(
+        serialName = "plugin",
+        original = richSerializer.descriptor,
     )
 
     override fun serialize(encoder: Encoder, value: Plugin) {

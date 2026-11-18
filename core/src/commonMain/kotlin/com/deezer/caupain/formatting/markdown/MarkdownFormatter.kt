@@ -29,6 +29,7 @@ import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.asAppendable
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
@@ -59,6 +60,10 @@ public class MarkdownFormatter(
                         appendDependencyUpdates(type, currentUpdates)
                     }
                     appendIgnoredUpdates(input.ignoredUpdateInfos)
+                    appendUpToDateDependencies(
+                        dependencies = input.upToDateDependencies,
+                        gradleUpdateInfo = input.gradleUpdateInfo,
+                    )
                 }
             }
     }
@@ -101,7 +106,7 @@ public class MarkdownFormatter(
     }
 
     private fun Appendable.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
-        if (updateInfo == null) return
+        if (updateInfo?.hasUpdate != true) return
         appendLine("## Gradle")
         append("Gradle current version is ")
         append(updateInfo.currentVersion.version)
@@ -222,6 +227,33 @@ public class MarkdownFormatter(
         )
     }
 
+    private fun Appendable.appendUpToDateDependencies(
+        dependencies: List<Dependency>,
+        gradleUpdateInfo: GradleUpdateInfo?,
+    ) {
+        if (dependencies.isEmpty() && gradleUpdateInfo?.hasUpdate != false) return
+        append("## ")
+        appendLine("Up-to-date")
+        appendTable(
+            headers = listOf(TYPE_TITLE, ID_TITLE, CURRENT_VERSION_TITLE),
+            rows = buildList {
+                dependencies.mapTo(this) { dep ->
+                    listOf(
+                        when (dep) {
+                            is Dependency.Library -> "Library"
+                            is Dependency.Plugin -> "Plugin"
+                        },
+                        dep.moduleId,
+                        dep.version.toString(),
+                    )
+                }
+                if (gradleUpdateInfo?.hasUpdate == false) {
+                    add(listOf("Gradle", "Wrapper", gradleUpdateInfo.currentVersion.version))
+                }
+            }
+        )
+    }
+
     private fun Appendable.appendTable(
         headers: List<String>,
         rows: List<List<String>>
@@ -259,6 +291,7 @@ public class MarkdownFormatter(
 
     private companion object {
         private const val ID_TITLE = "Id"
+        private const val TYPE_TITLE = "Type"
         private const val CURRENT_VERSION_TITLE = "Current version"
         private const val UPDATED_VERSION_TITLE = "Updated version"
         private const val LINE_BREAK = "<br/>"

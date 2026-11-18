@@ -66,6 +66,7 @@ interface Configuration {
     val githubToken: String?
     val verifyExistence: Boolean?
     val doNotCheckSelfUpdates: Boolean?
+    val reportUpToDateDependencies: Boolean?
 
     fun validate(logger: Logger)
 

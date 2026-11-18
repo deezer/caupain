@@ -84,6 +84,7 @@ kotlin {
                 implementation(libs.antlr.kotlin.runtime)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.serialization.json.okio)
+                implementation(projects.tools)
             }
         }
         commonTest {
@@ -192,7 +193,7 @@ dokka {
     }
 }
 tasks.withType<DokkaGeneratePublicationTask> {
-    dependsOn("fixKMPMetadata")
+    mustRunAfter("fixKMPMetadata")
 }
 
 dependencyGuard {

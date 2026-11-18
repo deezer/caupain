@@ -51,6 +51,7 @@ import com.deezer.caupain.model.isIncluded
 import com.deezer.caupain.model.loadPolicies
 import com.deezer.caupain.model.maven.MavenInfo
 import com.deezer.caupain.model.versionCatalog.Version
+import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.policies.FilterPolicy
 import com.deezer.caupain.resolver.DefaultUpdatedVersionResolver
 import com.deezer.caupain.resolver.GithubReleaseNoteResolver
@@ -270,7 +271,7 @@ internal class DefaultDependencyUpdateChecker(
     private val logger: Logger,
     private val selfUpdateResolver: SelfUpdateResolver?,
     policies: List<Policy>?,
-    private val gradleConfiguration: GradleConfiguration?,
+    gradleConfiguration: GradleConfiguration?,
 ) : DependencyUpdateChecker {
 
     override val policies = policies?.asSequence() ?: sequence {
@@ -327,6 +328,7 @@ internal class DefaultDependencyUpdateChecker(
             httpClient = httpClient,
             logger = logger,
             configuration = configuration,
+            reportUpToDate = this.configuration.reportUpToDateDependencies,
             stabilityLevel = this.configuration.gradleStabilityLevel,
             ioDispatcher = ioDispatcher
         )
@@ -392,6 +394,9 @@ internal class DefaultDependencyUpdateChecker(
                     put(type, updatesInfos[type]?.sortedBy { it.dependencyId }.orEmpty())
                 }
             },
+            upToDateDependencies = updatedVersionsResult
+                .upToDateDependencies
+                .sortedWith(UpToDateDependenciesComparator),
             ignoredUpdateInfos = updatedVersionsResult
                 .ignoredVersions
                 .sortedBy { it.dependencyId },
@@ -409,6 +414,7 @@ internal class DefaultDependencyUpdateChecker(
         var gradleUpdateInfo: GradleUpdateInfo? = null
         var selfUpdateInfo: SelfUpdateInfo? = null
         val updatedVersions = mutableListOf<DependencyUpdateResult>()
+        val upToDateDependencies = mutableSetOf<Dependency>()
         val ignoredVersions = mutableListOf<UpdateInfo>()
         var nbDependencies = parseResults.sumOf { it.versionCatalog.nbDependencies }
         if (checkGradleUpdate) nbDependencies++
@@ -424,34 +430,21 @@ internal class DefaultDependencyUpdateChecker(
                                 val isExcluded = !configuration.isIncluded(key, dep)
                                         || info.ignores.isExcluded(key, dep)
                                 if (!isExcluded || configuration.checkIgnored) {
-                                    val updatedVersion = versionResolver.getUpdatedVersion(
+                                    val updateCheckResult = versionResolver.getUpdatedVersion(
                                         dep,
                                         versionCatalog.versions
                                     )
-                                    if (updatedVersion != null) {
-                                        logger.info("Found updated version ${updatedVersion.updatedVersion} for ${dep.moduleId}")
-                                        updatedVersionsMutex.withLock {
-                                            val result = DependencyUpdateResult(
-                                                type = dep.type,
-                                                dependencyKey = key,
-                                                dependency = dep,
-                                                repository = updatedVersion.repository,
-                                                currentVersion = updatedVersion.currentVersion,
-                                                updatedVersion = updatedVersion.updatedVersion
-                                            )
-                                            if (isExcluded) {
-                                                ignoredVersions.add(
-                                                    toUpdateInfo(
-                                                        key = key,
-                                                        dependency = dep,
-                                                        currentVersion = updatedVersion.currentVersion,
-                                                        updatedVersion = updatedVersion.updatedVersion
-                                                    )
-                                                )
-                                            } else {
-                                                updatedVersions.add(result)
-                                            }
-                                        }
+                                    updatedVersionsMutex.withLock {
+                                        processUpdateCheckResult(
+                                            result = updateCheckResult,
+                                            dependency = dep,
+                                            key = key,
+                                            isExcluded = isExcluded,
+                                            versionCatalog = versionCatalog,
+                                            upToDateDependencies = upToDateDependencies,
+                                            ignoredVersions = ignoredVersions,
+                                            updatedVersions = updatedVersions,
+                                        )
                                     }
                                 }
                                 val percentage = ++completed * 50 / nbDependencies
@@ -498,10 +491,59 @@ internal class DefaultDependencyUpdateChecker(
         }
         return UpdateVersionResult(
             updatedVersions = updatedVersions,
+            upToDateDependencies = upToDateDependencies,
             ignoredVersions = ignoredVersions,
             gradleUpdateInfo = gradleUpdateInfo,
             selfUpdateInfo = selfUpdateInfo
         )
+    }
+
+    private fun processUpdateCheckResult(
+        result: UpdatedVersionResolver.Result,
+        key: String,
+        dependency: Dependency,
+        isExcluded: Boolean,
+        versionCatalog: VersionCatalog,
+        upToDateDependencies: MutableSet<Dependency>,
+        ignoredVersions: MutableList<UpdateInfo>,
+        updatedVersions: MutableList<DependencyUpdateResult>,
+    ) {
+        when (result) {
+            is UpdatedVersionResolver.Result.Failure,
+            is UpdatedVersionResolver.Result.Ignored -> Unit
+
+            is UpdatedVersionResolver.Result.UpToDate ->
+                if (configuration.reportUpToDateDependencies) {
+                    upToDateDependencies.add(
+                        dependency.resolved(versionCatalog.versions)
+                    )
+                }
+
+            is UpdatedVersionResolver.Result.Updated -> {
+                logger.info("Found updated version ${result.updatedVersion} for ${dependency.moduleId}")
+                if (isExcluded) {
+                    ignoredVersions.add(
+                        toUpdateInfo(
+                            key = key,
+                            dependency = dependency,
+                            currentVersion = result.currentVersion,
+                            updatedVersion = result.updatedVersion
+                        )
+                    )
+                } else {
+                    updatedVersions.add(
+                        DependencyUpdateResult(
+                            type = dependency.type,
+                            dependencyKey = key,
+                            dependency = dependency,
+                            repository = result.repository,
+                            currentVersion = result.currentVersion,
+                            updatedVersion = result.updatedVersion
+                        )
+                    )
+                }
+            }
+        }
     }
 
     private suspend fun checkUpdateInfo(updatedVersions: List<DependencyUpdateResult>): Map<UpdateInfo.Type, List<UpdateInfo>> {
@@ -601,6 +643,7 @@ internal class DefaultDependencyUpdateChecker(
 
     private data class UpdateVersionResult(
         val updatedVersions: List<DependencyUpdateResult>,
+        val upToDateDependencies: Set<Dependency>,
         val gradleUpdateInfo: GradleUpdateInfo?,
         val selfUpdateInfo: SelfUpdateInfo?,
         val ignoredVersions: List<UpdateInfo>
@@ -668,3 +711,14 @@ public class UnavailableCacheException(public val cacheDir: Path, cause: Throwab
                 "permissions and try again, or disable the cache.",
         cause = cause,
     )
+
+private object UpToDateDependenciesComparator : Comparator<Dependency> {
+
+    override fun compare(a: Dependency, b: Dependency): Int {
+        return when (a) {
+            is Dependency.Library if b is Dependency.Plugin -> -1
+            is Dependency.Plugin if b is Dependency.Library -> 1
+            else -> a.moduleId.compareTo(b.moduleId)
+        }
+    }
+}

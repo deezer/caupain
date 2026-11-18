@@ -26,6 +26,7 @@
 package com.deezer.caupain.cli.serialization
 
 import com.deezer.caupain.model.GradleDependencyVersion
+import com.deezer.caupain.tools.serialization.TomlContentPolymorphicSerializer
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

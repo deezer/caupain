@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.internal.HttpException
 import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -42,8 +43,9 @@ import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.transformWhile
 
 /**
  * This checks Maven repositories for updated versions of a dependency.
@@ -56,23 +58,48 @@ public interface UpdatedVersionResolver {
     public suspend fun getUpdatedVersion(
         dependency: Dependency,
         versionReferences: Map<String, Version.Resolved>,
-    ): Result?
+    ): Result
 
     /**
      * Dependency update result.
-     *
-     * @property currentVersion The current version of the dependency.
-     * @property updatedVersion The updated version of the dependency.
-     * @property repository The repository where the updated version was found.
      */
-    @Poko
-    public class Result(
-        public val currentVersion: Version.Resolved,
-        public val updatedVersion: GradleDependencyVersion.Static,
-        public val repository: Repository
-    ) : Comparable<Result> {
-        override fun compareTo(other: Result): Int {
-            return updatedVersion.compareTo(other.updatedVersion)
+    public sealed interface Result {
+
+        /**
+         * Indicates that there was a failure during the update check
+         */
+        public data object Failure : Result
+
+        /**
+         * Indicates that there is no updated version
+         */
+        @Poko
+        public class UpToDate(
+            public val currentVersion: Version.Resolved
+        ) : Result
+
+        /**
+         * Indicates that the dependency check has been ignored
+         */
+        public data object Ignored : Result
+
+        /**
+         * Indicates that an update has been found
+         *
+         * @property currentVersion The current version of the dependency.
+         * @property updatedVersion The updated version of the dependency.
+         * @property repository The repository where the updated version was found.
+         */
+        @Poko
+        public class Updated(
+            public val currentVersion: Version.Resolved,
+            public val updatedVersion: GradleDependencyVersion.Static,
+            public val repository: Repository
+        ) : Result, Comparable<Updated> {
+
+            override fun compareTo(other: Updated): Int {
+                return updatedVersion.compareTo(other.updatedVersion)
+            }
         }
     }
 }
@@ -99,27 +126,32 @@ internal class DefaultUpdatedVersionResolver(
         ): Boolean = dependency.version?.resolve(versionReferences)?.isUpdate(version) == true
 
         @Suppress("SuspendFunWithCoroutineScopeReceiver") // We need to use HttpClient as receiver
-        override suspend fun HttpClient.getAvailableVersions(item: DependencyRequestInfo): Sequence<GradleDependencyVersion> {
-            val group = item.dependency.group ?: return emptySequence()
-            val name = item.dependency.name ?: return emptySequence()
-            val versioning = httpClient.processRequest<Metadata, Versioning?>(
-                default = null,
-                transform = { it.versioning },
-                onRecoverableError = { error ->
-                    logger.error(
-                        "Unable to fetch maven metadata for $group:$name from ${item.repository.url}",
-                        error
-                    )
+        override suspend fun HttpClient.getAvailableVersions(item: DependencyRequestInfo): Result<Sequence<GradleDependencyVersion>> {
+            val group = item.dependency.group
+            val name = item.dependency.name
+            if (group == null || name == null) {
+                return Result.failure(InvalidDependencyException(group, name))
+            }
+            return httpClient
+                .processRequest<Metadata, Versioning>(transform = { it.versioning }) {
+                    executeRepositoryRequest(item.repository) {
+                        appendPathSegments(group.split('.'))
+                        appendPathSegments(name, "maven-metadata.xml")
+                    }
                 }
-            ) {
-                executeRepositoryRequest(item.repository) {
-                    appendPathSegments(group.split('.'))
-                    appendPathSegments(name, "maven-metadata.xml")
+                .map { versioning ->
+                    sequenceOf(versioning.release, versioning.latest)
+                        .plus(versioning.versions.asSequence().map { it.version })
+                        .filterNotNull()
                 }
-            } ?: return emptySequence()
-            return sequenceOf(versioning.release, versioning.latest)
-                .plus(versioning.versions.asSequence().map { it.version })
-                .filterNotNull()
+                .onFailure { error ->
+                    if (error !is HttpException) {
+                        logger.error(
+                            "Unable to fetch maven metadata for $group:$name from ${item.repository.url}",
+                            error
+                        )
+                    }
+                }
         }
 
         override suspend fun canSelectVersion(
@@ -141,30 +173,49 @@ internal class DefaultUpdatedVersionResolver(
     override suspend fun getUpdatedVersion(
         dependency: Dependency,
         versionReferences: Map<String, Version.Resolved>,
-    ): UpdatedVersionResolver.Result? {
+    ): UpdatedVersionResolver.Result {
         logger.info("Finding updated version for ${dependency.moduleId}")
         val resolvedDependency = dependency.resolved(versionReferences)
         val currentVersion = resolvedDependency.version as? Version.Resolved
         if (currentVersion == null || onlyCheckStaticVersions && !currentVersion.isStatic) {
-            return null
+            return UpdatedVersionResolver.Result.Ignored
         }
         val repositories = when (dependency) {
             is Dependency.Library -> repositories
             is Dependency.Plugin -> pluginRepositories
         }
-        return repositories
+        var result: UpdatedVersionResolver.Result = UpdatedVersionResolver.Result.Failure
+        repositories
             .asFlow()
             .filter { resolvedDependency in it }
-            .mapNotNull { repository ->
-                versionResolver.findUpdatedVersion(
-                    DependencyRequestInfo(
-                        dependency = dependency,
-                        versionReferences = versionReferences,
-                        repository = repository
+            .map { repository ->
+                versionResolver
+                    .findUpdatedVersion(
+                        DependencyRequestInfo(
+                            dependency = dependency,
+                            versionReferences = versionReferences,
+                            repository = repository
+                        )
                     )
-                )?.let { UpdatedVersionResolver.Result(currentVersion, it, repository) }
+                    .map { updatedVersion ->
+                        if (updatedVersion == null) {
+                            UpdatedVersionResolver.Result.UpToDate(currentVersion)
+                        } else {
+                            UpdatedVersionResolver.Result.Updated(
+                                currentVersion = currentVersion,
+                                updatedVersion = updatedVersion,
+                                repository = repository,
+                            )
+                        }
+                    }
             }
-            .firstOrNull()
+            .mapNotNull { it.getOrNull() }
+            .transformWhile { currentResult ->
+                emit(currentResult)
+                currentResult !is UpdatedVersionResolver.Result.Updated
+            }
+            .collect { result = it }
+        return result
     }
 
     private data class DependencyRequestInfo(
@@ -173,3 +224,6 @@ internal class DefaultUpdatedVersionResolver(
         val repository: Repository,
     )
 }
+
+private class InvalidDependencyException(group: String?, name: String?) :
+    Exception("Invalid dependency $group:$name")

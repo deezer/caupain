@@ -32,6 +32,7 @@ import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.versionCatalog.Version
 import com.deezer.caupain.model.versionCatalog.VersionCatalog
 import com.deezer.caupain.resolver.SelfUpdateResolver
+import com.deezer.caupain.resolver.UpdatedVersionResolver
 
 internal object PluginUpdateResolver : SelfUpdateResolver {
 
@@ -48,7 +49,7 @@ internal object PluginUpdateResolver : SelfUpdateResolver {
                 version = currentVersion
             ),
             versionReferences = emptyMap()
-        )
+        ) as? UpdatedVersionResolver.Result.Updated
         return updatedVersion?.let { versionResult ->
             SelfUpdateInfo(
                 currentVersion = currentVersion.toString(),

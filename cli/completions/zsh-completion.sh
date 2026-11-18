@@ -123,15 +123,15 @@ _caupain() {
           in_param=''
           continue
           ;;
+        --search-release-notes)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
         --github-token)
           __skip_opt_eq
           (( i = i + 1 ))
           [[ ${i} -gt COMP_CWORD ]] && in_param='--github-token' || in_param=''
-          continue
-          ;;
-        --search-release-notes)
-          __skip_opt_eq
-          in_param=''
           continue
           ;;
         --cache-dir)
@@ -180,6 +180,11 @@ _caupain() {
           in_param=''
           continue
           ;;
+        --report-up-to-date)
+          __skip_opt_eq
+          in_param=''
+          continue
+          ;;
         --version)
           __skip_opt_eq
           in_param=''
@@ -202,7 +207,7 @@ _caupain() {
   done
   local word="${COMP_WORDS[$COMP_CWORD]}"
   if [[ "${word}" =~ ^[-] ]]; then
-    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --output-dir --output-base-name --show-version-references --in-place --github-token --search-release-notes --cache-dir --no-cache --clean-cache -q --quiet -v --verbose -d --debug --debug-http-calls --verify-existence --do-not-check-self-updates --version -h --help' -- "${word}"))
+    COMPREPLY=($(compgen -W '-i --version-catalog --gradle-wrapper-properties -e --excluded -c --config --policy-plugin-dir -p --policy --list-policies --gradle-stability-level -t --output-type -o --output --output-dir --output-base-name --show-version-references --in-place --search-release-notes --github-token --cache-dir --no-cache --clean-cache -q --quiet -v --verbose -d --debug --debug-http-calls --verify-existence --do-not-check-self-updates --report-up-to-date --version -h --help' -- "${word}"))
     return
   fi
 
@@ -248,9 +253,9 @@ _caupain() {
       ;;
     "--in-place")
       ;;
-    "--github-token")
-      ;;
     "--search-release-notes")
+      ;;
+    "--github-token")
       ;;
     "--cache-dir")
        __complete_files "${word}"
@@ -270,6 +275,8 @@ _caupain() {
     "--verify-existence")
       ;;
     "--do-not-check-self-updates")
+      ;;
+    "--report-up-to-date")
       ;;
     "--version")
       ;;

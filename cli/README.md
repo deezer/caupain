@@ -99,6 +99,7 @@ Options:
   --verify-existence            Verify that .pom file exists before accepting
                                 version updates (warning: may slow down checks)
   --do-not-check-self-updates   Do not check for Caupain updates on GitHub
+  --report-up-to-date           Display up-to-date dependencies in the reports
   --version                     Show the version and exit
   -h, --help                    Show this message and exit
 ```
@@ -197,6 +198,8 @@ searchReleaseNotes = true
 verifyExistence = true
 # Whether to skip the GitHub self-update check. Default is false.
 doNotCheckSelfUpdates = true
+# Whether to include up-to-date dependencies in the final report. Default is false
+reportUpToDateDependencies = true
 ```
 
 #### Repository component filtering

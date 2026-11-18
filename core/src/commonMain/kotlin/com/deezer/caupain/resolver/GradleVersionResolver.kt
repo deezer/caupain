@@ -24,6 +24,7 @@
 
 package com.deezer.caupain.resolver
 
+import com.deezer.caupain.internal.HttpException
 import com.deezer.caupain.internal.processRequest
 import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.GradleDependencyVersion
@@ -47,84 +48,104 @@ internal class GradleVersionResolver(
     private val httpClient: HttpClient,
     private val logger: Logger,
     private val configuration: GradleConfiguration,
+    private val reportUpToDate: Boolean,
     private val stabilityLevel: GradleStabilityLevel,
     private val ioDispatcher: CoroutineDispatcher
 ) {
     // We do not use it as a scope, but HttpClient does implement scope
     @Suppress("SuspendFunWithCoroutineScopeReceiver")
-    private suspend fun HttpClient.getVersions(url: Url): Sequence<GradleToolVersion> {
-        return processRequest<List<GradleToolVersion>, Sequence<GradleToolVersion>>(
-            default = emptySequence(),
-            onRecoverableError = { error ->
-                logger.error("Failed to fetch Gradle versions from $url", error)
-            },
+    private suspend fun HttpClient.getVersions(url: Url): Result<List<GradleToolVersion>> {
+        return processRequest<List<GradleToolVersion>, List<GradleToolVersion>>(
             transform = { versions ->
-                versions
-                    .asSequence()
-                    .filter { it.version != null && it.level <= stabilityLevel }
+                versions.filter { it.version != null && it.level <= stabilityLevel }
             },
             executeRequest = { get(url) }
-        )
+        ).onFailure { error ->
+            if (error !is HttpException) {
+                logger.error("Failed to fetch Gradle versions from $url", error)
+            }
+        }
     }
 
     // We do not use it as a scope, but HttpClient does implement scope
     @Suppress("SuspendFunWithCoroutineScopeReceiver")
-    private suspend fun HttpClient.getVersion(url: Url): GradleToolVersion? {
+    private suspend fun HttpClient.getVersion(url: Url): Result<GradleToolVersion?> {
         return processRequest<GradleToolVersion, GradleToolVersion?>(
-            default = null,
-            onRecoverableError = { error ->
-                logger.error("Failed to fetch Gradle versions from $url", error)
-            },
             transform = { version ->
                 version.takeIf { it.version != null && it.level <= stabilityLevel }
             },
             executeRequest = { get(url) }
-        )
+        ).onFailure { error ->
+            if (error !is HttpException) {
+                logger.error("Failed to fetch Gradle versions from $url", error)
+            }
+        }
+    }
+
+    private suspend fun getLastVersions(): Result<List<GradleToolVersion>> {
+        return coroutineScope {
+            GradleStabilityLevel
+                .entries
+                .asSequence()
+                .filter { it <= stabilityLevel }
+                .map { level ->
+                    URLBuilder(configuration.baseVersionsUrl)
+                        .appendPathSegments(level.urlSuffix)
+                        .build()
+                }
+                .map { url ->
+                    async { httpClient.getVersion(url) }
+                }
+                .toList()
+                .awaitAll()
+                .let { results ->
+                    if (results.any { it.isSuccess }) {
+                        Result.success(results.mapNotNull { it.getOrNull() })
+                    } else {
+                        Result.failure(results.firstNotNullOf { it.exceptionOrNull() })
+                    }
+                }
+        }
     }
 
     suspend fun getUpdatedVersion(): GradleUpdateInfo? {
-        val versions = withContext(ioDispatcher) {
+        return withContext(ioDispatcher) {
             if (configuration.globalVersionsUrl != null) {
                 httpClient.getVersions(configuration.globalVersionsUrl)
             } else {
-                coroutineScope {
-                    GradleStabilityLevel
-                        .entries
-                        .asSequence()
-                        .filter { it <= stabilityLevel }
-                        .map { level ->
-                            URLBuilder(configuration.baseVersionsUrl)
-                                .appendPathSegments(level.urlSuffix)
-                                .build()
-                        }
-                        .map { url ->
-                            async { httpClient.getVersion(url) }
-                        }
-                        .toList()
-                        .awaitAll()
-                        .asSequence()
-                        .filterNotNull()
+                getLastVersions()
+            }
+        }.fold(
+            onSuccess = { versions ->
+                var max: GradleToolVersion? = null
+                val currentVersion = GradleDependencyVersion(configuration.version)
+                for (version in versions) {
+                    @Suppress("ComplexCondition")
+                    if (
+                        version.version != null
+                        && currentVersion.isUpdate(version.version)
+                        && (max?.version == null || version.version > max.version)
+                    ) {
+                        max = version
+                    }
                 }
-            }
-        }
-        var max: GradleToolVersion? = null
-        val currentVersion = GradleDependencyVersion(configuration.version)
-        for (version in versions) {
-            @Suppress("ComplexCondition")
-            if (
-                version.version != null
-                && currentVersion.isUpdate(version.version)
-                && (max?.version == null || version.version > max.version)
-            ) {
-                max = version
-            }
-        }
-        return max?.let { updatedVersion ->
-            GradleUpdateInfo(
-                currentVersion = GradleVersion(configuration.version),
-                updatedVersion = requireNotNull(updatedVersion.toGradleVersion()),
-                checksum = if (configuration.needsChecksum) updatedVersion.checksum else null,
-            )
-        }
+                when {
+                    max != null -> GradleUpdateInfo(
+                        currentVersion = GradleVersion(configuration.version),
+                        updatedVersion = requireNotNull(max.toGradleVersion()),
+                        checksum = if (configuration.needsChecksum) max.checksum else null,
+                    )
+
+                    reportUpToDate -> GradleUpdateInfo(
+                        currentVersion = GradleVersion(configuration.version),
+                        updatedVersion = GradleVersion(configuration.version),
+                        checksum = null,
+                    )
+
+                    else -> null
+                }
+            },
+            onFailure = { null }
+        )
     }
 }

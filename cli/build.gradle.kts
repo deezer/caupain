@@ -79,6 +79,7 @@ kotlin {
                 implementation(projects.core)
                 implementation(libs.app.dirs)
                 implementation(libs.kotlinx.io.okio)
+                implementation(projects.tools)
             }
         }
         commonTest {

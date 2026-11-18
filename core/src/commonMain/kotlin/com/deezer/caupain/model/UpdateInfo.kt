@@ -80,6 +80,9 @@ public class GradleUpdateInfo(
     public val updatedVersion: GradleVersion,
     public val checksum: String? = null,
 ) {
+    internal val hasUpdate: Boolean
+        get() = currentVersion != updatedVersion
+
     @Transient
     public val url: String = "https://docs.gradle.org/${updatedVersion.version}/release-notes.html"
 }

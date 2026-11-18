@@ -22,20 +22,26 @@
  * SOFTWARE.
  */
 
+@file:OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
+
 package com.deezer.caupain.model.versionCatalog
 
 import com.deezer.caupain.model.GradleDependencyVersion
 import dev.drewhamilton.poko.Poko
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import net.peanuuutz.tomlkt.TomlDecoder
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTable
-import net.peanuuutz.tomlkt.asTomlDecoder
 
 /**
  * Represents a version in the version catalog. See the [Gradle documentation](https://docs.gradle.org/current/userguide/dependency_versions.html)
@@ -180,7 +186,6 @@ public sealed interface Version {
     }
 }
 
-@OptIn(InternalSerializationApi::class)
 internal class VersionSerializer : KSerializer<Version> {
 
     private val richSerializer = Version.Rich.serializer()
@@ -189,7 +194,7 @@ internal class VersionSerializer : KSerializer<Version> {
 
     override val descriptor = buildSerialDescriptor(
         serialName = "com.deezer.dependencies.model.versionCatalog.Version",
-        kind = SerialKind.CONTEXTUAL
+        kind = PolymorphicKind.SEALED
     )
 
     override fun serialize(encoder: Encoder, value: Version) {
@@ -203,34 +208,53 @@ internal class VersionSerializer : KSerializer<Version> {
     }
 
     override fun deserialize(decoder: Decoder): Version {
-        val tomlDecoder = decoder.asTomlDecoder()
-        return when (val tomlElement = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> Version.Simple(GradleDependencyVersion(tomlElement.content))
+        return when (decoder) {
+            is TomlDecoder -> when (val element = decoder.decodeTomlElement()) {
+                is TomlLiteral -> Version.Simple(GradleDependencyVersion(element.content))
 
-            is TomlTable -> tomlDecoder
-                .toml
-                .decodeFromTomlElement(
-                    deserializer = if ("ref" in tomlElement) {
-                        referenceSerializer
-                    } else {
-                        richSerializer
-                    },
-                    element = tomlElement
-                )
+                is TomlTable -> decoder
+                    .toml
+                    .decodeFromTomlElement(
+                        deserializer = if ("ref" in element) {
+                            referenceSerializer
+                        } else {
+                            richSerializer
+                        },
+                        element = element
+                    )
 
-            else -> error("Unsupported TOML element type: ${tomlElement::class.simpleName}")
+                else -> error("Unsupported TOML element type: ${element::class.simpleName}")
+            }
+
+            is JsonDecoder -> when (val element = decoder.decodeJsonElement()) {
+                is JsonPrimitive -> Version.Simple(GradleDependencyVersion(element.content))
+
+                is JsonObject -> decoder
+                    .json
+                    .decodeFromJsonElement(
+                        deserializer = if ("ref" in element) {
+                            referenceSerializer
+                        } else {
+                            richSerializer
+                        },
+                        element = element
+                    )
+
+                else -> error("Unsupported JSON element type: ${element::class.simpleName}")
+            }
+
+            else -> error("Unsupported decoder ${decoder::class.simpleName}")
         }
     }
 }
 
-@OptIn(InternalSerializationApi::class)
 internal class DirectVersionSerializer : KSerializer<Version.Resolved> {
 
     private val richSerializer = Version.Rich.serializer()
 
     override val descriptor = buildSerialDescriptor(
         serialName = "com.deezer.dependencies.model.versionCatalog.Version.Direct",
-        kind = SerialKind.CONTEXTUAL
+        kind = PolymorphicKind.SEALED
     )
 
     override fun serialize(encoder: Encoder, value: Version.Resolved) {
@@ -241,11 +265,20 @@ internal class DirectVersionSerializer : KSerializer<Version.Resolved> {
     }
 
     override fun deserialize(decoder: Decoder): Version.Resolved {
-        val tomlDecoder = decoder.asTomlDecoder()
-        return when (val tomlElement = tomlDecoder.decodeTomlElement()) {
-            is TomlLiteral -> Version.Simple(GradleDependencyVersion(tomlElement.content))
-            is TomlTable -> tomlDecoder.toml.decodeFromTomlElement(richSerializer, tomlElement)
-            else -> error("Unsupported TOML element type: ${tomlElement::class.simpleName}")
+        return when (decoder) {
+            is TomlDecoder -> when (val element = decoder.decodeTomlElement()) {
+                is TomlLiteral -> Version.Simple(GradleDependencyVersion(element.content))
+                is TomlTable -> decoder.toml.decodeFromTomlElement(richSerializer, element)
+                else -> error("Unsupported TOML element type: ${element::class.simpleName}")
+            }
+
+            is JsonDecoder -> when (val element = decoder.decodeJsonElement()) {
+                is JsonPrimitive -> Version.Simple(GradleDependencyVersion(element.content))
+                is JsonObject -> decoder.json.decodeFromJsonElement(richSerializer, element)
+                else -> error("Unsupported JSON element type: ${element::class.simpleName}")
+            }
+
+            else -> error("Unsupported decoder ${decoder::class.simpleName}")
         }
     }
 }

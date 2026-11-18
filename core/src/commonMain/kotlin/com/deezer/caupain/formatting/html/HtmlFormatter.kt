@@ -29,6 +29,7 @@ import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
 import com.deezer.caupain.internal.IODispatcher
 import com.deezer.caupain.internal.asAppendable
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleDependencyVersion
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
@@ -89,6 +90,10 @@ public class HtmlFormatter(
                             appendDependencyUpdates(type, currentUpdates)
                         }
                         appendIgnoredUpdates(input.ignoredUpdateInfos)
+                        appendUpToDateDependencies(
+                            dependencies = input.upToDateDependencies,
+                            gradleUpdateInfo = input.gradleUpdateInfo,
+                        )
                     }
                 }
             }
@@ -127,7 +132,7 @@ public class HtmlFormatter(
     }
 
     private fun FlowContent.appendGradleUpdate(updateInfo: GradleUpdateInfo?) {
-        if (updateInfo == null) return
+        if (updateInfo?.hasUpdate != true) return
         h2 { +"Gradle" }
         p {
             +"Gradle current version is ${updateInfo.currentVersion.version} whereas last version is ${updateInfo.updatedVersion.version}."
@@ -295,8 +300,45 @@ public class HtmlFormatter(
         }
     }
 
+    private fun FlowContent.appendUpToDateDependencies(
+        dependencies: List<Dependency>,
+        gradleUpdateInfo: GradleUpdateInfo?,
+    ) {
+        if (dependencies.isEmpty() && gradleUpdateInfo?.hasUpdate != false) return
+        h2 { +"Up-to-date" }
+        p {
+            table {
+                tr {
+                    th { +TYPE_TITLE }
+                    th { +ID_TITLE }
+                    th { +CURRENT_VERSION_TITLE }
+                }
+                for (dep in dependencies) {
+                    tr {
+                        td {
+                            +when (dep) {
+                                is Dependency.Library -> "Library"
+                                is Dependency.Plugin -> "Plugin"
+                            }
+                        }
+                        td { +dep.moduleId }
+                        td { +dep.version.toString() }
+                    }
+                }
+                if (gradleUpdateInfo?.hasUpdate == false) {
+                    tr {
+                        td { +"Gradle" }
+                        td { +"Wrapper" }
+                        td { +gradleUpdateInfo.currentVersion.version }
+                    }
+                }
+            }
+        }
+    }
+
     private companion object {
         private const val ID_TITLE = "Id"
+        private const val TYPE_TITLE = "Type"
         private const val CURRENT_VERSION_TITLE = "Current version"
         private const val UPDATED_VERSION_TITLE = "Updated version"
 

@@ -237,6 +237,7 @@ class TestProject(
         }
         showVersionReferences.set(true)
         checkIgnored.set(true)
+        reportUpToDateDependencies.set(true)
         addFilter(group = "com.example", name = "filtered", versionFilter = "1.0.0")
         $supplementaryCaupainConfiguration
     }
@@ -250,11 +251,13 @@ internal fun createVersionCatalog(updated: Boolean = false) = """
     coreKtx = "${if (updated) "1.17.0" else "1.16.0"}"
     activityKtx = "1.10.1"
     ignored = "1.0.0" #ignoreUpdates
+    upToDate = "1.0.0"
     
     [libraries]
     androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
     androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
     ignored = { group = "com.example", name = "ignored", version.ref = "ignored" }
+    up-to-date = { group = "com.example", name = "up-to-date", version.ref = "upToDate" }
     
     [plugins]
     android-application = { id = "com.android.application", version.ref = "agp" }

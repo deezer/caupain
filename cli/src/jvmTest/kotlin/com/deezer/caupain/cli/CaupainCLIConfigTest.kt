@@ -186,6 +186,7 @@ class CaupainCLIConfigTest {
                     githubToken = "githubTokenConf",
                     verifyExistence = true,
                     doNotCheckSelfUpdates = true,
+                    reportUpToDateDependencies = true,
                 )
             }
             when {
@@ -208,6 +209,7 @@ class CaupainCLIConfigTest {
                 gradleUpdateInfo = null,
                 updateInfos = emptyMap(),
                 ignoredUpdateInfos = emptyList(),
+                upToDateDependencies = emptyList(),
                 selfUpdateInfo = null,
                 versionCatalog = null,
                 versionCatalogInfo = null,
@@ -351,6 +353,7 @@ class CaupainCLIConfigTest {
                     actual = conf.githubToken
                 )
                 assertEquals(hasConf, conf.verifyExistence)
+                assertEquals(hasConf || hasOptionsOverride, conf.reportUpToDateDependencies)
             }.test(
                 when {
                     hasOptionsOverride -> listOf(
@@ -380,6 +383,7 @@ class CaupainCLIConfigTest {
                         "--cache-dir",
                         "cacheCli",
                         "--debug-http-calls",
+                        "--report-up-to-date"
                     )
 
                     hasConf -> listOf(
@@ -446,6 +450,7 @@ private data class TestConfiguration(
     override val githubToken: String?,
     override val verifyExistence: Boolean?,
     override val doNotCheckSelfUpdates: Boolean?,
+    override val reportUpToDateDependencies: Boolean?,
 ) : ParsedConfiguration {
 
     var didValidate = false

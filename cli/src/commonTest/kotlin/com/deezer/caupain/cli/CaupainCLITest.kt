@@ -163,6 +163,13 @@ class CaupainCLITest {
                     )
                 ),
                 ignoredUpdateInfos = emptyList(),
+                upToDateDependencies = listOf(
+                    Dependency.Library(
+                        group = "org.codehaus.groovy",
+                        name = "groovy-other",
+                        version = "1.0".toSimpleVersion(),
+                    )
+                ),
                 selfUpdateInfo = SelfUpdateInfo(
                     currentVersion = "1.0.0",
                     updatedVersion = "1.1.0",
@@ -195,6 +202,7 @@ class CaupainCLITest {
                         "--show-version-references",
                         "-q",
                         "--in-place",
+                        "--report-up-to-date",
                     )
                 } else {
                     listOf(
@@ -213,6 +221,7 @@ class CaupainCLITest {
                         "--show-version-references",
                         "-q",
                         "--in-place",
+                        "--report-up-to-date",
                     )
                 }
             )
@@ -232,6 +241,7 @@ class CaupainCLITest {
                 gradleUpdateInfo = null,
                 updateInfos = emptyMap(),
                 ignoredUpdateInfos = emptyList(),
+                upToDateDependencies = emptyList(),
                 selfUpdateInfo = null,
                 versionCatalog = null,
                 versionCatalogInfo = null,
@@ -268,6 +278,7 @@ class CaupainCLITest {
                 gradleUpdateInfo = null,
                 updateInfos = emptyMap(),
                 ignoredUpdateInfos = emptyList(),
+                upToDateDependencies = emptyList(),
                 selfUpdateInfo = null,
                 versionCatalog = null,
                 versionCatalogInfo = null,
@@ -434,6 +445,21 @@ private val EXPECTED_RESULT = """
           <td>0.45.0-SNAPSHOT</td>
           <td>1.0.0</td>
           <td><a href="http://www.example.com/resolved">Project</a></td>
+        </tr>
+      </table>
+    </p>
+    <h2>Up-to-date</h2>
+    <p>
+      <table>
+        <tr>
+          <th>Type</th>
+          <th>Id</th>
+          <th>Current version</th>
+        </tr>
+        <tr>
+          <td>Library</td>
+          <td>org.codehaus.groovy:groovy-other</td>
+          <td>1.0</td>
         </tr>
       </table>
     </p>

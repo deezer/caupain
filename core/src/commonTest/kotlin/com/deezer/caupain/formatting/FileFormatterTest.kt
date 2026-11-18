@@ -26,6 +26,7 @@ package com.deezer.caupain.formatting
 
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
@@ -86,7 +87,7 @@ abstract class FileFormatterTest {
     @Test
     fun testEmpty() = runTest(testDispatcher) {
         formatter.format(
-            input = Input(null, emptyMap(), emptyList(), null, null),
+            input = Input.EMPTY,
             sink = fileSystem.sink(path),
         )
         assertResult(emptyResult)
@@ -102,6 +103,7 @@ abstract class FileFormatterTest {
                     UpdateInfo.Type.PLUGIN to emptyList()
                 ),
                 ignoredUpdateInfos = emptyList(),
+                upToDateDependencies = emptyList(),
                 versionReferenceInfo = null,
                 selfUpdateInfo = null
             ),
@@ -150,6 +152,16 @@ abstract class FileFormatterTest {
                     releaseNoteUrl = null,
                     "1.0.0".toSimpleVersion(),
                     "2.0.0".toStaticVersion()
+                )
+            ),
+            upToDateDependencies = listOf(
+                Dependency.Library(
+                    module = "com.deezer:up-to-date",
+                    version = "1.0".toSimpleVersion(),
+                ),
+                Dependency.Plugin(
+                    id = "com.deezer.up.to.date",
+                    version = "1.0".toSimpleVersion()
                 )
             ),
             versionReferenceInfo = listOf(

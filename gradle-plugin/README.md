@@ -320,6 +320,8 @@ searchReleaseNotes = true
 verifyExistence = true
 // Whether to skip checking for updates to the Caupain Gradle plugin itself. Default is false.
 doNotCheckSelfUpdates = true
+// Whether to include up-to-date dependencies in the final report. Default is false
+reportUpToDateDependencies = true
 ```
 
 ## In-place update

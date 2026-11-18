@@ -26,6 +26,7 @@ package com.deezer.caupain.formatting.console
 
 import com.deezer.caupain.formatting.model.Input
 import com.deezer.caupain.formatting.model.VersionReferenceInfo
+import com.deezer.caupain.model.Dependency
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.SelfUpdateInfo
 import com.deezer.caupain.model.UpdateInfo
@@ -50,6 +51,7 @@ public class ConsoleFormatter(
             printUpdates(LIBRARY_TITLE, input.updateInfos[UpdateInfo.Type.LIBRARY].orEmpty())
             printUpdates(PLUGIN_TITLE, input.updateInfos[UpdateInfo.Type.PLUGIN].orEmpty())
             printUpdates(IGNORED_TITLE, input.ignoredUpdateInfos)
+            printDependencies(UP_TO_DATE_TITLE, input.upToDateDependencies)
         }
     }
 
@@ -70,7 +72,16 @@ public class ConsoleFormatter(
 
     private fun printGradleUpdate(updateInfo: GradleUpdateInfo?) {
         if (updateInfo != null) {
-            consolePrinter.print("Gradle: ${updateInfo.currentVersion.version} -> ${updateInfo.updatedVersion.version}")
+            consolePrinter.print(
+                buildString {
+                    append("Gradle: ")
+                    append(updateInfo.currentVersion.version)
+                    if (updateInfo.hasUpdate) {
+                        append(" -> ")
+                        append(updateInfo.updatedVersion.version)
+                    }
+                }
+            )
         }
     }
 
@@ -125,6 +136,21 @@ public class ConsoleFormatter(
         }
     }
 
+    private fun printDependencies(title: String, dependencies: List<Dependency>) {
+        if (dependencies.isNotEmpty()) {
+            consolePrinter.print(title)
+            for (dep in dependencies) {
+                val type = when (dep) {
+                    is Dependency.Library -> "Library"
+                    is Dependency.Plugin -> "Plugin"
+                }
+                consolePrinter.print(
+                    "- $type ${dep.moduleId}: ${dep.version}"
+                )
+            }
+        }
+    }
+
     internal companion object {
         const val NO_UPDATES = "No updates available."
         const val UPDATES_TITLE = "Updates are available"
@@ -132,5 +158,6 @@ public class ConsoleFormatter(
         const val PLUGIN_TITLE = "Plugin updates:"
         const val VERSIONS_TITLE = "Versions updates:"
         const val IGNORED_TITLE = "Ignored updates:"
+        const val UP_TO_DATE_TITLE = "Up-to-date dependencies:"
     }
 }

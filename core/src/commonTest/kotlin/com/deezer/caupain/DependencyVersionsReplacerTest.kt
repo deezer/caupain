@@ -78,6 +78,7 @@ class DependencyVersionsReplacerTest {
         val updateResult = DependenciesUpdateResult(
             gradleUpdateInfo = GRADLE_UPDATE_INFO,
             updateInfos = UPDATE_INFOS,
+            upToDateDependencies = emptyList(),
             ignoredUpdateInfos = emptyList(),
             selfUpdateInfo = null,
             versionCatalog = VERSION_CATALOG,

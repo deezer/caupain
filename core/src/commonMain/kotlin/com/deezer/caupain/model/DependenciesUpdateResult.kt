@@ -32,6 +32,7 @@ import dev.drewhamilton.poko.Poko
  *
  * @property gradleUpdateInfo Information about the Gradle update.
  * @property updateInfos Informations about the dependencies updates.
+ * @property upToDateDependencies list of already up-to-date dependencies
  * @property ignoredUpdateInfos Information about the possible updates for updated dependencies.
  * @property selfUpdateInfo Information about the update to Caupain itself.
  * @property versionCatalog The parsed version catalog. Only available if there was only one version
@@ -44,6 +45,7 @@ public class DependenciesUpdateResult(
     public val gradleUpdateInfo: GradleUpdateInfo?,
     public val updateInfos: Map<UpdateInfo.Type, List<UpdateInfo>>,
     public val ignoredUpdateInfos: List<UpdateInfo>,
+    public val upToDateDependencies: List<Dependency>,
     public val selfUpdateInfo: SelfUpdateInfo?,
     public val versionCatalog: VersionCatalog?,
     public val versionCatalogInfo: VersionCatalogInfo?

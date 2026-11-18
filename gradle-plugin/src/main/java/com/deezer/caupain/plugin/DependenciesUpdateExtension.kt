@@ -161,6 +161,11 @@ abstract class DependenciesUpdateExtension @Inject internal constructor(objects:
     val doNotCheckSelfUpdates: Property<Boolean> = objects.property<Boolean>().convention(false)
 
     /**
+     * Whether to include up-to-date dependencies in the final report. Default is false
+     */
+    val reportUpToDateDependencies: Property<Boolean> = objects.property<Boolean>().convention(false)
+
+    /**
      * Configure repositories
      */
     fun repositories(action: Action<RepositoryHandler>) {

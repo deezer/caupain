@@ -188,6 +188,12 @@ open class DependenciesUpdateTask @Inject constructor(
     val doNotCheckSelfUpdates = project.objects.property<Boolean>()
 
     /**
+     * @see DependenciesUpdateExtension.reportUpToDateDependencies
+     */
+    @get:Internal
+    val reportUpToDateDependencies = project.objects.property<Boolean>()
+
+    /**
      * @see DependenciesUpdateExtension.gradleStabilityLevel
      */
     @get:Internal
@@ -374,6 +380,7 @@ open class DependenciesUpdateTask @Inject constructor(
             searchReleaseNote = searchReleaseNote.getOrElse(false),
             githubToken = githubToken.orNull,
             verifyExistence = verifyExistence.get(),
+            reportUpToDateDependencies = reportUpToDateDependencies.get(),
         )
     }
 
