@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.model
+package com.deezer.caupain.config.model
 
-import com.deezer.caupain.cli.serialization.ConfigurationSerializer
+import com.deezer.caupain.config.serialization.ConfigurationSerializer
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.LibraryInclusion

@@ -37,12 +37,11 @@ import com.deezer.caupain.cli.internal.OutputSink
 import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.internal.sink
 import com.deezer.caupain.cli.model.Formatter
-import com.deezer.caupain.cli.model.GRADLE_DISTRIBUTION_REGEX
-import com.deezer.caupain.cli.model.GradleWrapperProperties
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
-import com.deezer.caupain.cli.serialization.DefaultToml
-import com.deezer.caupain.cli.serialization.decodeFromPath
-import com.deezer.caupain.cli.serialization.decodeFromProperties
+import com.deezer.caupain.config.model.GradleWrapperProperties
+import com.deezer.caupain.config.serialization.DefaultToml
+import com.deezer.caupain.config.serialization.decodeFromPath
+import com.deezer.caupain.config.serialization.decodeFromProperties
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
@@ -102,7 +101,7 @@ import okio.Path
 import okio.Path.Companion.toPath
 import okio.SYSTEM
 import kotlin.time.TimeSource
-import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
+import com.deezer.caupain.config.model.Configuration as ParsedConfiguration
 
 @Suppress("LongParameterList") // Needed for dependency injection
 class CaupainCLI(
@@ -521,6 +520,9 @@ class CaupainCLI(
         logger: ClicktLogger,
     ) {
         parsedConfiguration?.validate(logger)
+        if (parsedConfiguration?.policyPluginDir != null && !BuildConfig.CAN_USE_PLUGINS) {
+            logger.error("Policy plugins are not supported on this platform")
+        }
         if (outputTypes.count { it != ParsedConfiguration.OutputType.CONSOLE } > 1 && outputSink != null) {
             logger.warn("Output path is ignored when multiple output types are specified. Use --output-dir and --output-base-name instead.")
         }
@@ -540,12 +542,7 @@ class CaupainCLI(
                 path = gradleWrapperPropertiesPath
             )
         }
-        val currentVersion = wrapperProperties
-            ?.distributionUrl
-            ?.segments
-            ?.last()
-            ?.let { GRADLE_DISTRIBUTION_REGEX.find(it)?.groupValues?.getOrNull(1) }
-            ?: return null
+        val currentVersion = wrapperProperties?.gradleVersion ?: return null
         return GradleConfiguration(
             version = currentVersion,
             needsChecksum = wrapperProperties.distributionSha256Sum != null,

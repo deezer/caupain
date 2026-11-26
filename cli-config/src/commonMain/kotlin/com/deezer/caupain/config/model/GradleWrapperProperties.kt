@@ -23,7 +23,7 @@
  */
 @file:UseSerializers(UrlSerializer::class)
 
-package com.deezer.caupain.cli.model
+package com.deezer.caupain.config.model
 
 import io.ktor.http.Url
 import kotlinx.serialization.KSerializer
@@ -47,9 +47,18 @@ data class GradleWrapperProperties(
     val validateDistributionUrl: Boolean? = null,
     val retries: Int? = null,
     val retryBackOffMs: Int? = null,
-)
+) {
+    /**
+     * The Gradle version extracted from [distributionUrl], if any.
+     */
+    val gradleVersion: String?
+        get() = distributionUrl
+            ?.segments
+            ?.lastOrNull()
+            ?.let { GRADLE_DISTRIBUTION_REGEX.find(it)?.groupValues?.getOrNull(1) }
+}
 
-val GRADLE_DISTRIBUTION_REGEX = Regex("""gradle-(.+)-[^-]+\.zip""")
+private val GRADLE_DISTRIBUTION_REGEX = Regex("""gradle-(.+)-[^-]+\.zip""")
 
 private object UrlSerializer : KSerializer<Url> {
 

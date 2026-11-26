@@ -25,6 +25,7 @@
 
 package com.deezer.caupain.cli.model
 
+import com.deezer.caupain.config.model.Configuration
 import com.deezer.caupain.formatting.SinkFormatter
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.html.HtmlFormatter

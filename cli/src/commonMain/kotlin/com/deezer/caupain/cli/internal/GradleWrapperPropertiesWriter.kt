@@ -26,10 +26,9 @@
 package com.deezer.caupain.cli.internal
 
 import com.deezer.caupain.GradleWrapperVersionReplacer
-import com.deezer.caupain.cli.model.GRADLE_DISTRIBUTION_REGEX
-import com.deezer.caupain.cli.model.GradleWrapperProperties
-import com.deezer.caupain.cli.serialization.decodeFromProperties
-import com.deezer.caupain.cli.serialization.encodeToProperties
+import com.deezer.caupain.config.model.GradleWrapperProperties
+import com.deezer.caupain.config.serialization.decodeFromProperties
+import com.deezer.caupain.config.serialization.encodeToProperties
 import com.deezer.caupain.model.GradleUpdateInfo
 import com.deezer.caupain.model.gradle.GradleVersion
 import io.ktor.http.URLBuilder
@@ -100,6 +99,8 @@ internal class GradleWrapperPropertiesWriter(
         return Url(toString().replace(currentVersion.version, updatedVersion.version))
     }
 }
+
+private val GRADLE_DISTRIBUTION_REGEX = Regex("""gradle-(.+)-[^-]+\.zip""")
 
 private val GradleVersion.repositoryPathSegment: String
     get() = if (isSnapshot) "distributions-snapshots" else "distributions"

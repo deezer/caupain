@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.config.serialization
 
-import com.deezer.caupain.cli.model.DefaultRepository
-import com.deezer.caupain.cli.model.Repository
+import com.deezer.caupain.config.model.DefaultRepository
+import com.deezer.caupain.config.model.Repository
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind

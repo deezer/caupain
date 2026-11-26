@@ -33,11 +33,10 @@
     FilterSerializer::class,
 )
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.config.serialization
 
-import com.deezer.caupain.cli.BuildConfig
-import com.deezer.caupain.cli.model.Configuration
-import com.deezer.caupain.cli.model.Repository
+import com.deezer.caupain.config.model.Configuration
+import com.deezer.caupain.config.model.Repository
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.LibraryInclusion
@@ -106,9 +105,6 @@ private data class ConfigurationImpl(
             if (hasMultipleFileOutputs) {
                 logger.warn("outputPath will be ignored because multiple file output types are set in outputTypes.")
             }
-        }
-        if (policyPluginDir != null && !BuildConfig.CAN_USE_PLUGINS) {
-            logger.error("Policy plugins are not supported on this platform")
         }
     }
 }

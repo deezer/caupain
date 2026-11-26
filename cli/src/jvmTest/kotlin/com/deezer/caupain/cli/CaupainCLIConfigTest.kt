@@ -27,8 +27,8 @@ package com.deezer.caupain.cli
 import ca.gosyer.appdirs.AppDirs
 import com.deezer.caupain.DependencyUpdateChecker
 import com.deezer.caupain.DependencyVersionsReplacer
-import com.deezer.caupain.cli.model.DefaultRepository
-import com.deezer.caupain.cli.model.Repository
+import com.deezer.caupain.config.model.DefaultRepository
+import com.deezer.caupain.config.model.Repository
 import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.DefaultRepositories
 import com.deezer.caupain.model.DependenciesUpdateResult
@@ -64,7 +64,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import com.deezer.caupain.cli.model.Configuration as ParsedConfiguration
+import com.deezer.caupain.config.model.Configuration as ParsedConfiguration
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(TestParameterInjector::class)

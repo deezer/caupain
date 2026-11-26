@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli
+package com.deezer.caupain.config
 
-import com.deezer.caupain.cli.model.Configuration
-import com.deezer.caupain.cli.serialization.DefaultToml
+import com.deezer.caupain.config.model.Configuration
+import com.deezer.caupain.config.serialization.DefaultToml
 import com.deezer.caupain.model.DefaultRepositories
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.GradleDependencyVersion
