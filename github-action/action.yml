@@ -48,7 +48,7 @@ inputs:
   cache-dir:
     description: >-
       Directory of the HTTP cache. Defaults to a directory in the temporary directory of the
-      runner. Use this with the cache action to keep the cache between runs.
+      runner.
     required: false
   no-cache:
     description: 'Disable the HTTP cache'

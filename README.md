@@ -33,8 +33,9 @@ will be your best buddy !
 
 ## Ok, I'm sold, how do I use it ?
 
-There are two ways to use Caupain: either as a [command line tool](cli/README.md), or as a 
-[Gradle plugin](gradle-plugin/README.md). See each README for more details.
+There are three ways to use Caupain: as a [command line tool](cli/README.md), as a 
+[Gradle plugin](gradle-plugin/README.md), or as a [GitHub Action](github-action/README.md). See each 
+README for more details.
 
 ## What does the reports look like ?
 
