@@ -38,10 +38,10 @@ import com.deezer.caupain.cli.internal.path
 import com.deezer.caupain.cli.internal.sink
 import com.deezer.caupain.cli.model.Formatter
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
-import com.deezer.caupain.config.model.GradleWrapperProperties
+import com.deezer.caupain.config.ConfigurationOverrides
+import com.deezer.caupain.config.ConfigurationResolver
 import com.deezer.caupain.config.serialization.DefaultToml
 import com.deezer.caupain.config.serialization.decodeFromPath
-import com.deezer.caupain.config.serialization.decodeFromProperties
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
@@ -52,7 +52,6 @@ import com.deezer.caupain.model.Configuration
 import com.deezer.caupain.model.GradleConfiguration
 import com.deezer.caupain.model.Logger
 import com.deezer.caupain.model.gradle.GradleStabilityLevel
-import com.deezer.caupain.policies.StabilityLevelPolicy
 import com.deezer.caupain.resolver.SelfUpdateResolver
 import com.github.ajalt.clikt.command.SuspendingCliktCommand
 import com.github.ajalt.clikt.completion.completionOption
@@ -148,7 +147,9 @@ class CaupainCLI(
     option(
         "--gradle-wrapper-properties",
         help = "Gradle wrapper properties path",
-        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to DEFAULT_GRADLE_PROPERTIES_PATH.toString())
+        helpTags = mapOf(
+            HelpFormatter.Tags.DEFAULT to ConfigurationResolver.DEFAULT_GRADLE_PROPERTIES_PATH.toString()
+        )
     )
         .path(canBeFile = true, canBeDir = false, fileSystem = fileSystem)
 
@@ -358,9 +359,11 @@ class CaupainCLI(
             }
 
             if (replace) {
-                val gradleWrapperPropertiesPath = gradleWrapperPropertiesPath
-                    ?: configuration?.gradleWrapperPropertiesPath
-                    ?: DEFAULT_GRADLE_PROPERTIES_PATH
+                val gradleWrapperPropertiesPath = ConfigurationResolver
+                    .resolveGradleWrapperPropertiesPath(
+                        parsedConfiguration = configuration,
+                        override = gradleWrapperPropertiesPath,
+                    )
                 val gradleWrapperPropertiesWriter = GradleWrapperPropertiesWriter(
                     fileSystem = fileSystem,
                     ioDispatcher = ioDispatcher,
@@ -457,58 +460,25 @@ class CaupainCLI(
         }
     }
 
-    @Suppress(
-        "CyclomaticComplexMethod", // Just a lot of parameters and elvis operators
-        "NullableBooleanCheck", // Used for readibility
-        "UseOrEmpty", // Used for readibility
-    )
     private fun createConfiguration(parsedConfiguration: ParsedConfiguration?): Configuration {
-        return Configuration(
-            repositories = parsedConfiguration?.repositories?.map { it.toModel() }
-                ?: Configuration.DEFAULT_REPOSITORIES,
-            pluginRepositories = parsedConfiguration?.pluginRepositories?.map { it.toModel() }
-                ?: Configuration.DEFAULT_PLUGIN_REPOSITORIES,
-            versionCatalogPaths = versionCatalogPaths.takeUnless { it.isEmpty() }
-                ?: parsedConfiguration?.versionCatalogPaths
-                ?: parsedConfiguration?.versionCatalogPath?.let(::listOf)
-                ?: listOf(Configuration.DEFAULT_CATALOG_PATH),
-            excludedKeys = excluded.takeUnless { it.isEmpty() }
-                ?: parsedConfiguration?.excludedKeys
-                ?: emptySet(),
-            excludedLibraries = parsedConfiguration?.excludedLibraries.orEmpty(),
-            excludedPlugins = parsedConfiguration?.excludedPlugins.orEmpty(),
-            includedKeys = parsedConfiguration?.includedKeys.orEmpty(),
-            includedLibraries = parsedConfiguration?.includedLibraries.orEmpty(),
-            includedPlugins = parsedConfiguration?.includedPlugins.orEmpty(),
-            filters = parsedConfiguration?.filters.orEmpty(),
-            policies = policies
-                ?.map { it.trim() }
-                ?: parsedConfiguration?.policies
-                ?: parsedConfiguration?.policy?.let(::listOf)
-                ?: listOf(StabilityLevelPolicy.name),
-            policyPluginsDir = policyPluginDir
-                ?: parsedConfiguration?.policyPluginDir,
-            cacheDir = if (doNotCache) {
-                null
-            } else {
-                cacheDir
-                    ?: parsedConfiguration?.cacheDir
-                    ?: appDirs.getUserCacheDir().toPath()
-            },
-            cleanCache = cleanCache,
-            debugHttpCalls = debugHttpCalls,
-            onlyCheckStaticVersions = parsedConfiguration?.onlyCheckStaticVersions != false,
-            gradleStabilityLevel = gradleStabilityLevel
-                ?: parsedConfiguration?.gradleStabilityLevel
-                ?: GradleStabilityLevel.STABLE,
-            checkIgnored = parsedConfiguration?.checkIgnored == true,
-            searchReleaseNote = releaseNoteOptions?.searchReleaseNote
-                ?: parsedConfiguration?.searchReleaseNote
-                ?: false,
-            githubToken = releaseNoteOptions?.githubToken
-                ?: parsedConfiguration?.githubToken
-                ?: currentContext.readEnvvar("CAUPAIN_GITHUB_TOKEN"),
-            verifyExistence = verifyExistence || parsedConfiguration?.verifyExistence == true
+        return ConfigurationResolver.resolveConfiguration(
+            parsedConfiguration = parsedConfiguration,
+            overrides = ConfigurationOverrides(
+                versionCatalogPaths = versionCatalogPaths,
+                excludedKeys = excluded,
+                policies = policies,
+                policyPluginsDir = policyPluginDir,
+                cacheDir = cacheDir,
+                disableCache = doNotCache,
+                cleanCache = cleanCache,
+                debugHttpCalls = debugHttpCalls,
+                gradleStabilityLevel = gradleStabilityLevel,
+                searchReleaseNote = releaseNoteOptions?.searchReleaseNote,
+                githubToken = releaseNoteOptions?.githubToken,
+                verifyExistence = verifyExistence,
+            ),
+            defaultCacheDir = { appDirs.getUserCacheDir().toPath() },
+            defaultGithubToken = { currentContext.readEnvvar("CAUPAIN_GITHUB_TOKEN") },
         )
     }
 
@@ -532,21 +502,15 @@ class CaupainCLI(
     }
 
     private suspend fun loadGradleConfiguration(parsedConfiguration: ParsedConfiguration?): GradleConfiguration? {
-        val wrapperProperties = withContext(ioDispatcher) {
-            val gradleWrapperPropertiesPath = gradleWrapperPropertiesPath
-                ?: parsedConfiguration?.gradleWrapperPropertiesPath
-                ?: DEFAULT_GRADLE_PROPERTIES_PATH
-            if (!fileSystem.exists(gradleWrapperPropertiesPath)) return@withContext null
-            decodeFromProperties<GradleWrapperProperties>(
+        return withContext(ioDispatcher) {
+            ConfigurationResolver.loadGradleConfiguration(
                 fileSystem = fileSystem,
-                path = gradleWrapperPropertiesPath
+                path = ConfigurationResolver.resolveGradleWrapperPropertiesPath(
+                    parsedConfiguration = parsedConfiguration,
+                    override = gradleWrapperPropertiesPath,
+                )
             )
         }
-        val currentVersion = wrapperProperties?.gradleVersion ?: return null
-        return GradleConfiguration(
-            version = currentVersion,
-            needsChecksum = wrapperProperties.distributionSha256Sum != null,
-        )
     }
 
     private suspend fun loadConfiguration(): ParsedConfiguration? {
@@ -704,9 +668,6 @@ class CaupainCLI(
         private const val HTML_TYPE = "html"
         private const val MARKDOWN_TYPE = "markdown"
         private const val JSON_TYPE = "json"
-
-        private val DEFAULT_GRADLE_PROPERTIES_PATH =
-            "gradle/wrapper/gradle-wrapper.properties".toPath()
     }
 }
 
