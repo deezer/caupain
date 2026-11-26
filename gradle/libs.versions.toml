@@ -4,14 +4,14 @@ kotlin = "2.4.21"
 kotlinx-coroutines = "1.11.0"
 xml-serialization = "1.0.2.1"
 okio = "3.18.2"
-ktor = "3.6.1"
-kotlinx-io = "0.9.2"
-mordant = "3.1.0"
+ktor = "3.6.2"
+kotlinx-io = "0.9.3"
+mordant = "3.1.1"
 okhttp = "5.5.1"
 detekt = "2.0.0-alpha.6"
-clikt = "5.1.0"
+clikt = "5.2.1"
 antlr-kotlin = "1.0.14"
-kotlinx-serialization = "1.12.0"
+kotlinx-serialization = "1.13.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -74,14 +74,14 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinx-atomicfu = "org.jetbrains.kotlinx.atomicfu:0.33.0"
-dokka = "org.jetbrains.dokka:2.2.0"
+dokka = "org.jetbrains.dokka:2.3.0"
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 mokkery = "dev.mokkery:3.6.0"
 changelog = "org.jetbrains.changelog:2.5.0"
 antlr-kotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
 tapmoc = "com.gradleup.tapmoc:0.5.0"
 build-config = "com.github.gmazzo.buildconfig:6.1.2"
-netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:13.0.2"
+netflix-nebula-ospackage = "com.netflix.nebula.ospackage-base:14.0.2"
 kotlinx-kover = "org.jetbrains.kotlinx.kover:0.9.11"
 vanniktech-maven-publish = "com.vanniktech.maven.publish:0.37.0"
 gradle-plugin-publish = "com.gradle.plugin-publish:2.2.1"
