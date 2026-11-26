@@ -128,15 +128,16 @@ private object OutputTypeSerializer : KSerializer<Configuration.OutputType> {
         PrimitiveSerialDescriptor("OutputType", PrimitiveKind.STRING)
 
     override fun deserialize(decoder: Decoder): Configuration.OutputType {
-        return Configuration.OutputType.valueOf(
-            decoder.decodeString().uppercase()
-        )
+        val key = decoder.decodeString()
+        return requireNotNull(Configuration.OutputType.fromKey(key)) {
+            "Unknown output type: $key"
+        }
     }
 
     override fun serialize(
         encoder: Encoder,
         value: Configuration.OutputType
     ) {
-        encoder.encodeString(value.name)
+        encoder.encodeString(value.key)
     }
 }

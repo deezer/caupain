@@ -39,9 +39,8 @@ import com.deezer.caupain.cli.internal.sink
 import com.deezer.caupain.cli.model.Formatter
 import com.deezer.caupain.cli.resolver.CLISelfUpdateResolver
 import com.deezer.caupain.config.ConfigurationOverrides
+import com.deezer.caupain.config.ConfigurationParser
 import com.deezer.caupain.config.ConfigurationResolver
-import com.deezer.caupain.config.serialization.DefaultToml
-import com.deezer.caupain.config.serialization.decodeFromPath
 import com.deezer.caupain.formatting.console.ConsoleFormatter
 import com.deezer.caupain.formatting.console.ConsolePrinter
 import com.deezer.caupain.formatting.html.HtmlFormatter
@@ -108,7 +107,7 @@ class CaupainCLI(
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val parseConfiguration: (FileSystem, Path) -> ParsedConfiguration = { fs, path ->
-        DefaultToml.decodeFromPath(path, fs)
+        ConfigurationParser.parse(fs, path)
     },
     @Suppress("NoNameShadowing") // Ok to repeat here for clarity
     private val createUpdateChecker: (Configuration, GradleConfiguration?, FileSystem, CoroutineDispatcher, Logger, SelfUpdateResolver?) -> DependencyUpdateChecker = { config, gradleConfig, fs, ioDispatcher, logger, selfUpdateResolver ->
@@ -178,27 +177,16 @@ class CaupainCLI(
 
     private val gradleStabilityLevel by option(
         help = "Gradle stability level",
-        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to "stable")
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to GradleStabilityLevel.STABLE.key)
     )
-        .choice(
-            "stable" to GradleStabilityLevel.STABLE,
-            "rc" to GradleStabilityLevel.RC,
-            "milestone" to GradleStabilityLevel.MILESTONE,
-            "release-nightly" to GradleStabilityLevel.RELEASE_NIGHTLY,
-            "nightly" to GradleStabilityLevel.NIGHTLY
-        )
+        .choice(GradleStabilityLevel.entries.associateBy { it.key })
 
     private val outputTypes by option(
         "-t", "--output-type",
         help = "Output type",
-        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to CONSOLE_TYPE)
+        helpTags = mapOf(HelpFormatter.Tags.DEFAULT to ParsedConfiguration.OutputType.CONSOLE.key)
     )
-        .choice(
-            CONSOLE_TYPE to ParsedConfiguration.OutputType.CONSOLE,
-            HTML_TYPE to ParsedConfiguration.OutputType.HTML,
-            MARKDOWN_TYPE to ParsedConfiguration.OutputType.MARKDOWN,
-            JSON_TYPE to ParsedConfiguration.OutputType.JSON
-        )
+        .choice(ParsedConfiguration.OutputType.entries.associateBy { it.key })
         .multiple()
 
     private val outputSink by option(
@@ -561,12 +549,8 @@ class CaupainCLI(
 
             // Otherwise, use outputDir and outputBaseName
             else -> {
-                val extension = when (outputType) {
-                    ParsedConfiguration.OutputType.HTML -> "html"
-                    ParsedConfiguration.OutputType.MARKDOWN -> "md"
-                    ParsedConfiguration.OutputType.JSON -> "json"
-                    else -> error("Unsupported output type: $outputType")
-                }
+                val extension = outputType.fileExtension
+                    ?: error("Unsupported output type: $outputType")
                 fileSystem.createDirectories(dir)
                 val outputPath = dir / "$baseName.$extension"
                 OutputSink.File(fileSystem.sink(outputPath), outputPath)
@@ -662,13 +646,6 @@ class CaupainCLI(
         message = "Replace option cannot be used if multiple version catalogs are provided, or if checking non-static versions",
         printError = true
     )
-
-    companion object Companion {
-        private const val CONSOLE_TYPE = "console"
-        private const val HTML_TYPE = "html"
-        private const val MARKDOWN_TYPE = "markdown"
-        private const val JSON_TYPE = "json"
-    }
 }
 
 private class ReleaseNoteOptions : OptionGroup() {

@@ -31,7 +31,6 @@ import okio.EOFException
 import okio.FileSystem
 import okio.Path
 
-@PublishedApi
 internal class TomlOkioReader(private val source: BufferedSource) : TomlReader {
 
     override fun read(): Int = try {
@@ -41,14 +40,14 @@ internal class TomlOkioReader(private val source: BufferedSource) : TomlReader {
     }
 }
 
-val DefaultToml: Toml by lazy {
+internal val DefaultToml: Toml by lazy {
     Toml {
         ignoreUnknownKeys = true
         explicitNulls = false
     }
 }
 
-inline fun <reified T> Toml.decodeFromPath(
+internal inline fun <reified T> Toml.decodeFromPath(
     path: Path,
     fileSystem: FileSystem
 ): T {

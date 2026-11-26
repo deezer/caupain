@@ -29,21 +29,36 @@ import kotlinx.serialization.Serializable
 
 /**
  * Represents the stability level of a Gradle version.
+ *
+ * @property key The name of the stability level in command line options and other user-facing
+ * inputs
  */
 @Serializable
-public enum class GradleStabilityLevel(internal val urlSuffix: String) {
+public enum class GradleStabilityLevel(
+    internal val urlSuffix: String,
+    public val key: String,
+) {
     @SerialName("stable")
-    STABLE("current"),
+    STABLE("current", "stable"),
 
     @SerialName("rc")
-    RC("release-candidate"),
+    RC("release-candidate", "rc"),
 
     @SerialName("milestone")
-    MILESTONE("milestone"),
+    MILESTONE("milestone", "milestone"),
 
     @SerialName("releaseNightly")
-    RELEASE_NIGHTLY("release-nightly"),
+    RELEASE_NIGHTLY("release-nightly", "release-nightly"),
 
     @SerialName("nightly")
-    NIGHTLY("nightly")
+    NIGHTLY("nightly", "nightly");
+
+    public companion object {
+        /**
+         * Returns the stability level with the given [key] (ignoring case), or null if there is
+         * none.
+         */
+        public fun fromKey(key: String): GradleStabilityLevel? =
+            entries.firstOrNull { it.key.equals(key, ignoreCase = true) }
+    }
 }
