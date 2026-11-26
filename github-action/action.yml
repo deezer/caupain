@@ -1,0 +1,141 @@
+name: 'Caupain'
+description: 'Check for updates of the dependencies declared in your Gradle version catalogs'
+author: 'Deezer'
+branding:
+  icon: 'package'
+  color: 'purple'
+
+inputs:
+  config-file:
+    description: >-
+      Path of the Caupain configuration file. If not set, caupain.toml is used if it exists.
+      Inputs take precedence over the values of the configuration file.
+    required: false
+  version-catalog:
+    description: >-
+      Path of the version catalog, relative to the workspace. Use one path per line to check
+      multiple version catalogs. Defaults to gradle/libs.versions.toml.
+    required: false
+  excluded:
+    description: 'Keys of the version catalog to exclude from the check, one per line'
+    required: false
+  policy:
+    description: >-
+      Update policy. Multiple policies can be specified as a comma-separated list, and a version
+      must satisfy all of them to be accepted. Defaults to stability-level.
+    required: false
+  gradle-stability-level:
+    description: >-
+      Stability level of the Gradle version to update to: stable, rc, milestone, release-nightly
+      or nightly. Defaults to stable.
+    required: false
+  gradle-wrapper-properties:
+    description: 'Path of the Gradle wrapper properties. Defaults to gradle/wrapper/gradle-wrapper.properties.'
+    required: false
+  search-release-notes:
+    description: 'Search for the release notes of the updated versions on GitHub'
+    required: false
+  github-token:
+    description: >-
+      GitHub token used to search release notes. Defaults to the token of the workflow, unless
+      the configuration file specifies one.
+    required: false
+  verify-existence:
+    description: >-
+      Verify that the .pom file exists before accepting a version update. This can slow down the
+      check.
+    required: false
+  cache-dir:
+    description: >-
+      Directory of the HTTP cache. Defaults to a directory in the temporary directory of the
+      runner. Use this with the cache action to keep the cache between runs.
+    required: false
+  no-cache:
+    description: 'Disable the HTTP cache'
+    required: false
+  clean-cache:
+    description: 'Clean the HTTP cache before checking'
+    required: false
+  output-types:
+    description: >-
+      Report types to generate, one per line: console, html, markdown or json. Defaults to
+      console. Reports other than console are written in output-dir.
+    required: false
+  output-dir:
+    description: 'Directory the reports are written to. Defaults to build/reports.'
+    required: false
+  output-base-name:
+    description: 'Base name of the report files, without extension. Defaults to dependencies-update.'
+    required: false
+  show-version-references:
+    description: 'Show the summary of updates of version references in the reports'
+    required: false
+  job-summary:
+    description: 'Write the updates to the summary of the job'
+    required: false
+    default: 'true'
+  fail-on-updates:
+    description: 'Fail the step if updates are available'
+    required: false
+  version:
+    description: >-
+      Version of Caupain to use, for example 1.2.3 or 1. By default, this is the version the
+      action is used with. This is required when the action is not used with a version tag, for
+      example when it is pinned to a commit.
+    required: false
+  bundle-path:
+    description: 'For development only: directory of an already extracted bundle, to use instead of a release'
+    required: false
+
+outputs:
+  has-updates:
+    description: 'true if updates are available, false otherwise'
+    value: ${{ steps.caupain.outputs.has-updates }}
+  updates-count:
+    description: 'Number of available updates, including the one of Gradle'
+    value: ${{ steps.caupain.outputs.updates-count }}
+  report-paths:
+    description: 'Paths of the generated report files, one per line'
+    value: ${{ steps.caupain.outputs.report-paths }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Caupain
+      id: install
+      shell: bash
+      run: bash "$CAUPAIN_ACTION_PATH/scripts/install.sh"
+      env:
+        CAUPAIN_ACTION_PATH: ${{ github.action_path }}
+        CAUPAIN_ACTION_REF: ${{ github.action_ref }}
+        CAUPAIN_ACTION_REPOSITORY: ${{ github.action_repository }}
+        CAUPAIN_VERSION: ${{ inputs.version }}
+        CAUPAIN_BUNDLE_PATH: ${{ inputs.bundle-path }}
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Check dependency updates
+      id: caupain
+      shell: bash
+      run: node "$CAUPAIN_BUNDLE_DIR/caupain-github-action.js"
+      env:
+        CAUPAIN_BUNDLE_DIR: ${{ steps.install.outputs.bundle-dir }}
+        # Lowest precedence token, after the input and the configuration file
+        CAUPAIN_GITHUB_TOKEN: ${{ github.token }}
+        INPUT_CONFIG_FILE: ${{ inputs.config-file }}
+        INPUT_VERSION_CATALOG: ${{ inputs.version-catalog }}
+        INPUT_EXCLUDED: ${{ inputs.excluded }}
+        INPUT_POLICY: ${{ inputs.policy }}
+        INPUT_GRADLE_STABILITY_LEVEL: ${{ inputs.gradle-stability-level }}
+        INPUT_GRADLE_WRAPPER_PROPERTIES: ${{ inputs.gradle-wrapper-properties }}
+        INPUT_SEARCH_RELEASE_NOTES: ${{ inputs.search-release-notes }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_VERIFY_EXISTENCE: ${{ inputs.verify-existence }}
+        INPUT_CACHE_DIR: ${{ inputs.cache-dir }}
+        INPUT_NO_CACHE: ${{ inputs.no-cache }}
+        INPUT_CLEAN_CACHE: ${{ inputs.clean-cache }}
+        INPUT_OUTPUT_TYPES: ${{ inputs.output-types }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_OUTPUT_BASE_NAME: ${{ inputs.output-base-name }}
+        INPUT_SHOW_VERSION_REFERENCES: ${{ inputs.show-version-references }}
+        INPUT_JOB_SUMMARY: ${{ inputs.job-summary }}
+        INPUT_FAIL_ON_UPDATES: ${{ inputs.fail-on-updates }}

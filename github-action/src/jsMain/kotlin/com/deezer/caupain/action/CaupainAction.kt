@@ -120,6 +120,7 @@ internal class CaupainAction(
             parsedConfiguration = parsedConfiguration,
             overrides = inputs.overrides,
             defaultCacheDir = { environment.runnerTemp?.let { it / DEFAULT_CACHE_DIR_NAME } },
+            defaultGithubToken = { environment.defaultGithubToken },
         )
         configuration.githubToken?.let(logger::mask)
         if (configuration.policyPluginsDir != null) {

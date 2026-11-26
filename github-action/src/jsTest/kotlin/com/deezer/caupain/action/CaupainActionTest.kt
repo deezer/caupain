@@ -87,11 +87,13 @@ class CaupainActionTest {
         vararg inputs: Pair<String, String>,
         result: DependenciesUpdateResult = NO_UPDATES,
         failure: Throwable? = null,
+        environmentVariables: Map<String, String> = emptyMap(),
     ): Int {
         val variables = buildMap {
             put("GITHUB_OUTPUT", outputPath.toString())
             put("GITHUB_STEP_SUMMARY", summaryPath.toString())
             put("RUNNER_TEMP", "runner-temp")
+            putAll(environmentVariables)
             for ((name, value) in inputs) put("INPUT_$name", value)
         }
         return CaupainAction(
@@ -291,6 +293,28 @@ class CaupainActionTest {
         run("GITHUB_TOKEN" to "secret-token")
         assertEquals("secret-token", assertNotNull(configuration).githubToken)
         assertTrue(lines.contains("::add-mask::secret-token"))
+    }
+
+    @Test
+    fun testDefaultGithubTokenFromEnvironment() = runTest {
+        val environmentVariables = mapOf("CAUPAIN_GITHUB_TOKEN" to "workflow-token")
+        run(environmentVariables = environmentVariables)
+        assertEquals("workflow-token", assertNotNull(configuration).githubToken)
+        assertTrue(lines.contains("::add-mask::workflow-token"))
+    }
+
+    @Test
+    fun testGithubTokenPrecedence() = runTest {
+        val environmentVariables = mapOf("CAUPAIN_GITHUB_TOKEN" to "workflow-token")
+
+        // The configuration file takes precedence over the environment...
+        writeFile("caupain.toml", """githubToken = "file-token"""")
+        run(environmentVariables = environmentVariables)
+        assertEquals("file-token", assertNotNull(configuration).githubToken)
+
+        // ... and the input takes precedence over the configuration file
+        run("GITHUB_TOKEN" to "input-token", environmentVariables = environmentVariables)
+        assertEquals("input-token", assertNotNull(configuration).githubToken)
     }
 
     @Test

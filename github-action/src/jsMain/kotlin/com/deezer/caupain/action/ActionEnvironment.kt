@@ -62,6 +62,14 @@ internal class ActionEnvironment(private val variables: Map<String, String?>) {
         get() = path("RUNNER_TEMP")
 
     /**
+     * GitHub token to use if there is none in the inputs or in the configuration file. Like in
+     * the CLI, this is the `CAUPAIN_GITHUB_TOKEN` environment variable. This allows the action to
+     * default to the token of the workflow, without overriding the one of the configuration file.
+     */
+    val defaultGithubToken: String?
+        get() = variables["CAUPAIN_GITHUB_TOKEN"]?.takeUnless { it.isBlank() }
+
+    /**
      * The value of the input called [name], or null if the input is not set or blank.
      */
     fun input(name: String): String? {

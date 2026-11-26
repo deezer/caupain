@@ -113,4 +113,14 @@ class ActionEnvironmentTest {
         assertNull(empty.stepSummaryFile)
         assertNull(empty.runnerTemp)
     }
+
+    @Test
+    fun testDefaultGithubToken() {
+        assertEquals(
+            "token",
+            ActionEnvironment(mapOf("CAUPAIN_GITHUB_TOKEN" to "token")).defaultGithubToken
+        )
+        assertNull(ActionEnvironment(emptyMap()).defaultGithubToken)
+        assertNull(ActionEnvironment(mapOf("CAUPAIN_GITHUB_TOKEN" to " ")).defaultGithubToken)
+    }
 }
