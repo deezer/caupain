@@ -132,7 +132,7 @@ other inputs, such as an unknown output type, fail the step with an explanation.
 
 The action downloads the matching version of Caupain from the
 [releases](https://github.com/deezer/caupain/releases) of this repository when it runs, and
-verifies its checksum. The version is the one you use the action with:
+verifies its provenance. The version is the one you use the action with:
 
 - `deezer/caupain/github-action@v1` uses the latest `v1.x.y` release, so you get compatible
 updates automatically.
@@ -156,8 +156,14 @@ have to set the `version` input:
 ## Requirements
 
 On GitHub-hosted runners, there is nothing to install. On self-hosted runners, the action needs
-bash, `curl`, `tar`, `node` and a SHA-256 tool (`sha256sum` or `shasum`), and the access to
+bash, the [GitHub CLI](https://cli.github.com) (`gh`), `tar` and `node`, and the access to
 `github.com` and `api.github.com`.
+
+## Security
+
+The bundle is downloaded from the GitHub release of the version used, and its build provenance is
+verified with `gh attestation verify` before it runs. This makes sure it was built by the release
+workflow of this repository. A bundle without a valid attestation is never executed.
 
 ## Troubleshooting
 
@@ -165,6 +171,8 @@ bash, `curl`, `tar`, `node` and a SHA-256 tool (`sha256sum` or `shasum`), and th
 Use a version tag, or set the `version` input.
 - **`Unable to download ...`**: the release doesn't contain the action bundle, which is the case
 for versions released before the action existed.
+- **`Provenance verification failed ...`**: the bundle has no valid build attestation, so it was
+not built by the release workflow of this repository.
 - **`Configuration file ... does not exist`**: the file set in `config-file` was not found. Paths
 are relative to the workspace, so don't forget the checkout step.
 
@@ -173,13 +181,13 @@ are relative to the workspace, so don't forget the checkout step.
 The action is a Kotlin/JS module, which is packaged and attached to each release.
 
 ```shell
-# Build the archive and its checksum in github-action/build/distributions
+# Build the archive in github-action/build/distributions
 ./gradlew :github-action:assembleAction
 
 # Run the tests of the module
 ./gradlew :github-action:jsNodeTest
 
-# Test the installation script against a fake GitHub
+# Test the installation script against a fake GitHub (requires jq)
 github-action/scripts/test-install.sh github-action/build/distributions
 ```
 

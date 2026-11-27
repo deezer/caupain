@@ -23,8 +23,6 @@
  *
  */
 
-import com.deezer.caupain.tasks.Sha256ChecksumTask
-
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.tapmoc)
@@ -78,15 +76,8 @@ val packageAction = tasks.register<Tar>("packageAction") {
     isPreserveFileTimestamps = false
 }
 
-val checksumAction = tasks.register<Sha256ChecksumTask>("checksumAction") {
-    group = "distribution"
-    description = "Computes the checksum of the packaged GitHub action"
-    inputFile = packageAction.flatMap { it.archiveFile }
-    outputFile = layout.buildDirectory.file("distributions/caupain-github-action.tar.gz.sha256")
-}
-
 tasks.register("assembleAction") {
     group = "distribution"
-    description = "Builds the GitHub action release files: the archive and its checksum"
-    dependsOn(packageAction, checksumAction)
+    description = "Builds the GitHub action release file: the archive"
+    dependsOn(packageAction)
 }

@@ -5,5 +5,4 @@ plugins {
 dependencies {
     implementation(libs.commons.text)
     implementation(libs.kotlin.native.utils)
-    implementation(libs.okio)
 }

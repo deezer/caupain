@@ -87,6 +87,10 @@ jobs:
 
   buildAction:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -99,13 +103,16 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
       - name: Build GitHub action bundle
         run: ./gradlew :github-action:assembleAction --stacktrace --no-configuration-cache
+      # The action verifies this attestation before running the bundle it downloads
+      - name: Attest GitHub action bundle provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: github-action/build/distributions/caupain-github-action.tar.gz
       - name: Upload GitHub action artifacts
         uses: actions/upload-artifact@v7
         with:
           name: action-artifacts
-          path: |
-            github-action/build/distributions/caupain-github-action.tar.gz
-            github-action/build/distributions/caupain-github-action.tar.gz.sha256
+          path: github-action/build/distributions/caupain-github-action.tar.gz
 
   release:
     runs-on: ubuntu-latest

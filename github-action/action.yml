@@ -111,7 +111,7 @@ runs:
         CAUPAIN_ACTION_REPOSITORY: ${{ github.action_repository }}
         CAUPAIN_VERSION: ${{ inputs.version }}
         CAUPAIN_BUNDLE_PATH: ${{ inputs.bundle-path }}
-        GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
 
     - name: Check dependency updates
       id: caupain
