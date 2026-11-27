@@ -23,6 +23,8 @@
  *
  */
 
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.tapmoc)
@@ -59,16 +61,77 @@ kotlin {
     }
 }
 
+// The Kotlin/JS compiler does not minify the code for Node.js, and the modules are three times
+// smaller once minified. The bundle is minified module by module, without bundling them, so that
+// they are loaded exactly like the ones of the compiler.
+//
+// The minifier (esbuild) is a build tool, which is not used by the code of the action. It is
+// declared in its own npm project, in the tools directory, and not as a dependency of the
+// Kotlin/JS module, so that it is not part of the lockfile and the installation of the other
+// modules. The Node.js and npm used are the ones that the Kotlin/JS plugin downloads.
+val nodeJsEnvSpec = the<NodeJsEnvSpec>()
+val toolsDir = layout.projectDirectory.dir("tools")
+val esbuildScript = toolsDir.file("node_modules/esbuild/bin/esbuild")
+val compiledBundleDir = layout.buildDirectory.dir("compileSync/js/main/productionExecutable/kotlin")
+val minifiedBundleDir = layout.buildDirectory.dir("minifiedAction")
+val distributionGroup = "distribution"
+
+val installBuildTools = tasks.register<Exec>("installBuildTools") {
+    description = "Installs the tools used to build the GitHub action"
+    dependsOn(rootProject.tasks.named("kotlinNodeJsSetup"))
+    workingDir(toolsDir)
+    inputs.files(toolsDir.file("package.json"), toolsDir.file("package-lock.json"))
+    outputs.dir(toolsDir.dir("node_modules"))
+    doFirst {
+        val nodeDir = File(nodeJsEnvSpec.executable.get()).parentFile
+        val isWindows = System.getProperty("os.name").startsWith("Windows")
+        // npm needs node to be in the PATH
+        environment("PATH", nodeDir.absolutePath + File.pathSeparator + System.getenv("PATH"))
+        commandLine(
+            File(nodeDir, if (isWindows) "npm.cmd" else "npm").absolutePath,
+            // ci installs exactly what the lockfile says, and fails if it is out of date. Scripts
+            // are not needed, and not run for safety.
+            "ci",
+            "--ignore-scripts",
+            "--no-audit",
+            "--no-fund"
+        )
+    }
+}
+
+val minifyAction = tasks.register<Exec>("minifyAction") {
+    group = distributionGroup
+    description = "Minifies the bundle of the GitHub action"
+    dependsOn("jsProductionExecutableCompileSync", installBuildTools)
+    val modules = fileTree(compiledBundleDir) {
+        // Source maps are not needed to run the action, and are by far the largest files
+        include("*.js")
+    }
+    inputs.files(modules)
+    inputs.file(esbuildScript)
+    outputs.dir(minifiedBundleDir)
+    doFirst {
+        delete(minifiedBundleDir)
+        commandLine(
+            buildList {
+                add(nodeJsEnvSpec.executable.get())
+                add(esbuildScript.asFile.absolutePath)
+                addAll(modules.files.map { it.absolutePath })
+                add("--minify")
+                add("--outdir=${minifiedBundleDir.get().asFile.absolutePath}")
+                // Warnings are about the code of the dependencies, which is not ours to fix
+                add("--log-level=error")
+            }
+        )
+    }
+}
+
 // The action is not published as a package: its bundle is attached to the GitHub releases, and
 // downloaded by the action.yml file when the action runs.
 val packageAction = tasks.register<Tar>("packageAction") {
-    group = "distribution"
+    group = distributionGroup
     description = "Packages the bundle of the GitHub action, to attach it to releases"
-    dependsOn("jsProductionExecutableCompileSync")
-    from(layout.buildDirectory.dir("compileSync/js/main/productionExecutable/kotlin")) {
-        // Source maps are not needed to run the action, and are by far the largest files
-        exclude("**/*.map")
-    }
+    from(minifyAction)
     archiveFileName = "caupain-github-action.tar.gz"
     destinationDirectory = layout.buildDirectory.dir("distributions")
     compression = Compression.GZIP
@@ -77,7 +140,7 @@ val packageAction = tasks.register<Tar>("packageAction") {
 }
 
 tasks.register("assembleAction") {
-    group = "distribution"
+    group = distributionGroup
     description = "Builds the GitHub action release file: the archive"
     dependsOn(packageAction)
 }
