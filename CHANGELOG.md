@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- GitHub Action to check for dependency updates from a workflow, with a report in the job 
+summary (#103). **Note:** the action is not available until the next version is released.
 
 ### Changed
 - In-place replacement now also updates Gradle wrapper properties (#98)
@@ -12,6 +14,8 @@
 ### Removed
 
 ### Fixed
+- Gradle plugin now handles isolated projects and degrades gracefully when the configuration cache
+cannot be used (#101)
 
 ### Security
 
