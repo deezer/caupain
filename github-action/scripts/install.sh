@@ -47,6 +47,8 @@ repository="${CAUPAIN_ACTION_REPOSITORY:-deezer/caupain}"
 output_file="${GITHUB_OUTPUT:-/dev/stdout}"
 archive_name="caupain-github-action.tar.gz"
 entry_file="caupain-github-action.js"
+# Tag of the pre-release rebuilt from the main branch by each push
+snapshot_tag="snapshot"
 
 fail() {
   echo "::error::$*"
@@ -108,15 +110,18 @@ if [[ "$spec" =~ ^v([0-9]+)$ ]]; then
   require_gh
   resolve_latest_release "${BASH_REMATCH[1]}"
   echo "Resolved $spec to $tag"
-elif [[ "$spec" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+].*)?$ ]]; then
+elif [[ "$spec" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+].*)?$ || "$spec" == "$snapshot_tag" ]]; then
   tag="$spec"
 else
   fail "'$requested' is not a Caupain release version. Use the action with a version tag" \
-    "(for example v1 or v1.2.3), or set the 'version' input."
+    "(for example v1, v1.2.3 or $snapshot_tag), or set the 'version' input."
 fi
 
 destination="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/caupain-action/$tag"
 destination="$(to_posix_path "$destination")"
+
+# The snapshot release is replaced by each build, so a previous installation is outdated
+if [[ "$tag" == "$snapshot_tag" ]]; then rm -rf "$destination"; fi
 
 if [[ ! -f "$destination/$entry_file" ]]; then
   require_gh

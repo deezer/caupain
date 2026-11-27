@@ -71,7 +71,7 @@ add_release() {
   cp "$dist_dir/$archive_name" "$dir/"
 }
 
-for tag in v9.1.0 v9.2.0 v9.10.0; do add_release "$tag"; done
+for tag in v9.1.0 v9.2.0 v9.10.0 snapshot; do add_release "$tag"; done
 
 # The only digest that has an attestation is the one of the real archive
 sha256_of "$dist_dir/$archive_name" > "$site_dir/attested-digests"
@@ -255,6 +255,14 @@ check "commit ref explains how to fix it" logged "'version' input"
 run_install
 check "missing version fails" failed
 check "missing version explains how to fix it" logged "Set the 'version' input"
+
+run_install CAUPAIN_ACTION_REF=snapshot
+check "snapshot ref is installed" succeeded
+check "snapshot ref installs the snapshot release" installed_version snapshot
+run_install CAUPAIN_ACTION_REF=main CAUPAIN_VERSION=snapshot
+check "snapshot version input is installed" installed_version snapshot
+run_install CAUPAIN_ACTION_REF=snapshot
+check "snapshot is downloaded again, as it changes" logged "Downloading Caupain snapshot"
 
 run_install CAUPAIN_ACTION_REF=v9.99.0
 check "release without assets fails" failed

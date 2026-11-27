@@ -147,6 +147,17 @@ have to set the `version` input:
           version: 1.2.3
 ```
 
+### Snapshots
+
+Each push to the main branch rebuilds the `snapshot` pre-release, which you can use to try the
+latest changes before they are released:
+
+```yaml
+      - uses: deezer/caupain/github-action@snapshot
+```
+
+Snapshots can change at any time, and are not meant to be used in production.
+
 ## Differences with the command line tool
 
 - Policy plugins are not supported, and are ignored with a warning.
