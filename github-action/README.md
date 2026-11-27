@@ -158,6 +158,36 @@ latest changes before they are released:
 
 Snapshots can change at any time, and are not meant to be used in production.
 
+### Pull request builds
+
+To try a change before it is merged, the checks of each pull request upload the action bundle as the
+`pr-action-bundle` artifact. Open the summary of the `Check` run of the pull request to find the link.
+To use it in a workflow, download and extract it, and give its directory to the `bundle-path`
+input, which skips the download of a release:
+
+```yaml
+      - uses: actions/download-artifact@v8
+        with:
+          name: pr-action-bundle
+          repository: deezer/caupain
+          run-id: 1234567890 # ID of the Check run of the pull request
+          github-token: ${{ secrets.PAT }}
+      - run: mkdir caupain-bundle && tar -xzf caupain-github-action.tar.gz -C caupain-bundle
+      - uses: deezer/caupain/github-action@<commit of the pull request>
+        with:
+          bundle-path: caupain-bundle
+```
+
+Some things to keep in mind:
+
+- Use the commit of the pull request in the `uses` line, so that `action.yml` matches the bundle.
+- Downloading an artifact of another repository requires a token that can read its actions, which
+the default token of your workflow cannot.
+- Only pull requests opened from a branch of this repository have a bundle, not the ones from forks.
+- The bundle has no build attestation, since it is not built by the release workflow. This is not
+checked when `bundle-path` is used, so only use bundles of changes you trust.
+- Artifacts expire after the retention period of the repository.
+
 ## Differences with the command line tool
 
 - Policy plugins are not supported, and are ignored with a warning.

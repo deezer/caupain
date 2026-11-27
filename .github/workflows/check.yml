@@ -226,7 +226,7 @@ jobs:
         with:
           job-type: 'build'
       - name: Build binaries and packages
-        run: ./gradlew :cli:assembleAll :cli:buildAllDebs --stacktrace --no-configuration-cache
+        run: ./gradlew :cli:assembleAll :cli:buildAllDebs :github-action:assembleAction --stacktrace --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_isSnapshot: true
       - name: Upload artifacts
@@ -238,9 +238,16 @@ jobs:
             cli/build/bin/zip/*.zip
             cli/build/distributions/*.zip
             cli/build/distributions/*.deb
+      - name: Upload action bundle
+        id: upload_action
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-action-bundle
+          path: github-action/build/distributions/caupain-github-action.tar.gz
       - name: Update summary
         run: |
           echo "[Binaries](${{ steps.upload_artifact.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+          echo "[GitHub action bundle](${{ steps.upload_action.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
 
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
