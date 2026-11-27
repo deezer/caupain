@@ -22,22 +22,34 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.config.serialization
 
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import io.github.bishiboosh.properties.Properties
+import io.github.bishiboosh.properties.decodeFromSource
+import io.github.bishiboosh.properties.encodeToSink
+import kotlinx.io.buffered
+import kotlinx.io.okio.asKotlinxIoRawSink
+import kotlinx.io.okio.asKotlinxIoRawSource
+import okio.FileSystem
 import okio.Path
-import okio.Path.Companion.toPath
 
-object PathSerializer : KSerializer<Path> {
-    override val descriptor = PrimitiveSerialDescriptor("okio.Path", PrimitiveKind.STRING)
+inline fun <reified T> decodeFromProperties(
+    fileSystem: FileSystem,
+    path: Path
+): T = fileSystem
+    .source(path)
+    .asKotlinxIoRawSource()
+    .buffered()
+    .use { Properties.decodeFromSource(it) }
 
-    override fun deserialize(decoder: Decoder): Path = decoder.decodeString().toPath()
-
-    override fun serialize(encoder: Encoder, value: Path) {
-        encoder.encodeString(value.toString())
-    }
+inline fun <reified T> encodeToProperties(
+    fileSystem: FileSystem,
+    path: Path,
+    value: T
+) {
+    fileSystem
+        .sink(path)
+        .asKotlinxIoRawSink()
+        .buffered()
+        .use { Properties.encodeToSink(it, value) }
 }

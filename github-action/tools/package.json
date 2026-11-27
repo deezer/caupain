@@ -1,0 +1,8 @@
+{
+  "name": "caupain-github-action-tools",
+  "private": true,
+  "description": "Tools used to build the GitHub action, which are not part of it",
+  "dependencies": {
+    "esbuild": "0.28.2"
+  }
+}

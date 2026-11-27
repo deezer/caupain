@@ -18,4 +18,6 @@ dependencyResolutionManagement {
 
 include(":core")
 include(":cli")
+include(":cli-config")
+include(":github-action")
 include(":gradle-plugin")

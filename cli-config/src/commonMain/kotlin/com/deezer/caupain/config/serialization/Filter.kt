@@ -23,7 +23,7 @@
  *
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.config.serialization
 
 import com.deezer.caupain.model.GradleDependencyVersion
 import kotlinx.serialization.DeserializationStrategy

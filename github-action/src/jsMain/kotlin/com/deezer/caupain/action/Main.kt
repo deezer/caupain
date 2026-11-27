@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Deezer
+ * Copyright (c) 2026 Deezer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,39 +20,22 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
-@file:Suppress("UnusedImport")
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.action
 
-import net.peanuuutz.tomlkt.Toml
-import net.peanuuutz.tomlkt.TomlReader
-import net.peanuuutz.tomlkt.decodeFromReader
-import okio.BufferedSource
-import okio.EOFException
-import okio.FileSystem
-import okio.Path
-import okio.SYSTEM
+import okio.NodeJsFileSystem
 
-internal class TomlOkioReader(private val source: BufferedSource) : TomlReader {
-
-    override fun read(): Int = try {
-        source.readUtf8CodePoint()
-    } catch (ignored: EOFException) {
-        -1
-    }
-}
-
-internal val DefaultToml: Toml by lazy {
-    Toml {
-        ignoreUnknownKeys = true
-        explicitNulls = false
-    }
-}
-
-internal inline fun <reified T> Toml.decodeFromPath(
-    path: Path,
-    fileSystem: FileSystem = FileSystem.SYSTEM
-): T {
-    return fileSystem.read(path) { decodeFromReader(TomlOkioReader(this)) }
+/**
+ * Entry point of the GitHub action.
+ */
+suspend fun main() {
+    val action = CaupainAction(
+        environment = ActionEnvironment(processEnvironment()),
+        fileSystem = NodeJsFileSystem,
+        logger = ActionLogger(::println),
+        print = ::println,
+    )
+    setExitCode(action.run())
 }

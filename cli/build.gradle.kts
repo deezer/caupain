@@ -77,6 +77,7 @@ kotlin {
                 implementation(libs.bundles.clikt)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(projects.core)
+                implementation(projects.cliConfig)
                 implementation(libs.app.dirs)
                 implementation(libs.kotlinx.io.okio)
             }

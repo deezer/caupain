@@ -1,0 +1,7 @@
+[versions]
+coroutines = "1.5.0"
+okio = "3.0.0"
+
+[libraries]
+coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }

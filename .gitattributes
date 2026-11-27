@@ -1,0 +1,3 @@
+# The scripts of the GitHub action run in bash on Windows runners too, where they would otherwise
+# be checked out with CRLF line endings, which bash cannot parse.
+github-action/scripts/*.sh text eol=lf

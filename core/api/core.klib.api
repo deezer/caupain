@@ -15,11 +15,14 @@ final enum class com.deezer.caupain.model.gradle/GradleStabilityLevel : kotlin/E
 
     final val entries // com.deezer.caupain.model.gradle/GradleStabilityLevel.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<com.deezer.caupain.model.gradle/GradleStabilityLevel> // com.deezer.caupain.model.gradle/GradleStabilityLevel.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val key // com.deezer.caupain.model.gradle/GradleStabilityLevel.key|{}key[0]
+        final fun <get-key>(): kotlin/String // com.deezer.caupain.model.gradle/GradleStabilityLevel.key.<get-key>|<get-key>(){}[0]
 
     final fun valueOf(kotlin/String): com.deezer.caupain.model.gradle/GradleStabilityLevel // com.deezer.caupain.model.gradle/GradleStabilityLevel.valueOf|valueOf#static(kotlin.String){}[0]
     final fun values(): kotlin/Array<com.deezer.caupain.model.gradle/GradleStabilityLevel> // com.deezer.caupain.model.gradle/GradleStabilityLevel.values|values#static(){}[0]
 
     final object Companion : kotlinx.serialization.internal/SerializerFactory { // com.deezer.caupain.model.gradle/GradleStabilityLevel.Companion|null[0]
+        final fun fromKey(kotlin/String): com.deezer.caupain.model.gradle/GradleStabilityLevel? // com.deezer.caupain.model.gradle/GradleStabilityLevel.Companion.fromKey|fromKey(kotlin.String){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<com.deezer.caupain.model.gradle/GradleStabilityLevel> // com.deezer.caupain.model.gradle/GradleStabilityLevel.Companion.serializer|serializer(){}[0]
         final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // com.deezer.caupain.model.gradle/GradleStabilityLevel.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
     }

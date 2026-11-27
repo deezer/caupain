@@ -927,11 +927,13 @@ public final class com/deezer/caupain/model/gradle/GradleStabilityLevel : java/l
 	public static final field RELEASE_NIGHTLY Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
 	public static final field STABLE Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getKey ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
 	public static fun values ()[Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
 }
 
 public final class com/deezer/caupain/model/gradle/GradleStabilityLevel$Companion {
+	public final fun fromKey (Ljava/lang/String;)Lcom/deezer/caupain/model/gradle/GradleStabilityLevel;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

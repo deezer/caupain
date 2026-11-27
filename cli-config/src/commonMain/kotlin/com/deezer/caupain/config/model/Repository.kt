@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.model
+package com.deezer.caupain.config.model
 
 import com.deezer.caupain.model.HeaderCredentials
 import com.deezer.caupain.model.PasswordCredentials

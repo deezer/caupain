@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-package com.deezer.caupain.cli.model
+package com.deezer.caupain.config.model
 
-import com.deezer.caupain.cli.serialization.ConfigurationSerializer
+import com.deezer.caupain.config.serialization.ConfigurationSerializer
 import com.deezer.caupain.model.Filter
 import com.deezer.caupain.model.LibraryExclusion
 import com.deezer.caupain.model.LibraryInclusion
@@ -69,7 +69,26 @@ interface Configuration {
 
     fun validate(logger: Logger)
 
-    enum class OutputType {
-        CONSOLE, HTML, MARKDOWN, JSON
+    /**
+     * Output type.
+     *
+     * @property key The name of the output type, as used in the configuration file, CLI options and
+     * action inputs
+     * @property fileExtension The extension of the report files, or null if this output type does
+     * not produce files
+     */
+    enum class OutputType(val key: String, val fileExtension: String? = null) {
+        CONSOLE("console"),
+        HTML("html", "html"),
+        MARKDOWN("markdown", "md"),
+        JSON("json", "json");
+
+        companion object {
+            /**
+             * Returns the output type with the given [key] (ignoring case), or null if there is none.
+             */
+            fun fromKey(key: String): OutputType? =
+                entries.firstOrNull { it.key.equals(key, ignoreCase = true) }
+        }
     }
 }

@@ -43,6 +43,21 @@ choco install caupain
 You can also download the latest release from the [releases page](https://github.com/deezer/caupain/releases)
 or build it yourself by cloning the repository and running `./gradlew :cli:buildCurrentArchBinary` in the root directory.
 
+### Pull request builds
+
+To try a change before it is released, the checks of each pull request upload the binaries and
+packages it builds (zip files and Debian packages) as the `pr-release-artifacts` artifact. Open the
+summary of the `Check` run of the pull request to find the link.
+
+Some things to keep in mind:
+
+- You need to be signed in to GitHub to download artifacts.
+- Only pull requests opened from a branch of this repository have these builds, not the ones from
+forks.
+- These are snapshot builds of unmerged changes, which are not released nor published to any
+package manager. Use them to test, not in production.
+- Artifacts expire after the retention period of the repository.
+
 ## Usage
 
 ```

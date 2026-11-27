@@ -37,5 +37,41 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_isSnapshot: true
 
+  # The snapshot of the GitHub Action is a pre-release that is replaced by each build. Pre-releases
+  # are ignored when the action resolves a major version like v1, so this does not affect releases.
+  publishAction:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build GitHub action bundle
+        run: ./gradlew :github-action:assembleAction --stacktrace --no-configuration-cache
+      - name: Attest GitHub action bundle provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: github-action/build/distributions/caupain-github-action.tar.gz
+      - name: Replace snapshot release
+        run: |
+          gh release delete snapshot --cleanup-tag --yes || true
+          gh release create snapshot \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Snapshot" \
+            --notes "Snapshot of the GitHub action, built from commit $GITHUB_SHA. It is replaced by each push to the main branch, and not meant to be used in production." \
+            github-action/build/distributions/caupain-github-action.tar.gz
+        env:
+          GH_TOKEN: ${{ github.token }}
+
 env:
   GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"

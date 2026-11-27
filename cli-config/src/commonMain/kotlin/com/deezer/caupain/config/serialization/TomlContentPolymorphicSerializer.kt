@@ -28,7 +28,7 @@
  *
  */
 
-package com.deezer.caupain.cli.serialization
+package com.deezer.caupain.config.serialization
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi

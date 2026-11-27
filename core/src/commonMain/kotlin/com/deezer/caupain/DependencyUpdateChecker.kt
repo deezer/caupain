@@ -357,7 +357,7 @@ internal class DefaultDependencyUpdateChecker(
         val versionCatalogPathStrings = versionCatalogPaths
             .map { fileSystem.canonicalize(it) }
             .joinToString()
-        logger.info("Parsing version catalogs from $versionCatalogPathStrings}")
+        logger.info("Parsing version catalogs from $versionCatalogPathStrings")
         progressFlow.value = DependencyUpdateChecker.Progress.Indeterminate(PARSING_TASK)
         val versionCatalogParseResults = versionCatalogPaths
             .map { versionCatalogParser.parseDependencyInfo(it) }
@@ -522,9 +522,9 @@ internal class DefaultDependencyUpdateChecker(
         // Search release notes and build final infos
         val updatesInfos = mutableMapOf<UpdateInfo.Type, MutableList<UpdateInfo>>()
         for (result in updatedVersions) {
-            logger.info("Finding release note info for ${result.dependency.moduleId}")
             val mavenInfo = mavenInfos[DependencyKey(result)]
             val releaseNoteUrl = if (configuration.searchReleaseNote) {
+                logger.info("Finding release note info for ${result.dependency.moduleId}")
                 releaseNoteResolver.getReleaseNoteUrl(
                     mavenInfo = mavenInfo,
                     updatedVersion = result.updatedVersion
