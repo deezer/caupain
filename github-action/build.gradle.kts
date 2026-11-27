@@ -23,8 +23,6 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
-
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.tapmoc)
@@ -68,8 +66,8 @@ kotlin {
 // The minifier (esbuild) is a build tool, which is not used by the code of the action. It is
 // declared in its own npm project, in the tools directory, and not as a dependency of the
 // Kotlin/JS module, so that it is not part of the lockfile and the installation of the other
-// modules. The Node.js and npm used are the ones that the Kotlin/JS plugin downloads.
-val nodeJsEnvSpec = the<NodeJsEnvSpec>()
+// modules. This needs node and npm to be installed, which they are on GitHub-hosted runners.
+val isWindows = System.getProperty("os.name").startsWith("Windows")
 val toolsDir = layout.projectDirectory.dir("tools")
 val esbuildScript = toolsDir.file("node_modules/esbuild/bin/esbuild")
 val compiledBundleDir = layout.buildDirectory.dir("compileSync/js/main/productionExecutable/kotlin")
@@ -78,25 +76,18 @@ val distributionGroup = "distribution"
 
 val installBuildTools = tasks.register<Exec>("installBuildTools") {
     description = "Installs the tools used to build the GitHub action"
-    dependsOn(rootProject.tasks.named("kotlinNodeJsSetup"))
     workingDir(toolsDir)
     inputs.files(toolsDir.file("package.json"), toolsDir.file("package-lock.json"))
     outputs.dir(toolsDir.dir("node_modules"))
-    doFirst {
-        val nodeDir = File(nodeJsEnvSpec.executable.get()).parentFile
-        val isWindows = System.getProperty("os.name").startsWith("Windows")
-        // npm needs node to be in the PATH
-        environment("PATH", nodeDir.absolutePath + File.pathSeparator + System.getenv("PATH"))
-        commandLine(
-            File(nodeDir, if (isWindows) "npm.cmd" else "npm").absolutePath,
-            // ci installs exactly what the lockfile says, and fails if it is out of date. Scripts
-            // are not needed, and not run for safety.
-            "ci",
-            "--ignore-scripts",
-            "--no-audit",
-            "--no-fund"
-        )
-    }
+    commandLine(
+        if (isWindows) "npm.cmd" else "npm",
+        // ci installs exactly what the lockfile says, and fails if it is out of date. Scripts are
+        // not needed, and not run for safety.
+        "ci",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+    )
 }
 
 val minifyAction = tasks.register<Exec>("minifyAction") {
@@ -114,7 +105,7 @@ val minifyAction = tasks.register<Exec>("minifyAction") {
         delete(minifiedBundleDir)
         commandLine(
             buildList {
-                add(nodeJsEnvSpec.executable.get())
+                add("node")
                 add(esbuildScript.asFile.absolutePath)
                 addAll(modules.files.map { it.absolutePath })
                 add("--minify")

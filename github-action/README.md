@@ -189,7 +189,9 @@ are relative to the workspace, so don't forget the checkout step.
 
 ## Development
 
-The action is a Kotlin/JS module, which is packaged and attached to each release.
+The action is a Kotlin/JS module, which is packaged and attached to each release. Building the
+archive minifies the JavaScript with [esbuild](https://esbuild.github.io), which is installed from
+`tools/package-lock.json`, so `node` and `npm` must be installed.
 
 ```shell
 # Build the archive in github-action/build/distributions
