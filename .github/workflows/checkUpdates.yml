@@ -12,20 +12,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - name: Set up JDK 17
-        uses: actions/setup-java@v6
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: Setup gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          add-job-summary: 'never'
       - name: Check updates
-        run: ./gradlew :cli:runJvm --no-configuration-cache --stacktrace --args="-t markdown"
-      - name: Update summary
-        run: cat build/reports/dependencies-update.md >> $GITHUB_STEP_SUMMARY
-
-env:
-  GRADLE_OPTS: -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.project.kotlin.incremental.multiplatform=false -Dorg.gradle.project.kotlin.native.disableCompilerDaemon=true -Dorg.gradle.jvmargs="-Xmx12g -Dfile.encoding=UTF-8"
-  CAUPAIN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: deezer/caupain/github-action@snapshot
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
